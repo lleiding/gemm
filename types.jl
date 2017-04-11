@@ -7,7 +7,7 @@ module GeneInds
 
 type Gene
     sequence::String # contains gene base code
-    codesfor::String # function of the gene
+    codes::String # function of the gene
     value::Float # numerical effect of function
 end
 
@@ -21,6 +21,13 @@ type Individual
     gamete::Array{Chromosome,2} # gamete = 2D array of chromosomes (>=0 sets)
     fitness::Float # reproduction scaling factor representing life history
     stage::String # demographic stage of individual
+end
+
+type Patch
+    community::Array{Individual,2} # holds the population (1D) of present species (2nd D)
+    altitude::Float # altitude: corresponds to T
+    nichea::Float # additional niches,
+    nicheb::Float # e.g. precipitation
 end
 
 
