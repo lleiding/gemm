@@ -21,6 +21,7 @@ type Individual
     gamete::Array{Chromosome,2} # gamete = 2D array of chromosomes (>=0 sets)
     fitness::Float # reproduction scaling factor representing life history
     stage::String # demographic stage of individual
+    isnew::Bool # indicator whether individual is new to a patch
 end
 
 type Patch
