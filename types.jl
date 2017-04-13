@@ -44,12 +44,20 @@ function recombinate(chromosome::Chromosome)
 end
 
 function germinate(ind::Individual)
+    if ind.stage == "seed"
+        ind.stage = "juvenile"
+    end
 end
 
 function mature(ind::Individual)
+    if ind.stage == "juvenile"
+        ind.stage = "adult"
+    end
 end
 
 function reproduce(ind::Individual)
+    if ind.stage == "adult"
+    end
 end
 
 function disperse(ind::Individual)
