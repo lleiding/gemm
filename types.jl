@@ -43,5 +43,15 @@ end
 function recombinate(chromosome::Chromosome)
 end
 
-function 
+function germinate(ind::Individual)
+end
+
+function mature(ind::Individual)
+end
+
+function reproduce(ind::Individual)
+end
+
+function disperse(ind::Individual)
+end
 
