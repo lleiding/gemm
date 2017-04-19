@@ -31,6 +31,9 @@ type Patch
     nicheb::Float # e.g. precipitation
 end
 
+type Island
+end
+
 
 ## methods:
 
