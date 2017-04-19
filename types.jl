@@ -56,20 +56,24 @@ function germinate(ind::Individual)
     if ind.stage == "seed"
         ind.stage = "juvenile"
     end
+    ## decide activation/inactivation of alleles here!
 end
 
 function mature(ind::Individual)
+    ## consider alleles for survival etc.!
     if ind.stage == "juvenile"
         ind.stage = "adult"
     end
 end
 
 function reproduce(ind::Individual)
+    ## genetic "fitness"!
     if ind.stage == "adult"
     end
 end
 
 function disperse(ind::Individual)
+    ## consider genetics!
     if !ind.isnew
     end
 ##    ind.isnew = true
