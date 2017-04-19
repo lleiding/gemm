@@ -3,6 +3,8 @@
 
 module GeneInds
 
+using Distributions
+
 ## Types:
 
 type Gene
