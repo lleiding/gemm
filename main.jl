@@ -5,7 +5,7 @@ using GeneInds
 
 using Distributions
 
-function run_simulation(maxt::Int, islands::Array)
+function run_simulation(maxt::Int, islands::Array{Island,1})
     ## main time cycle
     for t in 1:maxt
         ## cycle land masses
@@ -24,6 +24,10 @@ function run_simulation(maxt::Int, islands::Array)
             ## /patch cycle
         end
         ## /island cycle
+        (t%50 == 0) && println(t)
     end
     ## /time cycle
 end
+
+oneisland=[Island([Patch([],1,1,1)])]
+run_simulation(1000, oneisland)
