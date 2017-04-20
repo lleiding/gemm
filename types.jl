@@ -24,7 +24,7 @@ type Individual
     fitness::Float64 # reproduction scaling factor representing life history
     stage::String # demographic stage of individual
     isnew::Bool # indicator whether individual is new to a patch
-    nooff::Float64 # mean number of offspring
+    noff::Float64 # mean number of offspring
 end
 
 type Patch
