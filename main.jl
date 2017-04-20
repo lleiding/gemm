@@ -21,6 +21,7 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
                     append!(offspring,reproduce(j))
                     disperse(j)
                 end
+                (size(offspring,1) > 0) && (append!(p.community,offspring))
                 ## /ind cycle
             end
             ## /patch cycle
