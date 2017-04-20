@@ -32,5 +32,5 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
     ## /time cycle
 end
 
-oneisland=[Island([Patch([Individual([],[],1,"seed",true,1.0]),1,1,1,0.5,0.5)])]
+oneisland=[Island([Patch([Individual([],[],1,"seed",true,1.5,0.5,0.5)],1,1,1)])]
 run_simulation(1000, oneisland)
