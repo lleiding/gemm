@@ -24,6 +24,7 @@ type Individual
     fitness::Float64 # reproduction scaling factor representing life history
     stage::String # demographic stage of individual
     isnew::Bool # indicator whether individual is new to a patch
+    nooff::Float64 # mean number of offspring
 end
 
 type Patch
@@ -51,6 +52,9 @@ end
 
 ## following: act @ population/community level?
 
+function evaluate_environment(patch::Patch,ind::Individual)
+end
+
 function germinate(ind::Individual)
     ind.isnew = false
     if ind.stage == "seed"
@@ -68,8 +72,16 @@ end
 
 function reproduce(ind::Individual)
     ## genetic "fitness"!
+    offspring = []
     if ind.stage == "adult"
+        for i in 1:ind.noff
+            child = ind
+            child.isnew = true
+            child.stage = "seed"
+            push!(offspring, child)
+        end
     end
+    return offspring
 end
 
 function disperse(ind::Individual)
