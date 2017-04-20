@@ -14,7 +14,10 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
             for p in i.patches
                 ## cycle individuals
                 offspring = []
+                counter=0
                 for j in p.community # individuals are sorted according to their phenologies
+                    counter+=1
+                    println(counter)
                     println(size(p.community,1))
                     j.isnew && evaluate_environment(p,j)
                     germinate(j)
@@ -22,6 +25,7 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
                     children=reproduce(j)
                     (size(children,1) > 0) && (append!(offspring,children))
                     disperse(j)
+                    (counter>9) && break
                 end
                 (size(offspring,1) > 0) && (append!(p.community,offspring))
                 ## /ind cycle
