@@ -13,10 +13,12 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
             ## cycle patches on land masses
             for p in i.patches
                 ## cycle individuals
+                offspring = []
                 for j in p.community # individuals are sorted according to their phenologies
+                    j.isnew && evaluate_environment(p,j)
                     germinate(j)
                     mature(j)
-                    reproduce(j)
+                    append!(offspring,reproduce(j))
                     disperse(j)
                 end
                 ## /ind cycle
