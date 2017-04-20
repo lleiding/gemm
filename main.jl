@@ -15,6 +15,7 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
                 ## cycle individuals
                 offspring = []
                 for j in p.community # individuals are sorted according to their phenologies
+                    println(size(p.community,1))
                     j.isnew && evaluate_environment(p,j)
                     germinate(j)
                     mature(j)
