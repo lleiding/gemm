@@ -24,9 +24,9 @@ type Individual
     fitness::Float64 # reproduction scaling factor representing life history
     stage::String # demographic stage of individual
     isnew::Bool # indicator whether individual is new to a patch
-    noff::Float64 # mean number of offspring
-    pgerm::Float64 # probability of germination
-    pmat::FLoat64 # probability of maturation
+    noff::Float64 # mean number of offspring GENE
+    pgerm::Float64 # probability of germination GENE
+    pmat::FLoat64 # probability of maturation GENE
 end
 
 type Patch
