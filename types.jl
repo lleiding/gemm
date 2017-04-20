@@ -74,8 +74,8 @@ end
 
 function reproduce(ind::Individual)
     ## genetic "fitness"!
-    offspring = []
     if ind.stage == "adult"
+        offspring = []
         noff = rand(Poisson(ind.noff))
         for i in 1:noff
             child = ind
@@ -83,8 +83,8 @@ function reproduce(ind::Individual)
             child.stage = "seed"
             push!(offspring, child)
         end
+        return offspring
     end
-    return offspring
 end
 
 function disperse(ind::Individual)
