@@ -25,6 +25,8 @@ type Individual
     stage::String # demographic stage of individual
     isnew::Bool # indicator whether individual is new to a patch
     noff::Float64 # mean number of offspring
+    pgerm::Float64 # probability of germination
+    pmat::FLoat64 # probability of maturation
 end
 
 type Patch
@@ -57,7 +59,7 @@ end
 
 function germinate(ind::Individual)
     ind.isnew = false
-    if ind.stage == "seed"
+    if (ind.stage == "seed") && (rand() <= ind.pgerm) 
         ind.stage = "juvenile"
     end
     ## decide activation/inactivation of alleles here!
@@ -65,7 +67,7 @@ end
 
 function mature(ind::Individual)
     ## consider alleles for survival etc.!
-    if ind.stage == "juvenile"
+    if (ind.stage == "juvenile") && (rand() <= ind.pmat) 
         ind.stage = "adult"
     end
 end
@@ -74,7 +76,8 @@ function reproduce(ind::Individual)
     ## genetic "fitness"!
     offspring = []
     if ind.stage == "adult"
-        for i in 1:ind.noff
+        noff = rand(Poisson(ind.noff))
+        for i in 1:noff
             child = ind
             child.isnew = true
             child.stage = "seed"
