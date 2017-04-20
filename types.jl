@@ -26,7 +26,7 @@ type Individual
     isnew::Bool # indicator whether individual is new to a patch
     noff::Float64 # mean number of offspring GENE
     pgerm::Float64 # probability of germination GENE
-    pmat::FLoat64 # probability of maturation GENE
+    pmat::Float64 # probability of maturation GENE
 end
 
 type Patch
