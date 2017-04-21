@@ -23,7 +23,7 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
                     germinate(j)
                     mature(j)
                     children=reproduce(j)
-                    append!(offspring,children)
+                    (children!=nothing) && (append!(offspring,children))
                     disperse(j)
                     (counter>9) && break
                 end
@@ -34,10 +34,10 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
             ## /patch cycle
         end
         ## /island cycle
-        (t%50 == 0) && println(t)
+        (t%10 == 0) && println(t)
     end
     ## /time cycle
 end
 
-oneisland=[Island([Patch([Individual([],[],1,"seed",true,5,0.5,0.5,false)],1,1,1)])]
-run_simulation(1000, oneisland)
+oneisland=[Island([Patch([Individual([],[],1,"seed",true,5,0.5,0.5,0.5,false)],1,1,1)])]
+run_simulation(100, oneisland)

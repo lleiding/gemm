@@ -27,6 +27,7 @@ type Individual
     noff::Float64 # mean number of offspring GENE
     pgerm::Float64 # probability of germination GENE
     pmat::Float64 # probability of maturation GENE
+    pdie::Float64 # probability of dying GENE
     dead::Bool # is individual dead?
 end
 
@@ -59,15 +60,18 @@ function evaluate_environment(patch::Patch,ind::Individual)
 end
 
 function germinate(ind::Individual)
+    ind.dead && return
     ind.isnew = false
     if (ind.stage == "seed") && (rand() <= ind.pgerm) 
         ind.stage = "juvenile"
     end
     ## decide activation/inactivation of alleles here!
+    (rand() <= ind.pdie) && (ind.dead = true)
 end
 
 function mature(ind::Individual)
     ## consider alleles for survival etc.!
+    ind.dead && return
     if (ind.stage == "juvenile") && (rand() <= ind.pmat) 
         ind.stage = "adult"
     end
@@ -75,21 +79,23 @@ end
 
 function reproduce(ind::Individual)
     ## genetic "fitness"!
+    ind.dead && return []
     offspring = []
     if ind.stage == "adult"
         noff = rand(Poisson(ind.noff))
         for i in 1:noff
-            child = ind
+            child = deepcopy(ind)
             child.isnew = true
             child.stage = "seed"
             push!(offspring, child)
         end
     end
-    return offspring
+    offspring
 end
 
 function disperse(ind::Individual)
     ## consider genetics!
+    ind.dead && return
     if !ind.isnew
     end
 ##    ind.isnew = true
