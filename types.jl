@@ -27,6 +27,7 @@ type Individual
     noff::Float64 # mean number of offspring GENE
     pgerm::Float64 # probability of germination GENE
     pmat::Float64 # probability of maturation GENE
+    dead::Bool # is individual dead?
 end
 
 type Patch
