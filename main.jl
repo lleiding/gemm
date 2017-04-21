@@ -15,17 +15,16 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
                 ## cycle individuals
                 offspring = []
                 counter=0
+                println(size(p.community,1))
                 for j in p.community # individuals are sorted according to their phenologies
                     counter+=1
-                    println(counter)
-                    println(size(p.community,1))
                     j.isnew && evaluate_environment(p,j)
                     germinate(j)
                     mature(j)
                     children=reproduce(j)
                     (children!=nothing) && (append!(offspring,children))
                     disperse(j)
-                    (counter>9) && break
+                    (counter>20) && (j.dead=true)
                 end
                 deleteat!(p.community,find(x -> x.dead,p.community))
                 append!(p.community,offspring)
@@ -34,10 +33,10 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
             ## /patch cycle
         end
         ## /island cycle
-        (t%10 == 0) && println(t)
+        (t%10 == 0) && println("t=",t," ##################")
     end
     ## /time cycle
 end
 
-oneisland=[Island([Patch([Individual([],[],1,"seed",true,5,0.5,0.5,0.5,false)],1,1,1)])]
+oneisland=[Island([Patch([Individual([],[],1,"seed",true,5,0.3,0.3,0.1,false)],1,1,1)])]
 run_simulation(100, oneisland)
