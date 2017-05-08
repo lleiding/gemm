@@ -98,6 +98,7 @@ function disperse(ind::Individual)
     ind.dead && return
     if !ind.isnew
     end
-##    ind.isnew = true
+    ##    ind.isnew = true
 end
 
+end
