@@ -19,12 +19,12 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
                 println(size(p.community, 1)) # testing
                 for j in eachindex(p.community) # individuals are sorted according to their phenologies
                     counter += 1 # for testing
-                    p.community[j].isnew && evalenv(p, p.community[j])
-                    germinate(p.community[j])
-                    mature(p.community[j])
+                    p.community[j].isnew && evalenv!(p, p.community[j])
+                    germinate!(p.community[j])
+                    mature!(p.community[j])
                     children = reproduce(p.community[j])
                     (children!=nothing) && (append!(offspring, children))
-                    disperse(p.community[j])
+                    disperse!(p.community[j])
                     (counter>20) && (p.community[j].dead = true) # for testing
                 end
                 deleteat!(p.community, find(x -> x.dead, p.community))

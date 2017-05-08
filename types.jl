@@ -33,7 +33,7 @@ type Individual
 end
 
 type Patch
-    community::Array{Individual,1} # holds the population (1D) of present species (2nd D)
+    community::Array{Individual,1} # holds the population (1D) of prob not: present species (2nd D)
     altitude::Float64 # altitude: corresponds to T
     nichea::Float64 # additional niches,
     nicheb::Float64 # e.g. precipitation
@@ -46,21 +46,21 @@ end
 
 ## methods:
 
-function mutate(gene::Gene, temp::Float64, p::Float64)
+function mutate!(gene::Gene, temp::Float64, p::Float64)
     for i in eachindex(gene.sequence)
         (rand() < temp*p) && (gene.sequence[i]=rand(collect("acgt"),1)[1]) # for now, but consider indels!
     end
 end
 
-function recombinate(chromosome::Chromosome)
+function recombinate!(chromosome::Chromosome)
 end
 
 ## following: act @ population/community level?
 
-function evalenv(patch::Patch,ind::Individual)
+function evalenv!(patch::Patch,ind::Individual)
 end
 
-function germinate(ind::Individual)
+function germinate!(ind::Individual)
     ind.dead && return
     ind.isnew = false
     if (ind.stage == "seed") && (rand() <= ind.pgerm) 
@@ -70,7 +70,7 @@ function germinate(ind::Individual)
     (rand() <= ind.pdie) && (ind.dead = true)
 end
 
-function mature(ind::Individual)
+function mature!(ind::Individual)
     ## consider alleles for survival etc.!
     ind.dead && return
     if (ind.stage == "juvenile") && (rand() <= ind.pmat) 
