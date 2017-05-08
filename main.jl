@@ -1,7 +1,8 @@
 #!/usr/bin/env julia
 
 include("types.jl")
-using GeneInds
+using GeneInds: Island, Patch, Individual, evaluate_environment, germinate, mature,
+    reproduce, disperse
 
 using Distributions
 
@@ -14,17 +15,17 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
             for p in i.patches
                 ## cycle individuals
                 offspring = []
-                counter = 0
-                println(size(p.community, 1))
-                for j in p.community # individuals are sorted according to their phenologies
+                counter = 0 # testing
+                println(size(p.community, 1)) # testing
+                for j in eachindex(p.community) # individuals are sorted according to their phenologies
                     counter += 1 # for testing
-                    j.isnew && evaluate_environment(p, j)
-                    germinate(j)
-                    mature(j)
-                    children = reproduce(j)
+                    j.isnew && evaluate_environment(p, p.community[j])
+                    germinate(p.community[j])
+                    mature(p.community[j])
+                    children = reproduce(p.community[j])
                     (children!=nothing) && (append!(offspring, children))
-                    disperse(j)
-                    (counter>20) && (j.dead = true) # for testing
+                    disperse(p.community[j])
+                    (counter>20) && (p.community[j].dead = true) # for testing
                 end
                 deleteat!(p.community, find(x -> x.dead, p.community))
                 append!(p.community, offspring)
