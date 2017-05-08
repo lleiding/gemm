@@ -1,7 +1,7 @@
 #!/usr/bin/env julia
 
 include("types.jl")
-using GeneInds: Island, Patch, Individual, evaluate_environment, germinate, mature,
+using GeneInds: Island, Patch, Individual, evalenv, germinate, mature,
     reproduce, disperse
 
 using Distributions
@@ -19,7 +19,7 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
                 println(size(p.community, 1)) # testing
                 for j in eachindex(p.community) # individuals are sorted according to their phenologies
                     counter += 1 # for testing
-                    p.community[j].isnew && evaluate_environment(p, p.community[j])
+                    p.community[j].isnew && evalenv(p, p.community[j])
                     germinate(p.community[j])
                     mature(p.community[j])
                     children = reproduce(p.community[j])

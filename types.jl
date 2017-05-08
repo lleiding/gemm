@@ -5,6 +5,7 @@ module GeneInds
 
 using Distributions
 
+
 ## Types:
 
 type Gene
@@ -56,7 +57,7 @@ end
 
 ## following: act @ population/community level?
 
-function evaluate_environment(patch::Patch,ind::Individual)
+function evalenv(patch::Patch,ind::Individual)
 end
 
 function germinate(ind::Individual)
