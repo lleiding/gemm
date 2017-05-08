@@ -1,7 +1,7 @@
 #!/usr/bin/env julia
 
 include("types.jl")
-using GeneInds: Island, Patch, Individual, evalenv, germinate, mature,
+using GeneInds: Island, Patch, Individual, evalenv!, germinate!, mature!,
     reproduce, disperse
 
 using Distributions
@@ -24,7 +24,7 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
                     mature!(p.community[j])
                     children = reproduce(p.community[j])
                     (children!=nothing) && (append!(offspring, children))
-                    disperse!(p.community[j])
+                    disperse(p.community[j])
                     (counter>20) && (p.community[j].dead = true) # for testing
                 end
                 deleteat!(p.community, find(x -> x.dead, p.community))
