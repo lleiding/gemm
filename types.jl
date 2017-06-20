@@ -95,11 +95,14 @@ function reproduce(ind::Individual)
 end
 
 function disperse(ind::Individual)
-    ## consider genetics!
+    ## consider genetics + life history!
     ind.dead && return
-    if !ind.isnew
+    if ind.isnew
+        ind.isnew = false
+        return
+    else
+        ind.isnew = true
     end
-    ##    ind.isnew = true
 end
 
 end
