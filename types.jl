@@ -95,7 +95,9 @@ function reproduce(ind::Individual)
 end
 
 function disperse(ind::Individual)
-    ## consider genetics + life history!
+    ## consider genetics + life history! PLUS: investigate effects!!
+    ## direction random, because no information
+    
     ind.dead && return
     if ind.isnew
         ind.isnew = false
