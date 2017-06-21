@@ -95,8 +95,10 @@ function reproduce(ind::Individual)
 end
 
 function disperse(ind::Individual)
-    ## consider genetics + life history! PLUS: investigate effects!!
+    ## consider genetics + life history! PLUS: investigate effects - which matters more?
     ## direction random, because no information
+    ## mybe stop at patch better than origin?
+    ## genes for prob. and dist.
     
     ind.dead && return
     if ind.isnew
