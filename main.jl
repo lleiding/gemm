@@ -25,6 +25,10 @@ function run_simulation(maxt::Int, islands::Array{Island,1})
                     children = reproduce(p.community[j])
                     (children!=nothing) && (append!(offspring, children))
                     direction = disperse!(p.community[j])
+                    ## check if direction contains value
+                    ## kill ind, if it does
+                    ## add to origin coordinates
+                    ## copy individual there
                     (counter>20) && (p.community[j].dead = true) # for testing
                 end
                 deleteat!(p.community, find(x -> x.dead, p.community))
