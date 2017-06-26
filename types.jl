@@ -31,8 +31,8 @@ type Individual
     pmat::Gene # probability of maturation GENE
     pdie::Gene # probability of dying GENE
 
-    pdist::Gene # probability of dispersal
-    ddist::Gene # Dispersal distance: radius around origin patch, destination random
+    pdisp::Gene # probability of dispersal
+    ddisp::Gene # Dispersal distance: radius around origin patch, destination random
 
     met::Gene # metabolic property
     
@@ -100,7 +100,7 @@ function reproduce(ind::Individual)
     offspring
 end
 
-function disperse(ind::Individual)
+function disperse!(ind::Individual)
     ## consider genetics + life history! PLUS: investigate effects - which matters more?
     ## direction random, because no information
     ## maybe stop at patch better than origin?
@@ -113,6 +113,12 @@ function disperse(ind::Individual)
     end
     (rand() > ind.pdisp) && return # abort if no dispersal rolled
     ind.isnew = true
+    ydir,xdir = 0,0
+    pydist=sqrt(xdir²+ydir²)
+    while (pydist > ind.ddisp) || (pydist == 0)
+        ydir,xdir = rand(0:ind.ddisp),rand(0:ind.ddisp)
+    end
+    ydir,xdir # return direction vector: y,x
 end
 
 end
