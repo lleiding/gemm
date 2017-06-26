@@ -10,11 +10,10 @@ using Distributions
 
 type Gene
     sequence::String # contains gene base code
-    codes::String # function of the gene
     value::Float64 # numerical effect of function
 end
 
-type Chromosome
+type Chromosome # placeholder, not used for now
     genes::Array{Gene,1} # 1D array of genes
     origin::Bool # parental origin of chromosome (paternal/maternal)
 end
@@ -25,11 +24,16 @@ type Individual
     fitness::Float64 # reproduction scaling factor representing life history
     stage::String # demographic stage of individual
     isnew::Bool # indicator whether individual is new to a patch
-    noff::Float64 # mean number of offspring GENE
-    pgerm::Float64 # probability of germination GENE
-    pmat::Float64 # probability of maturation GENE
-    pdie::Float64 # probability of dying GENE
     dead::Bool # is individual dead?
+    
+    noff::Gene # mean number of offspring GENE
+    pgerm::Gene # probability of germination GENE
+    pmat::Gene # probability of maturation GENE
+    pdie::Gene # probability of dying GENE
+
+    pdist::Gene # probability of dispersal
+    ddist::Gene # Dispersal distance: radius around origin patch, destination random
+    
 end
 
 type Patch
@@ -40,7 +44,7 @@ type Patch
 end
 
 type Island
-    patches::Array{Patch,1}
+    patches::Array{Patch,2} # 2D grid
 end
 
 
