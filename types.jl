@@ -114,9 +114,10 @@ function disperse!(ind::Individual)
     (rand() > ind.pdisp) && return # abort if no dispersal rolled
     ind.isnew = true
     ydir,xdir = 0,0
-    pydist=sqrt(xdir²+ydir²)
+    pydist=sqrt(xdir^2+ydir^2)
     while (pydist > ind.ddisp) || (pydist == 0)
-        ydir,xdir = rand(0:ind.ddisp),rand(0:ind.ddisp)
+        ydir,xdir = rand(-ind.ddisp:ind.ddisp),rand(-ind.ddisp:ind.ddisp)
+        pydist=sqrt(xdir^2+ydir^2)
     end
     ydir,xdir # return direction vector: y,x
 end
