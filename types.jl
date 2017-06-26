@@ -21,7 +21,7 @@ end
 type Individual
     genome::Array{Chromosome,1} # genome = 2D array of chromosomes (>=1 sets)
     gamete::Array{Chromosome,1} # gamete = 2D array of chromosomes (>=0 sets)
-    fitness::Float64 # reproduction scaling factor representing life history
+    fitness::Float64 # reproduction etc. scaling factor representing life history
     stage::String # demographic stage of individual
     isnew::Bool # indicator whether individual is new to a patch
     dead::Bool # is individual dead?
@@ -33,6 +33,8 @@ type Individual
 
     pdist::Gene # probability of dispersal
     ddist::Gene # Dispersal distance: radius around origin patch, destination random
+
+    met::Gene # metabolic property
     
 end
 
@@ -101,16 +103,16 @@ end
 function disperse(ind::Individual)
     ## consider genetics + life history! PLUS: investigate effects - which matters more?
     ## direction random, because no information
-    ## mybe stop at patch better than origin?
+    ## maybe stop at patch better than origin?
     ## genes for prob. and dist.
     
     ind.dead && return
     if ind.isnew
         ind.isnew = false
         return
-    else
-        ind.isnew = true
     end
+    (rand() > ind.pdisp) && return # abort if no dispersal rolled
+    ind.isnew = true
 end
 
 end
