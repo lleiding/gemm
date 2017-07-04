@@ -34,7 +34,10 @@ type Individual
     pdisp::Gene # probability of dispersal
     ddisp::Gene # Dispersal distance: radius around origin patch, destination random
 
-    met::Gene # metabolic property
+    ## metabolic properties:
+    ## bodysizes at different life stages
+    ## normalisation coefficients for biological rates
+    ## (reproduction, growth,...) <-see above!
     
 end
 
@@ -105,6 +108,10 @@ function disperse!(ind::Individual)
     ## direction random, because no information
     ## maybe stop at patch better than origin?
     ## genes for prob. and dist.
+    ##
+    ## Dispersal modes:
+    ## Dispersal kernel for plants (wind dispersed)
+    ## For insects: ?? behaviour-explicit?
     
     ind.dead && return
     if ind.isnew
