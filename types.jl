@@ -5,26 +5,29 @@ module GeneInds
 
 using Distributions
 
+## Global(?) variables/constants:
+## sdmut: mutation standard deviation
+
 
 ## Types:
 
-type Gene
+type Gene # really need new type?
     sequence::String # contains gene base code
     value::Float64 # numerical effect of function
 end
 
-type Chromosome # placeholder, not used for now
-    genes::Array{Gene,1} # 1D array of genes
-    origin::Bool # parental origin of chromosome (paternal/maternal)
-end
+# type Chromosome # placeholder, not used for now
+#     genes::Array{Gene,1} # 1D array of genes
+#     origin::Bool # parental origin of chromosome (paternal/maternal)
+# end
 
 type Individual
-    genome::Array{Chromosome,1} # genome = 2D array of chromosomes (>=1 sets)
-    gamete::Array{Chromosome,1} # gamete = 2D array of chromosomes (>=0 sets)
+    # genome::Array{Chromosome,1} # genome = 2D array of chromosomes (>=1 sets)
+    # gamete::Array{Chromosome,1} # gamete = 2D array of chromosomes (>=0 sets)
     fitness::Float64 # reproduction etc. scaling factor representing life history
     stage::String # demographic stage of individual
-    isnew::Bool # indicator whether individual is new to a patch
-    dead::Bool # is individual dead?
+    isnew::Bool # indicator whether individual is new to a patch or has already dispersed etc.
+    dead::Bool # is individual dead? if needed...
     
     noff::Gene # mean number of offspring GENE
     pgerm::Gene # probability of germination GENE
@@ -34,6 +37,7 @@ type Individual
     pdisp::Gene # probability of dispersal
     ddisp::Gene # Dispersal distance: radius around origin patch, destination random
 
+    pmut::Gene # mutation probability
     ## metabolic properties:
     ## bodysizes at different life stages
     ## normalisation coefficients for biological rates
@@ -48,7 +52,7 @@ type Patch
     nicheb::Float64 # e.g. precipitation
 end
 
-type Island
+type Island # needs new type?
     patches::Array{Patch,2} # 2D grid
 end
 
@@ -57,7 +61,10 @@ end
 
 function mutate!(gene::Gene, temp::Float64, p::Float64)
     for i in eachindex(gene.sequence)
-        (rand() < temp*p) && (gene.sequence[i]=rand(collect("acgt"),1)[1]) # for now, but consider indels!
+        if (rand() < temp*p)
+            gene.sequence[i] = rand(collect("acgt"),1)[1] # for now, but consider indels!
+            gene.value = rand(Normal(gene.value, sdmut)) # new value for gene function
+        end
     end
 end
 
@@ -110,7 +117,7 @@ function disperse!(ind::Individual)
     ## genes for prob. and dist.
     ##
     ## Dispersal modes:
-    ## Dispersal kernel for plants (wind dispersed)
+    ## Dispersal kernel for plants (wind dispersed), maybe only in 1 direction?
     ## For insects: ?? behaviour-explicit?
     
     ind.dead && return
