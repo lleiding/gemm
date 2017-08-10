@@ -138,13 +138,33 @@ function disperse!(ind::Individual)
     ydir,xdir # return direction vector: y,x
 end
 
+function getDirection(distances::Distribution) ## check what's right!
+    ydir,xdir = 0,0
+    distance = rand(distances)
+    pydist=sqrt(xdir^2+ydir^2)
+    while (pydist > distance) || (pydist == 0)
+        ydir,xdir = rand(-distance:distance),rand(-distance:distance)
+        pydist=sqrt(xdir^2+ydir^2)
+    end
+    ydir,xdir # return direction vector: y,x
+end
+
 ## framework for functions:
 ##(world:World)
+function disperse!(world::World)
 for p in world.patches # given world contains patches
-    i = 1
+    i = 0
     ##(p:Patch)
-    while i <= size(p.community,1) # alternatively length
-        ## do something with i
+    while i < size(p.community,1) # alternatively length
+        i += 1
+        ## decide on dispersal:
+        p.community[i].isnew && continue
+        p.community[i].isnew = true
+        (rand > p.community[i].pdisp) && continue
+        xdir,ydir = getDirection(p.community[i].ddisp)
+        #push ind to new patch
+        splice!(p.community,i) # and delete it in current community
+        i -= 1 # reset counter
     end
 end
 
