@@ -1,6 +1,8 @@
 #!/usr/bin/env julia
 ## contains all custom types necessary for eco-evo-env speciation island model
 
+## NOTE: all functions: make methods for ind/pop/island/world level!!!!
+
 module GeneInds
 
 using Distributions
@@ -68,8 +70,8 @@ function mutate!(gene::Gene, temp::Float64, p::Float64)
     end
 end
 
-function recombinate!(chromosome::Chromosome)
-end
+# function recombinate!(chromosome::Chromosome)
+# end
 
 ## following: act @ population/community level?
 
@@ -94,7 +96,7 @@ function mature!(ind::Individual)
     end
 end
 
-function reproduce(ind::Individual)
+function reproduce(ind::Individual) # make two functions: one for number of offspring, second to create offspring?!
     ## genetic "fitness"!
     ind.dead && return []
     offspring = []
@@ -134,6 +136,16 @@ function disperse!(ind::Individual)
         pydist=sqrt(xdir^2+ydir^2)
     end
     ydir,xdir # return direction vector: y,x
+end
+
+## framework for functions:
+##(world:World)
+for p in world.patches # given world contains patches
+    i = 1
+    ##(p:Patch)
+    while i <= size(p.community,1) # alternatively length
+        ## do something with i
+    end
 end
 
 end
