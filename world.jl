@@ -6,6 +6,8 @@
 
 ## TODO: different data type for discriminating mainland and islands
 
+module Archipelago
+
 function createWorld(sizex::Int64,sizey::Int64,mainland::Int64,isolation::Int64)
     world = zeros(Float64,sizey,sizex)
     world[:,1:mainland] = 1 # TODO: sensible rule
@@ -18,4 +20,6 @@ function updateWorld(world::Array{Float64,2},mainland::Int64,isolation::Int64)
     x = rand((mainland+isolation):sizex)
     y = rand(1:sizey)
     world[y,x] += 1 # TODO: different heights/rule
+end
+
 end
