@@ -11,10 +11,11 @@ module Archipelago
 function createWorld(sizex::Int64,sizey::Int64,mainland::Int64,isolation::Int64)
     world = zeros(Float64,sizey,sizex)
     world[:,1:mainland] = 1 # TODO: sensible rule
+    world
 end
 
 ## create and raise islands
-function spawnIsland(world::Array{Float64,2},mainland::Int64,isolation::Int64)
+function spawnIsland!(world::Array{Float64,2},mainland::Int64,isolation::Int64)
     sizex = size(world,2)
     sizey = size(world,1)
     x = rand((mainland+isolation):sizex)
@@ -26,7 +27,10 @@ function spawnIsland(world::Array{Float64,2},mainland::Int64,isolation::Int64)
     end
 end
 
-function raiseIsland(world::Array{Float64,2},x::Int64,y::Int64,mainland)
+function raiseIsland!(world::Array{Float64,2},x::Int64,y::Int64,mainland)
     if (x == 0) || (y == 0)
-        
+        ## find island and raise it
+    end
+    ## find island borders (x and y start and end)
+    world[starty:endy,startx:endx] += 1
 end
