@@ -14,12 +14,19 @@ function createWorld(sizex::Int64,sizey::Int64,mainland::Int64,isolation::Int64)
 end
 
 ## create and raise islands
-function updateWorld(world::Array{Float64,2},mainland::Int64,isolation::Int64)
+function spawnIsland(world::Array{Float64,2},mainland::Int64,isolation::Int64)
     sizex = size(world,2)
     sizey = size(world,1)
     x = rand((mainland+isolation):sizex)
     y = rand(1:sizey)
-    world[y,x] += 1 # TODO: different heights/rule
+    if world[y,x] == 0
+        world[y,x] += 1 # TODO: different heights/rule or maybe do it in fact every time, creating more complex islands
+    else
+        raiseIsland(world,x,y,mainland)
+    end
 end
 
+function raiseIsland(world::Array{Float64,2},x::Int64,y::Int64,mainland)
+    if (x == 0) || (y == 0)
+        
 end
