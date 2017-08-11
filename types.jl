@@ -54,7 +54,7 @@ type Patch
     nicheb::Float64 # e.g. precipitation
 end
 
-type Island # needs new type?
+type Island # needs new type? -> rather world
     patches::Array{Patch,2} # 2D grid
 end
 
@@ -75,7 +75,7 @@ end
 
 ## following: act @ population/community level?
 
-function evalenv!(patch::Patch,ind::Individual)
+function evalenv!(patch::Patch,ind::Individual) # necessary or happening all the time? what about changes?
 end
 
 function germinate!(ind::Individual)
