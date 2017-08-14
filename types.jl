@@ -32,27 +32,31 @@ end
     
 
 type Individual
-    # genome::Array{Chromosome,1} # genome = 2D array of chromosomes (>=1 sets)
-    # gamete::Array{Chromosome,1} # gamete = 2D array of chromosomes (>=0 sets)
-    fitness::Float64 # reproduction etc. scaling factor representing life history
+    genome::Array{Chromosome,1} # genome = 2D array of chromosomes (>=1 sets)
+    traits::Array{Trait,1}
+
     stage::String # demographic stage of individual
     isnew::Bool # indicator whether individual is new to a patch or has already dispersed etc.
-    dead::Bool # is individual dead? if needed...
-    
-    noff::Gene # mean number of offspring GENE
-    pgerm::Gene # probability of germination GENE
-    pmat::Gene # probability of maturation GENE
-    pdie::Gene # probability of dying GENE
 
-    pdisp::Gene # probability of dispersal
-    ddisp::Gene # Dispersal distance: radius around origin patch, destination random
+    ## Traits:
+    # noff::Gene # mean number of offspring GENE
+    # pgerm::Gene # probability of germination GENE
+    # pmat::Gene # probability of maturation GENE
+    # pdie::Gene # probability of dying GENE
 
-    pmut::Gene # mutation probability
+    # pdisp::Gene # probability of dispersal
+    # ddisp::Gene # Dispersal distance: radius around origin patch, destination random
+
+    # pmut::Gene # mutation probability
     ## metabolic properties:
     ## bodysizes at different life stages
     ## normalisation coefficients for biological rates
     ## (reproduction, growth,...) <-see above!
-    
+
+    ## maybe necessary stuff/expansions:
+    # gamete::Array{Chromosome,1} # gamete = 2D array of chromosomes (>=0 sets)    
+    # fitness::Float64 # reproduction etc. scaling factor representing life history
+    # dead::Bool # is individual dead? if needed...
 end
 
 type Patch
