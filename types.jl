@@ -14,6 +14,7 @@ using Distributions
 ## Types:
 
 type Trait
+    name::String
     value::Float64 # numerical value
 ##    strength::Float64 # mutation strength
 end
