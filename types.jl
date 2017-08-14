@@ -13,15 +13,22 @@ using Distributions
 
 ## Types:
 
-type Gene # really need new type?
-    sequence::String # contains gene base code
-    value::Float64 # numerical effect of function
+type Trait
+    value::Float64 # numerical value
+##    strength::Float64 # mutation strength
 end
 
-# type Chromosome # placeholder, not used for now
-#     genes::Array{Gene,1} # 1D array of genes
-#     origin::Bool # parental origin of chromosome (paternal/maternal)
-# end
+type Gene # really need new type?
+    sequence::String # contains gene base code
+    id::String # gene identifier
+    codes::Array{Trait,1}
+end
+
+type Chromosome # placeholder, not used for now # maybe implement as just array
+    genes::Array{Gene,1} # 1D array of genes
+##    origin::Bool # parental origin of chromosome (paternal/maternal)
+end
+    
 
 type Individual
     # genome::Array{Chromosome,1} # genome = 2D array of chromosomes (>=1 sets)
@@ -61,11 +68,13 @@ end
 
 ## methods:
 
-function mutate!(gene::Gene, temp::Float64, p::Float64)
+function mutate!(gene::Gene, temp::Float64, prob::Float64) # or maybe just rare mutation events, where random bp mutates?
     for i in eachindex(gene.sequence)
-        if (rand() < temp*p)
+        if (rand() < temp*prob)
             gene.sequence[i] = rand(collect("acgt"),1)[1] # for now, but consider indels!
-            gene.value = rand(Normal(gene.value, sdmut)) # new value for gene function
+            for trait in gene.codes
+                trait.value += rand(Normal(0, trait.strength)) # new value for trait
+            end
         end
     end
 end
