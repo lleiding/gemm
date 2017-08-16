@@ -37,7 +37,8 @@ type Individual
 
     stage::String # demographic stage of individual
     isnew::Bool # indicator whether individual is new to a patch or has already dispersed etc.
-
+    fitness::Float64 # reproduction etc. scaling factor representing life history
+    size::Float64 # body size/mass -> may replace stage.
     ## Traits:
     # noff::Gene # mean number of offspring GENE
     # pgerm::Gene # probability of germination GENE
@@ -55,7 +56,7 @@ type Individual
 
     ## maybe necessary stuff/expansions:
     # gamete::Array{Chromosome,1} # gamete = 2D array of chromosomes (>=0 sets)    
-    # fitness::Float64 # reproduction etc. scaling factor representing life history
+
     # dead::Bool # is individual dead? if needed...
 end
 
