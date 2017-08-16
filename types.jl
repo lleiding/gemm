@@ -80,6 +80,12 @@ function compete!(patch::Patch)
     end
 end
 
+function reproduce(patch::Patch)
+    idx = 1
+    while idx <= size(patch.community,1)
+    end
+end
+
 function mutate!(gene::Gene, temp::Float64, prob::Float64) # or maybe just rare mutation events, where random bp mutates?
     for i in eachindex(gene.sequence)
         if (rand() < temp*prob)
