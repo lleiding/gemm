@@ -182,4 +182,60 @@ for p in world.patches # given world contains patches
     end
 end
 
+function createtraits(traitnames::Array{String,1})
+    traits = Trait[]
+    for name in traitnames
+        push!(traits,Trait(name,rand()))
+    end
+    traits
+end
+
+function creategenes(ngenes::Int64,traits::Array{Trait,1})
+    genes = Gene[]
+    for gene in 1:ngenes
+        sequence = "acgt"^5 # arbitrary start sequence
+        id = randstring(8)
+        codes = Trait[]
+        append!(codes,rand(traits,rand(Poisson(0.5))))
+        push!(genes,Gene(sequence,id,codes))
+    end
+    genes
+end
+
+function createchrs(nchrs::Int64,genes::Array{Gene,1})
+    ngenes=size(genes,1)
+    if nchrs>1
+        chrsplits = sort(rand(1:ngenes,nchrs-1))
+        chromosomes = Chromosome[]
+        for chr in 1:nchrs
+            if chr==1 # first chromosome
+                push!(chromosomes, Chromosome(genes[1:chrsplits[chr]]))
+            elseif chr==nchrs # last chromosome
+                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):end]))
+            else
+                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):chrsplits[chr]]))
+            end
+        end
+    else # only one chromosome
+        chromosomes = [Chromosome(genes)]
+    end
+    chromosomes
+end
+
+function genesis(ninds::Int64=100, maxgenes::Int64=20, maxchrs::Int64=5,
+                 traitnames::Array{String,1} = ["pdisp","ddisp"]) # arbitrary traitnames for testing
+    community = Individual[]
+    for ind in 1:ninds
+        ngenes = rand(1:maxgenes)
+        nchrs = rand(1:maxchrs)
+        traits = createtraits(traitnames)
+        genes = creategenes(ngenes,traits)
+        chromosomes = createchrs(nchrs,genes)
+        push!(community, Individual(chromosomes,traits,"adult",false))
+    end
+    community
+end
+
+
+    
 end
