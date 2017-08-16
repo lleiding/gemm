@@ -73,6 +73,12 @@ end
 
 
 ## methods:
+function compete!(patch::Patch)
+    while sum(map(x->x.size,patch.community)) > 1 # occupied area larger than available
+        victim = rand(1:size(patch.community,1))
+        splice!(patch.community, victim)
+    end
+end
 
 function mutate!(gene::Gene, temp::Float64, prob::Float64) # or maybe just rare mutation events, where random bp mutates?
     for i in eachindex(gene.sequence)
@@ -224,7 +230,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
 end
 
 function genesis(ninds::Int64=100, maxgenes::Int64=20, maxchrs::Int64=5,
-                 traitnames::Array{String,1} = ["pdisp","ddisp"]) # arbitrary traitnames for testing
+                 traitnames::Array{String,1} = ["pdisp","ddisp","maxsize"]) # arbitrary traitnames for testing
     community = Individual[]
     for ind in 1:ninds
         ngenes = rand(1:maxgenes)
@@ -232,7 +238,8 @@ function genesis(ninds::Int64=100, maxgenes::Int64=20, maxchrs::Int64=5,
         traits = createtraits(traitnames)
         genes = creategenes(ngenes,traits)
         chromosomes = createchrs(nchrs,genes)
-        push!(community, Individual(chromosomes,traits,"adult",false))
+        push!(community, Individual(chromosomes,traits,"adult",false,1.0,
+                                    traits[find(x->x.name=="maxsize",traits)][1].value))
     end
     community
 end
