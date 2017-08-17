@@ -13,61 +13,41 @@ using Distributions
 
 ## Types:
 
-type Trait
+mutable struct Trait
     name::String
     value::Float64 # numerical value
 ##    strength::Float64 # mutation strength
 end
 
-type Gene # really need new type?
+mutable struct Gene # really need new type?
     sequence::String # contains gene base code
     id::String # gene identifier
     codes::Array{Trait,1}
 end
 
-type Chromosome # placeholder, not used for now # maybe implement as just array
+struct Chromosome # placeholder, not used for now # maybe implement as just array
     genes::Array{Gene,1} # 1D array of genes
 ##    origin::Bool # parental origin of chromosome (paternal/maternal)
 end
     
 
-type Individual
+mutable struct Individual
     genome::Array{Chromosome,1} # genome = 2D array of chromosomes (>=1 sets)
     traits::Array{Trait,1}
-
     stage::String # demographic stage of individual
     isnew::Bool # indicator whether individual is new to a patch or has already dispersed etc.
     fitness::Float64 # reproduction etc. scaling factor representing life history
     size::Float64 # body size/mass -> may replace stage.
-    ## Traits:
-    # noff::Gene # mean number of offspring GENE
-    # pgerm::Gene # probability of germination GENE
-    # pmat::Gene # probability of maturation GENE
-    # pdie::Gene # probability of dying GENE
-
-    # pdisp::Gene # probability of dispersal
-    # ddisp::Gene # Dispersal distance: radius around origin patch, destination random
-
-    # pmut::Gene # mutation probability
-    ## metabolic properties:
-    ## bodysizes at different life stages
-    ## normalisation coefficients for biological rates
-    ## (reproduction, growth,...) <-see above!
-
-    ## maybe necessary stuff/expansions:
-    # gamete::Array{Chromosome,1} # gamete = 2D array of chromosomes (>=0 sets)    
-
-    # dead::Bool # is individual dead? if needed...
 end
 
-type Patch
+mutable struct Patch
     community::Array{Individual,1} # holds the population (1D) of prob not: present species (2nd D)
     altitude::Float64 # altitude: corresponds to T
     nichea::Float64 # additional niches,
     nicheb::Float64 # e.g. precipitation
 end
 
-type Island # needs new type? -> rather world
+mutable struct Island # needs new type? -> rather world
     patches::Array{Patch,2} # 2D grid
 end
 
