@@ -93,7 +93,7 @@ function reproduce!(patch::Patch)
                 ind.isnew = true
                 ind.fitness = 1.0 # TODO: function for this! Consider environment!
                 ind.size = ind.traits[find(x->x.name=="seedsize",ind.traits)][1].value
-                #mutate!(ind, patch.temperature)
+                mutate!(ind, patch.temperature)
                 push!(patch.community,ind)
             end
         end
@@ -101,12 +101,22 @@ function reproduce!(patch::Patch)
     end
 end
 
-function mutate!(gene::Gene, temp::Float64, prob::Float64) # or maybe just rare mutation events, where random bp mutates?
-    for i in eachindex(gene.sequence)
-        if (rand() < temp*prob)
-            gene.sequence[i] = rand(collect("acgt"),1)[1] # for now, but consider indels!
-            for trait in gene.codes
-                trait.value += rand(Normal(0, trait.strength)) # new value for trait
+function mutate!(ind::Individual, temp::Float64) # or maybe just rare mutation events, where random bp mutates?
+    temp - 293 > e ? (tempdiff = temp - 293) : (tempdiff = e)# difference to standard temperature
+    prob = ind.traits[find(x->x.name=="pmut",ind.traits)][1].value
+    for chr in ind.genome
+        for gene in chr.genes
+            for i in eachindex(gene.sequence)
+                if rand() < log(tempdiff)*prob
+                    newbase = rand(collect("acgt"),1)[1]
+                    while newbase == gene.sequence[i]
+                        newbase = rand(collect("acgt"),1)[1]
+                    end# for now, but consider indels!
+                    gene.sequence[i] = newbase
+                    for trait in gene.codes
+                        trait.value += rand(Normal(0, trait.strength)) # new value for trait
+                    end
+                end
             end
         end
     end
@@ -251,7 +261,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
 end
 
 function genesis(ninds::Int64=100, maxgenes::Int64=20, maxchrs::Int64=5,
-                 traitnames::Array{String,1} = ["pdisp","ddisp","maxsize"]) # arbitrary traitnames for testing
+                 traitnames::Array{String,1} = ["maxsize","noffspring","pmut","seedsize"]) # minimal required traitnames
     community = Individual[]
     for ind in 1:ninds
         ngenes = rand(1:maxgenes)
