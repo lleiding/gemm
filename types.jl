@@ -16,16 +16,16 @@ using Distributions
 mutable struct Trait
     name::String
     value::Float64 # numerical value
-##    strength::Float64 # mutation strength
+    strength::Float64 # mutation strength
 end
 
-mutable struct Gene # really need new type?
+mutable struct Gene
     sequence::String # contains gene base code
     id::String # gene identifier
     codes::Array{Trait,1}
 end
 
-struct Chromosome # placeholder, not used for now # maybe implement as just array
+struct Chromosome #CAVE! mutable?
     genes::Array{Gene,1} # 1D array of genes
 ##    origin::Bool # parental origin of chromosome (paternal/maternal)
 end
@@ -82,7 +82,7 @@ function reproduce!(patch::Patch)
 end
 
 function mutate!(ind::Individual, temp::Float64) # or maybe just rare mutation events, where random bp mutates?
-    temp - 293 > e ? (tempdiff = temp - 293) : (tempdiff = e)# difference to standard temperature
+    temp - 293 > e ? (tempdiff = temp - 293) : (tempdiff = e) # difference to standard temperature #CAVE!
     prob = ind.traits[find(x->x.name=="pmut",ind.traits)][1].value
     for chr in ind.genome
         for gene in chr.genes
@@ -203,7 +203,7 @@ end
 function createtraits(traitnames::Array{String,1})
     traits = Trait[]
     for name in traitnames
-        push!(traits,Trait(name,rand()))
+        push!(traits,Trait(name,rand(),rand()))
     end
     traits
 end
