@@ -86,9 +86,11 @@ function reproduce!(patch::Patch)
         if patch.community[idx].size >= 0.5 * traits[find(x->x.name=="maxsize",traits)][1].value)
             noffs = rand(Poisson(patch.community[idx].traits[find(x->x.name=="noffspring",patch.community[idx].traits)][1].value))
             for i in 1:noffs
-                ind = Individual(patch.community[idx].genome,patch.community[idx].traits,"seed",true,
-                1.0,patch.community[idx].traits[find(x->x.name=="seedsize",
-                                                     patch.community[idx].traits)][1].value)
+                ind = deepcopy(patch.community[idx])
+                ind.stage = "seed"
+                ind.isnew = true
+                ind.fitness = 1.0 # TODO: function for this! Consider environment!
+                ind.size = ind.traits[find(x->x.name=="seedsize",ind.traits)][1].value
                 mutate!(ind, patch.temperature)
                 push!(patch.community,ind)
             end
