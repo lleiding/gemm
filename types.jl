@@ -20,7 +20,7 @@ mutable struct Trait
 end
 
 mutable struct Gene
-    sequence::String # contains gene base code
+    sequence::Array{Char,1} # contains gene base code
     id::String # gene identifier
     codes::Array{Trait,1}
 end
@@ -73,7 +73,7 @@ function reproduce!(patch::Patch)
                 ind.isnew = true
                 ind.fitness = 1.0 # TODO: function for this! Consider environment!
                 ind.size = ind.traits[find(x->x.name=="seedsize",ind.traits)][1].value
-                mutate!(ind, patch.temperature)
+                mutate!(ind, patch.altitude)
                 push!(patch.community,ind)
             end
         end
@@ -91,10 +91,13 @@ function mutate!(ind::Individual, temp::Float64) # or maybe just rare mutation e
                     newbase = rand(collect("acgt"),1)[1]
                     while newbase == gene.sequence[i]
                         newbase = rand(collect("acgt"),1)[1]
-                    end# for now, but consider indels!
+                    end
                     gene.sequence[i] = newbase
                     for trait in gene.codes
-                        trait.value += rand(Normal(0, trait.strength)) # new value for trait
+                        newvalue = trait.value + rand(Normal(0, trait.strength)) # new value for trait
+                        newvalue > 1 && (newvalue=1)
+                        newvalue < 0 && (newvalue=0)
+                        trait.value = newvalue
                     end
                 end
             end
@@ -105,7 +108,6 @@ end
 # function recombinate!(chromosome::Chromosome)
 # end
 
-## following: act @ population/community level?
 
 function evalenv!(patch::Patch,ind::Individual) # necessary or happening all the time? what about changes?
 end
@@ -211,7 +213,7 @@ end
 function creategenes(ngenes::Int64,traits::Array{Trait,1})
     genes = Gene[]
     for gene in 1:ngenes
-        sequence = "acgt"^5 # arbitrary start sequence
+        sequence = collect("acgt"^5) # arbitrary start sequence
         id = randstring(8)
         codes = Trait[]
         append!(codes,rand(traits,rand(Poisson(0.5))))
@@ -248,7 +250,7 @@ function genesis(ninds::Int64=100, maxgenes::Int64=20, maxchrs::Int64=5,
         nchrs = rand(1:maxchrs)
         traits = createtraits(traitnames)
         genes = creategenes(ngenes,traits)
-        chromosomes = createchrs(nchrs,genes)
+        chromosomes = createchrs(nchrs,genes) # TODO: make sure every trait is controlled by at least 1 gene!
         push!(community, Individual(chromosomes,traits,"adult",false,1.0,
                                     traits[find(x->x.name=="maxsize",traits)][1].value))
     end
@@ -258,3 +260,12 @@ end
 
     
 end
+
+# Test stuff:
+
+
+testpatch=Patch(genesis(),293,0.5,0.5)
+compete!(testpatch)
+size(testpatch.community,1)
+reproduce!(testpatch)
+size(testpatch.community,1)
