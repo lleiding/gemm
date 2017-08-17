@@ -45,3 +45,8 @@ end
 
 oneisland = [Island([Patch([Individual([], [], 1, "seed", true, 5, 0.3, 0.3, 0.1, false)], 1, 1, 1)])]
 run_simulation(100, oneisland)
+
+map(genesis, patches)
+for patch in patches
+    
+    
