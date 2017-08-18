@@ -255,7 +255,7 @@ function genesis(ninds::Int64=100, maxgenes::Int64=20, maxchrs::Int64=5,
         nchrs = rand(1:maxchrs)
         traits = createtraits(traitnames)
         genes = creategenes(ngenes,traits)
-        chromosomes = createchrs(nchrs,genes) # TODO: make sure every trait is controlled by at least 1 gene!
+        chromosomes = createchrs(nchrs,genes)
         push!(community, Individual(chromosomes,traits,"adult",false,1.0,
                                     traits[find(x->x.name=="maxsize",traits)][1].value))
     end
@@ -291,5 +291,5 @@ for trait in traits
     size(testpatch.community,1)
     compete!(testpatch)
     size(testpatch.community,1)
-    reproduce!(testpatch)
+    reproduce!(testpatch) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
     size(testpatch.community,1)
