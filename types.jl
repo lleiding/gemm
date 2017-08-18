@@ -17,6 +17,7 @@ mutable struct Trait
     name::String
     value::Float64 # numerical value
     strength::Float64 # mutation strength
+    codedby::Array{String,1}
 end
 
 mutable struct Gene
@@ -27,9 +28,9 @@ end
 
 struct Chromosome #CAVE! mutable?
     genes::Array{Gene,1} # 1D array of genes
-##    origin::Bool # parental origin of chromosome (paternal/maternal)
+    ##    origin::Bool # parental origin of chromosome (paternal/maternal)
 end
-    
+
 
 mutable struct Individual
     genome::Array{Chromosome,1} # genome = 2D array of chromosomes (>=1 sets)
@@ -81,7 +82,7 @@ function reproduce!(patch::Patch)
     end
 end
 
-function mutate!(ind::Individual, temp::Float64) # or maybe just rare mutation events, where random bp mutates?
+function mutate!(ind::Individual, temp::Float64)
     temp - 293 > e ? (tempdiff = temp - 293) : (tempdiff = e) # difference to standard temperature #CAVE!
     prob = ind.traits[find(x->x.name=="pmut",ind.traits)][1].value
     for chr in ind.genome
@@ -186,26 +187,27 @@ end
 ## framework for functions:
 ##(world:World)
 function disperse!(world::World)
-for p in world.patches # given world contains patches
-    i = 0
-    ##(p:Patch)
-    while i < size(p.community,1) # alternatively length
-        i += 1
-        ## decide on dispersal:
-        p.community[i].isnew && continue
-        p.community[i].isnew = true
-        (rand > p.community[i].pdisp) && continue
-        xdir,ydir = getDirection(p.community[i].ddisp)
-        #push ind to new patch
-        splice!(p.community,i) # and delete it in current community
-        i -= 1 # reset counter
+    for p in world.patches # given world contains patches
+        i = 0
+        ##(p:Patch)
+        while i < size(p.community,1) # alternatively length
+            i += 1
+            ## decide on dispersal:
+            p.community[i].isnew && continue
+            p.community[i].isnew = true
+            (rand > p.community[i].pdisp) && continue
+            xdir,ydir = getDirection(p.community[i].ddisp)
+            #push ind to new patch
+            splice!(p.community,i) # and delete it in current community
+            i -= 1 # reset counter
+        end
     end
 end
 
 function createtraits(traitnames::Array{String,1})
     traits = Trait[]
     for name in traitnames
-        push!(traits,Trait(name,rand(),rand()))
+        push!(traits,Trait(name,rand(),rand(),[]))
     end
     traits
 end
@@ -215,9 +217,12 @@ function creategenes(ngenes::Int64,traits::Array{Trait,1})
     for gene in 1:ngenes
         sequence = collect("acgt"^5) # arbitrary start sequence
         id = randstring(8)
-        codes = Trait[]
-        append!(codes,rand(traits,rand(Poisson(0.5))))
-        push!(genes,Gene(sequence,id,codes))
+        codesfor = Trait[]
+        append!(codesfor,rand(traits,rand(Poisson(0.5))))
+        for trait in codesfor
+            push!(trait.codedby,id) # crossreference!
+        end
+        push!(genes,Gene(sequence,id,codesfor))
     end
     genes
 end
@@ -257,15 +262,34 @@ function genesis(ninds::Int64=100, maxgenes::Int64=20, maxchrs::Int64=5,
     community
 end
 
+function checkviability!(patch::Patch)
+    idx=1
+    while idx <= size(patch.community,1)
+        kill = false
+        for trait in patch.community[idx].traits
+            size(trait.codedby,1) == 0 && (kill = true) # make sure every trait is coded by at least 1 gene
+        end
+        if kill
+            splice!(patch.community,idx) # or else kill it
+            idx -= 1
+        end
+        idx += 1
+    end
+        
+end
 
     
 end
 
 # Test stuff:
 
+for trait in traits
+    
 
-testpatch=Patch(genesis(),293,0.5,0.5)
-compete!(testpatch)
-size(testpatch.community,1)
-reproduce!(testpatch)
-size(testpatch.community,1)
+    testpatch=Patch(genesis(),293,0.5,0.5)
+    checkviability!(testpatch)
+    size(testpatch.community,1)
+    compete!(testpatch)
+    size(testpatch.community,1)
+    reproduce!(testpatch)
+    size(testpatch.community,1)
