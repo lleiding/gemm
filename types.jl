@@ -305,4 +305,4 @@ function testscenario(timesteps::Int64=1000,npatches::Int64=100)
     world
 end
 
-worldstart,worldend = testscnario()
+worldstart,worldend = testscenario()
