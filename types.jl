@@ -281,15 +281,22 @@ end
     
 end
 
-# Test stuff:
+## Test stuff:
+##############
 
-for trait in traits
-    
-
-    testpatch=Patch(genesis(),293,0.5,0.5)
-    checkviability!(testpatch)
-    size(testpatch.community,1)
-    compete!(testpatch)
-    size(testpatch.community,1)
-    reproduce!(testpatch) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
-    size(testpatch.community,1)
+timesteps=1000
+npatches=100
+world=Patch[]
+for patch = 1:npatches
+    push!(world,Patch(genesis(),293,0.5,0.5))
+end
+for i = 1:timesteps
+    for patch = 1:npatches
+        checkviability!(world[patch])
+        #    size(testpatch.community,1)
+        compete!(world[patch])
+        #    size(testpatch.community,1)
+        reproduce!(world[patch]) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
+        #    size(testpatch.community,1)
+    end
+end
