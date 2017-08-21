@@ -286,7 +286,7 @@ end
 
 
 
-function testscenario(timesteps::Int64=1000,npatches::Int64=100)
+function testscenario(timesteps::Int64=100,npatches::Int64=10)
     world=Patch[]
     for patch = 1:npatches
         push!(world,Patch(genesis(),293,0.5,0.5))
