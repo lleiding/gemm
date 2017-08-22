@@ -14,7 +14,7 @@ const normconst = 1e10 # normalization constant to get biologically realistic or
 mutable struct Trait
     name::String
     value::Float64 # numerical value
-    strength::Float64 # mutation strength
+    ##    strength::Float64 # mutation strength
     codedby::Array{String,1}
 end
 
@@ -95,7 +95,7 @@ function mutate!(ind::Individual, temp::Float64)
                     end
                     gene.sequence[i] = newbase
                     for trait in gene.codes
-                        newvalue = trait.value + rand(Normal(0, trait.strength)) # new value for trait
+                        newvalue = trait.value + rand(Normal(0, mutsd)) # new value for trait
                         (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
                         newvalue < 0 && (newvalue=0)
                         trait.value = newvalue
@@ -123,7 +123,7 @@ function grow!(patch::Patch)
     end
 end
     
-# function establish!(patch::Patch) #TODO
+# function establish!(patch::Patch) #TODO!
 #     idx = 1
 #     while idx <= size(patch.community,1)
 #         !patch.community[idx].isnew && continue
@@ -133,15 +133,20 @@ end
 #         idx += 1
 #     end
 # end
-    
+
+#TODO: Dispersal
+
+#TODO: age mortality!
+
+
 
 function createtraits(traitnames::Array{String,1})
     traits = Trait[]
     for name in traitnames
         if contains(name,"rate")
-            push!(traits,Trait(name,rand()*10,rand(),[]))
+            push!(traits,Trait(name,rand()*10,[]))
         else
-            push!(traits,Trait(name,rand(),rand(),[]))
+            push!(traits,Trait(name,rand(),[]))
         end
     end
     traits
@@ -219,16 +224,17 @@ end
 ## Test stuff:
 ##############
 testpatch=Patch(genesis(),293,0.5,0.5,10)
-timesteps=Int64(round(parse(ARGS[1])))
+const timesteps=Int64(round(parse(ARGS[1])))
+const mutsd=parse(ARGS[2])
 for i = 1:timesteps
     checkviability!(testpatch)
     #    size(testpatch.community,1)
     grow!(testpatch)
     compete!(testpatch)
-    println(i,"\t",size(testpatch.community,1))
+#    println(i,"\t",size(testpatch.community,1))
     reproduce!(testpatch) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
 end
-
+println(testpatch)
 
 # function testscenario(timesteps::Int64=100,npatches::Int64=10)
 #     world=Patch[]
