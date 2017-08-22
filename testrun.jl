@@ -251,7 +251,7 @@ for i = 1:timesteps
 #    println(i,"\t",size(testpatch.community,1))
     reproduce!(testpatch) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
 end
-println(testpatch)
+println(testpatch,",",7) # can be read again testpatch,number=include("outfile")
 
 # function testscenario(timesteps::Int64=100,npatches::Int64=10)
 #     world=Patch[]
