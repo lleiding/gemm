@@ -122,6 +122,22 @@ function grow!(patch::Patch)
         idx += 1
     end
 end
+
+function age!(patch::Patch)
+    temp = patch.altitude
+    idx = 1
+    while idx <= size(patch.community,1)
+        ageprob = patch.community[idx].traits[find(x->x.name=="ageprob",patch.community[idx].traits)][1].value
+        mass = patch.community[idx].size
+        dieprob = ageprob * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst
+        if rand() <= dieprob
+            splice!(patch.community, idx)
+            idx -= 1
+        end
+        idx += 1
+    end
+end
+  
     
 # function establish!(patch::Patch) #TODO!
 #     idx = 1
@@ -188,7 +204,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
 end
 
 function genesis(ninds::Int64=100, maxgenes::Int64=20, maxchrs::Int64=5,
-                 traitnames::Array{String,1} = ["growthrate","reprate","mutprob","seedsize"]) # minimal required traitnames
+                 traitnames::Array{String,1} = ["ageprob","growthrate","reprate","mutprob","seedsize"]) # minimal required traitnames
     community = Individual[]
     for ind in 1:ninds
         ngenes = rand(1:maxgenes)
@@ -229,6 +245,7 @@ const mutsd=parse(ARGS[2])
 for i = 1:timesteps
     checkviability!(testpatch)
     #    size(testpatch.community,1)
+    age!(testpatch)
     grow!(testpatch)
     compete!(testpatch)
 #    println(i,"\t",size(testpatch.community,1))
