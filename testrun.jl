@@ -219,7 +219,8 @@ end
 ## Test stuff:
 ##############
 testpatch=Patch(genesis(),293,0.5,0.5,10)
-for i = 1:1000
+timesteps=Int64(ARGS[1])
+for i = 1:timesteps
     checkviability!(testpatch)
     #    size(testpatch.community,1)
     grow!(testpatch)
