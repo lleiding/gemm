@@ -99,6 +99,9 @@ function mutate!(ind::Individual, temp::Float64)
                         newvalue = trait.value + rand(Normal(0, mutsd)) # new value for trait
                         (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
                         newvalue < 0 && (newvalue=abs(newvalue))
+                        while newvalue == 0 && contains(trait.name,"mut")
+                            newvalue = trait.value + rand(Normal(0, mutsd))
+                        end
                         trait.value = newvalue
                     end
                 end
