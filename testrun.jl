@@ -85,12 +85,11 @@ function reproduce!(patch::Patch)
 end
 
 function mutate!(ind::Individual, temp::Float64)
-    temp - 293 > e ? (tempdiff = temp - 293) : (tempdiff = e) # difference to standard temperature #CAVE!
     prob = ind.traits[find(x->x.name=="mutprob",ind.traits)][1].value
     for chr in ind.genome
         for gene in chr.genes
             for i in eachindex(gene.sequence)
-                if rand() < log(tempdiff)*prob
+                if rand() < prob*exp(-act/(boltz*temp)) * normconst
                     newbase = rand(collect("acgt"),1)[1]
                     while newbase == gene.sequence[i]
                         newbase = rand(collect("acgt"),1)[1]
@@ -99,7 +98,7 @@ function mutate!(ind::Individual, temp::Float64)
                     for trait in gene.codes
                         newvalue = trait.value + rand(Normal(0, mutsd)) # new value for trait
                         (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
-                        newvalue < 0 && (newvalue=0)
+                        newvalue < 0 && (newvalue=abs(newvalue))
                         trait.value = newvalue
                     end
                 end
@@ -178,6 +177,8 @@ function createtraits(traitnames::Array{String,1})
             push!(traits,Trait(name,rand(Normal(298,5)),[])) #CAVE: maybe code these values somewhere else
         elseif contains(name, "breadth")
             push!(traits,Trait(name,abs(rand(Normal(0,5))),[])) #CAVE: maybe code these values somewhere else
+         elseif contains(name, "mut")
+            push!(traits,Trait(name,abs(rand(Normal(0,0.01))),[])) #CAVE: maybe code these values somewhere else
         else
             push!(traits,Trait(name,rand(),[]))
         end
@@ -262,12 +263,17 @@ const timesteps=Int64(round(parse(ARGS[1])))
 const mutsd=parse(ARGS[2])
 for i = 1:timesteps
     checkviability!(testpatch)
-        size(testpatch.community,1)
+    size(testpatch.community,1)
+    establish!(testpatch)
+    size(testpatch.community,1)
     age!(testpatch)
+    size(testpatch.community,1)
     grow!(testpatch)
+    size(testpatch.community,1)
     compete!(testpatch)
-#    println(i,"\t",size(testpatch.community,1))
+    size(testpatch.community,1)
     reproduce!(testpatch) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
+    size(testpatch.community,1)
 end
 println(startpatch,testpatch) # can be read again testpatch,number=include("outfile")
 
