@@ -161,6 +161,10 @@ function createtraits(traitnames::Array{String,1})
     for name in traitnames
         if contains(name,"rate")
             push!(traits,Trait(name,rand()*10,[]))
+        elseif contains(name, "temp") && contains(name, "opt")
+            push!(traits,Trait(name,rand(Normal(298,5)),[])) #CAVE: maybe code these values somewhere else
+        elseif contains(name, "breadth")
+            push!(traits,Trait(name,rand(Normal(0,5)),[])) #CAVE: maybe code these values somewhere else
         else
             push!(traits,Trait(name,rand(),[]))
         end
@@ -204,7 +208,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
 end
 
 function genesis(ninds::Int64=100, maxgenes::Int64=20, maxchrs::Int64=5,
-                 traitnames::Array{String,1} = ["ageprob","growthrate","reprate","mutprob","seedsize"]) # minimal required traitnames
+                 traitnames::Array{String,1} = ["ageprob","growthrate","mutprob","reprate","seedsize","tempopt","tempbreadth"]) # minimal required traitnames
     community = Individual[]
     for ind in 1:ninds
         ngenes = rand(1:maxgenes)
