@@ -61,11 +61,11 @@ function reproduce!(patch::Patch)
     temp = patch.altitude
     while idx <= size(patch.community,1)
         repprob = patch.community[idx].traits[find(x->x.name=="repprob",patch.community[idx].traits)][1].value
-        if !patch.community[idx].isnew && rand() < repprob
+        if !patch.community[idx].isnew && rand() < patch.community[idx].fitness * repprob
             currentmass = patch.community[idx].size
             seedsize = patch.community[idx].traits[find(x->x.name=="seedsize",patch.community[idx].traits)][1].value
             if currentmass >= 2 * seedsize > 0
-                meanoffs = patch.community[idx].traits[find(x->x.name=="reprate",
+                meanoffs = patch.community[idx].fitness * patch.community[idx].traits[find(x->x.name=="reprate",
                                                             patch.community[idx].traits)][1].value
                 mass = patch.community[idx].size
                 metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
@@ -138,7 +138,7 @@ function age!(patch::Patch)
             ageprob = patch.community[idx].traits[find(x->x.name=="ageprob",patch.community[idx].traits)][1].value
             mass = patch.community[idx].size
             dieprob = ageprob * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst
-            if rand() <= dieprob
+            if patch.community[idx].fitness * rand() <= dieprob
                 splice!(patch.community, idx)
                 idx -= 1
             else
