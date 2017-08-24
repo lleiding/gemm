@@ -33,7 +33,7 @@ end
 mutable struct Individual
     genome::Array{Chromosome,1} # genome = 2D array of chromosomes (>=1 sets)
     traits::Array{Trait,1}
-    stage::String # demographic stage of individual
+    age::Int64
     isnew::Bool # indicator whether individual is new to a patch or has already dispersed etc.
     fitness::Float64 # reproduction etc. scaling factor representing life history
     size::Float64 # body size/mass -> may replace stage.
@@ -71,7 +71,7 @@ function reproduce!(patch::Patch)
                 noffs = rand(Poisson(metaboffs))
                 for i in 1:noffs
                     ind = deepcopy(patch.community[idx])
-                    ind.stage = "seed"
+                    ind.age = 0
                     ind.isnew = true
                     ind.fitness = 1.0 # TODO: function for this! Consider environment!
                     ind.size = ind.traits[find(x->x.name=="seedsize",ind.traits)][1].value
@@ -140,6 +140,8 @@ function age!(patch::Patch)
             if rand() <= dieprob
                 splice!(patch.community, idx)
                 idx -= 1
+            else
+                patch.community[idx].age += patch.community[idx].age
             end
         end
         idx += 1
@@ -233,7 +235,7 @@ function genesis(ninds::Int64=500, maxgenes::Int64=20, maxchrs::Int64=5,
         traits = createtraits(traitnames)
         genes = creategenes(ngenes,traits)
         chromosomes = createchrs(nchrs,genes)
-        push!(community, Individual(chromosomes,traits,"adult",true,1.0,rand()))#
+        push!(community, Individual(chromosomes,traits,0,true,1.0,rand()))#
 #                                    traits[find(x->x.name=="maxsize",traits)][1].value))
     end
     community
