@@ -26,7 +26,7 @@ end
 
 struct Chromosome #CAVE! mutable?
     genes::Array{Gene,1} # 1D array of genes
-    ##    origin::Bool # parental origin of chromosome (paternal/maternal)
+    maternal::Bool # parental origin of chromosome
 end
 
 
@@ -60,7 +60,8 @@ function reproduce!(patch::Patch)
     idx = 1
     temp = patch.altitude
     while idx <= size(patch.community,1)
-        if !patch.community[idx].isnew
+        repprob = patch.community[idx].traits[find(x->x.name=="repprob",patch.community[idx].traits)][1].value
+        if !patch.community[idx].isnew && rand() < repprob
             currentmass = patch.community[idx].size
             seedsize = patch.community[idx].traits[find(x->x.name=="seedsize",patch.community[idx].traits)][1].value
             if currentmass >= 2 * seedsize > 0
@@ -73,7 +74,7 @@ function reproduce!(patch::Patch)
                     ind = deepcopy(patch.community[idx])
                     ind.age = 0
                     ind.isnew = true
-                    ind.fitness = 1.0 # TODO: function for this! Consider environment!
+                    ind.fitness = 1.0
                     ind.size = ind.traits[find(x->x.name=="seedsize",ind.traits)][1].value
                     mutate!(ind, patch.altitude)
                     push!(patch.community,ind)
@@ -141,7 +142,7 @@ function age!(patch::Patch)
                 splice!(patch.community, idx)
                 idx -= 1
             else
-                patch.community[idx].age += patch.community[idx].age
+                patch.community[idx].age += 1
             end
         end
         idx += 1
@@ -161,6 +162,7 @@ function establish!(patch::Patch) #TODO!
                 idx -= 1
             else
                 patch.community[idx].isnew = false
+                patch.community[idx].fitness = 1 - (tempbreadth - abs(temp-tempopt))/tempbreadth
             end
         end
         idx += 1
@@ -182,7 +184,7 @@ function createtraits(traitnames::Array{String,1})
             push!(traits,Trait(name,rand(Normal(298,5)),[])) #CAVE: maybe code these values somewhere else
         elseif contains(name, "breadth")
             push!(traits,Trait(name,abs(rand(Normal(0,5))),[])) #CAVE: maybe code these values somewhere else
-         elseif contains(name, "mut")
+        elseif contains(name, "mut")
             push!(traits,Trait(name,abs(rand(Normal(0,0.01))),[])) #CAVE: maybe code these values somewhere else
         else
             push!(traits,Trait(name,rand(),[]))
@@ -213,21 +215,21 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
         chromosomes = Chromosome[]
         for chr in 1:nchrs
             if chr==1 # first chromosome
-                push!(chromosomes, Chromosome(genes[1:chrsplits[chr]]))
+                push!(chromosomes, Chromosome(genes[1:chrsplits[chr]],rand([false,true])))
             elseif chr==nchrs # last chromosome
-                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):end]))
+                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):end],rand([false,true])))
             else
-                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):chrsplits[chr]]))
+                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):chrsplits[chr]],rand([false,true])))
             end
         end
     else # only one chromosome
-        chromosomes = [Chromosome(genes)]
+        chromosomes = [Chromosome(genes,rand([false,true]))]
     end
     chromosomes
 end
 
 function genesis(ninds::Int64=500, maxgenes::Int64=20, maxchrs::Int64=5,
-                 traitnames::Array{String,1} = ["ageprob","growthrate","mutprob","reprate","seedsize","tempopt","tempbreadth"]) # minimal required traitnames
+                 traitnames::Array{String,1} = ["ageprob","growthrate","mutprob","repprob","reprate","seedsize","sexprob","tempbreadth","tempopt"]) # minimal required traitnames
     community = Individual[]
     for ind in 1:ninds
         ngenes = rand(1:maxgenes)
@@ -236,7 +238,7 @@ function genesis(ninds::Int64=500, maxgenes::Int64=20, maxchrs::Int64=5,
         genes = creategenes(ngenes,traits)
         chromosomes = createchrs(nchrs,genes)
         push!(community, Individual(chromosomes,traits,0,true,1.0,rand()))#
-#                                    traits[find(x->x.name=="maxsize",traits)][1].value))
+        #                                    traits[find(x->x.name=="maxsize",traits)][1].value))
     end
     community
 end
@@ -249,9 +251,9 @@ function checkviability!(patch::Patch) # may consider additional rules...
             size(trait.codedby,1) == 0 && (kill = true) # make sure every trait is coded by at least 1 gene
         end
         patch.community[idx].size <= 0 && (kill = true)
-#        seedsize = patch.community[idx].traits[find(x->x.name=="seedsize",patch.community[idx].traits)][1].value
-#        maxsize = patch.community[idx].traits[find(x->x.name=="maxsize",patch.community[idx].traits)][1].value
-#        seedsize > maxsize && (kill = true)
+        #        seedsize = patch.community[idx].traits[find(x->x.name=="seedsize",patch.community[idx].traits)][1].value
+        #        maxsize = patch.community[idx].traits[find(x->x.name=="maxsize",patch.community[idx].traits)][1].value
+        #        seedsize > maxsize && (kill = true)
         if kill
             splice!(patch.community,idx) # or else kill it
             idx -= 1
@@ -303,3 +305,11 @@ println(startpatch,testpatch) # can be read again testpatch,number=include("outf
 # end
 
 # worldstart,worldend = testscenario()
+
+function gettraitvalues(community::Array{Individual,1},traitname::String)
+    values=[]
+    for ind in community
+        push!(values,ind.traits[find(x->x.name==traitname,ind.traits)][1].value)
+    end
+    values
+end
