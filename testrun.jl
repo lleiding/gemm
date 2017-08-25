@@ -61,11 +61,11 @@ function reproduce!(patch::Patch)
     temp = patch.altitude
     while idx <= size(patch.community,1)
         repprob = patch.community[idx].traits[find(x->x.name=="repprob",patch.community[idx].traits)][1].value
-        if !patch.community[idx].isnew && rand() < patch.community[idx].fitness * repprob
+        if !patch.community[idx].isnew && rand() < repprob
             currentmass = patch.community[idx].size
             seedsize = patch.community[idx].traits[find(x->x.name=="seedsize",patch.community[idx].traits)][1].value
             if currentmass >= 2 * seedsize > 0
-                meanoffs = patch.community[idx].fitness * patch.community[idx].traits[find(x->x.name=="reprate",
+                meanoffs = patch.community[idx].traits[find(x->x.name=="reprate",
                                                             patch.community[idx].traits)][1].value
                 mass = patch.community[idx].size
                 metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
@@ -138,7 +138,7 @@ function age!(patch::Patch)
             ageprob = patch.community[idx].traits[find(x->x.name=="ageprob",patch.community[idx].traits)][1].value
             mass = patch.community[idx].size
             dieprob = ageprob * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst
-            if patch.community[idx].fitness * rand() <= dieprob
+            if rand() > (1-dieprob) * patch.community[idx].fitness
                 splice!(patch.community, idx)
                 idx -= 1
             else
@@ -228,7 +228,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
     chromosomes
 end
 
-function genesis(ninds::Int64=500, maxgenes::Int64=20, maxchrs::Int64=5,
+function genesis(ninds::Int64=1000, maxgenes::Int64=20, maxchrs::Int64=5,
                  traitnames::Array{String,1} = ["ageprob","growthrate","mutprob","repprob","reprate","seedsize","sexprob","tempbreadth","tempopt"]) # minimal required traitnames
     community = Individual[]
     for ind in 1:ninds
