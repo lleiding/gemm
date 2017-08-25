@@ -162,7 +162,10 @@ function establish!(patch::Patch) #TODO!
                 idx -= 1
             else
                 patch.community[idx].isnew = false
-                patch.community[idx].fitness = 1 - (tempbreadth - abs(temp-tempopt))/tempbreadth
+                fitness = 1 - (abs(temp-tempopt))/tempbreadth
+                fitness > 1 && (fitness = 1)
+                fitness < 0 && (fitness = 0)
+                patch.community[idx].fitness = fitness
             end
         end
         idx += 1
