@@ -16,6 +16,7 @@ mutable struct Trait
     value::Float64 # numerical value
     ##    strength::Float64 # mutation strength
     codedby::Array{String,1}
+    active::Bool
 end
 
 mutable struct Gene
@@ -60,13 +61,12 @@ function reproduce!(patch::Patch)
     idx = 1
     temp = patch.altitude
     while idx <= size(patch.community,1)
-        repprob = patch.community[idx].traits[find(x->x.name=="repprob",patch.community[idx].traits)][1].value
+        repprob = patch.community[idx].traits["repprob"]
         if !patch.community[idx].isnew && rand() < repprob
             currentmass = patch.community[idx].size
-            seedsize = patch.community[idx].traits[find(x->x.name=="seedsize",patch.community[idx].traits)][1].value
+            seedsize = patch.community[idx].traits["seedsize"]
             if currentmass >= 2 * seedsize > 0
-                meanoffs = patch.community[idx].traits[find(x->x.name=="reprate",
-                                                            patch.community[idx].traits)][1].value
+                meanoffs = patch.community[idx].traits["reprate"]
                 mass = patch.community[idx].size
                 metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
                 noffs = rand(Poisson(metaboffs))
@@ -75,7 +75,7 @@ function reproduce!(patch::Patch)
                     ind.age = 0
                     ind.isnew = true
                     ind.fitness = 1.0
-                    ind.size = ind.traits[find(x->x.name=="seedsize",ind.traits)][1].value
+                    ind.size = ind.traits["seedsize"]
                     mutate!(ind, patch.altitude)
                     push!(patch.community,ind)
                 end
@@ -86,7 +86,7 @@ function reproduce!(patch::Patch)
 end
 
 function mutate!(ind::Individual, temp::Float64)
-    prob = ind.traits[find(x->x.name=="mutprob",ind.traits)][1].value
+    prob = ind.traits["mutprob"]
     for chr in ind.genome
         for gene in chr.genes
             for i in eachindex(gene.sequence)
@@ -116,7 +116,7 @@ function grow!(patch::Patch)
     idx = 1
     while idx <= size(patch.community,1)
         if !patch.community[idx].isnew
-            growthrate = patch.community[idx].traits[find(x->x.name=="growthrate",patch.community[idx].traits)][1].value
+            growthrate = patch.community[idx].traits["growthrate"]
             mass = patch.community[idx].size
             newmass = growthrate * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst #CAVE: what to do when negative growth? -> emergent maximum body size!
             if newmass > 0 && mass > 0
@@ -135,7 +135,7 @@ function age!(patch::Patch)
     idx = 1
     while idx <= size(patch.community,1)
         if !patch.community[idx].isnew
-            ageprob = patch.community[idx].traits[find(x->x.name=="ageprob",patch.community[idx].traits)][1].value
+            ageprob = patch.community[idx].traits["ageprob"]
             mass = patch.community[idx].size
             dieprob = ageprob * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst
             if rand() > (1-dieprob) * patch.community[idx].fitness
@@ -155,8 +155,8 @@ function establish!(patch::Patch) #TODO!
     idx = 1
     while idx <= size(patch.community,1)
         if patch.community[idx].isnew
-            tempopt = patch.community[idx].traits[find(x->x.name=="tempopt",patch.community[idx].traits)][1].value
-            tempbreadth = patch.community[idx].traits[find(x->x.name=="tempbreadth",patch.community[idx].traits)][1].value
+            tempopt = patch.community[idx].traits["tempopt"]
+            tempbreadth = patch.community[idx].traits["tempbreadth"]
             if abs(temp-tempopt) > tempbreadth
                 splice!(patch.community, idx)
                 idx -= 1
@@ -182,15 +182,15 @@ function createtraits(traitnames::Array{String,1})
     traits = Trait[]
     for name in traitnames
         if contains(name,"rate")
-            push!(traits,Trait(name,rand()*10,[]))
+            push!(traits,Trait(name,rand()*10,[],true))
         elseif contains(name, "temp") && contains(name, "opt")
-            push!(traits,Trait(name,rand(Normal(298,5)),[])) #CAVE: maybe code these values somewhere else
+            push!(traits,Trait(name,rand(Normal(298,5)),[],true)) #CAVE: maybe code these values somewhere else
         elseif contains(name, "breadth")
-            push!(traits,Trait(name,abs(rand(Normal(0,5))),[])) #CAVE: maybe code these values somewhere else
+            push!(traits,Trait(name,abs(rand(Normal(0,5))),[],true)) #CAVE: maybe code these values somewhere else
         elseif contains(name, "mut")
-            push!(traits,Trait(name,abs(rand(Normal(0,0.01))),[])) #CAVE: maybe code these values somewhere else
+            push!(traits,Trait(name,abs(rand(Normal(0,0.01))),[],true)) #CAVE: maybe code these values somewhere else
         else
-            push!(traits,Trait(name,rand(),[]))
+            push!(traits,Trait(name,rand(),[],true))
         end
     end
     traits
@@ -258,7 +258,15 @@ end
 
 
 function genesis(ninds::Int64=1000, maxgenes::Int64=20, maxchrs::Int64=5,
-                 traitnames::Array{String,1} = ["ageprob","growthrate","mutprob","repprob","reprate","seedsize","sexprob","tempbreadth","tempopt"]) # minimal required traitnames
+                 traitnames::Array{String,1} = ["ageprob",
+                                                "growthrate",
+                                                "mutprob",
+                                                "repprob",
+                                                "reprate",
+                                                "seedsize",
+                                                "sexprob",
+                                                "tempbreadth",
+                                                "tempopt"]) # minimal required traitnames
     community = Individual[]
     for ind in 1:ninds
         ngenes = rand(1:maxgenes)
@@ -266,22 +274,20 @@ function genesis(ninds::Int64=1000, maxgenes::Int64=20, maxchrs::Int64=5,
         traits = createtraits(traitnames)
         genes = creategenes(ngenes,traits)
         chromosomes = createchrs(nchrs,genes)
-        push!(community, Individual(chromosomes,traits,0,true,1.0,rand()))#
-        #                                    traits[find(x->x.name=="maxsize",traits)][1].value))
+        traitdict = chrms2traits(chromosomes)
+        push!(community, Individual(chromosomes,traitdict,0,true,1.0,rand()))#
+        #                                    traits["maxsize",traits)][1].value))
     end
     community
 end
 
-function checkviability!(patch::Patch) # may consider additional rules...
+function checkviability!(patch::Patch) # may consider additional rules... # maybe obsolete anyhow...
     idx=1
     while idx <= size(patch.community,1)
         kill = false
-        for trait in patch.community[idx].traits
-            size(trait.codedby,1) == 0 && (kill = true) # make sure every trait is coded by at least 1 gene
-        end
         patch.community[idx].size <= 0 && (kill = true)
-        #        seedsize = patch.community[idx].traits[find(x->x.name=="seedsize",patch.community[idx].traits)][1].value
-        #        maxsize = patch.community[idx].traits[find(x->x.name=="maxsize",patch.community[idx].traits)][1].value
+        #        seedsize = patch.community[idx].traits["seedsize"]
+        #        maxsize = patch.community[idx].traits["maxsize"]
         #        seedsize > maxsize && (kill = true)
         if kill
             splice!(patch.community,idx) # or else kill it
@@ -310,35 +316,4 @@ for i = 1:timesteps
     size(testpatch.community,1)
     reproduce!(testpatch) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
     size(testpatch.community,1)
-end
-println(startpatch,testpatch) # can be read again testpatch,number=include("outfile")
-
-# function testscenario(timesteps::Int64=100,npatches::Int64=10)
-#     world=Patch[]
-#     for patch = 1:npatches
-#         push!(world,Patch(genesis(),293,0.5,0.5,10))
-#     end
-#     for i = 1:timesteps
-#         for patch = 1:npatches
-#             checkviability!(world[patch])
-#             #    size(testpatch.community,1)
-#             grow!(world[patch])
-#             compete!(world[patch])
-#             #    size(testpatch.community,1)
-#             reproduce!(world[patch]) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
-#             #    size(testpatch.community,1)
-#         end
-#         i == 1 && (worldstart=world)
-#     end
-#     worldstart,world
-# end
-
-# worldstart,worldend = testscenario()
-
-function gettraitvalues(community::Array{Individual,1},traitname::String)
-    values=[]
-    for ind in community
-        push!(values,ind.traits[find(x->x.name==traitname,ind.traits)][1].value)
-    end
-    values
 end
