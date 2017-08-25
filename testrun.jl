@@ -198,15 +198,22 @@ end
 
 function creategenes(ngenes::Int64,traits::Array{Trait,1})
     genes = Gene[]
-    for gene in 1:ngenes
-        sequence = collect("acgt"^5) # arbitrary start sequence
-        id = randstring(8)
-        codesfor = Trait[]
-        append!(codesfor,rand(traits,rand(Poisson(0.5))))
-        for trait in codesfor
-            push!(trait.codedby,id) # crossreference!
+    viable = false
+    while !viable
+        for gene in 1:ngenes
+            sequence = collect("acgt"^5) # arbitrary start sequence
+            id = randstring(8)
+            codesfor = Trait[]
+            append!(codesfor,rand(traits,rand(Poisson(0.5))))
+            for trait in codesfor
+                push!(trait.codedby,id) # crossreference!
+            end
+            push!(genes,Gene(sequence,id,codesfor))
         end
-        push!(genes,Gene(sequence,id,codesfor))
+        viable = true
+        for trait in traits
+            size(trait.codedby,1) == 0 && (viable = false) # make sure every trait is coded by at least 1 gene
+        end
     end
     genes
 end
@@ -267,7 +274,7 @@ end
 
 ## Test stuff:
 ##############
-testpatch=Patch(genesis(),293,0.5,0.5,10)
+testpatch=Patch(genesis(),293,0.5,0.5,100)
 startpatch=deepcopy(testpatch)
 const timesteps=Int64(round(parse(ARGS[1])))
 const mutsd=parse(ARGS[2])
