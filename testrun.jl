@@ -32,7 +32,7 @@ end
 
 mutable struct Individual
     genome::Array{Chromosome,1} # genome = 2D array of chromosomes (>=1 sets)
-    traits::Array{Trait,1}
+    traits::Dict{String,Float64}
     age::Int64
     isnew::Bool # indicator whether individual is new to a patch or has already dispersed etc.
     fitness::Float64 # reproduction etc. scaling factor representing life history
@@ -237,6 +237,25 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
     end
     chromosomes
 end
+
+function chrms2traits(chrs::Array{Chromosome,1})
+    genes = Gene[]
+    for chr in chrs
+        append!(genes,chr.genes)
+    end
+    traits = Trait[]
+    for gene in genes
+        append!(traits,gene.codes)
+    end
+    traits = unique(traits)
+    traitdict = Dict{String,Float64}()
+    for trait in traits
+#        trait.active &&
+            (traitdict[trait.name] = trait.value)
+    end
+    traitdict
+end
+
 
 function genesis(ninds::Int64=1000, maxgenes::Int64=20, maxchrs::Int64=5,
                  traitnames::Array{String,1} = ["ageprob","growthrate","mutprob","repprob","reprate","seedsize","sexprob","tempbreadth","tempopt"]) # minimal required traitnames
