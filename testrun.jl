@@ -97,11 +97,12 @@ function mutate!(ind::Individual, temp::Float64)
                     end
                     gene.sequence[i] = newbase
                     for trait in gene.codes
-                        newvalue = trait.value + rand(Normal(0, mutsd)) # new value for trait
+                        trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
+                        newvalue = trait.value + rand(Normal(0, trait.value/mutscaling)) # new value for trait
                         (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
                         newvalue < 0 && (newvalue=abs(newvalue))
-                        while newvalue == 0 && contains(trait.name,"mut")
-                            newvalue = trait.value + rand(Normal(0, mutsd))
+                        while newvalue == 0 #&& contains(trait.name,"mut")
+                            newvalue = trait.value + rand(Normal(0, trait.value/mutscaling))
                         end
                         trait.value = newvalue
                     end
@@ -109,6 +110,8 @@ function mutate!(ind::Individual, temp::Float64)
             end
         end
     end
+    traitdict = chrms2traits(ind.genome)
+    ind.traits = traitdict
 end
 
 function grow!(patch::Patch)
@@ -174,21 +177,17 @@ end
 
 #TODO: Dispersal
 
-#TODO: age mortality!
-
-
-
 function createtraits(traitnames::Array{String,1})
     traits = Trait[]
     for name in traitnames
         if contains(name,"rate")
             push!(traits,Trait(name,rand()*10,[],true))
         elseif contains(name, "temp") && contains(name, "opt")
-            push!(traits,Trait(name,rand(Normal(298,5)),[],true)) #CAVE: maybe code these values somewhere else
+            push!(traits,Trait(name,rand(Normal(298,5)),[],true)) #CAVE: code values elsewhere?
         elseif contains(name, "breadth")
-            push!(traits,Trait(name,abs(rand(Normal(0,5))),[],true)) #CAVE: maybe code these values somewhere else
+            push!(traits,Trait(name,abs(rand(Normal(0,5))),[],true)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
-            push!(traits,Trait(name,abs(rand(Normal(0,0.01))),[],true)) #CAVE: maybe code these values somewhere else
+            push!(traits,Trait(name,abs(rand(Normal(0,0.01))),[],true)) #CAVE: code values elsewhere?
         else
             push!(traits,Trait(name,rand(),[],true))
         end
@@ -200,6 +199,7 @@ function creategenes(ngenes::Int64,traits::Array{Trait,1})
     genes = Gene[]
     viable = false
     while !viable
+        genes = Gene[]
         for gene in 1:ngenes
             sequence = collect("acgt"^5) # arbitrary start sequence
             id = randstring(8)
@@ -235,13 +235,38 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
     else # only one chromosome
         chromosomes = [Chromosome(genes,rand([false,true]))]
     end
+    secondset = deepcopy(chromosomes)
+    for chrm in secondset
+        chrm.maternal = !chrm.maternal
+    end
+    append!(chromosomes,secondset)
     chromosomes
 end
 
-function chrms2traits(chrs::Array{Chromosome,1})
+function activategenes!(chrms::Array{Chromosome,1}) #ERROR: ArgumentError: range must be non-empty
+
     genes = Gene[]
-    for chr in chrs
-        append!(genes,chr.genes)
+    for chrm in chrms
+        append!(genes,chrm.genes)
+    end
+    traits = Trait[]
+    for gene in genes
+        append!(traits,gene.codes)
+    end
+    traits = unique(traits)
+    traitnames = map(x->x.name,traits)
+    traitnames = unique(traitnames)
+    for name in traitnames
+        idxs = findin(traits,[name])
+        map(x->traits[x].active = false,idxs)
+        map(x->traits[x].active = true,rand(idxs))
+    end
+end
+
+function chrms2traits(chrms::Array{Chromosome,1})
+    genes = Gene[]
+    for chrm in chrms
+        append!(genes,chrm.genes)
     end
     traits = Trait[]
     for gene in genes
@@ -250,8 +275,7 @@ function chrms2traits(chrs::Array{Chromosome,1})
     traits = unique(traits)
     traitdict = Dict{String,Float64}()
     for trait in traits
-#        trait.active &&
-            (traitdict[trait.name] = trait.value)
+        trait.active && (traitdict[trait.name] = trait.value)
     end
     traitdict
 end
@@ -275,8 +299,7 @@ function genesis(ninds::Int64=1000, maxgenes::Int64=20, maxchrs::Int64=5,
         genes = creategenes(ngenes,traits)
         chromosomes = createchrs(nchrs,genes)
         traitdict = chrms2traits(chromosomes)
-        push!(community, Individual(chromosomes,traitdict,0,true,1.0,rand()))#
-        #                                    traits["maxsize",traits)][1].value))
+        push!(community, Individual(chromosomes,traitdict,0,true,1.0,rand()))
     end
     community
 end
@@ -286,9 +309,7 @@ function checkviability!(patch::Patch) # may consider additional rules... # mayb
     while idx <= size(patch.community,1)
         kill = false
         patch.community[idx].size <= 0 && (kill = true)
-        #        seedsize = patch.community[idx].traits["seedsize"]
-        #        maxsize = patch.community[idx].traits["maxsize"]
-        #        seedsize > maxsize && (kill = true)
+        0 in collect(values(patch.community[idx].traits)) && (kill = true)
         if kill
             splice!(patch.community,idx) # or else kill it
             idx -= 1
@@ -301,8 +322,8 @@ end
 ##############
 testpatch=Patch(genesis(),293,0.5,0.5,100)
 startpatch=deepcopy(testpatch)
-const timesteps=Int64(round(parse(ARGS[1])))
-const mutsd=parse(ARGS[2])
+const timesteps=1000 #Int64(round(parse(ARGS[1])))
+const mutscaling=50#parse(ARGS[2])
 for i = 1:timesteps
     checkviability!(testpatch)
     size(testpatch.community,1)
@@ -317,3 +338,24 @@ for i = 1:timesteps
     reproduce!(testpatch) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
     size(testpatch.community,1)
 end
+
+mean(map(x->x.traits["mutprob"],testpatch.community))
+
+mean(map(x->x.traits["repprob"],testpatch.community))
+
+mean(map(x->x.traits["ageprob"],testpatch.community))
+
+mean(map(x->x.traits["tempbreadth"],testpatch.community))
+
+mean(map(x->x.traits["reprate"],testpatch.community))
+
+mean(map(x->x.traits["growthrate"],testpatch.community))
+
+mean(map(x->x.traits["tempopt"],testpatch.community))
+
+mean(map(x->x.traits["seedsize"],testpatch.community))
+
+minimum(map(x->x.traits["seedsize"],testpatch.community))
+
+maximum(map(x->x.traits["seedsize"],testpatch.community))
+
