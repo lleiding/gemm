@@ -159,13 +159,13 @@ function establish!(patch::Patch) #TODO!
     while idx <= size(patch.community,1)
         if patch.community[idx].isnew
             tempopt = patch.community[idx].traits["tempopt"]
-            tempbreadth = patch.community[idx].traits["tempbreadth"]
-            if abs(temp-tempopt) > tempbreadth
+            temptol = patch.community[idx].traits["temptol"]
+            if abs(temp-tempopt) > temptol
                 splice!(patch.community, idx)
                 idx -= 1
             else
                 patch.community[idx].isnew = false
-                fitness = 1 - (abs(temp-tempopt))/tempbreadth
+                fitness = 1 - (abs(temp-tempopt))/temptol
                 fitness > 1 && (fitness = 1)
                 fitness < 0 && (fitness = 0)
                 patch.community[idx].fitness = fitness
@@ -184,7 +184,7 @@ function createtraits(traitnames::Array{String,1})
             push!(traits,Trait(name,rand()*10,[],true))
         elseif contains(name, "temp") && contains(name, "opt")
             push!(traits,Trait(name,rand(Normal(298,5)),[],true)) #CAVE: code values elsewhere?
-        elseif contains(name, "breadth")
+        elseif contains(name, "tol")
             push!(traits,Trait(name,abs(rand(Normal(0,5))),[],true)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
             push!(traits,Trait(name,abs(rand(Normal(0,0.01))),[],true)) #CAVE: code values elsewhere?
@@ -244,7 +244,6 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
 end
 
 function activategenes!(chrms::Array{Chromosome,1}) #ERROR: ArgumentError: range must be non-empty
-
     genes = Gene[]
     for chrm in chrms
         append!(genes,chrm.genes)
@@ -257,7 +256,7 @@ function activategenes!(chrms::Array{Chromosome,1}) #ERROR: ArgumentError: range
     traitnames = map(x->x.name,traits)
     traitnames = unique(traitnames)
     for name in traitnames
-        idxs = findin(traits,[name])
+        idxs = find(x->x.name==name,traits)
         map(x->traits[x].active = false,idxs)
         map(x->traits[x].active = true,rand(idxs))
     end
@@ -287,9 +286,10 @@ function genesis(ninds::Int64=1000, maxgenes::Int64=20, maxchrs::Int64=5,
                                                 "mutprob",
                                                 "repprob",
                                                 "reprate",
+                                                "reptol",
                                                 "seedsize",
                                                 "sexprob",
-                                                "tempbreadth",
+                                                "temptol",
                                                 "tempopt"]) # minimal required traitnames
     community = Individual[]
     for ind in 1:ninds
@@ -345,7 +345,7 @@ mean(map(x->x.traits["repprob"],testpatch.community))
 
 mean(map(x->x.traits["ageprob"],testpatch.community))
 
-mean(map(x->x.traits["tempbreadth"],testpatch.community))
+mean(map(x->x.traits["temptol"],testpatch.community))
 
 mean(map(x->x.traits["reprate"],testpatch.community))
 
