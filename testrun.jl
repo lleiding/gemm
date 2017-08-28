@@ -25,7 +25,7 @@ mutable struct Gene
     codes::Array{Trait,1}
 end
 
-struct Chromosome #CAVE! mutable?
+mutable struct Chromosome #CAVE! mutable?
     genes::Array{Gene,1} # 1D array of genes
     maternal::Bool # parental origin of chromosome
 end
@@ -61,23 +61,32 @@ function reproduce!(patch::Patch)
     idx = 1
     temp = patch.altitude
     while idx <= size(patch.community,1)
-        repprob = patch.community[idx].traits["repprob"]
-        if !patch.community[idx].isnew && rand() < repprob
-            currentmass = patch.community[idx].size
-            seedsize = patch.community[idx].traits["seedsize"]
-            if currentmass >= 2 * seedsize > 0
-                meanoffs = patch.community[idx].traits["reprate"]
-                mass = patch.community[idx].size
-                metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
-                noffs = rand(Poisson(metaboffs))
-                for i in 1:noffs
-                    ind = deepcopy(patch.community[idx])
-                    ind.age = 0
-                    ind.isnew = true
-                    ind.fitness = 1.0
-                    ind.size = ind.traits["seedsize"]
-                    mutate!(ind, patch.altitude)
-                    push!(patch.community,ind)
+        hasrepprob = haskey(patch.community[idx].traits,"repprob")
+        hasseedsize = haskey(patch.community[idx].traits,"seedsize")
+        hasreprate = haskey(patch.community[idx].traits,"reprate")
+        hasmutprob = haskey(patch.community[idx].traits,"mutprob")
+        if !hasrepprob || !hasseedsize || !hasreprate || !hasmutprob
+            splice!(patch.community, idx)
+            idx -= 1
+        else
+            repprob = patch.community[idx].traits["repprob"]
+            if !patch.community[idx].isnew && rand() < repprob
+                currentmass = patch.community[idx].size
+                seedsize = patch.community[idx].traits["seedsize"]
+                if currentmass >= 2 * seedsize > 0
+                    meanoffs = patch.community[idx].traits["reprate"]
+                    mass = patch.community[idx].size
+                    metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
+                    noffs = rand(Poisson(metaboffs))
+                    for i in 1:noffs
+                        ind = deepcopy(patch.community[idx])
+                        ind.age = 0
+                        ind.isnew = true
+                        ind.fitness = 1.0
+                        ind.size = ind.traits["seedsize"]
+                        mutate!(ind, patch.altitude)
+                        push!(patch.community,ind)
+                    end
                 end
             end
         end
@@ -118,15 +127,21 @@ function grow!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        if !patch.community[idx].isnew
-            growthrate = patch.community[idx].traits["growthrate"]
-            mass = patch.community[idx].size
-            newmass = growthrate * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst #CAVE: what to do when negative growth? -> emergent maximum body size!
-            if newmass > 0 && mass > 0
-                patch.community[idx].size = newmass
-            else
-                splice!(patch.community, idx)
-                idx -= 1
+        hasgrowthrate = haskey(patch.community[idx].traits,"growthrate")
+        if !hasgrowthrate
+            splice!(patch.community, idx)
+            idx -= 1
+        else
+            if !patch.community[idx].isnew
+                growthrate = patch.community[idx].traits["growthrate"]
+                mass = patch.community[idx].size
+                newmass = growthrate * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst #CAVE: what to do when negative growth? -> emergent maximum body size!
+                if newmass > 0 && mass > 0
+                    patch.community[idx].size = newmass
+                else
+                    splice!(patch.community, idx)
+                    idx -= 1
+                end
             end
         end
         idx += 1
@@ -137,15 +152,21 @@ function age!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        if !patch.community[idx].isnew
-            ageprob = patch.community[idx].traits["ageprob"]
-            mass = patch.community[idx].size
-            dieprob = ageprob * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst
-            if rand() > (1-dieprob) * patch.community[idx].fitness
-                splice!(patch.community, idx)
-                idx -= 1
-            else
-                patch.community[idx].age += 1
+        hasageprob = haskey(patch.community[idx].traits,"ageprob")
+        if !hasageprob
+            splice!(patch.community, idx)
+            idx -= 1
+        else
+            if !patch.community[idx].isnew
+                ageprob = patch.community[idx].traits["ageprob"]
+                mass = patch.community[idx].size
+                dieprob = ageprob * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst
+                if rand() > (1-dieprob) * patch.community[idx].fitness
+                    splice!(patch.community, idx)
+                    idx -= 1
+                else
+                    patch.community[idx].age += 1
+                end
             end
         end
         idx += 1
@@ -157,18 +178,25 @@ function establish!(patch::Patch) #TODO!
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        if patch.community[idx].isnew
-            tempopt = patch.community[idx].traits["tempopt"]
-            temptol = patch.community[idx].traits["temptol"]
-            if abs(temp-tempopt) > temptol
-                splice!(patch.community, idx)
-                idx -= 1
-            else
-                patch.community[idx].isnew = false
-                fitness = 1 - (abs(temp-tempopt))/temptol
-                fitness > 1 && (fitness = 1)
-                fitness < 0 && (fitness = 0)
-                patch.community[idx].fitness = fitness
+        hastemptol = haskey(patch.community[idx].traits,"temptol")
+        hastempopt = haskey(patch.community[idx].traits,"tempopt")
+        if !hastemptol || !hastempopt
+            splice!(patch.community, idx)
+            idx -= 1
+        else
+            if patch.community[idx].isnew
+                tempopt = patch.community[idx].traits["tempopt"]
+                temptol = patch.community[idx].traits["temptol"]
+                if abs(temp-tempopt) > temptol
+                    splice!(patch.community, idx)
+                    idx -= 1
+                else
+                    patch.community[idx].isnew = false
+                    fitness = 1 - (abs(temp-tempopt))/temptol
+                    fitness > 1 && (fitness = 1)
+                    fitness < 0 && (fitness = 0)
+                    patch.community[idx].fitness = fitness
+                end
             end
         end
         idx += 1
@@ -199,6 +227,9 @@ function creategenes(ngenes::Int64,traits::Array{Trait,1})
     genes = Gene[]
     viable = false
     while !viable
+        for trait in traits
+            trait.codedby = []
+        end
         genes = Gene[]
         for gene in 1:ngenes
             sequence = collect("acgt"^5) # arbitrary start sequence
