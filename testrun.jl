@@ -57,12 +57,20 @@ function compete!(patch::Patch)
     end
 end
 
-function findpartner(community::Array{Individual,1},mass::Float64,reptol::Float64)
-    posspartners = find(x->(1/reptol)*mass>x.size>reptol*mass,community)
-    while reptol * partner.size > mass > (1/reptol) * partner.size #CAVE compatibility rule: size
-        partner = rand(patch.community,1)
+function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include further dynamics, errors...
+    firstset = find(x->x.maternal,genome)
+    secondset = find(x->!x.maternal,genome)
+    size(firstset,1) != size(secondset,1) && return Chromosome[] # CAVE: more elegant solution...
+    gameteidxs = []
+    for i in eachindex(firstset)
+        push!(gameteidxs,rand([firstset[i],secondset[i]]))
     end
+    gamete = deepcopy(genome[gameteidxs]) #TODO somewhere here: crossing over!
+    map(x->x.maternal=maternal,gamete)
+    gamete
 end
+    
+
 function reproduce!(patch::Patch) #TODO: refactorize!
     idx = 1
     temp = patch.altitude
@@ -82,17 +90,31 @@ function reproduce!(patch::Patch) #TODO: refactorize!
                 seedsize = patch.community[idx].traits["seedsize"]
                 if currentmass >= 2 * seedsize > 0 #CAVE: set rule for this, now arbitrary
                     meanoffs = patch.community[idx].traits["reprate"]
+                    reptol = patch.community[idx].traits["reptol"]
                     mass = patch.community[idx].size
                     metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
                     noffs = rand(Poisson(metaboffs))
-                    for i in 1:noffs
-                        ind = deepcopy(patch.community[idx])
-                        ind.age = 0
-                        ind.isnew = true
-                        ind.fitness = 1.0
-                        ind.size = ind.traits["seedsize"]
-                        mutate!(ind, patch.altitude)
-                        push!(patch.community,ind)
+                    if sexualreproduction
+                        posspartners = find(x->(1/reptol)*mass>x.size>reptol*mass,patch.community)
+                        partneridx = rand(posspartners)
+                        while partneridx == idx #CAVE: unless self-repr. is allowed
+                            partneridx = rand(posspartners)
+                        end
+                        partnergenome = meiosis(patch.community[partneridx].genome, false) #CAVE: maybe move inside offspring loop?
+                        mothergenome = meiosis(patch.community[idx].genome, true)
+                        
+                        for i in 1:noffs
+                            genome = deepcopy[partnergenome,mothergenome]
+                            activategenes!(genome)
+                            traits = Trait[]
+                            age = 0
+                            isnew = true
+                            fitness = 1.0
+                            size = seedsize
+                            ind = Individual(genome,traits,age,isnew,fitness,size)
+                            mutate!(ind, patch.altitude)
+                            push!(patch.community,ind)
+                        end
                     end
                 end
             end
@@ -281,7 +303,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
     chromosomes
 end
 
-function activategenes!(chrms::Array{Chromosome,1}) #ERROR: ArgumentError: range must be non-empty
+function activategenes!(chrms::Array{Chromosome,1})
     genes = Gene[]
     for chrm in chrms
         append!(genes,chrm.genes)
@@ -362,6 +384,7 @@ testpatch=Patch(genesis(),293,0.5,0.5,100)
 startpatch=deepcopy(testpatch)
 const timesteps=1000 #Int64(round(parse(ARGS[1])))
 const mutscaling=50#parse(ARGS[2])
+const sexualreproduction = true
 for i = 1:timesteps
     checkviability!(testpatch)
     size(testpatch.community,1)
