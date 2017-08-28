@@ -15,7 +15,7 @@ mutable struct Trait
     name::String
     value::Float64 # numerical value
     ##    strength::Float64 # mutation strength
-    codedby::Array{String,1}
+    codedby::Int64
     active::Bool
 end
 
@@ -88,30 +88,32 @@ function reproduce!(patch::Patch) #TODO: refactorize!
             if !patch.community[idx].isnew && rand() < repprob
                 currentmass = patch.community[idx].size
                 seedsize = patch.community[idx].traits["seedsize"]
-                if currentmass >= 2 * seedsize > 0 #CAVE: set rule for this, now arbitrary
+                if currentmass >= 2 * seedsize > 0 #CAVE: set rule for this, now arbitrary -> reprod. size?
                     meanoffs = patch.community[idx].traits["reprate"]
                     reptol = patch.community[idx].traits["reptol"]
                     mass = patch.community[idx].size
                     metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
                     noffs = rand(Poisson(metaboffs))
                     if sexualreproduction
-                        posspartners = find(x->(1/reptol)*mass>x.size>reptol*mass,patch.community)
+                        posspartners = find(x->(1/reptol)*mass>=x.size>=reptol*mass,patch.community)
                         partneridx = rand(posspartners)
-                        while partneridx == idx #CAVE: unless self-repr. is allowed
+                        while size(posspartners,1) > 1 && partneridx == idx #CAVE: unless self-repr. is allowed
                             partneridx = rand(posspartners)
                         end
                         partnergenome = meiosis(patch.community[partneridx].genome, false) #CAVE: maybe move inside offspring loop?
                         mothergenome = meiosis(patch.community[idx].genome, true)
                         
                         for i in 1:noffs
-                            genome = deepcopy[partnergenome,mothergenome]
+                            (size(partnergenome,1) < 1 || size(mothergenome,1) < 1) && continue
+                            genome = deepcopy([partnergenome...,mothergenome...])
                             activategenes!(genome)
-                            traits = Trait[]
+                            traits = chrms2traits(genome)
                             age = 0
                             isnew = true
                             fitness = 1.0
-                            size = seedsize
-                            ind = Individual(genome,traits,age,isnew,fitness,size)
+                            newsize = seedsize
+                            ind = Individual(genome,traits,age,isnew,fitness,newsize)
+                            !haskey(ind.traits,"mutprob") && continue
                             mutate!(ind, patch.altitude)
                             push!(patch.community,ind)
                         end
@@ -138,6 +140,7 @@ function mutate!(ind::Individual, temp::Float64)
                         trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
                         newvalue = trait.value + rand(Normal(0, trait.value/mutscaling)) # new value for trait
                         (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
+                        (newvalue > 1 && contains(trait.name,"reptol")) && (newvalue=1)
                         newvalue < 0 && (newvalue=abs(newvalue))
                         while newvalue == 0 #&& contains(trait.name,"mut")
                             newvalue = trait.value + rand(Normal(0, trait.value/mutscaling))
@@ -238,15 +241,15 @@ function createtraits(traitnames::Array{String,1})
     traits = Trait[]
     for name in traitnames
         if contains(name,"rate")
-            push!(traits,Trait(name,rand()*10,[],true))
+            push!(traits,Trait(name,rand()*10,0,true))
         elseif contains(name, "temp") && contains(name, "opt")
-            push!(traits,Trait(name,rand(Normal(298,5)),[],true)) #CAVE: code values elsewhere?
-        elseif contains(name, "tol")
-            push!(traits,Trait(name,abs(rand(Normal(0,5))),[],true)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,rand(Normal(298,5)),0,true)) #CAVE: code values elsewhere?
+        elseif contains(name, "tol") && !contains(name, "rep")
+            push!(traits,Trait(name,abs(rand(Normal(0,5))),0,true)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
-            push!(traits,Trait(name,abs(rand(Normal(0,0.01))),[],true)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,abs(rand(Normal(0,0.01))),0,true)) #CAVE: code values elsewhere?
         else
-            push!(traits,Trait(name,rand(),[],true))
+            push!(traits,Trait(name,rand(),0,true))
         end
     end
     traits
@@ -257,7 +260,7 @@ function creategenes(ngenes::Int64,traits::Array{Trait,1})
     viable = false
     while !viable
         for trait in traits
-            trait.codedby = []
+            trait.codedby = 0
         end
         genes = Gene[]
         for gene in 1:ngenes
@@ -266,13 +269,13 @@ function creategenes(ngenes::Int64,traits::Array{Trait,1})
             codesfor = Trait[]
             append!(codesfor,rand(traits,rand(Poisson(0.5))))
             for trait in codesfor
-                push!(trait.codedby,id) # crossreference!
+                trait.codedby += 1
             end
             push!(genes,Gene(sequence,id,codesfor))
         end
         viable = true
         for trait in traits
-            size(trait.codedby,1) == 0 && (viable = false) # make sure every trait is coded by at least 1 gene
+            trait.codedby == 0 && (viable = false) # make sure every trait is coded by at least 1 gene
         end
     end
     genes
