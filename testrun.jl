@@ -57,15 +57,22 @@ function compete!(patch::Patch)
     end
 end
 
-function reproduce!(patch::Patch)
+function findpartner(community::Array{Individual,1},mass::Float64,reptol::Float64)
+    posspartners = find(x->(1/reptol)*mass>x.size>reptol*mass,community)
+    while reptol * partner.size > mass > (1/reptol) * partner.size #CAVE compatibility rule: size
+        partner = rand(patch.community,1)
+    end
+end
+function reproduce!(patch::Patch) #TODO: refactorize!
     idx = 1
     temp = patch.altitude
     while idx <= size(patch.community,1)
         hasrepprob = haskey(patch.community[idx].traits,"repprob")
-        hasseedsize = haskey(patch.community[idx].traits,"seedsize")
+        hasreptol = haskey(patch.community[idx].traits,"reptol")
         hasreprate = haskey(patch.community[idx].traits,"reprate")
+        hasseedsize = haskey(patch.community[idx].traits,"seedsize")
         hasmutprob = haskey(patch.community[idx].traits,"mutprob")
-        if !hasrepprob || !hasseedsize || !hasreprate || !hasmutprob
+        if !hasrepprob || !hasreprate || !hasreptol || !hasmutprob || !hasseedsize 
             splice!(patch.community, idx)
             idx -= 1
         else
@@ -73,7 +80,7 @@ function reproduce!(patch::Patch)
             if !patch.community[idx].isnew && rand() < repprob
                 currentmass = patch.community[idx].size
                 seedsize = patch.community[idx].traits["seedsize"]
-                if currentmass >= 2 * seedsize > 0
+                if currentmass >= 2 * seedsize > 0 #CAVE: set rule for this, now arbitrary
                     meanoffs = patch.community[idx].traits["reprate"]
                     mass = patch.community[idx].size
                     metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
@@ -311,7 +318,7 @@ function chrms2traits(chrms::Array{Chromosome,1})
 end
 
 
-function genesis(ninds::Int64=1000, maxgenes::Int64=20, maxchrs::Int64=5,
+function genesis(ninds::Int64=1000, meangenes::Int64=20, meanchrs::Int64=5,
                  traitnames::Array{String,1} = ["ageprob",
                                                 "growthrate",
                                                 "mutprob",
@@ -324,8 +331,8 @@ function genesis(ninds::Int64=1000, maxgenes::Int64=20, maxchrs::Int64=5,
                                                 "tempopt"]) # minimal required traitnames
     community = Individual[]
     for ind in 1:ninds
-        ngenes = rand(1:maxgenes)
-        nchrs = rand(1:maxchrs)
+        ngenes = rand(Poisson(meangenes))
+        nchrs = rand(Poisson(meanchrs))
         traits = createtraits(traitnames)
         genes = creategenes(ngenes,traits)
         chromosomes = createchrs(nchrs,genes)
@@ -389,4 +396,24 @@ mean(map(x->x.traits["seedsize"],testpatch.community))
 minimum(map(x->x.traits["seedsize"],testpatch.community))
 
 maximum(map(x->x.traits["seedsize"],testpatch.community))
+
+mean(map(x->x.traits["mutprob"],startpatch.community))
+
+mean(map(x->x.traits["repprob"],startpatch.community))
+
+mean(map(x->x.traits["ageprob"],startpatch.community))
+
+mean(map(x->x.traits["temptol"],startpatch.community))
+
+mean(map(x->x.traits["reprate"],startpatch.community))
+
+mean(map(x->x.traits["growthrate"],startpatch.community))
+
+mean(map(x->x.traits["tempopt"],startpatch.community))
+
+mean(map(x->x.traits["seedsize"],startpatch.community))
+
+minimum(map(x->x.traits["seedsize"],startpatch.community))
+
+maximum(map(x->x.traits["seedsize"],startpatch.community))
 
