@@ -85,7 +85,7 @@ function reproduce!(patch::Patch) #TODO: refactorize!
             idx -= 1
         else
             repprob = patch.community[idx].traits["repprob"]
-            if !patch.community[idx].isnew && rand() < repprob
+            if !patch.community[idx].isnew && rand() <= repprob
                 currentmass = patch.community[idx].size
                 seedsize = patch.community[idx].traits["seedsize"]
                 if currentmass >= 2 * seedsize > 0 #CAVE: set rule for this, now arbitrary -> reprod. size?
@@ -130,7 +130,7 @@ function mutate!(ind::Individual, temp::Float64)
     for chr in ind.genome
         for gene in chr.genes
             for i in eachindex(gene.sequence)
-                if rand() < prob*exp(-act/(boltz*temp)) * normconst
+                if rand() <= prob*exp(-act/(boltz*temp)) * normconst
                     newbase = rand(collect("acgt"),1)[1]
                     while newbase == gene.sequence[i]
                         newbase = rand(collect("acgt"),1)[1]
@@ -351,7 +351,7 @@ function genesis(ninds::Int64=1000, meangenes::Int64=20, meanchrs::Int64=5,
                                                 "reprate",
                                                 "reptol",
                                                 "seedsize",
-                                                "sexprob",
+                                                #"sexprob",
                                                 "temptol",
                                                 "tempopt"]) # minimal required traitnames
     community = Individual[]
@@ -381,6 +381,59 @@ function checkviability!(patch::Patch) # may consider additional rules... # mayb
     end
 end
 
+function checkviability!(world::Array{Patch,1})
+    for patch in world
+        checkviability!(patch) # pmap(checkviability!,patch) ???
+    end
+end
+
+function establish!(world::Array{Patch,1})
+    for patch in world
+        establish!(patch) # pmap(!,patch) ???
+    end
+end
+
+function age!(world::Array{Patch,1})
+    for patch in world
+        age!(patch) # pmap(!,patch) ???
+    end
+end
+
+function grow!(world::Array{Patch,1})
+    for patch in world
+        grow!(patch) # pmap(!,patch) ???
+    end
+end
+
+function compete!(world::Array{Patch,1})
+    for patch in world
+        compete!(patch) # pmap(!,patch) ???
+    end
+end
+
+function reproduce!(world::Array{Patch,1}) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
+    for patch in world
+        reproduce!(patch) # pmap(!,patch) ???
+    end
+end
+
+function disperse!(world::Array{Patch,1})
+    for patch in world
+        idx = 1
+        while idx <= size(patch.community,1)
+            if !patch.community[idx].isnew && rand() <= patch.community[idx].traits["dispprob"]
+
+
+                patch.community[idx].isnew = true
+                indleft = splice!(patch.community,idx)
+                idx -= 1
+            end
+            idx += 1
+        end
+    end
+end
+
+
 ## Test stuff:
 ##############
 testpatch=Patch(genesis(),293,0.5,0.5,100)
@@ -397,6 +450,7 @@ for i = 1:timesteps
     size(testpatch.community,1)
     grow!(testpatch)
     size(testpatch.community,1)
+    ## DISPERSAL HERE!
     compete!(testpatch)
     size(testpatch.community,1)
     reproduce!(testpatch) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
