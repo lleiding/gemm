@@ -46,6 +46,7 @@ mutable struct Patch
     nichea::Float64 # additional niches,
     nicheb::Float64 # e.g. precipitation
     area::Float64
+    location::Tuple{Float64,Float64}
 end
 
 
@@ -342,31 +343,6 @@ function chrms2traits(chrms::Array{Chromosome,1})
     traitdict
 end
 
-
-function genesis(ninds::Int64=1000, meangenes::Int64=20, meanchrs::Int64=5,
-                 traitnames::Array{String,1} = ["ageprob",
-                                                "growthrate",
-                                                "mutprob",
-                                                "repprob",
-                                                "reprate",
-                                                "reptol",
-                                                "seedsize",
-                                                #"sexprob",
-                                                "temptol",
-                                                "tempopt"]) # minimal required traitnames
-    community = Individual[]
-    for ind in 1:ninds
-        ngenes = rand(Poisson(meangenes))
-        nchrs = rand(Poisson(meanchrs))
-        traits = createtraits(traitnames)
-        genes = creategenes(ngenes,traits)
-        chromosomes = createchrs(nchrs,genes)
-        traitdict = chrms2traits(chromosomes)
-        push!(community, Individual(chromosomes,traitdict,0,true,1.0,rand()))
-    end
-    community
-end
-
 function checkviability!(patch::Patch) # may consider additional rules... # maybe obsolete anyhow...
     idx=1
     while idx <= size(patch.community,1)
@@ -422,16 +398,54 @@ function disperse!(world::Array{Patch,1})
         idx = 1
         while idx <= size(patch.community,1)
             if !patch.community[idx].isnew && rand() <= patch.community[idx].traits["dispprob"]
-
-
+                dispmean = patch.community[idx].traits["dispmean"]
+                dispshape = patch.community[idx].traits["dispshape"]
                 patch.community[idx].isnew = true
                 indleft = splice!(patch.community,idx)
+                xdir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # scaling so that geometric mean
+                ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # follows original distribution
+                xdest = patch.location[1]+xdir # CAVE: might be other way around + border conditions
+                ydest = patch.location[1]+ydir # CAVE: might be other way around + border conditions
+                targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
+                possdests = find(x->in(x.location,targets),world)
+                if size(possdests,1) > 0 # if no viable target patch, individual dies
+                    size(possdests,1) > 1 ? (destination=rand(possdests)) : (destination = possdests[1])
+                    push!(world[destination].community,indleft)
+                end
                 idx -= 1
             end
             idx += 1
         end
     end
 end
+
+function genesis(ninds::Int64=1000, meangenes::Int64=20, meanchrs::Int64=5,
+                 traitnames::Array{String,1} = ["ageprob",
+                                                "dispmean"
+                                                "dispprob",
+                                                "dispshape",
+                                                "growthrate",
+                                                "mutprob",
+                                                "repprob",
+                                                "reprate",
+                                                "reptol",
+                                                "seedsize",
+                                                #"sexprob",
+                                                "temptol",
+                                                "tempopt"]) # minimal required traitnames
+    community = Individual[]
+    for ind in 1:ninds
+        ngenes = rand(Poisson(meangenes))
+        nchrs = rand(Poisson(meanchrs))
+        traits = createtraits(traitnames)
+        genes = creategenes(ngenes,traits)
+        chromosomes = createchrs(nchrs,genes)
+        traitdict = chrms2traits(chromosomes)
+        push!(community, Individual(chromosomes,traitdict,0,true,1.0,rand()))
+    end
+    community
+end
+
 
 
 ## Test stuff:
