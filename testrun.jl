@@ -397,7 +397,13 @@ function disperse!(world::Array{Patch,1})
     for patch in world
         idx = 1
         while idx <= size(patch.community,1)
-            if !patch.community[idx].isnew && rand() <= patch.community[idx].traits["dispprob"]
+            hasdispmean = haskey(patch.community[idx].traits,"dispmean")
+            hasdispprob = haskey(patch.community[idx].traits,"dispprob")
+            hasdispshape = haskey(patch.community[idx].traits,"dispshape")
+            if !hasdispmean || !hasdispprob || !hasdispshape
+                splice!(patch.community,idx)
+                idx -= 1
+            elseif !patch.community[idx].isnew && rand() <= patch.community[idx].traits["dispprob"]
                 dispmean = patch.community[idx].traits["dispmean"]
                 dispshape = patch.community[idx].traits["dispshape"]
                 patch.community[idx].isnew = true
@@ -421,7 +427,7 @@ end
 
 function genesis(ninds::Int64=1000, meangenes::Int64=20, meanchrs::Int64=5,
                  traitnames::Array{String,1} = ["ageprob",
-                                                "dispmean"
+                                                "dispmean",
                                                 "dispprob",
                                                 "dispshape",
                                                 "growthrate",
@@ -450,64 +456,47 @@ end
 
 ## Test stuff:
 ##############
-testpatch=Patch(genesis(),293,0.5,0.5,100)
+testpatch=Patch(genesis(),293,0.5,0.5,100,(0,0))
 startpatch=deepcopy(testpatch)
 const timesteps=1000 #Int64(round(parse(ARGS[1])))
 const mutscaling=50#parse(ARGS[2])
 const sexualreproduction = true
 for i = 1:timesteps
-    checkviability!(testpatch)
-    size(testpatch.community,1)
-    establish!(testpatch)
-    size(testpatch.community,1)
-    age!(testpatch)
-    size(testpatch.community,1)
-    grow!(testpatch)
-    size(testpatch.community,1)
-    ## DISPERSAL HERE!
-    compete!(testpatch)
-    size(testpatch.community,1)
-    reproduce!(testpatch) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
-    size(testpatch.community,1)
+    checkviability!(world)
+    map(x->size(x.community,1),world)
+    establish!(world)
+    map(x->size(x.community,1),world)
+    age!(world)
+    map(x->size(x.community,1),world)
+    grow!(world)
+    map(x->size(x.community,1),world)
+    disperse!(world)
+    map(x->size(x.community,1),world)
+    compete!(world)
+    map(x->size(x.community,1),world)
+    reproduce!(world) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
+    map(x->size(x.community,1),world)
 end
+map(x->size(x.community,1),world)
+histogram(map(x->x.size,world[1].community))
 
-mean(map(x->x.traits["mutprob"],testpatch.community))
 
-mean(map(x->x.traits["repprob"],testpatch.community))
+mean(map(x->x.traits["mutprob"],world[1].community))
 
-mean(map(x->x.traits["ageprob"],testpatch.community))
+mean(map(x->x.traits["repprob"],world[1].community))
 
-mean(map(x->x.traits["temptol"],testpatch.community))
+mean(map(x->x.traits["ageprob"],world[1].community))
 
-mean(map(x->x.traits["reprate"],testpatch.community))
+mean(map(x->x.traits["temptol"],world[1].community))
 
-mean(map(x->x.traits["growthrate"],testpatch.community))
+mean(map(x->x.traits["reprate"],world[1].community))
 
-mean(map(x->x.traits["tempopt"],testpatch.community))
+mean(map(x->x.traits["growthrate"],world[1].community))
 
-mean(map(x->x.traits["seedsize"],testpatch.community))
+mean(map(x->x.traits["tempopt"],world[1].community))
 
-minimum(map(x->x.traits["seedsize"],testpatch.community))
+mean(map(x->x.traits["seedsize"],world[1].community))
 
-maximum(map(x->x.traits["seedsize"],testpatch.community))
+minimum(map(x->x.traits["seedsize"],world[1].community))
 
-mean(map(x->x.traits["mutprob"],startpatch.community))
-
-mean(map(x->x.traits["repprob"],startpatch.community))
-
-mean(map(x->x.traits["ageprob"],startpatch.community))
-
-mean(map(x->x.traits["temptol"],startpatch.community))
-
-mean(map(x->x.traits["reprate"],startpatch.community))
-
-mean(map(x->x.traits["growthrate"],startpatch.community))
-
-mean(map(x->x.traits["tempopt"],startpatch.community))
-
-mean(map(x->x.traits["seedsize"],startpatch.community))
-
-minimum(map(x->x.traits["seedsize"],startpatch.community))
-
-maximum(map(x->x.traits["seedsize"],startpatch.community))
-
+maximum(map(x->x.traits["seedsize"],world[1].community))
