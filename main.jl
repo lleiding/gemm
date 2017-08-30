@@ -61,11 +61,9 @@ function analysis()
 end
 
 function runit()
-    world = createworld()
+    maptable=readmapfile("mapfile")
+    world=createworld(maptable)
     simulation(world)
-    analysis()
 end
 
-examplemap = [
-
-exampleworld = 
+runit()
