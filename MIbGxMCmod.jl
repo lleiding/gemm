@@ -47,14 +47,19 @@ mutable struct Individual
 end
 
 mutable struct Patch
-    community::Array{Individual,1}
+    id::Int64
+    location::Tuple{Float64,Float64}
     altitude::Float64 # corresponds to T
+    area::Float64
     nichea::Float64 # additional niches,
     nicheb::Float64 # e.g. precipitation
-    area::Float64
-    location::Tuple{Float64,Float64}
+    community::Array{Individual,1}
 end
 
+Patch(id,location,altitude,nichea,nicheb) = Patch(id,location,altitude,nichea,nicheb,Individual[])
+Patch(id,location,altitude,nichea) = Patch(id,location,altitude,nichea,0,Individual[])
+Patch(id,location,altitude) = Patch(id,location,altitude,0,0,Individual[])
+Patch(id,location) = Patch(id,location,298,0,0,Individual[])
 
 ## Methods/Functions:
 #####################
