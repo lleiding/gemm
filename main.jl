@@ -11,13 +11,6 @@ include("MIbGxMCmod.jl")
 using MIbGxMCmod
 
 
-const boltz = 1.38064852e-23 #  J/K = m2⋅kg/(s2⋅K)
-const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
-const normconst = 1e10 # normalization constant to get biologically realistic orders of magnitude
-const mutscaling=50#parse(ARGS[2])
-const sexualreproduction = true
-
-
 function simulation(world::Array{Patch,1}, timesteps::Int=1000)
     for t in 1:timesteps
         checkviability!(world)
@@ -30,20 +23,29 @@ function simulation(world::Array{Patch,1}, timesteps::Int=1000)
     end
 end
 
-function createworld(maptable::Array{String,1})
+function createworld(maptable::Array{Array{SubString{String},1},1})
     world = Patch[]
+    area = 100 # CAVE: just for now...
     for entry in maptable
-        size(strings,1) < 3 && error("please check your map file for incomplete or faulty entries!")
-        id = parse(Int64, strings[1])
-        xcord = parse(Int64, strings[2])
-        ycord = parse(Int64, strings[3])
-        size(strings,1) > 3 ? temperature = parse(Float64, strings[3]) : temperature = 298
+        size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
+        Each line must contain patch information with at least \n
+        \t - a unique integer ID, \n
+        \t - an integer x coordinate, \n
+        \t - an integer y coordinate, \n
+        separated by a whitespace character (<ID> <x> <y>).")
+        id = parse(Int64, entry[1])
+        xcord = parse(Int64, entry[2])
+        ycord = parse(Int64, entry[3])
+        size(entry,1) > 3 ? temperature = parse(Float64, entry[4]) : temperature = 298
         isisland = false
-        if size(strings,1) > 3
-            contains(lowercase(entry[4]),"island") && isisland = true # islands do not receive an initial community
+        if size(entry,1) > 4
+            contains(lowercase(entry[5]),"island") && (isisland = true) # islands do not receive an initial community
         end
-        newpatch = Patch(id,(xcord,ycord),temperature,area))
+        newpatch = Patch(id,(xcord,ycord),temperature,area,isisland)
+        !isisland && append!(newpatch.community,genesis())
+        push!(world,newpatch)
     end
+    world
 end
 
 function readmapfile(filename::String)
