@@ -30,7 +30,29 @@ function simulation(world::Array{Patch,1}, timesteps::Int=1000)
     end
 end
 
-function createworld()
+function createworld(maptable::Array{String,1})
+    world = Patch[]
+    for entry in maptable
+        size(strings,1) < 3 && error("please check your map file for incomplete or faulty entries!")
+        id = parse(Int64, strings[1])
+        xcord = parse(Int64, strings[2])
+        ycord = parse(Int64, strings[3])
+        size(strings,1) > 3 ? temperature = parse(Float64, strings[3]) : temperature = 298
+        isisland = false
+        if size(strings,1) > 3
+            contains(lowercase(entry[4]),"island") && isisland = true # islands do not receive an initial community
+        end
+        newpatch = Patch(id,(xcord,ycord),temperature,area))
+    end
+end
+
+function readmapfile(filename::String)
+    mapstrings = String[]
+    open(filename) do file
+        mapstrings = readlines(file)
+    end
+    mapentries = map(split,mapstrings)
+    filter(x->size(x,1)>0,mapentries)
 end
 
 function analysis()
@@ -42,3 +64,6 @@ function runit()
     analysis()
 end
 
+examplemap = [
+
+exampleworld = 
