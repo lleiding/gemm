@@ -1,52 +1,36 @@
 #!/usr/bin/env julia
+## Metabolic Individual-based Genetically-explicit Meta-Community Model
+## Ludwig Leidinger 2017
+## <l.leidinger@gmx.net>
+##
+## Main simulation
 
-include("types.jl")
-using GeneInds: Island, Patch, Individual, evalenv!, germinate!, mature!,
-    reproduce, disperse
+include("MIbGxMCmod.jl")
 
-using Distributions
 
-function run_simulation(maxt::Int, islands::Array{Island,1})
-    ## main time cycle
-    for t in 1:maxt
-        ## cycle land masses
-        for i in islands
-            ## cycle patches on land masses
-            for p in i.patches
-                ## cycle individuals
-                offspring = []
-                counter = 0 # testing
-                println(size(p.community, 1)) # testing
-                for j in eachindex(p.community) # individuals are sorted according to their phenologies
-                    counter += 1 # for testing
-                    p.community[j].isnew && evalenv!(p, p.community[j])
-                    germinate!(p.community[j])
-                    mature!(p.community[j])
-                    children = reproduce(p.community[j])
-                    (children!=nothing) && (append!(offspring, children))
-                    direction = disperse!(p.community[j])
-                    ## check if direction contains value
-                    ## kill ind, if it does
-                    ## add to origin coordinates
-                    ## copy individual there
-                    (counter>20) && (p.community[j].dead = true) # for testing
-                end
-                deleteat!(p.community, find(x -> x.dead, p.community))
-                append!(p.community, offspring)
-                ## /ind cycle
-            end
-            ## /patch cycle
-        end
-        ## /island cycle
-        (t%10 == 0) && println("t=", t, " ##################")
+using MIbGxMCmod
+
+
+const boltz = 1.38064852e-23 #  J/K = m2⋅kg/(s2⋅K)
+const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
+const normconst = 1e10 # normalization constant to get biologically realistic orders of magnitude
+const mutscaling=50#parse(ARGS[2])
+const sexualreproduction = true
+
+
+function simulation(world::Array{Patch,1}, timesteps::Int=1000)
+    for t in 1:timesteps
+        checkviability!(world)
+        establish!(world)
+        age!(world)
+        grow!(world)
+        disperse!(world)
+        compete!(world)
+        reproduce!(world)
     end
-    ## /time cycle
 end
 
-oneisland = [Island([Patch([Individual([], [], 1, "seed", true, 5, 0.3, 0.3, 0.1, false)], 1, 1, 1)])]
-run_simulation(100, oneisland)
-
-map(genesis, patches)
-for patch in patches
-    
-    
+function runit()
+    world = createworld()
+    simulation(world)
+end
