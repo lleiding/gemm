@@ -30,7 +30,15 @@ function simulation(world::Array{Patch,1}, timesteps::Int=1000)
     end
 end
 
+function createworld()
+end
+
+function analysis()
+end
+
 function runit()
     world = createworld()
     simulation(world)
+    analysis()
 end
+
