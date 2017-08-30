@@ -381,18 +381,6 @@ function grow!(world::Array{Patch,1})
     end
 end
 
-function compete!(world::Array{Patch,1})
-    for patch in world
-        compete!(patch) # pmap(!,patch) ???
-    end
-end
-
-function reproduce!(world::Array{Patch,1}) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
-    for patch in world
-        reproduce!(patch) # pmap(!,patch) ???
-    end
-end
-
 function disperse!(world::Array{Patch,1})
     for patch in world
         idx = 1
@@ -424,6 +412,19 @@ function disperse!(world::Array{Patch,1})
         end
     end
 end
+
+function compete!(world::Array{Patch,1})
+    for patch in world
+        compete!(patch) # pmap(!,patch) ???
+    end
+end
+
+function reproduce!(world::Array{Patch,1}) # TODO: requires certain amount of resource/bodymass dependent on seedsize!
+    for patch in world
+        reproduce!(patch) # pmap(!,patch) ???
+    end
+end
+
 
 function genesis(ninds::Int64=1000, meangenes::Int64=20, meanchrs::Int64=5,
                  traitnames::Array{String,1} = ["ageprob",
