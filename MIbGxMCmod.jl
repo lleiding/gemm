@@ -364,6 +364,75 @@ function reproduce!(world::Array{Patch,1})
     end
 end
 
+function createtraits(traitnames::Array{String,1})
+    traits = Trait[]
+    for name in traitnames
+        if contains(name,"rate")
+            push!(traits,Trait(name,rand()*10,0,true))
+        elseif contains(name, "temp") && contains(name, "opt")
+            push!(traits,Trait(name,rand(Normal(298,5)),0,true)) #CAVE: code values elsewhere?
+        elseif contains(name, "tol") && !contains(name, "rep")
+            push!(traits,Trait(name,abs(rand(Normal(0,5))),0,true)) #CAVE: code values elsewhere?
+        elseif contains(name, "mut")
+            push!(traits,Trait(name,abs(rand(Normal(0,0.01))),0,true)) #CAVE: code values elsewhere?
+        else
+            push!(traits,Trait(name,rand(),0,true))
+        end
+    end
+    traits
+end
+
+function creategenes(ngenes::Int64,traits::Array{Trait,1})
+    genes = Gene[]
+    viable = false
+    while !viable
+        for trait in traits
+            trait.codedby = 0
+        end
+        genes = Gene[]
+        for gene in 1:ngenes
+            sequence = collect("acgt"^5) # arbitrary start sequence
+            id = randstring(8)
+            codesfor = Trait[]
+            append!(codesfor,rand(traits,rand(Poisson(0.5))))
+            for trait in codesfor
+                trait.codedby += 1
+            end
+            push!(genes,Gene(sequence,id,codesfor))
+        end
+        viable = true
+        for trait in traits
+            trait.codedby == 0 && (viable = false) # make sure every trait is coded by at least 1 gene
+        end
+    end
+    genes
+end
+
+function createchrs(nchrs::Int64,genes::Array{Gene,1})
+    ngenes=size(genes,1)
+    if nchrs>1
+        chrsplits = sort(rand(1:ngenes,nchrs-1))
+        chromosomes = Chromosome[]
+        for chr in 1:nchrs
+            if chr==1 # first chromosome
+                push!(chromosomes, Chromosome(genes[1:chrsplits[chr]],rand([false,true])))
+            elseif chr==nchrs # last chromosome
+                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):end],rand([false,true])))
+            else
+                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):chrsplits[chr]],rand([false,true])))
+            end
+        end
+    else # only one chromosome
+        chromosomes = [Chromosome(genes,rand([false,true]))]
+    end
+    secondset = deepcopy(chromosomes)
+    for chrm in secondset
+        chrm.maternal = !chrm.maternal
+    end
+    append!(chromosomes,secondset)
+    chromosomes
+end
+
 function genesis(ninds::Int64=1000, meangenes::Int64=20, meanchrs::Int64=5,
                  traitnames::Array{String,1} = ["ageprob",
                                                 "dispmean",
