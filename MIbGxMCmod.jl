@@ -29,7 +29,6 @@ const sexualreproduction = true
 mutable struct Trait
     name::String
     value::Float64
-    codedby::Int64 # count coding genes
     active::Bool
 end
 
@@ -70,6 +69,7 @@ Patch(id,location,altitude,area,isisland) = Patch(id,location,altitude,area,isis
 Patch(id,location,altitude,area) = Patch(id,location,altitude,area,false,0,0,Individual[])
 Patch(id,location,altitude) = Patch(id,location,altitude,100,false,0,0,Individual[])
 Patch(id,location) = Patch(id,location,298,0,0,Individual[])
+
 
 ## Methods/Functions:
 #####################
@@ -375,15 +375,15 @@ function createtraits(traitnames::Array{String,1})
     traits = Trait[]
     for name in traitnames
         if contains(name,"rate")
-            push!(traits,Trait(name,rand()*10,0,true))
+            push!(traits,Trait(name,rand()*10,true))
         elseif contains(name, "temp") && contains(name, "opt")
-            push!(traits,Trait(name,rand(Normal(298,5)),0,true)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,rand(Normal(298,5)),true)) #CAVE: code values elsewhere?
         elseif contains(name, "tol") && !contains(name, "rep")
-            push!(traits,Trait(name,abs(rand(Normal(0,5))),0,true)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,abs(rand(Normal(0,5))),true)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
-            push!(traits,Trait(name,abs(rand(Normal(0,0.01))),0,true)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,abs(rand(Normal(0,0.01))),true)) #CAVE: code values elsewhere?
         else
-            push!(traits,Trait(name,rand(),0,true))
+            push!(traits,Trait(name,rand(),true))
         end
     end
     traits
@@ -391,25 +391,20 @@ end
 
 function creategenes(ngenes::Int64,traits::Array{Trait,1})
     genes = Gene[]
-    viable = false
-    while !viable
-        for trait in traits
-            trait.codedby = 0
+    for i in 1:ngenes
+        sequence = collect("acgt"^5) # arbitrary start sequence
+        id = randstring(8)
+        codesfor = Trait[]
+        push!(genes,Gene(sequence,id,codesfor))
+    end
+    for trait in traits
+        ncodinggenes = rand(Poisson(1))
+        while ncodinggenes < 1  # make sure every trait is coded by at least 1 gene
+            ncodinggenes = rand(Poisson(1))
         end
-        genes = Gene[]
-        for gene in 1:ngenes
-            sequence = collect("acgt"^5) # arbitrary start sequence
-            id = randstring(8)
-            codesfor = Trait[]
-            append!(codesfor,rand(traits,rand(Poisson(0.5))))
-            for trait in codesfor
-                trait.codedby += 1
-            end
-            push!(genes,Gene(sequence,id,codesfor))
-        end
-        viable = true
-        for trait in traits
-            trait.codedby == 0 && (viable = false) # make sure every trait is coded by at least 1 gene
+        codinggenes = rand(genes,ncodinggenes)
+        for gene in codinggenes
+            push!(gene.codesfor,trait)
         end
     end
     genes
