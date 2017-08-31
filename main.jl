@@ -17,10 +17,11 @@ function readmapfile(filename::String)
         mapstrings = readlines(file)
     end
     mapentries = map(split,mapstrings)
+    mapentries = map(x->map(String,x),mapentries)
     filter(x->size(x,1)>0,mapentries)
 end
 
-function createworld(maptable::Array{Array{SubString{String},1},1})
+function createworld(maptable::Array{Array{String,1},1})
     world = Patch[]
     area = 100 # CAVE: just for now...
     for entry in maptable
@@ -64,7 +65,7 @@ function visualisation(world::Array{Patch,1},firstplot::Bool)
         gr()
         heatmap(mat,aspect_ratio=1,show=true)
     else
-        heatmap!(mat,aspect_ratio=1,show=true)
+        heatmap(mat,aspect_ratio=1,show=true)
     end
 end
 
@@ -85,15 +86,27 @@ function simulation(world::Array{Patch,1}, timesteps::Int=1000)
         compete!(world)
         reproduce!(world)
         #        mod(timesteps,20) == 0 && analysis(world)
-        mod(timesteps,20) == 0 && visualisation(world,t==20)
+        #        mod(timesteps,20) == 0 && visualisation(world,t==20)
+        mod(timesteps,10) == 0 && println(t)
     end
 end
 
-function runit()
-    maptable=readmapfile("mapfile")
-    world=createworld(maptable)
-    simulation(world)
-    analysis(world)
+function runit(firstrun::Bool)
+    length(ARGS) > 0 ? mapfile = ARGS[1] : mapfile = "mapfile"
+    length(ARGS) > 1 ? seed = parse(Int,ARGS[2]) : seed = 0
+    length(ARGS) > 2 ? timesteps = parse(Int,ARGS[3]) : timesteps = 1000
+    seed != 0 && srand(seed)
+    if firstrun
+        world=createworld([["1","1","1"]])
+        simulation(world, 10)
+    else
+        maptable=readmapfile(mapfile)
+        world=createworld(maptable)
+        simulation(world, timesteps)
+        analysis(world)
+    end
 end
 
-runit()
+@time runit(true)
+@time runit(false)
+@time runit(false)
