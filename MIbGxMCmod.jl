@@ -404,7 +404,7 @@ function creategenes(ngenes::Int64,traits::Array{Trait,1})
         end
         codinggenes = rand(genes,ncodinggenes)
         for gene in codinggenes
-            push!(gene.codesfor,trait)
+            push!(gene.codes,trait)
         end
     end
     genes
