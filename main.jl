@@ -4,6 +4,11 @@
 ## <l.leidinger@gmx.net>
 ##
 ## Main simulation
+##
+## Synopsis: julia main.jl <MAPFILE> <RANDOMSEED> <TIMESTEPS>
+## <MAPFILE> is a textfile containing information about the simulation arena
+## Every line describes one patch in the following format:
+## <ID> <X-COORDINATE> <Y-COORDINATE> [<TYPE>]
 
 include("MIbGxMCmod.jl")
 
