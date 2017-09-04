@@ -271,7 +271,7 @@ function grow!(world::Array{Patch,1})
     end
 end
 
-function disperse!(world::Array{Patch,1})
+function disperse!(world::Array{Patch,1}) #TODO: additional border conditions
     for patch in world
         idx = 1
         while idx <= size(patch.community,1)
@@ -293,8 +293,10 @@ function disperse!(world::Array{Patch,1})
                 targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
                 possdests = find(x->in(x.location,targets),world)
                 if size(possdests,1) > 0 # if no viable target patch, individual dies
-                    size(possdests,1) > 1 ? (destination=rand(possdests)) : (destination = possdests[1])
-                    push!(world[destination].community,indleft)
+                    destination = rand(possdests)
+                    originisolated = patch.isolated && rand() <= indleft.traits["dispprob"]
+                    targetisolated = world[destination].isolated && rand() <= indleft.traits["dispprob"]
+                    (!originisolated && !targetisolated) && push!(world[destination].community,indleft)
                 end
                 idx -= 1
             end
