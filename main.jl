@@ -21,9 +21,19 @@ function readmapfile(filename::String)
     open(filename) do file
         mapstrings = readlines(file)
     end
+    mapstrings = filter(x->!all(isspace,x),mapstrings) # remove empty lines
+    mapstrings = filter(x->x[1]!='#',mapstrings) # remove comment lines
     mapentries = map(split,mapstrings)
     mapentries = map(x->map(String,x),mapentries)
-    filter(x->size(x,1)>0,mapentries)
+    timesteps = 0
+    try
+        timesteps = parse(Int,filter(x->size(x,1)==1,mapentries)[1][1])
+    catch
+        timesteps = 1000
+        warn("your mapfile \"$filename\" does not include timestep information. Assumed $timesteps timesteps.")
+    end
+    mapentries = filter(x->size(x,1)>1,mapentries)
+    timesteps,mapentries
 end
 
 function createworld(maptable::Array{Array{String,1},1})
@@ -31,11 +41,11 @@ function createworld(maptable::Array{Array{String,1},1})
     area = 100 # CAVE: just for now...
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
-            Each line must contain patch information with at least \n
-            \t - a unique integer ID, \n
-            \t - an integer x coordinate, \n
-            \t - an integer y coordinate, \n
-            separated by a whitespace character (<ID> <x> <y>).")
+                Each line must contain patch information with at least \n
+                \t - a unique integer ID, \n
+                \t - an integer x coordinate, \n
+                \t - an integer y coordinate, \n
+                separated by a whitespace character (<ID> <x> <y>).")
         id = parse(Int64, entry[1])
         xcord = parse(Int64, entry[2])
         ycord = parse(Int64, entry[3])
@@ -84,6 +94,20 @@ function analysis(world::Array{Patch,1})
     end
 end
 
+function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
+    filename = mapfile * "_seed" * seed * ".out"
+    counter = 0
+    while ispath(filename)
+        filename *= "_1"
+        counter += 1
+        counter >= 3 && error("cannot create file \"$filename\". Please clear your directory.")
+    end
+    touch(filename)
+    open(filename, "w") do file
+        print(file,world)
+    end
+end
+
 function simulation(world::Array{Patch,1}, timesteps::Int=1000)
     for t in 1:timesteps
         checkviability!(world)
@@ -100,21 +124,24 @@ function simulation(world::Array{Patch,1}, timesteps::Int=1000)
 end
 
 function runit(firstrun::Bool)
-    length(ARGS) > 0 ? mapfile = ARGS[1] : mapfile = "mapfile"
-    length(ARGS) > 1 ? seed = parse(Int,ARGS[2]) : seed = 0
-    length(ARGS) > 2 ? timesteps = parse(Int,ARGS[3]) : timesteps = 1000
+    length(ARGS) > 0 ? seed = parse(Int,ARGS[1]) : seed = 0
+    length(ARGS) > 1 ? cycles = length(ARGS) - 1 : cycles = 1 #mapfile = ARGS[1] : mapfile = "mapfile"
+    length(ARGS) > 1 ? mapfiles = ARGS[2:end] : mapfiles = ["mapfile"]   # length(ARGS) > 2 ? timesteps = parse(Int,ARGS[3]) : timesteps = 1000
     seed != 0 && srand(seed)
     if firstrun
         world=createworld([["1","1","1"]])
         simulation(world, 10)
     else
-        maptable=readmapfile(mapfile)
-        world=createworld(maptable)
-        simulation(world, timesteps)
-        analysis(world)
+        for i in length(mapfiles)
+            timesteps,maptable = readmapfile(mapfile)
+            i == 1 && world = createworld(maptable)
+            i > 1 && updateworld!(world,maptable)
+            simulation(world, timesteps)
+            writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
+        end
     end
 end
 
 @time runit(true)
 @time runit(false)
-@time runit(false)
+
