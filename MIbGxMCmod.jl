@@ -61,14 +61,16 @@ mutable struct Patch
     nichea::Float64 # additional niches,
     nicheb::Float64 # e.g. precipitation
     community::Array{Individual,1}
+    isolated::Bool
 end
 
-Patch(id,location,altitude,area,isisland,nichea,nicheb) = Patch(id,location,altitude,area,isisland,nichea,nicheb,Individual[])
-Patch(id,location,altitude,area,isisland,nichea) = Patch(id,location,altitude,area,isisland,nichea,0,Individual[])
-Patch(id,location,altitude,area,isisland) = Patch(id,location,altitude,area,isisland,0,0,Individual[])
-Patch(id,location,altitude,area) = Patch(id,location,altitude,area,false,0,0,Individual[])
-Patch(id,location,altitude) = Patch(id,location,altitude,100,false,0,0,Individual[])
-Patch(id,location) = Patch(id,location,298,0,0,Individual[])
+Patch(id,location,altitude,area,isisland,nichea,nicheb,community) = Patch(id,location,altitude,area,isisland,nichea,nicheb,community,false)
+Patch(id,location,altitude,area,isisland,nichea,nicheb) = Patch(id,location,altitude,area,isisland,nichea,nicheb,Individual[],false)
+Patch(id,location,altitude,area,isisland,nichea) = Patch(id,location,altitude,area,isisland,nichea,0,Individual[],false)
+Patch(id,location,altitude,area,isisland) = Patch(id,location,altitude,area,isisland,0,0,Individual[],false)
+Patch(id,location,altitude,area) = Patch(id,location,altitude,area,false,0,0,Individual[],false)
+Patch(id,location,altitude) = Patch(id,location,altitude,100,false,0,0,Individual[],false)
+Patch(id,location) = Patch(id,location,298,0,0,Individual[],false)
 
 
 ## Methods/Functions:
