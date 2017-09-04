@@ -17,6 +17,7 @@ using MIbGxMCmod, Plots
 
 
 function readmapfile(filename::String)
+    println("Reading file...")
     mapstrings = String[]
     open(filename) do file
         mapstrings = readlines(file)
@@ -33,10 +34,11 @@ function readmapfile(filename::String)
         warn("your mapfile \"$filename\" does not include timestep information. Assumed $timesteps timesteps.")
     end
     mapentries = filter(x->size(x,1)>1,mapentries)
-    timesteps,mapentries
+    return timesteps,mapentries
 end
 
 function createworld(maptable::Array{Array{String,1},1})
+    println("Creating world...")
     world = Patch[]
     area = 100 # CAVE: just for now...
     for entry in maptable
@@ -65,6 +67,7 @@ function createworld(maptable::Array{Array{String,1},1})
 end
 
 function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) #TODO: add functionality to remove patches!
+    println("Updating world...")
     area = 100 # CAVE: just for now...
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
@@ -143,6 +146,7 @@ function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
 end
 
 function simulation(world::Array{Patch,1}, timesteps::Int=1000)
+    println("Starting simulation...")
     for t in 1:timesteps
         checkviability!(world)
         establish!(world)
