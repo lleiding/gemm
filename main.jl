@@ -64,7 +64,7 @@ function createworld(maptable::Array{Array{String,1},1})
     world
 end
 
-function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1})
+function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) #TODO: add functionality to remove patches!
     area = 100 # CAVE: just for now...
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
