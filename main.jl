@@ -129,7 +129,7 @@ function analysis(world::Array{Patch,1})
 end
 
 function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
-    filename = mapfile * "_seed" * seed * ".out"
+    filename = mapfile * "_seed" * "$seed" * ".out"
     counter = 0
     while ispath(filename)
         filename *= "_1"
