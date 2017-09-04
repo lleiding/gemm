@@ -45,6 +45,9 @@ function createworld(maptable::Array{Array{String,1},1})
             contains(lowercase(entry[5]),"island") && (isisland = true) # islands do not receive an initial community
         end
         newpatch = Patch(id,(xcord,ycord),temperature,area,isisland)
+        if size(entry,1) > 5
+            contains(lowercase(entry[6]),"isolated") && (newpatch.isolated = true)
+        end
         !isisland && append!(newpatch.community,genesis())
         push!(world,newpatch)
     end
