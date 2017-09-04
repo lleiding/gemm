@@ -153,7 +153,7 @@ function simulation(world::Array{Patch,1}, timesteps::Int=1000)
         reproduce!(world)
         #        mod(timesteps,20) == 0 && analysis(world)
         #        mod(timesteps,20) == 0 && visualisation(world,t==20)
-        mod(timesteps,10) == 0 && println(t)
+        #mod(timesteps,10) == 0 && println(t)
     end
 end
 
@@ -170,7 +170,7 @@ function runit(firstrun::Bool)
             i == 1 && (world = createworld(maptable))
             i > 1 && updateworld!(world,maptable)
             simulation(world, timesteps)
-            writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
+            writedata(world, seed, mapfiles[i])
         end
     end
 end
