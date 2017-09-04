@@ -64,6 +64,40 @@ function createworld(maptable::Array{Array{String,1},1})
     world
 end
 
+function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1})
+    area = 100 # CAVE: just for now...
+    for entry in maptable
+        size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
+                Each line must contain patch information with at least \n
+                \t - a unique integer ID, \n
+                \t - an integer x coordinate, \n
+                \t - an integer y coordinate, \n
+                separated by a whitespace character (<ID> <x> <y>).")
+        id = parse(Int64, entry[1])
+        xcord = parse(Int64, entry[2])
+        ycord = parse(Int64, entry[3])
+        size(entry,1) > 3 ? temperature = parse(Float64, entry[4]) : temperature = 298
+        isisland = false
+        if size(entry,1) > 4
+            contains(lowercase(entry[5]),"island") && (isisland = true) # islands do not receive an initial community
+        end
+        if size(entry,1) > 5
+            contains(lowercase(entry[6]),"isolated") && (newpatch.isolated = true)
+        end
+        try
+            p = find(x->x.id==id,world)
+            world[p].location = (xcord,ycord)
+            world[p].altitude = temperature
+            world[p].isisland = isisland
+            world[p].isolated = isolated
+        catch
+            newpatch = Patch(id,(xcord,ycord),temperature,area,isisland)
+            push!(world,newpatch)
+        end
+    end
+    world
+end
+
 function visualisation(world::Array{Patch,1},firstplot::Bool)
     xcords = map(x->Int(floor(x.location[1])),world)
     ycords = map(x->Int(floor(x.location[2])),world)
