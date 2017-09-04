@@ -125,7 +125,6 @@ end
 
 function runit(firstrun::Bool)
     length(ARGS) > 0 ? seed = parse(Int,ARGS[1]) : seed = 0
-    length(ARGS) > 1 ? cycles = length(ARGS) - 1 : cycles = 1 #mapfile = ARGS[1] : mapfile = "mapfile"
     length(ARGS) > 1 ? mapfiles = ARGS[2:end] : mapfiles = ["mapfile"]   # length(ARGS) > 2 ? timesteps = parse(Int,ARGS[3]) : timesteps = 1000
     seed != 0 && srand(seed)
     if firstrun
