@@ -165,7 +165,7 @@ function runit(firstrun::Bool)
         world=createworld([["1","1","1"]])
         simulation(world, 10)
     else
-        for i in length(mapfiles)
+        for i in 1:length(mapfiles)
             timesteps,maptable = readmapfile(mapfiles[i])
             i == 1 && world = createworld(maptable)
             i > 1 && updateworld!(world,maptable)
