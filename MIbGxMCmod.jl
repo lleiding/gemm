@@ -385,7 +385,7 @@ function createtraits(traitnames::Array{String,1})
         elseif contains(name, "tol") && !contains(name, "rep")
             push!(traits,Trait(name,abs(rand(Normal(0,5))),true)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
-            push!(traits,Trait(name,abs(rand(Normal(0,0.01))),true)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,abs(rand(Normal(0,1e-6))),true)) #CAVE: code values elsewhere?
         else
             push!(traits,Trait(name,rand(),true))
         end
