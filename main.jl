@@ -212,9 +212,9 @@ end
     end
 end
 
-@everywhere function runit(firstrun::Bool,seed::Int64=0)
+@everywhere function runit(firstrun::Bool,mapfiles::Array{String,1},seed::Int64=0)
     #length(ARGS) > 0 ? seed = parse(Int,ARGS[1]) : seed = 0
-    length(ARGS) > 1 ? mapfiles = ARGS[2:end] : mapfiles = ["mapfile"]   # length(ARGS) > 2 ? timesteps = parse(Int,ARGS[3]) : timesteps = 1000
+    #length(ARGS) > 1 ? mapfiles = ARGS[2:end] : mapfiles = ["mapfile"]   # length(ARGS) > 2 ? timesteps = parse(Int,ARGS[3]) : timesteps = 1000
     seed != 0 && srand(seed)
     if firstrun
         world=createworld([["1","1","1"]])
@@ -233,8 +233,9 @@ end
 ## Parallel stuff:
 const nprocesses = nprocs()
 length(ARGS) > 0 ? (const startseed = parse(Int,ARGS[1])) : (const startseed = 1)
-const replicates = startseed:(startseed+nprocesses)
-pmap(x->runit(true),replicates)
-pmap(x->runit(false,x),replicates)
+length(ARGS) > 1 ? (const mapfiles = ARGS[2:end]) : (const mapfiles = ["mapfile"])
+const replicates = startseed:startseed+nprocesses-1
+pmap(x->runit(true,mapfiles),replicates)
+pmap(x->runit(false,mapfiles,x),replicates)
 
 
