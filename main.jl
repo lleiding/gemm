@@ -154,7 +154,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
                 for key in traitkeys
                     print(io, key, sep)
                 end
-                println()
+                println(io)
                 header = false
             end
             print(io, patch.id, sep)
