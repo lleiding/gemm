@@ -13,7 +13,7 @@
 include("MIbGxMCmod.jl")
 
 
-using MIbGxMCmod, Plots
+@everywhere using MIbGxMCmod, Plots
 
 
 @everywhere function readmapfile(filename::String)
@@ -186,7 +186,7 @@ end
     while ispath(filename)
         filename *= "_1"
         counter += 1
-        counter >= 3 && error("cannot create file \"$filename\". Please clear your directory.")
+        counter >= 3 && error("file \"$filename\" exists. Please clear your directory.")
     end
     println("Writing data to \"$filename\"...")
     touch(filename)
