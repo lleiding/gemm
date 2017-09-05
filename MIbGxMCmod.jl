@@ -89,36 +89,6 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     gamete
 end
 
-function mutate!(ind::Individual, temp::Float64)
-    prob = ind.traits["mutprob"]
-    for chrm in ind.genome
-        for gene in chrm.genes
-            for i in eachindex(gene.sequence)
-                if rand() <= prob*exp(-act/(boltz*temp)) * normconst
-                    newbase = rand(collect("acgt"),1)[1]
-                    while newbase == gene.sequence[i]
-                        newbase = rand(collect("acgt"),1)[1]
-                    end
-                    gene.sequence[i] = newbase
-                    for trait in gene.codes
-                        trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
-                        newvalue = trait.value + rand(Normal(0, trait.value/mutscaling)) # new value for trait
-                        (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
-                        (newvalue > 1 && contains(trait.name,"reptol")) && (newvalue=1)
-                        newvalue < 0 && (newvalue=abs(newvalue))
-                        while newvalue == 0 #&& contains(trait.name,"mut")
-                            newvalue = trait.value + rand(Normal(0, trait.value/mutscaling))
-                        end
-                        trait.value = newvalue
-                    end
-                end
-            end
-        end
-    end
-    traitdict = chrms2traits(ind.genome)
-    ind.traits = traitdict
-end
-
 function activategenes!(chrms::Array{Chromosome,1})
     genes = Gene[]
     for chrm in chrms
@@ -155,13 +125,43 @@ function chrms2traits(chrms::Array{Chromosome,1})
     traitdict
 end
 
+function mutate!(ind::Individual, temp::Float64)
+    prob = ind.traits["mutprob"]
+    for chrm in ind.genome
+        for gene in chrm.genes
+            for i in eachindex(gene.sequence)
+                if rand() <= prob*exp(-act/(boltz*temp)) * normconst
+                    newbase = rand(collect("acgt"),1)[1]
+                    while newbase == gene.sequence[i]
+                        newbase = rand(collect("acgt"),1)[1]
+                    end
+                    gene.sequence[i] = newbase
+                    for trait in gene.codes
+                        trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
+                        newvalue = trait.value + rand(Normal(0, trait.value/mutscaling)) # new value for trait
+                        (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
+                        (newvalue > 1 && contains(trait.name,"reptol")) && (newvalue=1)
+                        newvalue < 0 && (newvalue=abs(newvalue))
+                        while newvalue == 0 #&& contains(trait.name,"mut")
+                            newvalue = trait.value + rand(Normal(0, trait.value/mutscaling))
+                        end
+                        trait.value = newvalue
+                    end
+                end
+            end
+        end
+    end
+    traitdict = chrms2traits(ind.genome)
+    ind.traits = traitdict
+end
+
 function checkviability!(patch::Patch) # may consider additional rules... # maybe obsolete anyhow...
     idx=1
     while idx <= size(patch.community,1)
-        kill = false
-        patch.community[idx].size <= 0 && (kill = true)
-        0 in collect(values(patch.community[idx].traits)) && (kill = true)
-        if kill
+        dead = false
+        patch.community[idx].size <= 0 && (dead = true)
+        0 in collect(values(patch.community[idx].traits)) && (dead = true)
+        if dead
             splice!(patch.community,idx) # or else kill it
             idx -= 1
         end
