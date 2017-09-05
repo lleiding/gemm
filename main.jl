@@ -84,8 +84,9 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) 
         if size(entry,1) > 4 && contains(lowercase(entry[5]),"island")
             isisland = true # islands do not receive an initial community
         end
+        isolated = false
         if size(entry,1) > 5 && contains(lowercase(entry[6]),"isolated")
-            newpatch.isolated = true
+            isolated = true
         end
         try
             p = find(x->x.id==id,world)
@@ -95,6 +96,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) 
             world[p].isolated = isolated
         catch
             newpatch = Patch(id,(xcord,ycord),temperature,area,isisland)
+            newpatch.isolated = isolated
             push!(world,newpatch)
         end
     end
