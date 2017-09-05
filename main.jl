@@ -209,8 +209,8 @@ function simulation(world::Array{Patch,1}, timesteps::Int=1000)
     end
 end
 
-function runit(firstrun::Bool)
-    length(ARGS) > 0 ? seed = parse(Int,ARGS[1]) : seed = 0
+function runit(firstrun::Bool,seed::Int64=0)
+    #length(ARGS) > 0 ? seed = parse(Int,ARGS[1]) : seed = 0
     length(ARGS) > 1 ? mapfiles = ARGS[2:end] : mapfiles = ["mapfile"]   # length(ARGS) > 2 ? timesteps = parse(Int,ARGS[3]) : timesteps = 1000
     seed != 0 && srand(seed)
     if firstrun
@@ -227,6 +227,11 @@ function runit(firstrun::Bool)
     end
 end
 
-@time runit(true)
-@time runit(false)
+## Parallel stuff:
+const nprocesses = nprocs()
+length(ARGS) > 0 ? const startseed = parse(Int,ARGS[1]) : const startseed = 1
+const replicates = startseed:(startseed+nprocesses)
+pmap(x->runit(true),replicates)
+pmap(x->runit(false,x),replicates)
+
 
