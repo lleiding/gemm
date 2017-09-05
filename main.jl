@@ -231,7 +231,7 @@ end
 
 ## Parallel stuff:
 const nprocesses = nprocs()
-length(ARGS) > 0 ? const startseed = parse(Int,ARGS[1]) : const startseed = 1
+length(ARGS) > 0 ? (const startseed = parse(Int,ARGS[1])) : (const startseed = 1)
 const replicates = startseed:(startseed+nprocesses)
 pmap(x->runit(true),replicates)
 pmap(x->runit(false,x),replicates)
