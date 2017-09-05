@@ -17,15 +17,15 @@ using MIbGxMCmod, Plots
 
 
 function readmapfile(filename::String)
-    println("Reading file...")
+    println("Reading file \"$filename\"...")
     mapstrings = String[]
     open(filename) do file
         mapstrings = readlines(file)
     end
     mapstrings = filter(x->!all(isspace,x),mapstrings) # remove empty lines
     mapstrings = filter(x->x[1]!='#',mapstrings) # remove comment lines
-    mapentries = map(split,mapstrings)
-    mapentries = map(x->map(String,x),mapentries)
+    mapsubstrings = map(split,mapstrings)
+    mapentries = map(x->map(String,x),mapsubstrings)
     timesteps = 0
     try
         timesteps = parse(Int,filter(x->size(x,1)==1,mapentries)[1][1])
@@ -131,6 +131,53 @@ function analysis(world::Array{Patch,1})
     end
 end
 
+function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
+    header = true
+    traitkeys = []
+    for patch in world
+        for ind in patch.community
+            if header
+                print(io, "id", sep)
+                print(io, "xloc", sep)
+                print(io, "yloc", sep)
+                print(io, "temp", sep)
+                print(io, "area", sep)
+                ## print(io, "nichea", sep)
+                ## print(io, "nicheb", sep)
+                print(io, "landtype", sep)
+                print(io, "isolation", sep)
+                print(io, "age", sep)
+                print(io, "new", sep)
+                print(io, "fitness", sep)
+                print(io, "size", sep)
+                traitkeys = keys(ind.traits)
+                for key in traitkeys
+                    print(io, key, sep)
+                end
+                println()
+                header = false
+            end
+            print(io, patch.id, sep)
+            print(io, patch.location[1], sep)
+            print(io, patch.location[2], sep)
+            print(io, patch.altitude, sep)
+            print(io, patch.area, sep)
+            ## print(io, patch.nichea, sep)
+            ## print(io, patch.nicheb, sep)
+            patch.isisland ? print(io, "island", sep) : print(io, "continent", sep)
+            patch.isolated ? print(io, "yes", sep) : print(io, "no", sep)
+            print(io, ind.age, sep)
+            ind.isnew ? print(io, "yes", sep) : print(io, "no", sep)
+            print(io, ind.fitness, sep)
+            print(io, ind.size, sep)
+            for key in traitkeys
+                print(io, ind.traits[key], sep)
+            end
+            println(io)
+        end
+    end
+end
+
 function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
     filename = mapfile * "_seed" * "$seed" * ".out"
     counter = 0
@@ -139,6 +186,7 @@ function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
         counter += 1
         counter >= 3 && error("cannot create file \"$filename\". Please clear your directory.")
     end
+    println("Writing data to \"$filename\"...")
     touch(filename)
     open(filename, "w") do file
         print(file,world)
