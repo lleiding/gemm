@@ -211,7 +211,7 @@ function simulation(world::Array{Patch,1}, timesteps::Int=1000)
     end
 end
 
-function runit(firstrun::Bool,seed::Int64=0)
+@everywhere function runit(firstrun::Bool,seed::Int64=0)
     #length(ARGS) > 0 ? seed = parse(Int,ARGS[1]) : seed = 0
     length(ARGS) > 1 ? mapfiles = ARGS[2:end] : mapfiles = ["mapfile"]   # length(ARGS) > 2 ? timesteps = parse(Int,ARGS[3]) : timesteps = 1000
     seed != 0 && srand(seed)
