@@ -51,14 +51,14 @@ function createworld(maptable::Array{Array{String,1},1})
         id = parse(Int64, entry[1])
         xcord = parse(Int64, entry[2])
         ycord = parse(Int64, entry[3])
-        size(entry,1) > 3 ? temperature = parse(Float64, entry[4]) : temperature = 298
+        size(entry,1) > 3 ? temperature = parse(Float64, entry[4]) : temperature = 298.0
         isisland = false
-        if size(entry,1) > 4
-            contains(lowercase(entry[5]),"island") && (isisland = true) # islands do not receive an initial community
+        if size(entry,1) > 4 && contains(lowercase(entry[5]),"island")
+            isisland = true # islands do not receive an initial community
         end
         newpatch = Patch(id,(xcord,ycord),temperature,area,isisland)
-        if size(entry,1) > 5
-            contains(lowercase(entry[6]),"isolated") && (newpatch.isolated = true)
+        if size(entry,1) > 5 && contains(lowercase(entry[6]),"isolated")
+            newpatch.isolated = true
         end
         !isisland && append!(newpatch.community,genesis())
         push!(world,newpatch)
@@ -79,13 +79,13 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) 
         id = parse(Int64, entry[1])
         xcord = parse(Int64, entry[2])
         ycord = parse(Int64, entry[3])
-        size(entry,1) > 3 ? temperature = parse(Float64, entry[4]) : temperature = 298
+        size(entry,1) > 3 ? temperature = parse(Float64, entry[4]) : temperature = 298.0
         isisland = false
-        if size(entry,1) > 4
-            contains(lowercase(entry[5]),"island") && (isisland = true) # islands do not receive an initial community
+        if size(entry,1) > 4 && contains(lowercase(entry[5]),"island")
+            isisland = true # islands do not receive an initial community
         end
-        if size(entry,1) > 5
-            contains(lowercase(entry[6]),"isolated") && (newpatch.isolated = true)
+        if size(entry,1) > 5 && contains(lowercase(entry[6]),"isolated")
+            newpatch.isolated = true
         end
         try
             p = find(x->x.id==id,world)
@@ -104,7 +104,7 @@ end
 function visualisation(world::Array{Patch,1},firstplot::Bool)
     xcords = map(x->Int(floor(x.location[1])),world)
     ycords = map(x->Int(floor(x.location[2])),world)
-    values = map(x->size(x.community,1),world)
+    popsizes = map(x->size(x.community,1),world)
     xmin = minimum(xcords)
     xmax = maximum(xcords)
     xshift = 1 - xmin
@@ -113,8 +113,8 @@ function visualisation(world::Array{Patch,1},firstplot::Bool)
     yshift = 1 - ymin
     mat = zeros(length(ymin:ymax),length(xmin:xmax))
     mat[:] = -10
-    for i in eachindex(values)
-        mat[ycords[i]+yshift,xcords[i]+xshift]=values[i]
+    for i in eachindex(popsizes)
+        mat[ycords[i]+yshift,xcords[i]+xshift]=popsizes[i]
     end
     if firstplot
         gr()
