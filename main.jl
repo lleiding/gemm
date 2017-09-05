@@ -10,7 +10,7 @@
 ## Every line describes one patch in the following format:
 ## <ID> <X-COORDINATE> <Y-COORDINATE> [<TYPE>]
 
-include("MIbGxMCmod.jl")
+@everywhere include("MIbGxMCmod.jl")
 
 
 @everywhere using MIbGxMCmod, Plots
