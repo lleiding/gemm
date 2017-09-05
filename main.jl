@@ -16,7 +16,7 @@ include("MIbGxMCmod.jl")
 using MIbGxMCmod, Plots
 
 
-function readmapfile(filename::String)
+@everywhere function readmapfile(filename::String)
     println("Reading file \"$filename\"...")
     mapstrings = String[]
     open(filename) do file
@@ -37,7 +37,7 @@ function readmapfile(filename::String)
     return timesteps,mapentries
 end
 
-function createworld(maptable::Array{Array{String,1},1})
+@everywhere function createworld(maptable::Array{Array{String,1},1})
     println("Creating world...")
     world = Patch[]
     area = 100 # CAVE: just for now...
@@ -66,7 +66,7 @@ function createworld(maptable::Array{Array{String,1},1})
     world
 end
 
-function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) #TODO: add functionality to remove patches!
+@everywhere function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) #TODO: add functionality to remove patches!
     println("Updating world...")
     area = 100 # CAVE: just for now...
     for entry in maptable
@@ -103,7 +103,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) 
     world
 end
 
-function visualisation(world::Array{Patch,1},firstplot::Bool)
+@everywhere function visualisation(world::Array{Patch,1},firstplot::Bool)
     xcords = map(x->Int(floor(x.location[1])),world)
     ycords = map(x->Int(floor(x.location[2])),world)
     popsizes = map(x->size(x.community,1),world)
@@ -126,14 +126,14 @@ function visualisation(world::Array{Patch,1},firstplot::Bool)
     end
 end
 
-function analysis(world::Array{Patch,1})
+@everywhere function analysis(world::Array{Patch,1})
     for patch in world
         print("Patch #",patch.id," @",patch.location," (",patch.isisland,"): \t")
         println(size(patch.community,1))
     end
 end
 
-function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
+@everywhere function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
     header = true
     traitkeys = []
     for patch in world
@@ -180,7 +180,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
     end
 end
 
-function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
+@everywhere function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
     filename = mapfile * "_seed" * "$seed" * ".out"
     counter = 0
     while ispath(filename)
@@ -191,11 +191,12 @@ function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
     println("Writing data to \"$filename\"...")
     touch(filename)
     open(filename, "w") do file
-        print(file,world)
+        dumpinds(world,file)
+        ##print(file,world)
     end
 end
 
-function simulation(world::Array{Patch,1}, timesteps::Int=1000)
+@everywhere function simulation(world::Array{Patch,1}, timesteps::Int=1000)
     println("Starting simulation...")
     for t in 1:timesteps
         checkviability!(world)
