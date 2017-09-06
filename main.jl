@@ -12,7 +12,7 @@
 
 @everywhere include("MIbGxMCmod.jl")
 
-
+using MIbGxMCmod, Plots # needs to be like this somehow...
 @everywhere using MIbGxMCmod, Plots
 
 
