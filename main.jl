@@ -231,7 +231,7 @@ end
 end
 
 ## Parallel stuff:
-const nprocesses = nprocs()
+const nprocesses = nworkers()
 length(ARGS) > 0 ? (const startseed = parse(Int,ARGS[1])) : (const startseed = 1)
 length(ARGS) > 1 ? (const mapfiles = ARGS[2:end]) : (const mapfiles = ["mapfile"])
 const replicates = startseed:startseed+nprocesses-1
