@@ -10,7 +10,7 @@ module MIbGxMCmod
 
 
 using Distributions
-
+@everywhere using Distributions
 
 export Patch, # types
     genesis, checkviability!, establish!, age!, grow!, disperse!, compete!, reproduce! # functions
@@ -192,7 +192,7 @@ function establish!(patch::Patch)
                 idx -= 1
             else
                 patch.community[idx].isnew = false
-                fitness = 1 - (abs(temp-tempopt))/temptol
+                fitness = 1 - (abs(temp-tempopt))/temptol #gaussian or normal
                 fitness > 1 && (fitness = 1)
                 fitness < 0 && (fitness = 0)
                 patch.community[idx].fitness = fitness
@@ -307,7 +307,7 @@ end
 
 function compete!(patch::Patch)
     while sum(map(x->x.size,patch.community)) > patch.area # occupied area larger than available
-        victim = rand(1:size(patch.community,1))
+        victim = rand(1:size(patch.community,1)) #TODO bigger inds survive  with higher prob
         splice!(patch.community, victim)
     end
 end
