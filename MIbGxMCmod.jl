@@ -379,13 +379,13 @@ function createtraits(traitnames::Array{String,1})
     traits = Trait[]
     for name in traitnames
         if contains(name,"rate")
-            push!(traits,Trait(name,rand()*10,true))
+            push!(traits,Trait(name,rand()*100,true))
         elseif contains(name, "temp") && contains(name, "opt")
-            push!(traits,Trait(name,rand(Normal(298,5)),true)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,rand()*60+263),true)) #CAVE: code values elsewhere?
         elseif contains(name, "tol") && !contains(name, "rep")
-            push!(traits,Trait(name,abs(rand(Normal(0,5))),true)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,rand()*20,true)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
-            push!(traits,Trait(name,abs(rand(Normal(0,1e-6))),true)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,rand(),true)) #CAVE: code values elsewhere?
         else
             push!(traits,Trait(name,rand(),true))
         end
