@@ -252,7 +252,7 @@ function grow!(patch::Patch)
             if !patch.community[idx].isnew
                 growthrate = patch.community[idx].traits["growthrate"]
                 mass = patch.community[idx].size
-                newmass = growthrate * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst #CAVE: what to do when negative growth? -> emergent maximum body size!
+                newmass = growthrate * mass^(3/4) * exp(-act/(boltz*temp)) * normconst # -> emergent maximum body size!
                 if newmass > 0 && mass > 0
                     patch.community[idx].size = newmass
                 else
