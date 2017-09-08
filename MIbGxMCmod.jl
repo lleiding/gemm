@@ -70,7 +70,7 @@ Patch(id,location,altitude,area,isisland,nichea) = Patch(id,location,altitude,ar
 Patch(id,location,altitude,area,isisland) = Patch(id,location,altitude,area,isisland,0,0,Individual[],false)
 Patch(id,location,altitude,area) = Patch(id,location,altitude,area,false,0,0,Individual[],false)
 Patch(id,location,altitude) = Patch(id,location,altitude,100,false,0,0,Individual[],false)
-Patch(id,location) = Patch(id,location,298,0,0,Individual[],false)
+Patch(id,location) = Patch(id,location,298,100,false,0,0,Individual[],false)
 
 
 ## Methods/Functions:
@@ -270,6 +270,32 @@ function grow!(world::Array{Patch,1})
         grow!(patch) # pmap(!,patch) ???
     end
 end
+
+"""
+    findisland(x)
+find out in which direction from the continent the island(s) lie(s).
+"""
+function findisland(world::Array{Patch,1})
+    xmin = minimum(map(x->x.location[1],world))
+    xmax = maximum(map(x->x.location[1],world))
+    ymin = minimum(map(x->x.location[2],world))
+    ymax = maximum(map(x->x.location[2],world))
+    westernborder = filter(x->x.location[1]==xmin,world)
+    northernborder = filter(x->x.location[2]==ymax,world)
+    easternborder = filter(x->x.location[1]==xmax,world)
+    southernborder = filter(x->x.location[2]==ymin,world)
+    if all(map(x->x.isisland,westernborder))
+        return "west"
+    elseif all(map(x->x.isisland,northernborder))
+        return "north"
+    elseif all(map(x->x.isisland,easternborder))
+        return "east"
+    elseif all(map(x->x.isisland,southernborder))
+        return "south"
+    else
+        return "none"
+    end
+end 
 
 function disperse!(world::Array{Patch,1}) #TODO: additional border conditions
     xmin = minimum(map(x->x.location[1],world))
