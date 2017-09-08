@@ -297,6 +297,37 @@ function findisland(world::Array{Patch,1})
     end
 end 
 
+function checkborderconditions(world::Array{Patch,1},xdest::Float64,ydest=Float64)
+    xmin = minimum(map(x->x.location[1],world))
+    xmax = maximum(map(x->x.location[1],world))
+    ymin = minimum(map(x->x.location[2],world))
+    ymax = maximum(map(x->x.location[2],world))
+    islanddirection = findisland(world::Array{Patch,1})
+         if islanddirection == "west"
+            xdest > xmax && (xdest = xmax - abs(xdest - xmax) + 1)
+            ydest < ymin && (ydest = ymax - abs(ydest - ymin))
+            ydest > ymax && (ydest = xmin + abs(xdest - ymax))
+        elseif islanddirection == "north"
+            ydest < ymin && (ydest = 2 * ymin - ydest -1)
+            xdest < xmin && (xdest = xmax - abs(xdest - xmin))
+            xdest > xmax && (xdest = xmin + abs(xdest - xmax))
+        elseif islanddirection == "east"
+            xdest < xmin && (xdest = xmin + abs(xdest - xmin))
+            ydest < ymin && (ydest = ymax - abs(ydest - ymin))
+            ydest > ymax && (ydest = xmin + abs(xdest - ymax))
+        elseif islanddirection == "south"
+            xdest < xmin && (xdest = xmax - abs(xdest - xmin))
+            ydest < ymin && (ydest = ymax - abs(ydest - ymin))
+            ydest > ymax && (ydest = xmin + abs(xdest - ymax))
+        else
+            xdest < xmin && (xdest = xmax - abs(xdest - xmin))
+            xdest > xmax && (xdest = xmin + abs(xdest - xmax))
+            ydest < ymin && (ydest = ymax + abs(ydest - ymin))
+            ydest > ymax && (ydest = xmin + abs(ydest - ymax))
+        end
+     xdest,ydest
+end
+
 function disperse!(world::Array{Patch,1}) #TODO: additional border conditions
     xmin = minimum(map(x->x.location[1],world))
     xmax = maximum(map(x->x.location[1],world))
@@ -320,9 +351,7 @@ function disperse!(world::Array{Patch,1}) #TODO: additional border conditions
                 ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # ...follows original distribution
                 xdest = patch.location[1]+xdir
                 ydest = patch.location[2]+ydir
-                !patch.isisland && xdest < xmin && (xdest = xmax - abs(xdest - xmin)) # periodic borders in continent direction
-                !patch.isisland && ydest < ymin && (ydest = ymax - abs(ydest - ymin)) # periodic borders in continent direction
-                !patch.isisland && ydest > ymax && (xdest = xmin + abs(xdest - ymax)) # periodic borders in continent direction
+                !patch.isisland && (xdest,ydest = checkborderconditions(world,xdest,ydest))
                 targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
                 possdests = find(x->in(x.location,targets),world)
                 if size(possdests,1) > 0 # if no viable target patch, individual dies
