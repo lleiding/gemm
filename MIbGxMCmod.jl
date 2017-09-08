@@ -272,6 +272,10 @@ function grow!(world::Array{Patch,1})
 end
 
 function disperse!(world::Array{Patch,1}) #TODO: additional border conditions
+    xmin = minimum(map(x->x.location[1],world))
+    xmax = maximum(map(x->x.location[1],world))
+    ymin = minimum(map(x->x.location[2],world))
+    ymax = maximum(map(x->x.location[2],world))
     for patch in world
         idx = 1
         while idx <= size(patch.community,1)
@@ -288,8 +292,11 @@ function disperse!(world::Array{Patch,1}) #TODO: additional border conditions
                 indleft = splice!(patch.community,idx)
                 xdir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # scaling so that geometric mean...
                 ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # ...follows original distribution
-                xdest = patch.location[1]+xdir # CAVE: might be other way around + border conditions
-                ydest = patch.location[1]+ydir # CAVE: might be other way around + border conditions
+                xdest = patch.location[1]+xdir
+                ydest = patch.location[2]+ydir
+                !patch.isisland && xdest < xmin && (xdest = xmax - abs(xdest - xmin)) # periodic borders in continent direction
+                !patch.isisland && ydest < ymin && (ydest = ymax - abs(ydest - ymin)) # periodic borders in continent direction
+                !patch.isisland && ydest > ymax && (xdest = xmin + abs(xdest - ymax)) # periodic borders in continent direction
                 targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
                 possdests = find(x->in(x.location,targets),world)
                 if size(possdests,1) > 0 # if no viable target patch, individual dies
