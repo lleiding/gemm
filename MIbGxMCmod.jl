@@ -297,6 +297,9 @@ function findisland(world::Array{Patch,1})
     end
 end 
 
+"""
+
+"""
 function checkborderconditions(world::Array{Patch,1},xdest::Float64,ydest=Float64)
     xmin = minimum(map(x->x.location[1],world))
     xmax = maximum(map(x->x.location[1],world))
@@ -304,31 +307,31 @@ function checkborderconditions(world::Array{Patch,1},xdest::Float64,ydest=Float6
     ymax = maximum(map(x->x.location[2],world))
     islanddirection = findisland(world::Array{Patch,1})
          if islanddirection == "west"
-            xdest > xmax && (xdest = xmax - abs(xdest - xmax) + 1)
-            ydest < ymin && (ydest = ymax - abs(ydest - ymin))
-            ydest > ymax && (ydest = xmin + abs(xdest - ymax))
+            xdest > xmax && (xdest = xmax - abs(xdest - xmax) + 1) # east: reflective
+            ydest < ymin && (ydest = ymax - abs(ydest - ymin) + 1) # south: periodic
+            ydest > ymax && (ydest = ymin + abs(xdest - ymax) - 1) # north: periodic
         elseif islanddirection == "north"
-            ydest < ymin && (ydest = 2 * ymin - ydest -1)
-            xdest < xmin && (xdest = xmax - abs(xdest - xmin))
-            xdest > xmax && (xdest = xmin + abs(xdest - xmax))
+            ydest < ymin && (ydest = 2 * ymin - ydest - 1) # south: reflective
+            xdest < xmin && (xdest = xmax - abs(xdest - xmin) + 1) # west: periodic
+            xdest > xmax && (xdest = xmin + abs(xdest - xmax) - 1) # east: periodic
         elseif islanddirection == "east"
-            xdest < xmin && (xdest = xmin + abs(xdest - xmin))
-            ydest < ymin && (ydest = ymax - abs(ydest - ymin))
-            ydest > ymax && (ydest = xmin + abs(xdest - ymax))
+            xdest < xmin && (xdest = xmin + abs(xdest - xmin)) # west: reflective
+            ydest < ymin && (ydest = ymax - abs(ydest - ymin) + 1) # south: periodic
+            ydest > ymax && (ydest = xmin + abs(xdest - ymax) - 1) # north: periodic
         elseif islanddirection == "south"
-            xdest < xmin && (xdest = xmax - abs(xdest - xmin))
-            ydest < ymin && (ydest = ymax - abs(ydest - ymin))
-            ydest > ymax && (ydest = xmin + abs(xdest - ymax))
+            ydest > ymax && (ydest = 2 * ymax - ydest + 1) # north: reflective
+            xdest < xmin && (xdest = xmax - abs(xdest - xmin) + 1) # west: periodic
+            xdest > xmax && (xdest = xmin + abs(xdest - xmax) - 1) # east: periodic
         else
-            xdest < xmin && (xdest = xmax - abs(xdest - xmin))
-            xdest > xmax && (xdest = xmin + abs(xdest - xmax))
-            ydest < ymin && (ydest = ymax + abs(ydest - ymin))
-            ydest > ymax && (ydest = xmin + abs(ydest - ymax))
+            xdest < xmin && (xdest = xmax - abs(xdest - xmin) + 1) # west: periodic
+            xdest > xmax && (xdest = xmin + abs(xdest - xmax) - 1) # east: periodic
+            ydest < ymin && (ydest = ymax + abs(ydest - ymin) + 1) # south: periodic
+            ydest > ymax && (ydest = xmin + abs(ydest - ymax) - 1) # north: periodic
         end
      xdest,ydest
 end
 
-function disperse!(world::Array{Patch,1}) #TODO: additional border conditions
+function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
     xmin = minimum(map(x->x.location[1],world))
     xmax = maximum(map(x->x.location[1],world))
     ymin = minimum(map(x->x.location[2],world))
