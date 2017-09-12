@@ -10,7 +10,7 @@ module MIbGxMCmod
 
 
 using Distributions
-@everywhere using Distributions
+
 
 export Patch, # types
     genesis, checkviability!, establish!, age!, grow!, disperse!, compete!, reproduce! # functions
