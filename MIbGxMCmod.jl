@@ -300,12 +300,31 @@ end
 """
 
 """
-function checkborderconditions(world::Array{Patch,1},xdest::Float64,ydest=Float64)
-    xmin = minimum(map(x->x.location[1],world))
-    xmax = maximum(map(x->x.location[1],world))
-    ymin = minimum(map(x->x.location[2],world))
-    ymax = maximum(map(x->x.location[2],world))
-    islanddirection = findisland(world::Array{Patch,1})
+function checkborderconditions(#world::Array{Patch,1},
+                               xdest::Float64,ydest::Float64)
+#    xmin = minimum(map(x->x.location[1],world))
+#    xmax = maximum(map(x->x.location[1],world))
+#    ymin = minimum(map(x->x.location[2],world))
+    #    ymax = maximum(map(x->x.location[2],world))
+    xrange = xmax - xmin + 1 # we're counting cells!
+    yrange = ymax - ymin + 1 # we're counting cells!
+    xshift = xdest - xmin + 1 # 1-based count of cells
+    yshift = ydest - ymin + 1 # 1-based count of cells
+    outofx = xshift % xrange
+    outofy = yshift % yrange
+    #    islanddirection = findisland(world::Array{Patch,1})
+    if xdest < xmin
+        
+    end
+    if ydest > ymax
+
+    end
+    if xdest > xmax
+
+    end
+    if ydest < ymin
+
+    end
          if islanddirection == "west"
             xdest > xmax && (xdest = xmax - abs(xdest - xmax) + 1) # east: reflective
             ydest < ymin && (ydest = ymax - abs(ydest - ymin) + 1) # south: periodic
@@ -323,10 +342,10 @@ function checkborderconditions(world::Array{Patch,1},xdest::Float64,ydest=Float6
             xdest < xmin && (xdest = xmax - abs(xdest - xmin) + 1) # west: periodic
             xdest > xmax && (xdest = xmin + abs(xdest - xmax) - 1) # east: periodic
         else
-            xdest < xmin && (xdest = xmax - abs(xdest - xmin) + 1) # west: periodic
-            xdest > xmax && (xdest = xmin + abs(xdest - xmax) - 1) # east: periodic
-            ydest < ymin && (ydest = ymax + abs(ydest - ymin) + 1) # south: periodic
-            ydest > ymax && (ydest = xmin + abs(ydest - ymax) - 1) # north: periodic
+            xdest < xmin && (xdest = xrange + xdest) # west: periodic
+            xdest > xmax && (xdest = - xrange + xdest) # east: periodic
+            ydest < ymin && (ydest = yrange + ydest) # south: periodic
+            ydest > ymax && (ydest = - yrange + ydest) # north: periodic
         end
      xdest,ydest
 end
