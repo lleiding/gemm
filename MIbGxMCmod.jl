@@ -382,8 +382,10 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
 end
 
 function compete!(patch::Patch)
+    sort!(patch.community, by = x -> x.size)
     while sum(map(x->x.size,patch.community)) > patch.area # occupied area larger than available
-        victim = rand(1:size(patch.community,1)) #TODO bigger inds survive  with higher prob
+        victim = rand(Geometric())
+        victim > length(patch.community) && (victim = length(patch.community))
         splice!(patch.community, victim)
     end
 end
