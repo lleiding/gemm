@@ -296,7 +296,7 @@ function findisland(world::Array{Patch,1})
     else
         return "none"
     end
-end 
+end
 
 """
 
@@ -404,7 +404,7 @@ function reproduce!(patch::Patch) #TODO: refactorize!
         hasreptol = haskey(patch.community[idx].traits,"reptol")
         hasseedsize = haskey(patch.community[idx].traits,"seedsize")
         hasmutprob = haskey(patch.community[idx].traits,"mutprob")
-        if !hasrepprob || !hasreprate || !hasrepsize || !hasreptol || !hasmutprob || !hasseedsize 
+        if !hasrepprob || !hasreprate || !hasrepsize || !hasreptol || !hasmutprob || !hasseedsize
             splice!(patch.community, idx)
             idx -= 1
         elseif !patch.community[idx].isnew && rand() <= patch.community[idx].traits["repprob"]
@@ -440,7 +440,7 @@ function reproduce!(patch::Patch) #TODO: refactorize!
                         mutate!(ind, patch.altitude)
                         push!(patch.community,ind)
                     end
-                # else #...?    
+                # else #...?
                 end
             end
         end
@@ -460,7 +460,7 @@ function createtraits(traitnames::Array{String,1})
         if contains(name,"rate")
             push!(traits,Trait(name,rand()*100,true))
         elseif contains(name, "temp") && contains(name, "opt")
-            push!(traits,Trait(name,rand()*60+263),true)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,rand()*60+263,true)) #CAVE: code values elsewhere?
         elseif contains(name, "tol") && !contains(name, "rep")
             push!(traits,Trait(name,rand()*20,true)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
@@ -545,5 +545,5 @@ function genesis(ninds::Int64=1000, meangenes::Int64=20, meanchrs::Int64=5,
     community
 end
 
-    
+
 end
