@@ -19,7 +19,7 @@ export Patch, # types
 const boltz = 1.38064852e-23 #  J/K = m2⋅kg/(s2⋅K)
 const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
 const normconst = 1e10 # normalization constant to get biologically realistic orders of magnitude
-const mutscaling=50 #parse(ARGS[2])
+const mutscaling = 50 #parse(ARGS[2])
 const sexualreproduction = true
 
 
@@ -313,41 +313,29 @@ function checkborderconditions(#world::Array{Patch,1},
     outofx = xshift % xrange
     outofy = yshift % yrange
     #    islanddirection = findisland(world::Array{Patch,1})
-    if xdest < xmin
-        
+    if islanddirection == "west"
+        xdest > xmax && (xdest = xmax - outofx + 1) # east: reflective
+        ydest < ymin && (ydest = ymax + outofy) # south: periodic
+        ydest > ymax && (ydest = ymin + outofy - 1) # north: periodic
+    elseif islanddirection == "north"
+        ydest < ymin && (ydest = ymin - outofy) # south: reflective
+        xdest < xmin && (xdest = xmax + outofx) # west: periodic
+        xdest > xmax && (xdest = xmin + outofx - 1) # east: periodic
+    elseif islanddirection == "east"
+        xdest < xmin && (xdest = xmin - outofx) # west: reflective
+        ydest < ymin && (ydest = ymax + outofy) # south: periodic
+        ydest > ymax && (ydest = ymin + outofy - 1) # north: periodic
+    elseif islanddirection == "south"
+        ydest > ymax && (ydest = ymax - outofy + 1) # north: reflective
+        xdest < xmin && (xdest = xmax + outofx) # west: periodic
+        xdest > xmax && (xdest = xmin + outofx - 1) # east: periodic
+    else
+        ydest > ymax && (ydest = ymin + outofy - 1) # north: periodic
+        xdest > xmax && (xdest = xmin + outofx - 1) # east: periodic
+        ydest < ymin && (ydest = ymax + outofy) # south: periodic
+        xdest < xmin && (xdest = xmax + outofx) # west: periodic
     end
-    if ydest > ymax
-
-    end
-    if xdest > xmax
-
-    end
-    if ydest < ymin
-
-    end
-         if islanddirection == "west"
-            xdest > xmax && (xdest = xmax - abs(xdest - xmax) + 1) # east: reflective
-            ydest < ymin && (ydest = ymax - abs(ydest - ymin) + 1) # south: periodic
-            ydest > ymax && (ydest = ymin + abs(xdest - ymax) - 1) # north: periodic
-        elseif islanddirection == "north"
-            ydest < ymin && (ydest = 2 * ymin - ydest - 1) # south: reflective
-            xdest < xmin && (xdest = xmax - abs(xdest - xmin) + 1) # west: periodic
-            xdest > xmax && (xdest = xmin + abs(xdest - xmax) - 1) # east: periodic
-        elseif islanddirection == "east"
-            xdest < xmin && (xdest = xmin + abs(xdest - xmin)) # west: reflective
-            ydest < ymin && (ydest = ymax - abs(ydest - ymin) + 1) # south: periodic
-            ydest > ymax && (ydest = xmin + abs(xdest - ymax) - 1) # north: periodic
-        elseif islanddirection == "south"
-            ydest > ymax && (ydest = 2 * ymax - ydest + 1) # north: reflective
-            xdest < xmin && (xdest = xmax - abs(xdest - xmin) + 1) # west: periodic
-            xdest > xmax && (xdest = xmin + abs(xdest - xmax) - 1) # east: periodic
-        else
-            xdest < xmin && (xdest = xrange + xdest) # west: periodic
-            xdest > xmax && (xdest = - xrange + xdest) # east: periodic
-            ydest < ymin && (ydest = yrange + ydest) # south: periodic
-            ydest > ymax && (ydest = - yrange + ydest) # north: periodic
-        end
-     xdest,ydest
+    xdest,ydest
 end
 
 function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
@@ -407,17 +395,18 @@ function reproduce!(patch::Patch) #TODO: refactorize!
     temp = patch.altitude
     while idx <= size(patch.community,1)
         hasrepprob = haskey(patch.community[idx].traits,"repprob")
-        hasreptol = haskey(patch.community[idx].traits,"reptol")
         hasreprate = haskey(patch.community[idx].traits,"reprate")
+        hasrepsize = haskey(patch.community[idx].traits,"repsize")
+        hasreptol = haskey(patch.community[idx].traits,"reptol")
         hasseedsize = haskey(patch.community[idx].traits,"seedsize")
         hasmutprob = haskey(patch.community[idx].traits,"mutprob")
-        if !hasrepprob || !hasreprate || !hasreptol || !hasmutprob || !hasseedsize 
+        if !hasrepprob || !hasreprate || !hasrepsize || !hasreptol || !hasmutprob || !hasseedsize 
             splice!(patch.community, idx)
             idx -= 1
         elseif !patch.community[idx].isnew && rand() <= patch.community[idx].traits["repprob"]
             currentmass = patch.community[idx].size
             seedsize = patch.community[idx].traits["seedsize"]
-            if currentmass >= 2 * seedsize > 0 #CAVE: set rule for this, now arbitrary -> reprod. size?
+            if currentmass >= patch.community[idx].traits["repsize"]
                 meanoffs = patch.community[idx].traits["reprate"]
                 reptol = patch.community[idx].traits["reptol"]
                 mass = patch.community[idx].size
@@ -425,9 +414,11 @@ function reproduce!(patch::Patch) #TODO: refactorize!
                 noffs = rand(Poisson(metaboffs))
                 if sexualreproduction
                     posspartners = find(x->(1/reptol)*mass>=x.size>=reptol*mass,patch.community)
-                    partneridx = rand(posspartners)
-                    while size(posspartners,1) > 1 && partneridx == idx #CAVE: unless self-repr. is allowed
-                        partneridx = rand(posspartners)
+                    try
+                        partneridx = rand(filter(x->x!=idx,posspartners))
+                    catch
+                        idx += 1
+                        continue
                     end
                     partnergenome = meiosis(patch.community[partneridx].genome, false) #CAVE: maybe move inside offspring loop?
                     mothergenome = meiosis(patch.community[idx].genome, true)
@@ -532,6 +523,7 @@ function genesis(ninds::Int64=1000, meangenes::Int64=20, meanchrs::Int64=5,
                                                 "mutprob",
                                                 "repprob",
                                                 "reprate",
+                                                "repsize",
                                                 "reptol",
                                                 "seedsize",
                                                 "temptol",
