@@ -301,12 +301,11 @@ end
 """
 
 """
-function checkborderconditions(#world::Array{Patch,1},
-                               xdest::Float64,ydest::Float64)
-#    xmin = minimum(map(x->x.location[1],world))
-#    xmax = maximum(map(x->x.location[1],world))
-#    ymin = minimum(map(x->x.location[2],world))
-    #    ymax = maximum(map(x->x.location[2],world))
+function checkborderconditions(world::Array{Patch,1},xdest::Float64,ydest::Float64)
+    xmin = minimum(map(x->x.location[1],world))
+    xmax = maximum(map(x->x.location[1],world))
+    ymin = minimum(map(x->x.location[2],world))
+    ymax = maximum(map(x->x.location[2],world))
     xrange = xmax - xmin + 1 # we're counting cells!
     yrange = ymax - ymin + 1 # we're counting cells!
     xshift = xdest - xmin + 1 # 1-based count of cells
@@ -321,7 +320,7 @@ function checkborderconditions(#world::Array{Patch,1},
         outofy -= yrange
     end
     outofy -= 1
-    #    islanddirection = findisland(world::Array{Patch,1})
+    islanddirection = findisland(world::Array{Patch,1})
     if islanddirection == "west"
         xdest > xmax && (xdest = xmax - outofx) # east: reflective
         ydest < ymin && (ydest = ymax - outofy) # south: periodic
@@ -348,11 +347,7 @@ function checkborderconditions(#world::Array{Patch,1},
 end
 
 function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
-    xmin = minimum(map(x->x.location[1],world))
-    xmax = maximum(map(x->x.location[1],world))
-    ymin = minimum(map(x->x.location[2],world))
-    ymax = maximum(map(x->x.location[2],world))
-    for patch in world
+     for patch in world
         idx = 1
         while idx <= size(patch.community,1)
             hasdispmean = haskey(patch.community[idx].traits,"dispmean")
