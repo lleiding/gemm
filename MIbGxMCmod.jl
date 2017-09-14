@@ -311,30 +311,36 @@ function checkborderconditions(#world::Array{Patch,1},
     yrange = ymax - ymin + 1 # we're counting cells!
     xshift = xdest - xmin + 1 # 1-based count of cells
     yshift = ydest - ymin + 1 # 1-based count of cells
-    outofx = xshift % xrange
-    outofy = yshift % yrange
-    #    islanddirection = findisland(world::Array{Patch,1})
+    outofx = abs(xshift) - xrange + 1
+    while outofx > xrange
+        outofx = abs(xshift) - xrange + 1
+    end
+    outofy = abs(yshift) - yrange + 1
+     while outofy > yrange
+        outofy = abs(yshift) - yrange + 1
+    end
+ #    islanddirection = findisland(world::Array{Patch,1})
     if islanddirection == "west"
-        xdest > xmax && (xdest = xmax - outofx + 1) # east: reflective
-        ydest < ymin && (ydest = ymax + outofy) # south: periodic
-        ydest > ymax && (ydest = ymin + outofy - 1) # north: periodic
+        xdest > xmax && (xdest = xmax - outofx) # east: reflective
+        ydest < ymin && (ydest = ymax - outofy) # south: periodic
+        ydest > ymax && (ydest = ymin + outofy) # north: periodic
     elseif islanddirection == "north"
-        ydest < ymin && (ydest = ymin - outofy) # south: reflective
-        xdest < xmin && (xdest = xmax + outofx) # west: periodic
-        xdest > xmax && (xdest = xmin + outofx - 1) # east: periodic
+        ydest < ymin && (ydest = ymin + outofy) # south: reflective
+        xdest < xmin && (xdest = xmax - outofx) # west: periodic
+        xdest > xmax && (xdest = xmin + outofx) # east: periodic
     elseif islanddirection == "east"
-        xdest < xmin && (xdest = xmin - outofx) # west: reflective
-        ydest < ymin && (ydest = ymax + outofy) # south: periodic
-        ydest > ymax && (ydest = ymin + outofy - 1) # north: periodic
+        xdest < xmin && (xdest = xmin + outofx) # west: reflective
+        ydest < ymin && (ydest = ymax - outofy) # south: periodic
+        ydest > ymax && (ydest = ymin + outofy) # north: periodic
     elseif islanddirection == "south"
-        ydest > ymax && (ydest = ymax - outofy + 1) # north: reflective
-        xdest < xmin && (xdest = xmax + outofx) # west: periodic
-        xdest > xmax && (xdest = xmin + outofx - 1) # east: periodic
+        ydest > ymax && (ydest = ymax + outofy) # north: reflective
+        xdest < xmin && (xdest = xmax - outofx) # west: periodic
+        xdest > xmax && (xdest = xmin + outofx) # east: periodic
     else
-        ydest > ymax && (ydest = ymin + outofy - 1) # north: periodic
-        xdest > xmax && (xdest = xmin + outofx - 1) # east: periodic
-        ydest < ymin && (ydest = ymax + outofy) # south: periodic
-        xdest < xmin && (xdest = xmax + outofx) # west: periodic
+        ydest > ymax && (ydest = ymin + outofy) # north: periodic
+        xdest > xmax && (xdest = xmin + outofx) # east: periodic
+        ydest < ymin && (ydest = ymax - outofy) # south: periodic
+        xdest < xmin && (xdest = xmax - outofx) # west: periodic
     end
     xdest,ydest
 end
