@@ -161,6 +161,7 @@ function checkviability!(patch::Patch) # may consider additional rules... # mayb
         dead = false
         patch.community[idx].size <= 0 && (dead = true)
         0 in collect(values(patch.community[idx].traits)) && (dead = true)
+        patch.community[idx].traits["repsize"] <= patch.community[idx].traits["seedsize"] && (dead = true)
         if dead
             splice!(patch.community,idx) # or else kill it
             idx -= 1
