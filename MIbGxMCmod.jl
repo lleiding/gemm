@@ -311,15 +311,17 @@ function checkborderconditions(#world::Array{Patch,1},
     yrange = ymax - ymin + 1 # we're counting cells!
     xshift = xdest - xmin + 1 # 1-based count of cells
     yshift = ydest - ymin + 1 # 1-based count of cells
-    outofx = abs(xshift) - xrange + 1
+    xshift > 0 ? outofx = abs(xshift) : outofx = abs(xshift) + 1
     while outofx > xrange
-        outofx = abs(xshift) - xrange + 1
+        outofx -= xrange
     end
-    outofy = abs(yshift) - yrange + 1
-     while outofy > yrange
-        outofy = abs(yshift) - yrange + 1
+    outofx -= 1
+    yshift > 0 ? outofy = abs(yshift) : outofy = abs(yshift) + 1
+    while outofy > yrange
+        outofy -= yrange
     end
- #    islanddirection = findisland(world::Array{Patch,1})
+    outofy -= 1
+    #    islanddirection = findisland(world::Array{Patch,1})
     if islanddirection == "west"
         xdest > xmax && (xdest = xmax - outofx) # east: reflective
         ydest < ymin && (ydest = ymax - outofy) # south: periodic
