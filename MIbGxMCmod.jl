@@ -347,6 +347,7 @@ function checkborderconditions(world::Array{Patch,1},xdest::Float64,ydest::Float
 end
 
 function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
+    colonisation = false
      for patch in world
         idx = 1
         while idx <= size(patch.community,1)
@@ -373,12 +374,14 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
                     originisolated = patch.isolated && rand() <= indleft.traits["dispprob"]
                     targetisolated = world[destination].isolated && rand() <= indleft.traits["dispprob"]
                     (!originisolated && !targetisolated) && push!(world[destination].community,indleft)
+                    !patch.isisland && world[destination].isisland && (colonisation = true)
                 end
                 idx -= 1
             end
             idx += 1
         end
     end
+    colonisation
 end
 
 function compete!(patch::Patch)
