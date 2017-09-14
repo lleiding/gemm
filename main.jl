@@ -12,8 +12,8 @@
 
 @everywhere include("MIbGxMCmod.jl")
 
-using MIbGxMCmod, Plots # needs to be like this somehow...
-@everywhere using MIbGxMCmod, Plots
+using Distributions, MIbGxMCmod, Plots # needs to be like this somehow...
+@everywhere using Distributions, MIbGxMCmod, Plots
 
 
 @everywhere function readmapfile(filename::String)
@@ -183,16 +183,34 @@ end
 @everywhere function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
     filename = mapfile * "_seed" * "$seed" * ".out"
     counter = 0
-    while ispath(filename)
-        filename *= "_1"
+    extension = ""
+    while ispath(filename * extension)
+        extension = "_$counter"
         counter += 1
-        counter >= 3 && error("file \"$filename\" exists. Please clear your directory.")
+        counter > 9 && error("file \"$filename$extension\" exists. Please clear your directory.")
     end
-    println("Writing data to \"$filename\"...")
+    filename *= extension
     touch(filename)
+    println("Writing data to \"$filename\"...")
     open(filename, "w") do file
         dumpinds(world,file)
-        ##print(file,world)
+    end
+end
+
+@everywhere function writerawdata(world::Array{Patch,1}, seed::Int64, mapfile::String, timestep::Int64)
+    filename = mapfile * "_seed" * "$seed" * "_t" * "$timesteps" * ".jl"
+    counter = 0
+    extension = ""
+    while ispath(filename * extension)
+        extension = "_$counter"
+        counter += 1
+        counter > 9 && error("file \"$filename$extension\" exists. Please clear your directory.")
+    end
+    filename *= extension
+    touch(filename)
+    println("Writing data to \"$filename\"...")
+    open(filename, "w") do file
+        println(file,world)
     end
 end
 
