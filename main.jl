@@ -198,7 +198,7 @@ end
 end
 
 @everywhere function writerawdata(world::Array{Patch,1}, seed::Int64, mapfile::String, timestep::Int64)
-    filename = mapfile * "_seed" * "$seed" * "_t" * "$timesteps" * ".jl"
+    filename = mapfile * "_seed" * "$seed" * "_t" * "$timestep" * ".jl"
     counter = 0
     extension = ""
     while ispath(filename * extension)
@@ -253,7 +253,5 @@ const nprocesses = nworkers()
 length(ARGS) > 0 ? (const startseed = parse(Int,ARGS[1])) : (const startseed = 1)
 length(ARGS) > 1 ? (const mapfiles = ARGS[2:end]) : (const mapfiles = ["mapfile"])
 const replicates = startseed:startseed+nprocesses-1
-pmap(x->runit(true,mapfiles),replicates)
+pmap(x->runit(true,mapfiles,x),replicates)
 pmap(x->runit(false,mapfiles,x),replicates)
-
-
