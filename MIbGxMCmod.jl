@@ -423,7 +423,7 @@ function reproduce!(patch::Patch) #TODO: refactorize!
                 noffs = rand(Poisson(metaboffs))
                 if sexualreproduction
                     posspartners = find(x->(1/reptol)*mass>=x.size>=reptol*mass,patch.community)
-                    partneridx = []
+                    partneridx = idx
                     try
                         partneridx = rand(filter(x->x!=idx,posspartners))
                     catch
