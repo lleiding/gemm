@@ -376,6 +376,10 @@ function checkviability!(world::Array{Patch,1})
     end
 end
 
+function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
+    y = a * exp(-(x-b)^2/(2*c^2))
+end
+
 function establish!(patch::Patch)
     temp = patch.altitude
     idx = 1
@@ -388,15 +392,10 @@ function establish!(patch::Patch)
         elseif patch.community[idx].isnew
             tempopt = patch.community[idx].traits["tempopt"]
             temptol = patch.community[idx].traits["temptol"]
-            if abs(temp-tempopt) > temptol
-                splice!(patch.community, idx)
-                idx -= 1
-            else
-                patch.community[idx].isnew = false
-                fitness = 1 - (abs(temp-tempopt))/temptol #gaussian or normal
-                fitness > 1 && (fitness = 1)
-                fitness < 0 && (fitness = 0)
-                patch.community[idx].fitness = fitness
+            fitness = gausscurve(tempopt, temptol, temp)
+            fitness > 1 && (fitness = 1) # should be obsolete
+            fitness < 0 && (fitness = 0) # should be obsolete
+            patch.community[idx].fitness = fitness
             end
         end
         idx += 1
@@ -557,7 +556,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
             if !hasdispmean || !hasdispprob || !hasdispshape
                 splice!(patch.community,idx)
                 idx -= 1
-            elseif !patch.community[idx].isnew && rand() <= patch.community[idx].traits["dispprob"]
+            elseif !patch.community[idx].isnew && patch.community[idx].age == 0 && rand() <= patch.community[idx].traits["dispprob"]
                 dispmean = patch.community[idx].traits["dispmean"]
                 dispshape = patch.community[idx].traits["dispshape"]
                 patch.community[idx].isnew = true
@@ -638,7 +637,7 @@ function reproduce!(patch::Patch) #TODO: refactorize!
                         activategenes!(genome)
                         traits = chrms2traits(genome)
                         age = 0
-                        isnew = true
+                        isnew = false
                         fitness = 1.0
                         newsize = seedsize
                         ind = Individual(genome,traits,age,isnew,fitness,newsize)
@@ -734,7 +733,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
     chromosomes
 end
 
-function genesis(ninds::Int64=10000, meangenes::Int64=20, meanchrs::Int64=5,
+function genesis(ninds::Int64=1000, meangenes::Int64=20, meanchrs::Int64=5,
                  traitnames::Array{String,1} = ["ageprob",
                                                 "dispmean",
                                                 "dispprob",
