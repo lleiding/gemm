@@ -13,7 +13,9 @@ using Distributions, Plots
 
 
 export Patch, # types
-    genesis, checkviability!, establish!, age!, grow!, disperse!, compete!, reproduce! # functions
+    readmapfile, writerawdata, writedata,
+    checkviability!, establish!, age!, grow!, disperse!, compete!, reproduce!,
+    createworld, updateworld! # functions
 
 
 const boltz = 1.38064852e-23 #  J/K = m2⋅kg/(s2⋅K)
