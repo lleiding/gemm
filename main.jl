@@ -236,7 +236,7 @@ end
     seed != 0 && srand(seed)
     if firstrun
         world=createworld([["1","1","1"]])
-        simulation(world, 10)
+        simulation(world, seed, "", 10)
     else
         for i in 1:length(mapfiles)
             timesteps,maptable = readmapfile(mapfiles[i])
