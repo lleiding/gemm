@@ -662,6 +662,12 @@ end
 
 function createtraits(traitnames::Array{String,1})
     traits = Trait[]
+    seedsize = rand()
+    repsize = rand()
+    while repsize <= seedsize
+        seedsize = rand()
+        repsize = rand()
+    end
     for name in traitnames
         if contains(name,"rate")
             push!(traits,Trait(name,rand()*100,true))
@@ -671,6 +677,10 @@ function createtraits(traitnames::Array{String,1})
             push!(traits,Trait(name,rand()*20,true)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
             push!(traits,Trait(name,rand(),true)) #CAVE: code values elsewhere?
+        elseif contains(name, "repsize")
+            push!(traits,Trait(name,repsize,true)) #CAVE: code values elsewhere?
+        elseif contains(name, "seedsize")
+            push!(traits,Trait(name,seedsize,true)) #CAVE: code values elsewhere?
         else
             push!(traits,Trait(name,rand(),true))
         end
