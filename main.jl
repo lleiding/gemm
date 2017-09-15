@@ -30,7 +30,7 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
         compete!(world)
         reproduce!(world)
         disperse!(world) && writerawdata(world,seed,mapfile,t)
-        (t == 1 || mod(timesteps,50) == 0) && analysis(world)
+        (t == 1 || mod(timesteps,100) == 0) && analysis(world)
         #        mod(timesteps,20) == 0 && visualisation(world,t==20)
         #mod(timesteps,10) == 0 && println(t)
     end
