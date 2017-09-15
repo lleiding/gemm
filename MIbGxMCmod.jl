@@ -396,7 +396,6 @@ function establish!(patch::Patch)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
             patch.community[idx].fitness = fitness
-            end
         end
         idx += 1
     end
@@ -452,7 +451,7 @@ function grow!(patch::Patch)
             if !patch.community[idx].isnew
                 growthrate = patch.community[idx].traits["growthrate"]
                 mass = patch.community[idx].size
-                newmass = growthrate * mass^(3/4) * exp(-act/(boltz*temp)) * normconst # -> emergent maximum body size!
+                newmass = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp)) * normconst # -> emergent maximum body size!
                 if newmass > 0 && mass > 0
                     patch.community[idx].size = newmass
                 else
@@ -556,7 +555,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
             if !hasdispmean || !hasdispprob || !hasdispshape
                 splice!(patch.community,idx)
                 idx -= 1
-            elseif !patch.community[idx].isnew && patch.community[idx].age == 0 && rand() <= patch.community[idx].traits["dispprob"]
+            elseif !patch.community[idx].isnew && patch.community[idx].age == 0 && rand() <= patch.community[idx].traits["dispprob"] * patch.community[idx].fitness
                 dispmean = patch.community[idx].traits["dispmean"]
                 dispshape = patch.community[idx].traits["dispshape"]
                 patch.community[idx].isnew = true
@@ -611,7 +610,7 @@ function reproduce!(patch::Patch) #TODO: refactorize!
         if !hasrepprob || !hasreprate || !hasrepsize || !hasreptol || !hasmutprob || !hasseedsize
             splice!(patch.community, idx)
             idx -= 1
-        elseif !patch.community[idx].isnew && rand() <= patch.community[idx].traits["repprob"]
+        elseif !patch.community[idx].isnew && rand() <= patch.community[idx].traits["repprob"] * patch.community[idx].fitness
             currentmass = patch.community[idx].size
             seedsize = patch.community[idx].traits["seedsize"]
             if currentmass >= patch.community[idx].traits["repsize"]
