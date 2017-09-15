@@ -320,7 +320,7 @@ function chrms2traits(chrms::Array{Chromosome,1})
     traits = unique(traits)
     traitdict = Dict{String,Float64}()
     for traitname in unique(map(x->x.name,traits))
-        (traitdict[traitname] = mean(map(x->x.value,filter(x->x.name==traitname,traits)))
+        traitdict[traitname] = mean(map(x->x.value,filter(x->x.name==traitname,traits)))
     end
     traitdict
 end
