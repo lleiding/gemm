@@ -10,10 +10,11 @@
 ## Every line describes one patch in the following format:
 ## <ID> <X-COORDINATE> <Y-COORDINATE> [<TYPE>]
 
+include("MIbGxMCmod.jl")
 @everywhere include("MIbGxMCmod.jl")
 
-using Distributions, MIbGxMCmod, Plots # needs to be like this somehow...
-@everywhere using Distributions, MIbGxMCmod, Plots
+using MIbGxMCmod, Plots # needs to be like this somehow...
+@everywhere using MIbGxMCmod, Plots
 
 
 @everywhere function readmapfile(filename::String)
