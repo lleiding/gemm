@@ -524,7 +524,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
     chromosomes
 end
 
-function genesis(ninds::Int64=1000, meangenes::Int64=20, meanchrs::Int64=5,
+function genesis(ninds::Int64=10000, meangenes::Int64=20, meanchrs::Int64=5,
                  traitnames::Array{String,1} = ["ageprob",
                                                 "dispmean",
                                                 "dispprob",
