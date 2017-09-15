@@ -13,7 +13,7 @@ using Distributions, Plots
 
 
 export Patch, # types
-    readmapfile, writerawdata, writedata,
+    readmapfile, writerawdata, writedata, analysis,
     checkviability!, establish!, age!, grow!, disperse!, compete!, reproduce!,
     createworld, updateworld! # functions
 
@@ -319,8 +319,8 @@ function chrms2traits(chrms::Array{Chromosome,1})
     end
     traits = unique(traits)
     traitdict = Dict{String,Float64}()
-    for trait in traits
-        trait.active && (traitdict[trait.name] = trait.value)
+    for traitname in unique(map(x->x.name,traits))
+        (traitdict[traitname] = mean(map(x->x.value,filter(x->x.name==traitname,traits)))
     end
     traitdict
 end

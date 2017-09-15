@@ -10,7 +10,11 @@
 ## Every line describes one patch in the following format:
 ## <ID> <X-COORDINATE> <Y-COORDINATE> [<TYPE>]
 
-@everywhere include("MIbGxMCmod.jl")
+addprocs(0)
+thisDir = pwd()
+any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
+
+#@everywhere include("MIbGxMCmod.jl")
 
 # using MIbGxMCmod # needs to be like this somehow...
 @everywhere using MIbGxMCmod
@@ -26,7 +30,7 @@
         compete!(world)
         reproduce!(world)
         disperse!(world) && writerawdata(world,seed,mapfile,t)
-        #        mod(timesteps,20) == 0 && analysis(world)
+        mod(timesteps,20) == 0 && analysis(world)
         #        mod(timesteps,20) == 0 && visualisation(world,t==20)
         #mod(timesteps,10) == 0 && println(t)
     end
