@@ -389,13 +389,14 @@ function establish!(patch::Patch)
         if !hastemptol || !hastempopt
             splice!(patch.community, idx) # kill it!
             idx -= 1
-        elseif patch.community[idx].isnew
+        elseif patch.community[idx].isnew || patch.community[idx].age == 0
             tempopt = patch.community[idx].traits["tempopt"]
             temptol = patch.community[idx].traits["temptol"]
             fitness = gausscurve(tempopt, temptol, temp)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
             patch.community[idx].fitness = fitness
+            patch.community[idx].isnew = false
         end
         idx += 1
     end
@@ -555,7 +556,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
             if !hasdispmean || !hasdispprob || !hasdispshape
                 splice!(patch.community,idx)
                 idx -= 1
-            elseif !patch.community[idx].isnew && patch.community[idx].age == 0 && rand() <= patch.community[idx].traits["dispprob"] * patch.community[idx].fitness
+            elseif patch.community[idx].isnew && patch.community[idx].age == 0 && rand() <= patch.community[idx].traits["dispprob"] * patch.community[idx].fitness
                 dispmean = patch.community[idx].traits["dispmean"]
                 dispshape = patch.community[idx].traits["dispshape"]
                 patch.community[idx].isnew = true
@@ -636,7 +637,7 @@ function reproduce!(patch::Patch) #TODO: refactorize!
                         activategenes!(genome)
                         traits = chrms2traits(genome)
                         age = 0
-                        isnew = false
+                        isnew = true
                         fitness = 1.0
                         newsize = seedsize
                         ind = Individual(genome,traits,age,isnew,fitness,newsize)
