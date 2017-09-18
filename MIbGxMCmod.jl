@@ -338,7 +338,7 @@ function mutate!(ind::Individual, temp::Float64)
                     gene.sequence[i] = newbase
                     for trait in gene.codes
                         trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
-                        newvalue = trait.value + rand(Normal(0, trait.value/mutscaling)) # new value for trait
+                        newvalue = trait.value + rand(Normal(0, trait.value/mutscaling)) # CAVE: mutscaling! new value for trait
                         (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
                         (newvalue > 1 && contains(trait.name,"reptol")) && (newvalue=1)
                         newvalue < 0 && (newvalue=abs(newvalue))
@@ -500,7 +500,7 @@ end
 """
 
 """
-function checkborderconditions(world::Array{Patch,1},xdest::Float64,ydest::Float64)
+function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Float64)
     xmin = minimum(map(x->x.location[1],world))
     xmax = maximum(map(x->x.location[1],world))
     ymin = minimum(map(x->x.location[2],world))
@@ -565,7 +565,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
                 ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # ...follows original distribution
                 xdest = patch.location[1]+xdir
                 ydest = patch.location[2]+ydir
-                !patch.isisland && ((xdest,ydest) = checkborderconditions(world,xdest,ydest))
+                !patch.isisland && checkborderconditions!(world,xdest,ydest)
                 targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
                 possdests = find(x->in(x.location,targets),world)
                 if size(possdests,1) > 0 # if no viable target patch, individual dies
