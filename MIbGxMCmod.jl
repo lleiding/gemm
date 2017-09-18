@@ -35,19 +35,19 @@ mutable struct Trait
 end
 
 mutable struct Gene
-    sequence::Array{Char,1}
+    sequence::Array{Char, 1}
     id::String
-    codes::Array{Trait,1}
+    codes::Array{Trait, 1}
 end
 
 mutable struct Chromosome
-    genes::Array{Gene,1}
+    genes::Array{Gene, 1}
     maternal::Bool # parental origin of chromosome
 end
 
 mutable struct Individual
-    genome::Array{Chromosome,1}
-    traits::Dict{String,Float64}
+    genome::Array{Chromosome, 1}
+    traits::Dict{String, Float64}
     age::Int64
     isnew::Bool # indicator whether individual is new to a patch (after dispersal or birth)
     fitness::Float64 # rate scaling factor
@@ -56,13 +56,13 @@ end
 
 mutable struct Patch
     id::Int64
-    location::Tuple{Float64,Float64}
+    location::Tuple{Int64, Int64}
     altitude::Float64 # corresponds to T
     area::Float64
     isisland::Bool
     nichea::Float64 # additional niches,
     nicheb::Float64 # e.g. precipitation
-    community::Array{Individual,1}
+    community::Array{Individual, 1}
     isolated::Bool
 end
 
@@ -598,17 +598,24 @@ function compete!(world::Array{Patch,1})
     end
 end
 
+function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int64, Int64})
+    posspartners = Individual[]
+    posspartners
+end
+
 function reproduce!(patch::Patch) #TODO: refactorize!
     idx = 1
     temp = patch.altitude
     while idx <= size(patch.community,1)
         hasrepprob = haskey(patch.community[idx].traits,"repprob")
+        hasrepradius = haskey(patch.community[idx].traits,"repradius")
         hasreprate = haskey(patch.community[idx].traits,"reprate")
         hasrepsize = haskey(patch.community[idx].traits,"repsize")
         hasreptol = haskey(patch.community[idx].traits,"reptol")
         hasseedsize = haskey(patch.community[idx].traits,"seedsize")
         hasmutprob = haskey(patch.community[idx].traits,"mutprob")
-        if !hasrepprob || !hasreprate || !hasrepsize || !hasreptol || !hasmutprob || !hasseedsize
+        if !hasrepprob || !hasrepradius || !hasreprate || !hasrepsize || !hasreptol ||
+        !hasmutprob || !hasseedsize
             splice!(patch.community, idx)
             idx -= 1
         elseif !patch.community[idx].isnew && rand() <= patch.community[idx].traits["repprob"] * patch.community[idx].fitness
@@ -621,7 +628,7 @@ function reproduce!(patch::Patch) #TODO: refactorize!
                 metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
                 noffs = rand(Poisson(metaboffs))
                 if sexualreproduction
-                    posspartners = find(x->(1/reptol)*mass>=x.size>=reptol*mass,patch.community)
+                    posspartners = findposspartners(world, patch.community[idx], patch.location)
                     partneridx = idx
                     try
                         partneridx = rand(filter(x->x!=idx,posspartners))
