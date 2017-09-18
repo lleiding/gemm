@@ -270,7 +270,7 @@ function writerawdata(world::Array{Patch,1}, seed::Int64, mapfile::String, times
     end
     filename *= extension
     touch(filename)
-    println("Writing data to \"$filename\"...")
+    println("Colonisation! Writing data to \"$filename\"...")
     open(filename, "w") do file
         println(file,world)
     end
