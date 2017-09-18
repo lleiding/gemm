@@ -556,7 +556,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
             if !hasdispmean || !hasdispprob || !hasdispshape
                 splice!(patch.community,idx)
                 idx -= 1
-            elseif patch.community[idx].isnew && patch.community[idx].age == 0 && rand() <= patch.community[idx].traits["dispprob"] * patch.community[idx].fitness
+            elseif !patch.community[idx].isnew && patch.community[idx].age == 0 && rand() <= patch.community[idx].traits["dispprob"] * patch.community[idx].fitness
                 dispmean = patch.community[idx].traits["dispmean"]
                 dispshape = patch.community[idx].traits["dispshape"]
                 patch.community[idx].isnew = true
@@ -637,7 +637,7 @@ function reproduce!(patch::Patch) #TODO: refactorize!
                         activategenes!(genome)
                         traits = chrms2traits(genome)
                         age = 0
-                        isnew = true
+                        isnew = false
                         fitness = 1.0
                         newsize = seedsize
                         ind = Individual(genome,traits,age,isnew,fitness,newsize)
