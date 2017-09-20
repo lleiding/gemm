@@ -19,6 +19,52 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 # using MIbGxMCmod # needs to be like this somehow...
 @everywhere using MIbGxMCmod, ArgParse
 
+@everywhere function parsecommandline()
+    s = ArgParseSettings()
+    @add_arg_table s begin
+        "--seed", "-s"
+            help = "inital random seed"
+            arg_type = Int
+            default = 1
+        "--maps", "-m"
+            help = "list of map files, comma separated"
+            arg_type = String
+            required = true
+        "--linkage", "-l"
+            help = "gene linkage"
+            arg_type = String
+            range_tester = x->in(x,["none", "evo", "full"])
+            required = true
+        "--tolerance", "-t"
+            help = "tolerance of sequence identity when reproducing"
+            arg_type = String
+            range_tester = x->in(x,["high", "evo", "low"])
+            required = true
+        "--heterogeneity", "-h"
+            help = "island heterogeneity, i.e. environmental niche variability"
+            arg_type = String
+            range_tester = x->in(x,["low", "high"])
+            required = true
+        "--complexity", "-c"
+            help = "topographic island complexity, controlling intra-island isolation"
+            arg_type = String
+            range_tester = x->in(x,["low", "high"])
+            required = true
+        "--environment", "-e"
+            help = "temporal geomorphological environmental dynamics"
+            arg_type = String
+            range_tester = x->in(x,["static", "dynamic"])
+            required = true
+#        "--flag1"
+#            help = "an option without argument, i.e. a flag"
+#            action = :store_true
+        "arg1"
+            help = "a positional argument"
+            required = false
+        end
+    return parse_args(s)
+end
+
 
 @everywhere function simulation(world::Array{Patch,1}, seed::Int64, mapfile::String, timesteps::Int=1000)
     println("Starting simulation...")
@@ -54,8 +100,13 @@ end
 
 ## Parallel stuff:
 const nprocesses = nworkers()
-length(ARGS) > 0 ? (const startseed = parse(Int,ARGS[1])) : (const startseed = 1)
-length(ARGS) > 1 ? (const mapfiles = ARGS[2:end]) : (const mapfiles = ["mapfile"])
+allargs = parsecommandline()
+const startseed = allargs["seed"]
+const mapfiles =  map(x->String(x),split(allargs["maps"],","))
 const replicates = startseed:startseed+nprocesses-1
-pmap(x->runit(true,mapfiles,x),replicates)
+
+TT = STDOUT # save original STDOUT stream
+redirect_stdout()
+pmap(x->runit(true,mapfiles,x),replicates) # compilation/optimization run
+redirect_stdout(TT) # restore STDOUT
 pmap(x->runit(false,mapfiles,x),replicates)
