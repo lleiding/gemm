@@ -42,12 +42,12 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
             range_tester = x->in(x,["high", "evo", "low"])
             required = false
             default = "evo"
-        "--heterogeneity", "-n"
+        "--heterogeneity", "-n" # this ...
             help = "island heterogeneity, i.e. environmental niche variability (\"low\" or \"high\")"
             arg_type = String
             range_tester = x->in(x,["low", "high"])
             required = true
-        "--complexity", "-c"
+        "--complexity", "-c" # ... and that may be defined in the maps
             help = "topographic island complexity, controlling intra-island isolation (\"low\" or \"high\")"
             arg_type = String
             range_tester = x->in(x,["low", "high"])
