@@ -23,6 +23,7 @@ const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
 const normconst = 1e10 # normalization constant to get biologically realistic orders of magnitude
 const mutscaling = 50 #parse(ARGS[2])
 const sexualreproduction = true
+const meangenes = 20 # mean number of genes per individual
 
 
 ## Types:
@@ -99,7 +100,7 @@ function readmapfile(filename::String)
     return timesteps,mapentries
 end
 
-function createworld(maptable::Array{Array{String,1},1})
+function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,Any})
     println("Creating world...")
     world = Patch[]
     area = 100 # CAVE: just for now...
@@ -122,7 +123,7 @@ function createworld(maptable::Array{Array{String,1},1})
         if size(entry,1) > 5 && contains(lowercase(entry[6]),"isolated")
             newpatch.isolated = true
         end
-        !isisland && append!(newpatch.community,genesis())
+        !isisland && append!(newpatch.community,genesis(settings["linkage"]))
         push!(world,newpatch)
     end
     world
@@ -740,7 +741,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
     chromosomes
 end
 
-function genesis(ninds::Int64=1000, meangenes::Int64=20, meanchrs::Int64=5,
+function genesis(ninds::Int64=100, meangenes::Int64=meangenes,
                  traitnames::Array{String,1} = ["ageprob",
                                                 "dispmean",
                                                 "dispprob",
@@ -753,16 +754,26 @@ function genesis(ninds::Int64=1000, meangenes::Int64=20, meanchrs::Int64=5,
                                                 "reptol",
                                                 "seedsize",
                                                 "temptol",
-                                                "tempopt"]) # minimal required traitnames
+                                                "tempopt"], # minimal required traitnames
+                linkage::String="random")
     community = Individual[]
     for ind in 1:ninds
         ngenes = rand(Poisson(meangenes))
-        nchrs = rand(Poisson(meanchrs))
+        if linkage == "none"
+            nchrms = ngenes
+        elseif linkage == "full"
+            nchrms = 1
+        else
+            chrms = rand(1:ngenes)
+        end
         traits = createtraits(traitnames)
         genes = creategenes(ngenes,traits)
-        chromosomes = createchrs(nchrs,genes)
+        chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
-        push!(community, Individual(chromosomes,traitdict,0,true,1.0,rand()))
+        popsize = rand(1:10)
+        for i in 1:popsize
+            push!(community, Individual(chromosomes,traitdict,0,true,1.0,rand()))
+        end
     end
     community
 end

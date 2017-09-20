@@ -31,15 +31,17 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
             arg_type = String
             required = true
         "--linkage", "-l"
-            help = "gene linkage (\"none\", \"evo\" or \"full\")"
+            help = "gene linkage (\"none\", \"random\" or \"full\")"
             arg_type = String
-            range_tester = x->in(x,["none", "evo", "full"])
-            required = true
+            range_tester = x->in(x,["none", "random", "full"])
+            required = false
+            default = "random"
         "--tolerance", "-t"
             help = "tolerance of sequence identity when reproducing (\"high\", \"evo\" or \"low\")"
             arg_type = String
             range_tester = x->in(x,["high", "evo", "low"])
-            required = true
+            required = false
+            default = "evo"
         "--heterogeneity", "-n"
             help = "island heterogeneity, i.e. environmental niche variability (\"low\" or \"high\")"
             arg_type = String
@@ -82,15 +84,16 @@ end
     end
 end
 
-@everywhere function runit(firstrun::Bool,mapfiles::Array{String,1},seed::Int64=0)
+@everywhere function runit(firstrun::Bool,settings::Dict{String,Any},seed::Int64=0)
     seed != 0 && srand(seed)
+    mapfiles =  map(x->String(x),split(allargs["maps"],","))
     if firstrun
         world=createworld([["1","1","1"]])
         simulation(world, seed, "", 10)
     else
         for i in 1:length(mapfiles)
             timesteps,maptable = readmapfile(mapfiles[i])
-            i == 1 && (world = createworld(maptable))
+            i == 1 && (world = createworld(maptable, settings))
             i > 1 && updateworld!(world,maptable)
             simulation(world, seed, mapfiles[i], timesteps)
             writedata(world, seed, mapfiles[i])
@@ -102,7 +105,6 @@ end
 const nprocesses = nworkers()
 allargs = parsecommandline()
 const startseed = allargs["seed"]
-const mapfiles =  map(x->String(x),split(allargs["maps"],","))
 const replicates = startseed:startseed+nprocesses-1
 
 TT = STDOUT # save original STDOUT stream
