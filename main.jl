@@ -31,27 +31,27 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
             arg_type = String
             required = true
         "--linkage", "-l"
-            help = "gene linkage"
+            help = "gene linkage (\"none\", \"evo\" or \"full\")"
             arg_type = String
             range_tester = x->in(x,["none", "evo", "full"])
             required = true
         "--tolerance", "-t"
-            help = "tolerance of sequence identity when reproducing"
+            help = "tolerance of sequence identity when reproducing (\"high\", \"evo\" or \"low\")"
             arg_type = String
             range_tester = x->in(x,["high", "evo", "low"])
             required = true
-        "--heterogeneity", "-h"
-            help = "island heterogeneity, i.e. environmental niche variability"
+        "--heterogeneity", "-n"
+            help = "island heterogeneity, i.e. environmental niche variability (\"low\" or \"high\")"
             arg_type = String
             range_tester = x->in(x,["low", "high"])
             required = true
         "--complexity", "-c"
-            help = "topographic island complexity, controlling intra-island isolation"
+            help = "topographic island complexity, controlling intra-island isolation (\"low\" or \"high\")"
             arg_type = String
             range_tester = x->in(x,["low", "high"])
             required = true
         "--environment", "-e"
-            help = "temporal geomorphological environmental dynamics"
+            help = "temporal geomorphological environmental dynamics (\"static\" or \"dynamic\")"
             arg_type = String
             range_tester = x->in(x,["static", "dynamic"])
             required = true
