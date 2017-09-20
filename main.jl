@@ -52,11 +52,6 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
             arg_type = String
             range_tester = x->in(x,["low", "high"])
             required = true
-        "--environment", "-e"
-            help = "temporal geomorphological environmental dynamics (\"static\" or \"dynamic\")"
-            arg_type = String
-            range_tester = x->in(x,["static", "dynamic"])
-            required = true
 #        "--flag1"
 #            help = "an option without argument, i.e. a flag"
 #            action = :store_true
