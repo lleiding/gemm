@@ -17,7 +17,7 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 #@everywhere include("MIbGxMCmod.jl")
 
 # using MIbGxMCmod # needs to be like this somehow...
-@everywhere using MIbGxMCmod
+@everywhere using MIbGxMCmod, ArgParse
 
 
 @everywhere function simulation(world::Array{Patch,1}, seed::Int64, mapfile::String, timesteps::Int=1000)
