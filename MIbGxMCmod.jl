@@ -604,12 +604,13 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     radius = ind.traits["repradius"] + 0.5 # to account for cell width ... or not??
     coordinates = Tuple[]
     for x in -radius:radius, y in -radius:radius
-        sqrt(x^2+y^2) <= radius && push!(coordinates,(x+location[1],y+location[2]))
+        sqrt(x^2 + y^2) <= radius && push!(coordinates, (x + location[1], y + location[2]))
     end
-    map(x->checkborderconditions!(world,x[1],x[2]),coordinates)
+    map(x -> checkborderconditions!(world, x[1], x[2]), coordinates)
     posspartners = Individual[]
-    map(x->append!(posspartners,x.community),filter(x->in(x.location,coordinates),world))
-    filter!(x->!x.isnew,posspartners) # filter out mating individual
+    map(x -> append!(posspartners, x.community), filter(x -> in(x.location, coordinates), world))
+    filter!(x -> x.size >= x.traits["repsize"], posspartners)
+    filter!(x -> !x.isnew, posspartners) # filter out mating individual
     ind.isnew = false
     posspartners
 end
