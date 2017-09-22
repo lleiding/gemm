@@ -24,6 +24,7 @@ const normconst = 1e10 # normalization constant to get biologically realistic or
 const mutscaling = 50 #parse(ARGS[2])
 const sexualreproduction = true
 const meangenes = 20 # mean number of genes per individual
+const mutationrate = 1e-3
 
 
 ## Types:
@@ -140,11 +141,11 @@ function mutate!(ind::Individual, temp::Float64)
                     end
                     gene.sequence[i] = newbase
                     for trait in gene.codes
+                        contains(trait.name, "rep") && contains(trait.name, "tol") && continue
                         trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
                         newvalue = trait.value + rand(Normal(0, trait.value/mutscaling)) # CAVE: mutscaling! new value for trait
-                        (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
-                        (newvalue > 1 && contains(trait.name,"reptol")) && (newvalue=1)
                         newvalue < 0 && (newvalue=abs(newvalue))
+                        (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
                         while newvalue == 0 #&& contains(trait.name,"mut")
                             newvalue = trait.value + rand(Normal(0, trait.value/mutscaling))
                         end
@@ -476,14 +477,8 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                 noffs = rand(Poisson(metaboffs))
                 if sexualreproduction
                     posspartners = findposspartners(world, patch.community[idx], patch.location)
-                    partneridx = idx
-                    try
-                        partneridx = rand(filter(x->x!=idx,posspartners))
-                    catch
-                        idx += 1
-                        continue
-                    end
-                    partnergenome = meiosis(patch.community[partneridx].genome, false) #CAVE: maybe move inside offspring loop?
+                    partner = rand(posspartners)
+                    partnergenome = meiosis(partner.genome, false) #CAVE: maybe move inside offspring loop?
                     mothergenome = meiosis(patch.community[idx].genome, true)
                     for i in 1:noffs
                         (size(partnergenome,1) < 1 || size(mothergenome,1) < 1) && continue
@@ -513,7 +508,7 @@ function reproduce!(world::Array{Patch,1})
     end
 end
 
-function createtraits(traitnames::Array{String,1})
+function createtraits(traitnames::Array{String,1}, tolerance::String="evo")
     traits = Trait[]
     seedsize = rand()
     repsize = rand()
@@ -526,10 +521,16 @@ function createtraits(traitnames::Array{String,1})
             push!(traits,Trait(name,rand()*100,true))
         elseif contains(name, "temp") && contains(name, "opt")
             push!(traits,Trait(name,rand()*60+263,true)) #CAVE: code values elsewhere?
-        elseif contains(name, "tol") && !contains(name, "rep")
-            push!(traits,Trait(name,rand()*20,true)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
-            push!(traits,Trait(name,rand(),true)) #CAVE: code values elsewhere?
+            mutationrate == 0 ? push!(traits,Trait(name,rand(),true)) : push!(traits,Trait(name,mutationrate,true)) #CAVE: code values elsewhere?
+        elseif contains(name, "rep") && contains(name, "tol")
+            if tolerance == "high"
+                push!(traits,Trait(name,0.9,true))
+            elseif tolerance == "low"
+                push!(traits,Trait(name,0.99,true)) #CAVE: code values elsewhere?
+            else
+                push!(traits,Trait(name,rand()/10 + 0.9,true))
+            end
         elseif contains(name, "repsize")
             push!(traits,Trait(name,repsize,true)) #CAVE: code values elsewhere?
         elseif contains(name, "seedsize")
@@ -602,7 +603,7 @@ function genesis(ninds::Int64=100, meangenes::Int64=meangenes,
                                                 "seedsize",
                                                 "temptol",
                                                 "tempopt"], # minimal required traitnames
-                 linkage::String="random")
+                 linkage::String="random", tolerance::String="evo")
     community = Individual[]
     for ind in 1:ninds
         ngenes = rand(Poisson(meangenes))
@@ -613,7 +614,7 @@ function genesis(ninds::Int64=100, meangenes::Int64=meangenes,
         else
             chrms = rand(1:ngenes)
         end
-        traits = createtraits(traitnames)
+        traits = createtraits(traitnames, tolerance)
         genes = creategenes(ngenes,traits)
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
@@ -648,7 +649,7 @@ function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,A
         if size(entry,1) > 5 && contains(lowercase(entry[6]),"isolated")
             newpatch.isolated = true
         end
-        !isisland && append!(newpatch.community,genesis(settings["linkage"]))
+        !isisland && append!(newpatch.community,genesis(settings["linkage"], settings["tolerance"]))
         push!(world,newpatch)
     end
     world
