@@ -5,7 +5,8 @@
 ##
 ## Main simulation
 ##
-## Synopsis: julia main.jl <MAPFILE> <RANDOMSEED> <TIMESTEPS>
+## For a list of options, run julia main.jl --help
+##
 ## <MAPFILE> is a textfile containing information about the simulation arena
 ## Every line describes one patch in the following format:
 ## <ID> <X-COORDINATE> <Y-COORDINATE> [<TYPE>]
