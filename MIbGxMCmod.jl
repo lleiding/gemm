@@ -599,6 +599,23 @@ function compete!(world::Array{Patch,1})
     end
 end
 
+function iscompatible(mate::Individual, ind::Individual)
+    tolerance = ind.traits["reptol"]
+    length(ind.genome) != length(mate.genome) && return false
+    sum(x -> length(x.genes), ind.genome) != sum(x -> length(x.genes), mate.genome) && return false
+    indgenes = Gene[]
+    for chrm in ind.genome
+        append!(indgenes, chrm.genes)
+    end
+    sort!(indgenes, by = x -> x.id)
+    mategenes = Gene[]
+    for chrm in mate.genome
+        append!(mategenes, chrm.genes)
+    end
+    sort!(mategenes, by = x -> x.id)
+    map(x -> x.id, indgenes) != map(x -> x.id, mategenes) && return false
+end
+
 function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int64, Int64})
     ind.isnew = true
     radius = ind.traits["repradius"] + 0.5 # to account for cell width ... or not??
@@ -606,10 +623,11 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     for x in -radius:radius, y in -radius:radius
         sqrt(x^2 + y^2) <= radius && push!(coordinates, (x + location[1], y + location[2]))
     end
-    map(x -> checkborderconditions!(world, x[1], x[2]), coordinates)
+    coordinates = map(x -> checkborderconditions!(world, x[1], x[2]), coordinates)
     posspartners = Individual[]
     map(x -> append!(posspartners, x.community), filter(x -> in(x.location, coordinates), world))
     filter!(x -> x.size >= x.traits["repsize"], posspartners)
+    filter!(x -> iscompatible(x, ind), posspartners)
     filter!(x -> !x.isnew, posspartners) # filter out mating individual
     ind.isnew = false
     posspartners
