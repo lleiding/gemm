@@ -614,6 +614,21 @@ function iscompatible(mate::Individual, ind::Individual)
     end
     sort!(mategenes, by = x -> x.id)
     map(x -> x.id, indgenes) != map(x -> x.id, mategenes) && return false
+    indgenesize = length(*map(x -> x.id, indgenes)...)
+    mategenesize = length(*map(x -> x.id, mategenes)...)
+    1 - (abs(mategenesize - indgenesize) / mategenesize) < tolerance && return false
+    basediffs = 0
+    for i in eachindex(indgenes)
+        for j in eachindex(indgenes[i].sequence)
+            try
+                indgenes[i].sequence[j] != mategenes[i].sequence[j] && basediffs += 1
+            catch
+                basediffs += 1
+            end
+        end
+    end
+    1 - (basediffs / mategenesize) < tolerance && return false
+    true
 end
 
 function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int64, Int64})
