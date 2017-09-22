@@ -56,9 +56,9 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 #        "--flag1"
 #            help = "an option without argument, i.e. a flag"
 #            action = :store_true
-        "arg1"
-            help = "a positional argument"
-            required = false
+#        "arg1"
+#            help = "a positional argument"
+#            required = false
         end
     return parse_args(s)
 end
@@ -105,6 +105,6 @@ const replicates = startseed:startseed+nprocesses-1
 
 TT = STDOUT # save original STDOUT stream
 redirect_stdout()
-pmap(x->runit(true,mapfiles,x),replicates) # compilation/optimization run
+pmap(x->runit(true,allargs,x),replicates) # compilation/optimization run
 redirect_stdout(TT) # restore STDOUT
-pmap(x->runit(false,mapfiles,x),replicates)
+#pmap(x->runit(false,allargs,x),replicates)
