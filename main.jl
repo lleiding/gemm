@@ -84,7 +84,7 @@ end
     seed != 0 && srand(seed)
     mapfiles =  map(x->String(x),split(allargs["maps"],","))
     if firstrun
-        world=createworld([["1","1","1"]])
+        world=createworld([["1","1","1"]],settings)
         simulation(world, seed, "", 10)
     else
         for i in 1:length(mapfiles)
