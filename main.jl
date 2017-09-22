@@ -99,7 +99,7 @@ end
 
 ## Parallel stuff:
 const nprocesses = nworkers()
-allargs = parsecommandline()
+const allargs = parsecommandline()
 const startseed = allargs["seed"]
 const replicates = startseed:startseed+nprocesses-1
 
@@ -107,4 +107,4 @@ TT = STDOUT # save original STDOUT stream
 redirect_stdout()
 pmap(x->runit(true,allargs,x),replicates) # compilation/optimization run
 redirect_stdout(TT) # restore STDOUT
-#pmap(x->runit(false,allargs,x),replicates)
+pmap(x->runit(false,allargs,x),replicates)
