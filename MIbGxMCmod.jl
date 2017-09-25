@@ -180,6 +180,12 @@ function checkviability!(world::Array{Patch,1})
     end
 end
 
+function traitsexist(ind::Individual, traitnames::Array{String, 1})
+    for trait in traitnames
+        !haskey(ind.traits[trait]) && return false
+    end
+end
+
 function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
     y = a * exp(-(x-b)^2/(2*c^2))
 end
@@ -188,9 +194,7 @@ function establish!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        hastemptol = haskey(patch.community[idx].traits,"temptol")
-        hastempopt = haskey(patch.community[idx].traits,"tempopt")
-        if !hastemptol || !hastempopt
+        if !traitsexist(ind, ["temptol", "tempopt"])
             splice!(patch.community, idx) # kill it!
             idx -= 1
         elseif patch.community[idx].isnew || patch.community[idx].age == 0
@@ -217,8 +221,7 @@ function age!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        hasageprob = haskey(patch.community[idx].traits,"ageprob")
-        if !hasageprob
+        if !traitsexist(ind, ["ageprob"])
             splice!(patch.community, idx)
             idx -= 1
         else
@@ -248,8 +251,7 @@ function grow!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        hasgrowthrate = haskey(patch.community[idx].traits,"growthrate")
-        if !hasgrowthrate
+        if !traitsexist(ind, ["growthrate"])
             splice!(patch.community, idx)
             idx -= 1
         else
@@ -354,10 +356,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
     for patch in world
         idx = 1
         while idx <= size(patch.community,1)
-            hasdispmean = haskey(patch.community[idx].traits,"dispmean")
-            hasdispprob = haskey(patch.community[idx].traits,"dispprob")
-            hasdispshape = haskey(patch.community[idx].traits,"dispshape")
-            if !hasdispmean || !hasdispprob || !hasdispshape
+            if !traitsexist(ind, ["dispmean", "dispprob", "dispshape"])
                 splice!(patch.community,idx)
                 idx -= 1
             elseif !patch.community[idx].isnew && patch.community[idx].age == 0 && rand() <= patch.community[idx].traits["dispprob"] * patch.community[idx].fitness
@@ -455,15 +454,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     idx = 1
     temp = patch.altitude
     while idx <= size(patch.community,1)
-        hasrepprob = haskey(patch.community[idx].traits,"repprob")
-        hasrepradius = haskey(patch.community[idx].traits,"repradius")
-        hasreprate = haskey(patch.community[idx].traits,"reprate")
-        hasrepsize = haskey(patch.community[idx].traits,"repsize")
-        hasreptol = haskey(patch.community[idx].traits,"reptol")
-        hasseedsize = haskey(patch.community[idx].traits,"seedsize")
-        hasmutprob = haskey(patch.community[idx].traits,"mutprob")
-        if !hasrepprob || !hasrepradius || !hasreprate || !hasrepsize || !hasreptol ||
-            !hasmutprob || !hasseedsize
+        if !traitsexist(ind, ["reprob", "repradius", "reprate", "repsize", "reptol", "seedsize", "mutprob"])
             splice!(patch.community, idx)
             idx -= 1
         elseif !patch.community[idx].isnew && rand() <= patch.community[idx].traits["repprob"] * patch.community[idx].fitness
