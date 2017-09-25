@@ -193,7 +193,7 @@ function establish!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        if !traitsexist(ind, ["temptol", "tempopt"])
+        if !traitsexist(patch.community[idx], ["temptol", "tempopt"])
             splice!(patch.community, idx) # kill it!
             idx -= 1
         elseif patch.community[idx].isnew || patch.community[idx].age == 0
@@ -220,7 +220,7 @@ function age!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        if !traitsexist(ind, ["ageprob"])
+        if !traitsexist(patch.community[idx], ["ageprob"])
             splice!(patch.community, idx)
             idx -= 1
         else
@@ -250,7 +250,7 @@ function grow!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        if !traitsexist(ind, ["growthrate"])
+        if !traitsexist(patch.community[idx], ["growthrate"])
             splice!(patch.community, idx)
             idx -= 1
         else
@@ -355,7 +355,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
     for patch in world
         idx = 1
         while idx <= size(patch.community,1)
-            if !traitsexist(ind, ["dispmean", "dispprob", "dispshape"])
+            if !traitsexist(patch.community[idx], ["dispmean", "dispprob", "dispshape"])
                 splice!(patch.community,idx)
                 idx -= 1
             elseif !patch.community[idx].isnew && patch.community[idx].age == 0 && rand() <= patch.community[idx].traits["dispprob"] * patch.community[idx].fitness
@@ -453,7 +453,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     idx = 1
     temp = patch.altitude
     while idx <= size(patch.community,1)
-        if !traitsexist(ind, ["reprob", "repradius", "reprate", "repsize", "reptol", "seedsize", "mutprob"])
+        if !traitsexist(patch.community[idx], ["reprob", "repradius", "reprate", "repsize", "reptol", "seedsize", "mutprob"])
             splice!(patch.community, idx)
             idx -= 1
         elseif !patch.community[idx].isnew && rand() <= patch.community[idx].traits["repprob"] * patch.community[idx].fitness
