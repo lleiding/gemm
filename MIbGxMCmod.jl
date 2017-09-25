@@ -181,7 +181,7 @@ end
 
 function traitsexist(ind::Individual, traitnames::Array{String, 1})
     for trait in traitnames
-        !haskey(ind.traits[trait]) && return false
+        !haskey(ind.traits, trait) && return false
     end
 end
 
