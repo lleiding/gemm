@@ -416,8 +416,8 @@ function iscompatible(mate::Individual, ind::Individual)
     end
     sort!(mategenes, by = x -> x.id)
     map(x -> x.id, indgenes) != map(x -> x.id, mategenes) && return false
-    indgenomesize = length(*(map(x -> x.sequence, indgenes)...))
-    mategenomesize = length(*(map(x -> x.sequence, mategenes)...))
+    indgenomesize = length(*(map(x -> String(x.sequence), indgenes)...))
+    mategenomesize = length(*(map(x -> String(x.sequence), mategenes)...))
     1 - (abs(mategenomesize - indgenomesize) / mategenomesize) < tolerance && return false
     basediffs = 0
     for i in eachindex(indgenes)
@@ -435,7 +435,7 @@ end
 
 function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int64, Int64})
     ind.isnew = true
-    radius = ind.traits["repradius"] + 0.5 # to account for cell width ... or not??
+    radius = floor(ind.traits["repradius"] + 0.5) # to account for cell width ... or not??
     coordinates = Tuple[]
     for x = -radius:radius, y = -radius:radius
         sqrt(x^2 + y^2) <= radius && push!(coordinates, (x + location[1], y + location[2]))
@@ -443,6 +443,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     coordinates = map(k -> checkborderconditions!(world, k[1], k[2]), coordinates)
     posspartners = Individual[]
     map(k -> append!(posspartners, k.community), filter(l -> in(l.location, coordinates), world))
+    filter!(k -> traitsexist(k, ["repsize"]), posspartners)
     filter!(k -> k.size >= k.traits["repsize"], posspartners)
     filter!(k -> iscompatible(k, ind), posspartners)
     filter!(k -> !k.isnew, posspartners) # filter out mating individual
@@ -463,31 +464,27 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
             if currentmass >= patch.community[idx].traits["repsize"]
                 meanoffs = patch.community[idx].traits["reprate"]
                 reptol = patch.community[idx].traits["reptol"]
-                mass = patch.community[idx].size
                 metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
                 noffs = rand(Poisson(metaboffs))
                 posspartners = findposspartners(world, patch.community[idx], patch.location)
-                try
+                if length(posspartners) > 0
                     partner = rand(posspartners)
-                catch
-                    idx += 1
-                    continue
-                end
-                partnergenome = meiosis(partner.genome, false) #CAVE: maybe move inside offspring loop?
-                mothergenome = meiosis(patch.community[idx].genome, true)
-                for i in 1:noffs
-                    (size(partnergenome,1) < 1 || size(mothergenome,1) < 1) && continue
-                    genome = deepcopy([partnergenome...,mothergenome...])
-                    activategenes!(genome)
-                    traits = chrms2traits(genome)
-                    age = 0
-                    isnew = false
-                    fitness = 1.0
-                    newsize = seedsize
-                    ind = Individual(genome,traits,age,isnew,fitness,newsize)
-                    !haskey(ind.traits,"mutprob") && continue # no mutation, no life ;)
-                    mutate!(ind, patch.altitude)
-                    push!(patch.community,ind)
+                    partnergenome = meiosis(partner.genome, false) #CAVE: maybe move inside offspring loop?
+                    mothergenome = meiosis(patch.community[idx].genome, true)
+                    for i in 1:noffs
+                        (size(partnergenome,1) < 1 || size(mothergenome,1) < 1) && continue
+                        genome = deepcopy([partnergenome...,mothergenome...])
+                        activategenes!(genome)
+                        traits = chrms2traits(genome)
+                        age = 0
+                        isnew = false
+                        fitness = 1.0
+                        newsize = seedsize
+                        ind = Individual(genome,traits,age,isnew,fitness,newsize)
+                        !haskey(ind.traits,"mutprob") && continue # no mutation, no life ;)
+                        mutate!(ind, patch.altitude)
+                        push!(patch.community,ind)
+                    end
                 end
             end
         end
@@ -611,7 +608,7 @@ function genesis(linkage::String="random", tolerance::String="evo",
         genes = creategenes(ngenes,traits)
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
-        popsize = rand(1:100)
+        popsize = rand(1:10)
         for i in 1:popsize
             push!(community, Individual(chromosomes,traitdict,0,true,1.0,rand()))
         end
@@ -816,7 +813,7 @@ function writerawdata(world::Array{Patch,1}, seed::Int64, mapfile::String, times
     touch(filename)
     println("Colonisation! Writing data to \"$filename\"...")
     open(filename, "w") do file
-        println(file,world)
+        println(file, world)
     end
 end
 
