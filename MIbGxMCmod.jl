@@ -22,7 +22,6 @@ const boltz = 1.38064852e-23 #  J/K = m2⋅kg/(s2⋅K)
 const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
 const normconst = 1e10 # normalization constant to get biologically realistic orders of magnitude
 const mutscaling = 50 #parse(ARGS[2])
-const sexualreproduction = true
 const meangenes = 20 # mean number of genes per individual
 const mutationrate = 1e-3
 
@@ -466,31 +465,28 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                 mass = patch.community[idx].size
                 metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
                 noffs = rand(Poisson(metaboffs))
-                if sexualreproduction
-                    posspartners = findposspartners(world, patch.community[idx], patch.location)
-                    try
-                        partner = rand(posspartners)
-                    catch
-                        idx += 1
-                        continue
-                    end
-                    partnergenome = meiosis(partner.genome, false) #CAVE: maybe move inside offspring loop?
-                    mothergenome = meiosis(patch.community[idx].genome, true)
-                    for i in 1:noffs
-                        (size(partnergenome,1) < 1 || size(mothergenome,1) < 1) && continue
-                        genome = deepcopy([partnergenome...,mothergenome...])
-                        activategenes!(genome)
-                        traits = chrms2traits(genome)
-                        age = 0
-                        isnew = false
-                        fitness = 1.0
-                        newsize = seedsize
-                        ind = Individual(genome,traits,age,isnew,fitness,newsize)
-                        !haskey(ind.traits,"mutprob") && continue # no mutation, no life ;)
-                        mutate!(ind, patch.altitude)
-                        push!(patch.community,ind)
-                    end
-                    # else #...?
+                posspartners = findposspartners(world, patch.community[idx], patch.location)
+                try
+                    partner = rand(posspartners)
+                catch
+                    idx += 1
+                    continue
+                end
+                partnergenome = meiosis(partner.genome, false) #CAVE: maybe move inside offspring loop?
+                mothergenome = meiosis(patch.community[idx].genome, true)
+                for i in 1:noffs
+                    (size(partnergenome,1) < 1 || size(mothergenome,1) < 1) && continue
+                    genome = deepcopy([partnergenome...,mothergenome...])
+                    activategenes!(genome)
+                    traits = chrms2traits(genome)
+                    age = 0
+                    isnew = false
+                    fitness = 1.0
+                    newsize = seedsize
+                    ind = Individual(genome,traits,age,isnew,fitness,newsize)
+                    !haskey(ind.traits,"mutprob") && continue # no mutation, no life ;)
+                    mutate!(ind, patch.altitude)
+                    push!(patch.community,ind)
                 end
             end
         end
