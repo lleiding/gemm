@@ -183,6 +183,7 @@ function traitsexist(ind::Individual, traitnames::Array{String, 1})
     for trait in traitnames
         !haskey(ind.traits, trait) && return false
     end
+    true
 end
 
 function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
