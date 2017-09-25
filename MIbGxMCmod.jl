@@ -790,7 +790,11 @@ function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
     while ispath(filename * extension)
         extension = "_$counter"
         counter += 1
-        counter > 9 && error("file \"$filename$extension\" exists. Please clear your directory.")
+        if counter > 9
+            warn("could not write to \"$filename$extension\": file exists. \n
+                Continuing anyway - data might be identical.")
+            return
+        end
     end
     filename *= extension
     touch(filename)
