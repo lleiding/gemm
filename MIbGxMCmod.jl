@@ -594,7 +594,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
 end
 
 function genesis(linkage::String="random", tolerance::String="evo",
-                 ninds::Int64=100, meangenes::Int64=meangenes,
+                 nspecs::Int64=100, meangenes::Int64=meangenes,
                  traitnames::Array{String,1} = ["ageprob",
                                                 "dispmean",
                                                 "dispprob",
@@ -610,7 +610,7 @@ function genesis(linkage::String="random", tolerance::String="evo",
                                                 "temptol",
                                                 "tempopt"]) # minimal required traitnames
     community = Individual[]
-    for ind in 1:ninds
+    for spec in 1:nspecs
         ngenes = rand(Poisson(meangenes))
         if linkage == "none"
             nchrms = ngenes
