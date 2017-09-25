@@ -454,7 +454,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     idx = 1
     temp = patch.altitude
     while idx <= size(patch.community,1)
-        if !traitsexist(patch.community[idx], ["reprob", "repradius", "reprate", "repsize", "reptol", "seedsize", "mutprob"])
+        if !traitsexist(patch.community[idx], ["repprob", "repradius", "reprate", "repsize", "reptol", "seedsize", "mutprob"])
             splice!(patch.community, idx)
             idx -= 1
         elseif !patch.community[idx].isnew && rand() <= patch.community[idx].traits["repprob"] * patch.community[idx].fitness
