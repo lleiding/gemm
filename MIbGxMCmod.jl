@@ -623,7 +623,7 @@ function genesis(linkage::String="random", tolerance::String="evo",
         genes = creategenes(ngenes,traits)
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
-        popsize = rand(1:10)
+        popsize = rand(1:100)
         for i in 1:popsize
             push!(community, Individual(chromosomes,traitdict,0,true,1.0,rand()))
         end
@@ -793,6 +793,9 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
             println(io)
         end
     end
+end
+
+function setupdatadir(settings::Dict{String, Any})
 end
 
 function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
