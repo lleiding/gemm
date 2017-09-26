@@ -728,8 +728,12 @@ end
 
 function analysis(world::Array{Patch,1})
     for patch in world
-        print("Patch #",patch.id," @",patch.location," (",patch.isisland,"): \t")
-        println(size(patch.community,1))
+        #print("Patch #",patch.id," @",patch.location," (",patch.isisland,"): \t")
+        #println(size(patch.community,1))
+        idx = 1
+        while idx <= length(patch.community)
+            idx += 1
+        end
     end
 end
 
