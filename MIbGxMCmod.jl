@@ -352,7 +352,7 @@ function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Floa
 end
 
 function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
-    colonisation = false
+    colonizers = Individual[]
     for patch in world
         idx = 1
         while idx <= size(patch.community,1)
@@ -376,14 +376,14 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
                     originisolated = patch.isolated && rand() <= indleft.traits["dispprob"]
                     targetisolated = world[destination].isolated && rand() <= indleft.traits["dispprob"]
                     (!originisolated && !targetisolated) && push!(world[destination].community,indleft)
-                    !patch.isisland && world[destination].isisland && (colonisation = true)
+                    !patch.isisland && world[destination].isisland && push!(colonizers, indleft)
                 end
                 idx -= 1
             end
             idx += 1
         end
     end
-    colonisation
+    colonizers
 end
 
 function compete!(patch::Patch)
@@ -822,6 +822,16 @@ function writerawdata(world::Array{Patch,1}, mapfile::String, settings::Dict{Str
     println("Colonisation! Writing data to \"$filename\"...")
     open(filename, "w") do file
         println(file, world)
+    end
+end
+
+function recordcolonizers(colonizers::Array{Individual, 1}, mapfile::String, settings::Dict{String, Any}, timestep::Int64)
+    record = (timestep, colonizers)
+    filename = mapfile * "_s" * "$settings["seed"]" * "_$settings["linkage"]" * "lnk" * "_$settings["tolerance"]" * "tol" * "colonizers" * ".jl"
+    touch(filename)
+    println("Colonisation! Writing data to \"$filename\"...")
+    open(filename, "a") do file
+        println(file, record)
     end
 end
 
