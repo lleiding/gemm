@@ -785,6 +785,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
 end
 
 function setupdatadir(settings::Dict{String, Any})
+    ?isdir(settings["dir"]) && mkdir(settings["dir"])
 end
 
 function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
