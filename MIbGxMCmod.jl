@@ -808,8 +808,8 @@ function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
     end
 end
 
-function writerawdata(world::Array{Patch,1}, seed::Int64, mapfile::String, settings::Dict{String, Any})
-    filename = mapfile * "_seed" * "$seed" * "_$settings["linkage"]" * "lnk" * "_$settings["tolerance"]" * "tol" * ".jl"
+function writerawdata(world::Array{Patch,1}, mapfile::String, settings::Dict{String, Any}, timestep::Int64)
+    filename = mapfile * "_s" * "$settings["seed"]" * "_$settings["linkage"]" * "lnk" * "_$settings["tolerance"]" * "tol" * "_t" * "$timestep" * ".jl"
     counter = 0
     extension = ""
     while ispath(filename * extension)
