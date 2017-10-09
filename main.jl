@@ -64,7 +64,7 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 end
 
 
-@everywhere function simulation(world::Array{Patch,1}, seed::Int64, mapfile::String, timesteps::Int=1000)
+@everywhere function simulation(world::Array{Patch,1}, seed::Int64, settings::Dict{String,Any}, timesteps::Int=1000)
     println("Starting simulation...")
     for t in 1:timesteps
         checkviability!(world)
@@ -73,7 +73,7 @@ end
         grow!(world)
         age!(world)
         reproduce!(world)
-        disperse!(world) && writerawdata(world,seed,mapfile,t)
+        disperse!(world)
 #        (t == 1 || mod(t,100) == 0) && analysis(world)
         #        mod(timesteps,20) == 0 && visualisation(world,t==20)
         #mod(timesteps,10) == 0 && println(t)
@@ -91,7 +91,7 @@ end
             timesteps,maptable = readmapfile(mapfiles[i])
             i == 1 && (world = createworld(maptable, settings))
             i > 1 && updateworld!(world,maptable)
-            simulation(world, seed, mapfiles[i], timesteps)
+            simulation(world, seed, settings, timesteps)
             writedata(world, seed, mapfiles[i])
         end
     end
