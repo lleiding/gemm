@@ -809,7 +809,7 @@ function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String)
 end
 
 function writerawdata(world::Array{Patch,1}, mapfile::String, settings::Dict{String, Any}, timestep::Int64)
-    filename = mapfile * "_s" * "$settings["seed"]" * "_$settings["linkage"]" * "lnk" * "_$settings["tolerance"]" * "tol" * "_t" * "$timestep" * ".jl"
+    filename = mapfile * "_s" * "$(settings["seed"])" * "_$(settings["linkage"])" * "lnk" * "_$(settings["tolerance"])" * "tol" * "_t" * "$timestep" * ".jl"
     counter = 0
     extension = ""
     while ispath(filename * extension)
@@ -827,7 +827,7 @@ end
 
 function recordcolonizers(colonizers::Array{Individual, 1}, mapfile::String, settings::Dict{String, Any}, timestep::Int64)
     record = (timestep, colonizers)
-    filename = mapfile * "_s" * "$settings["seed"]" * "_$settings["linkage"]" * "lnk" * "_$settings["tolerance"]" * "tol" * "colonizers" * ".jl"
+    filename = mapfile * "_s" * "$(settings["seed"])" * "_$(settings["linkage"])" * "lnk" * "_$(settings["tolerance"])" * "tol" * "colonizers" * ".jl"
     touch(filename)
     println("Colonisation! Writing data to \"$filename\"...")
     open(filename, "a") do file
