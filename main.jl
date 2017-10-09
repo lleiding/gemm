@@ -43,6 +43,11 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
             range_tester = x->in(x,["high", "evo", "low"])
             required = false
             default = "evo"
+        "--dest", "-d"
+            help = "output directory. Defaults to current date"
+            arg_type = String
+            required = false
+            default = string(Date.today)
         "--heterogeneity", "-n" # this ...
             help = "island heterogeneity, i.e. environmental niche variability (\"low\" or \"high\")"
             arg_type = String
