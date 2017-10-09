@@ -94,6 +94,7 @@ end
         world=createworld([["1","1","1"]],settings)
         simulation(world, seed, "", 10)
     else
+        setupdatadir(settings)
         for i in 1:length(mapfiles)
             timesteps,maptable = readmapfile(mapfiles[i])
             i == 1 && (world = createworld(maptable, settings))
