@@ -789,7 +789,7 @@ function setupdatadir(settings::Dict{String, Any})
 end
 
 function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String, settings::Dict{String, Any})
-    filename = settings["dir"] * "/" * mapfile * "_seed" * "$seed" * ".out"
+    filename = "$(settings["dir"])" * "/" * mapfile * "_seed" * "$seed" * ".out"
     counter = 0
     extension = ""
     while ispath(filename * extension)
@@ -810,7 +810,7 @@ function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String, settings
 end
 
 function writerawdata(world::Array{Patch,1}, mapfile::String, settings::Dict{String, Any}, timestep::Int64)
-    filename = settings["dir"] * "/" * mapfile * "_s" * "$(settings["seed"])" * "_$(settings["linkage"])" * "lnk" * "_$(settings["tolerance"])" * "tol" * "_t" * "$timestep" * ".jl"
+    filename = "$(settings["dir"])" * "/" * mapfile * "_s" * "$(settings["seed"])" * "_$(settings["linkage"])" * "lnk" * "_$(settings["tolerance"])" * "tol" * "_t" * "$timestep" * ".jl"
     counter = 0
     extension = ""
     while ispath(filename * extension)
@@ -828,7 +828,7 @@ end
 
 function recordcolonizers(colonizers::Array{Individual, 1}, mapfile::String, settings::Dict{String, Any}, timestep::Int64)
     record = (timestep, colonizers)
-    filename = settings["dir"] * "/" * mapfile * "_s" * "$(settings["seed"])" * "_$(settings["linkage"])" * "lnk" * "_$(settings["tolerance"])" * "tol" * "colonizers" * ".jl"
+    filename = "$(settings["dir"])" * "/" * mapfile * "_s" * "$(settings["seed"])" * "_$(settings["linkage"])" * "lnk" * "_$(settings["tolerance"])" * "tol" * "colonizers" * ".jl"
     touch(filename)
     println("Colonisation! Writing data to \"$filename\"...")
     open(filename, "a") do file
