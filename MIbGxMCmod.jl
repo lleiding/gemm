@@ -13,7 +13,7 @@ using Distributions#, Plots
 
 
 export Patch, # types
-    readmapfile, writerawdata, writedata, analysis,
+    setupdatadir, readmapfile, writerawdata, writedata, analysis,
     checkviability!, establish!, age!, grow!, disperse!, compete!, reproduce!,
     createworld, updateworld! # functions
 
