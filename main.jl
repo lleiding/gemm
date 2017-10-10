@@ -52,12 +52,12 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
             help = "island heterogeneity, i.e. environmental niche variability (\"low\" or \"high\")"
             arg_type = String
             range_tester = x->in(x,["low", "high"])
-            required = true
-        "--complexity", "-c" # ... and that may be defined in the maps
+            required = false
+        "--complexity", "-c" # ... and that IS CURRENTLY defined in the maps
             help = "topographic island complexity, controlling intra-island isolation (\"low\" or \"high\")"
             arg_type = String
             range_tester = x->in(x,["low", "high"])
-            required = true
+            required = false
 #        "--flag1"
 #            help = "an option without argument, i.e. a flag"
 #            action = :store_true
