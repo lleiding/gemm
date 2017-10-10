@@ -278,9 +278,9 @@ function grow!(world::Array{Patch,1})
 end
 
 """
-        findisland(x)
-    find out in which direction from the continent the island(s) lie(s).
-    """
+    findisland(x)
+find out in which direction from the continent the island(s) lie(s).
+"""
 function findisland(world::Array{Patch,1})
     xmin = minimum(map(x->x.location[1],world))
     xmax = maximum(map(x->x.location[1],world))
@@ -305,7 +305,7 @@ end
 
 """
 
-    """
+"""
 function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Float64)
     xmin = minimum(map(x->x.location[1],world))
     xmax = maximum(map(x->x.location[1],world))
