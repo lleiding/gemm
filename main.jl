@@ -94,7 +94,6 @@ end
         world=createworld([["1","1","1"]],settings)
         simulation(world, settings, "", 10)
     else
-        setupdatadir(settings)
         for i in 1:length(mapfiles)
             timesteps,maptable = readmapfile(mapfiles[i])
             i == 1 && (world = createworld(maptable, settings))
@@ -114,5 +113,6 @@ const replicates = startseed:startseed+nprocesses-1
 TT = STDOUT # save original STDOUT stream
 redirect_stdout()
 pmap(x->runit(true,allargs,x),replicates) # compilation/optimization run
+setupdatadir(settings)
 redirect_stdout(TT) # restore STDOUT
 pmap(x->runit(false,allargs,x),replicates)
