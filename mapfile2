@@ -1,13 +1,13 @@
 #timesteps:
-1000000
+100
 
 #Island:
-100 6 1 303 island
-101 6 2 303 island
-102 6 3 303 island
-103 7 1 303 island
-104 7 2 298 island
-105 7 3 303 island
-106 8 1 303 island
-107 8 2 303 island
-108 8 3 303 island
+100 8 1 303 island
+101 8 2 303 island
+102 8 3 303 island
+103 9 1 303 island
+104 9 2 298 island
+105 9 3 303 island
+106 10 1 303 island
+107 10 2 303 island
+108 10 3 303 island
