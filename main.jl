@@ -47,7 +47,7 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
             help = "output directory. Defaults to current date"
             arg_type = String
             required = false
-            default = string(Date.today)
+            default = string(Dates.today())
         "--heterogeneity", "-n" # this ...
             help = "island heterogeneity, i.e. environmental niche variability (\"low\" or \"high\")"
             arg_type = String
