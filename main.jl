@@ -92,7 +92,7 @@ end
     mapfiles =  map(x->String(x),split(allargs["maps"],","))
     if firstrun
         world=createworld([["1","1","1"]],settings)
-        simulation(world, settings, "", 10)
+        simulation(world, settings, "", seed, 10)
     else
         for i in 1:length(mapfiles)
             timesteps,maptable = readmapfile(mapfiles[i])
