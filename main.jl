@@ -98,7 +98,7 @@ end
             timesteps,maptable = readmapfile(mapfiles[i])
             i == 1 && (world = createworld(maptable, settings))
             i > 1 && updateworld!(world,maptable)
-            simulation(world, settings, mapfiles[i], timesteps)
+            simulation(world, settings, mapfiles[i], seed, timesteps)
             writedata(world, seed, mapfiles[i], settings)
         end
     end
