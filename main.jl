@@ -111,8 +111,8 @@ const startseed = allargs["seed"]
 const replicates = startseed:startseed+nprocesses-1
 
 TT = STDOUT # save original STDOUT stream
+setupdatadir(allargs)
 redirect_stdout()
 pmap(x->runit(true,allargs,x),replicates) # compilation/optimization run
-setupdatadir(allargs)
 redirect_stdout(TT) # restore STDOUT
 pmap(x->runit(false,allargs,x),replicates)
