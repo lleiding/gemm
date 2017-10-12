@@ -99,7 +99,7 @@ end
             i == 1 && (world = createworld(maptable, settings))
             i > 1 && updateworld!(world,maptable)
             simulation(world, settings, mapfiles[i], timesteps)
-            writedata(world, seed, mapfiles[i])
+            writedata(world, seed, mapfiles[i], settings)
         end
     end
 end
