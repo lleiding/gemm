@@ -69,7 +69,7 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 end
 
 
-@everywhere function simulation(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, timesteps::Int=1000)
+@everywhere function simulation(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, seed::Int64, timesteps::Int=1000)
     println("Starting simulation...")
     for t in 1:timesteps
         checkviability!(world)
@@ -79,8 +79,8 @@ end
         age!(world)
         reproduce!(world)
         colonizers = disperse!(world)
-        length(colonizers) > 1 && recordcolonizers(colonizers, mapfile, settings, t)
-        mod(t, 1000) == 0 && writerawdata(world, mapfile, settings, t)
+        length(colonizers) > 1 && recordcolonizers(colonizers, mapfile, settings, seed, t)
+        mod(t, 1000) == 0 && writerawdata(world, mapfile, settings, seed, t)
 #        (t == 1 || mod(t,100) == 0) && analysis(world)
         #        mod(timesteps,20) == 0 && visualisation(world,t==20)
         #mod(timesteps,10) == 0 && println(t)
