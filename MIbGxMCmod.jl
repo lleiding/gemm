@@ -36,7 +36,7 @@ mutable struct Trait
 end
 
 mutable struct Gene
-    sequence::Array{Char, 1}
+    sequence::String
     id::String
     codes::Array{Trait, 1}
 end
@@ -132,15 +132,16 @@ function mutate!(ind::Individual, temp::Float64)
     prob = ind.traits["mutprob"]
     for chrm in ind.genome
         for gene in chrm.genes
-            for i in eachindex(gene.sequence)
+            charseq = collect(gene.sequence)
+            for i in eachindex(charseq)
                 if rand() <= prob*exp(-act/(boltz*temp)) * normconst
                     newbase = rand(collect("acgt"),1)[1]
-                    while newbase == gene.sequence[i]
+                    while newbase == charseq[i]
                         newbase = rand(collect("acgt"),1)[1]
                     end
-                    gene.sequence[i] = newbase
+                    charseq[i] = newbase
                     for trait in gene.codes
-                        contains(trait.name, "rep") && contains(trait.name, "tol") && continue
+                        contains(trait.name, "rep") && contains(trait.name, "tol") && continue # MARK CAVE!
                         trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
                         newvalue = trait.value + rand(Normal(0, trait.value/mutscaling)) # CAVE: mutscaling! new value for trait
                         newvalue < 0 && (newvalue=abs(newvalue))
@@ -152,6 +153,7 @@ function mutate!(ind::Individual, temp::Float64)
                     end
                 end
             end
+            gene.sequence = String(charseq)
         end
     end
     traitdict = chrms2traits(ind.genome)
@@ -535,7 +537,7 @@ end
 function creategenes(ngenes::Int64,traits::Array{Trait,1})
     genes = Gene[]
     for i in 1:ngenes
-        sequence = collect("acgt"^5) # arbitrary start sequence
+        sequence = String(rand(collect("acgt"), 20)) # arbitrary start sequence
         id = randstring(8)
         codesfor = Trait[]
         push!(genes,Gene(sequence,id,codesfor))
