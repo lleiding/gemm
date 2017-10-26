@@ -1,0 +1,26 @@
+1. Purpose
+
+This model is designed to simulate several patterns across genetic, individual, population and (meta-)community levels.
+
+
+2. Entities, state variable and scales
+
+Individuals (plants or animals) are the basic entity in the model.
+Each individual carries a diploid set of chromosomes, which in turn are comprised of genes.
+Some of the genes code for on ore more traits (pleiotropy), while a trait can be dependent on more than one gene (polygene).
+The realized trait value is the mean of the traits coded by maternal and paternal alleles.
+Traits thus controlled encompass
+the initial body mass (size) of offspring ("seedsize"),
+the body mass determining onset of maturity and thus reproductive capability ("repsize"),
+the groth rate ("growthrate"),
+the probability for density-independent mortality ("ageprob"),
+mean dispersal distance ("dispmean"),
+the probability of dispersal ("dispprob"),
+the shape of the dispersal kernel, controlling long-distance-dispersal ("dispshape"),
+the probability and thus frequence of reproduction ("repprob"),
+the radius in which an individual searches for a mate ("repradius"),
+the mean number of offspring in a reproduction event (litter size,n "reprate"),
+the threshold of sequence identity between mates determining genetic compatibility ("reptol"),
+values representing the optimum and the tolerance (standard deviation) of a physical niche parameter ("tempopt", "temptol", resp.).
+Alternatively to be controlled by mutable genes, these traits can also be set to fixed values.
+Additionally, individuals carry attributes 
