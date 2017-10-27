@@ -23,4 +23,13 @@ the mean number of offspring in a reproduction event (litter size,n "reprate"),
 the threshold of sequence identity between mates determining genetic compatibility ("reptol"),
 values representing the optimum and the tolerance (standard deviation) of a physical niche parameter ("tempopt", "temptol", resp.).
 Alternatively to be controlled by mutable genes, these traits can also be set to fixed values.
-Additionally, individuals carry attributes 
+Additionally, individuals carry attributes which describe their bodymass, their age and the combined effects of adaptation and life history (fitness).
+Furthermore, every indivdual carries a marker which denotes whether a given individual has newly arrived to a patch/grid cell.
+
+Every individual is placed inside an arena of grid cells or patches, each of which has a unique location (coordinates) and is characterized by physical properties
+such as temperature and size (carrying capacity).
+Over the course of the simulation these properties (location or physical parameters) might change, reflecting geomorphological dynamics.
+All individuals within one patch constitute a community.
+
+Processes and updates are repeated every timestep, while each timestep represent approximately one generation.
+
