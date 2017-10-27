@@ -50,4 +50,7 @@ Once total bodymass is below carrying capacity the procedure is finished.
 (c) growth. An individual changes its size following the metabolic theory of ecology and an individual growth rate parameter.
 [equation]
 (d) Density independent mortality. An individual is removed from the local community with a certain probability that is specified within that individual's traits.
-(e) reproduction.
+(e) reproduction. Given a individual probability ("repprob", modified by the fitness parameter) an individual decides on whether to reproduce.
+In the case of reproduction and if the individual is larger or equal the individual's reproductive size, first the number of offspring is randomly drawn, following the individual's trait value and
+the metabolic theory
+[equation]
