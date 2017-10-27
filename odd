@@ -49,4 +49,5 @@ exceed the available space.
 Once total bodymass is below carrying capacity the procedure is finished.
 (c) growth. An individual changes its size following the metabolic theory of ecology and an individual growth rate parameter.
 [equation]
-(d) 
+(d) Density independent mortality. An individual is removed from the local community with a certain probability that is specified within that individual's traits.
+(e) reproduction.
