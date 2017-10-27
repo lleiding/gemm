@@ -33,3 +33,20 @@ All individuals within one patch constitute a community.
 
 Processes and updates are repeated every timestep, while each timestep represent approximately one generation.
 
+3. Process overview and scheduling
+
+At the start of a simulation user defined parameters are read, containing also a definition of the simulation arena.
+The initialisation step creates individuals with randomly chosen parameters and traits and deposits clones of one kind of indivudual ("species")
+in one patch.
+At the end of initialisation each patch holds several populations of clones.
+In each timestep each individual in each patch will (in no particular order unless otherwise stated) undergo the following processes:
+(a) establishment. When an individual is new to a patch (by recent birth or dispersal event), their physical niche preferences are compared with the actual niche properties of the present patch.
+The individual fitness parameter is set according to the deviation from the optimum value considering the niche breadth as standard deviation of a gaussian curve.
+[provide equation]
+(b) competition. Individuals are sorted according to their body sizes (from small to large).
+Starting with small individuals an individual will be removed from the local community with high probability (following a geometric distribution), if the sum of the community's bodymasses
+exceed the available space.
+Once total bodymass is below carrying capacity the procedure is finished.
+(c) growth. An individual changes its size following the metabolic theory of ecology and an individual growth rate parameter.
+[equation]
+(d) 
