@@ -52,5 +52,11 @@ Once total bodymass is below carrying capacity the procedure is finished.
 (d) Density independent mortality. An individual is removed from the local community with a certain probability that is specified within that individual's traits.
 (e) reproduction. Given a individual probability ("repprob", modified by the fitness parameter) an individual decides on whether to reproduce.
 In the case of reproduction and if the individual is larger or equal the individual's reproductive size, first the number of offspring is randomly drawn, following the individual's trait value and
-the metabolic theory
+the metabolic theory.
 [equation]
+Following the individuals reproductive radius possible partners in the vicinity (patches whose distances fall within the radius) are selected based on whether they share the same chromosome number with the
+reproducing individual and whether the sequence identity between both individuals is equal or higher the reproducing individual's tolerance.
+If a suitable partner is found sets of haploid chromosomes from the diploid sets of both individuals are drawn randomly, comprising the genome for the offspring.
+At this point every position in the offspring's basecode may mutate with a given probability.
+In the case of mutation all traits associated with the respective gene will randomly change value (normally distributed, with the standard deviation the quotient of the original value over a scaling constant).
+The new individuals' trait values are then calculated as the means between maternal and paternal alleles and the individuals added to the community, marked as new and with their size set to the initial bodymass.
