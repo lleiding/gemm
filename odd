@@ -47,12 +47,13 @@ The individual fitness parameter is set according to the deviation from the opti
 Starting with small individuals an individual will be removed from the local community with high probability (following a geometric distribution), if the sum of the community's bodymasses
 exceed the available space.
 Once total bodymass is below carrying capacity the procedure is finished.
-(c) growth. An individual changes its size following the metabolic theory of ecology and an individual growth rate parameter.
+(c) growth. An individual changes its size following the metabolic theory of ecology and an individual growth rate parameter modulated by the fitness parameter.
 [equation]
 (d) Density independent mortality. An individual is removed from the local community with a certain probability that is specified within that individual's traits.
+A lower fitness parameter increases mortality.
 (e) reproduction. Given a individual probability ("repprob", modified by the fitness parameter) an individual decides on whether to reproduce.
-In the case of reproduction and if the individual is larger or equal the individual's reproductive size, first the number of offspring is randomly drawn, following the individual's trait value and
-the metabolic theory.
+In the case of reproduction and if the individual is larger or equal the individual's reproductive size, first the number of offspring is randomly drawn, following the individual's trait value (scaled by the fitness parameter)
+and the metabolic theory.
 [equation]
 Following the individuals reproductive radius possible partners in the vicinity (patches whose distances fall within the radius) are selected based on whether they share the same chromosome number with the
 reproducing individual and whether the sequence identity between both individuals is equal or higher the reproducing individual's tolerance.
@@ -66,3 +67,5 @@ Subsequently, a patch is chosen randomly that fits the drawn distance.
 If such a patch is found the dispersing individual will be placed there and removed from the original community.
 The removal happens even when there is no destination patch to be found.
 In case origin or destination patch are marked as isolated the probability for successful dispersal needs to be considered again for each isolated patch, whose barriers are to be crossed (origin and destination).
+Special attention is paid when the destination patch is of island type.
+In this case the dispersing individual (colonizer) is recorded.
