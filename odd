@@ -27,7 +27,7 @@ Additionally, individuals carry attributes which describe their bodymass, their 
 Furthermore, every indivdual carries a marker which denotes whether a given individual has newly arrived to a patch/grid cell.
 
 Every individual is placed inside an arena of grid cells or patches, each of which has a unique location (coordinates) and is characterized by physical properties
-such as temperature and size (carrying capacity).
+such as temperature and size (carrying capacity), but also isolation (e.g., by barriers).
 Over the course of the simulation these properties (location or physical parameters) might change, reflecting geomorphological dynamics.
 All individuals within one patch constitute a community.
 
@@ -60,3 +60,9 @@ If a suitable partner is found sets of haploid chromosomes from the diploid sets
 At this point every position in the offspring's basecode may mutate with a given probability.
 In the case of mutation all traits associated with the respective gene will randomly change value (normally distributed, with the standard deviation the quotient of the original value over a scaling constant).
 The new individuals' trait values are then calculated as the means between maternal and paternal alleles and the individuals added to the community, marked as new and with their size set to the initial bodymass.
+(f) dispersal. An individual disperses with an individual probability.
+If dispersal is chosen a distance is drawn randomly following a logistic distribution and mean and shape parameters taken from the individual's traits.
+Subsequently, a patch is chosen randomly that fits the drawn distance.
+If such a patch is found the dispersing individual will be placed there and removed from the original community.
+The removal happens even when there is no destination patch to be found.
+In case origin or destination patch are marked as isolated the probability for successful dispersal needs to be considered again for each isolated patch, whose barriers are to be crossed (origin and destination).
