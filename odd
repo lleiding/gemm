@@ -23,14 +23,18 @@ the probability and thus frequence of reproduction ("repprob"),
 the radius in which an individual searches for a mate ("repradius"),
 the mean number of offspring in a reproduction event (litter size,n "reprate"),
 the threshold of sequence identity between mates determining genetic compatibility ("reptol"),
-values representing the optimum and the tolerance (standard deviation) of a physical niche parameter ("tempopt", "temptol", resp.).
+values representing the optimum and the tolerance (standard deviation) of a physical niche parameter ("tempopt", "temptol",
+resp.).
 Alternatively to be controlled by mutable genes, these traits can also be set to fixed values.
-Additionally, individuals carry attributes which describe their bodymass, their age and the combined effects of adaptation and life history (fitness).
+Additionally, individuals carry attributes which describe their bodymass, their age and the combined effects of adaptation
+and life history (fitness).
 Furthermore, every indivdual carries a marker which denotes whether a given individual has newly arrived to a patch/grid cell.
 
-Every individual is placed inside an arena of grid cells or patches, each of which has a unique location (coordinates) and is characterized by physical properties
-such as temperature and size (carrying capacity), but also isolation (e.g., by barriers).
-Over the course of the simulation these properties (location or physical parameters) might change, reflecting geomorphological dynamics.
+Every individual is placed inside an arena of grid cells or patches, each of which has a unique location (coordinates)
+and is characterized by physical properties such as temperature and size (carrying capacity), but also isolation
+(e.g., by barriers).
+Over the course of the simulation these properties (location or physical parameters) might change, reflecting
+geomorphological dynamics.
 All individuals within one patch constitute a community.
 
 Processes and updates are repeated every timestep, while each timestep represent approximately one generation.
@@ -38,7 +42,8 @@ Processes and updates are repeated every timestep, while each timestep represent
 3. Process overview and scheduling
 
 
-In each discrete timestep each individual in each patch will (in no particular order unless otherwise stated) undergo the following processes:
+In each discrete timestep each individual in each patch will (in no particular order unless otherwise stated) undergo
+the following processes:
 (a) establishment,
 (b) competition (individuals are sorted according to their body sizes (from small to large)),
 (c) growth,
@@ -46,7 +51,8 @@ In each discrete timestep each individual in each patch will (in no particular o
 (e) reproduction,
 (f) dispersal.
 
-Updates to individuals and thus the local communities happen instantaneously after a specific process has been employed (asynchronous updating).
+Updates to individuals and thus the local communities happen instantaneously after a specific process has been employed
+(asynchronous updating).
 
 4. Design concepts
 
@@ -54,8 +60,8 @@ Updates to individuals and thus the local communities happen instantaneously aft
 
 5. Initialisation
 
-The initialisation step creates individuals with randomly chosen parameters and traits and deposits clones of one kind of indivudual ("species")
-in one patch.
+The initialisation step creates individuals with randomly chosen parameters and traits and deposits clones of one kind
+of indivudual ("species") in one patch.
 At the end of initialisation each patch holds several populations of clones.
 
 6. Input
@@ -71,37 +77,50 @@ Other parameters specified at run time pertain to defining simulation scenarios.
 
 7. Submodels
 
-Establishment. When an individual is new to a patch (by recent birth or dispersal event), their physical niche preferences are compared with the actual niche properties of the present patch.
-The individual fitness parameter is set according to the deviation from the optimum value considering the niche breadth as standard deviation of a gaussian curve.
+Establishment. When an individual is new to a patch (by recent birth or dispersal event), their physical niche preferences
+are compared with the actual niche properties of the present patch.
+The individual fitness parameter is set according to the deviation from the optimum value considering the niche breadth
+as standard deviation of a gaussian curve.
 [provide equation]
 
 Competition. Individuals are sorted according to their body sizes (from small to large).
-Starting with small individuals an individual will be removed from the local community with high probability (following a geometric distribution), if the sum of the community's bodymasses
-exceed the available space.
+Starting with small individuals an individual will be removed from the local community with high probability
+(following a geometric distribution), if the sum of the community's bodymasses exceed the available space.
 Once total bodymass is below carrying capacity the procedure is finished.
 
-Growth. An individual changes its size following the metabolic theory of ecology and an individual growth rate parameter modulated by the fitness parameter.
+Growth. An individual changes its size following the metabolic theory of ecology and an individual growth rate parameter
+modulated by the fitness parameter.
 [equation]
 
-Density independent mortality. An individual is removed from the local community with a certain probability that is specified within that individual's traits.
+Density independent mortality. An individual is removed from the local community with a certain probability that is specified
+within that individual's traits.
 A lower fitness parameter increases mortality.
 
-Reproduction. Given a individual probability ("repprob", modified by the fitness parameter) an individual decides on whether to reproduce.
-In the case of reproduction and if the individual is larger or equal the individual's reproductive size, first the number of offspring is randomly drawn, following the individual's trait value (scaled by the fitness parameter)
+Reproduction. Given a individual probability ("repprob", modified by the fitness parameter) an individual decides on whether
+to reproduce.
+In the case of reproduction and if the individual is larger or equal the individual's reproductive size, first the number
+of offspring is randomly drawn, following the individual's trait value (scaled by the fitness parameter)
 and the metabolic theory.
 [equation]
-Following the individuals reproductive radius possible partners in the vicinity (patches whose distances fall within the radius) are selected based on whether they share the same chromosome number with the
-reproducing individual and whether the sequence identity between both individuals is equal or higher the reproducing individual's tolerance.
-If a suitable partner is found sets of haploid chromosomes from the diploid sets of both individuals are drawn randomly, comprising the genome for the offspring.
+Following the individuals reproductive radius possible partners in the vicinity (patches whose distances fall within the
+radius) are selected based on whether they share the same chromosome number with the reproducing individual and
+whether the sequence identity between both individuals is equal or higher the reproducing individual's tolerance.
+If a suitable partner is found sets of haploid chromosomes from the diploid sets of both individuals are drawn randomly,
+comprising the genome for the offspring.
 At this point every position in the offspring's basecode may mutate with a given probability.
-In the case of mutation all traits associated with the respective gene will randomly change value (normally distributed, with the standard deviation the quotient of the original value over a scaling constant).
-The new individuals' trait values are then calculated as the means between maternal and paternal alleles and the individuals added to the community, marked as new and with their size set to the initial bodymass.
+In the case of mutation all traits associated with the respective gene will randomly change value (normally distributed,
+with the standard deviation the quotient of the original value over a scaling constant).
+The new individuals' trait values are then calculated as the means between maternal and paternal alleles and
+the individuals added to the community, marked as new and with their size set to the initial bodymass.
 
 Dispersal. An individual disperses with an individual probability.
-If dispersal is chosen a distance is drawn randomly following a logistic distribution and mean and shape parameters taken from the individual's traits.
+If dispersal is chosen a distance is drawn randomly following a logistic distribution and mean and shape parameters
+taken from the individual's traits.
 Subsequently, a patch is chosen randomly that fits the drawn distance.
 If such a patch is found the dispersing individual will be placed there and removed from the original community.
 The removal happens even when there is no destination patch to be found.
-In case origin or destination patch are marked as isolated the probability for successful dispersal needs to be considered again for each isolated patch, whose barriers are to be crossed (origin and destination).
+In case origin or destination patch are marked as isolated the probability for successful dispersal needs to be
+considered again for each isolated patch, whose barriers are to be crossed (origin and destination).
 Special attention is paid when the destination patch is of island type.
-In this case the dispersing individual (colonizer) is recorded and its properties together with the respective time step stored for later analysis.
+In this case the dispersing individual (colonizer) is recorded and its properties together with the respective
+time step stored for later analysis.
