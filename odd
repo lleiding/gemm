@@ -41,7 +41,7 @@ At the start of a simulation user defined parameters are read, containing also a
 The initialisation step creates individuals with randomly chosen parameters and traits and deposits clones of one kind of indivudual ("species")
 in one patch.
 At the end of initialisation each patch holds several populations of clones.
-In each timestep each individual in each patch will (in no particular order unless otherwise stated) undergo the following processes:
+In each discrete timestep each individual in each patch will (in no particular order unless otherwise stated) undergo the following processes:
 (a) establishment. When an individual is new to a patch (by recent birth or dispersal event), their physical niche preferences are compared with the actual niche properties of the present patch.
 The individual fitness parameter is set according to the deviation from the optimum value considering the niche breadth as standard deviation of a gaussian curve.
 [provide equation]
@@ -70,4 +70,9 @@ If such a patch is found the dispersing individual will be placed there and remo
 The removal happens even when there is no destination patch to be found.
 In case origin or destination patch are marked as isolated the probability for successful dispersal needs to be considered again for each isolated patch, whose barriers are to be crossed (origin and destination).
 Special attention is paid when the destination patch is of island type.
-In this case the dispersing individual (colonizer) is recorded.
+In this case the dispersing individual (colonizer) is recorded and its properties together with the respective time step stored for later analysis.
+
+Updates to individuals and thus the local communities happen instantaneously after a specific process has been employed (asynchronous updating).
+
+4. Design concepts
+
