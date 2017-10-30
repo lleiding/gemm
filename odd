@@ -69,6 +69,22 @@ Emergence.
 Species/Populations/ecotypes. Only constrained via genetic properties.
 Community trait composition. Interplay of physical properties (environment, geographical properties) and within community
 (competition strength via reproduction, growth, etc.).
+Species numbers.
+
+Adaption. (+Objectives.)
+See entities. Traits follow evolution: a trait changes its value randomly within a given constraint.
+The success of the change (fitness) emerges as the reproductive success of an individual over its competitors.
+
+Learning.
+-
+
+Prediction.
+-
+
+Sensing.
+Individuals sense directly the properties of their physical environment (e.g., temperature).
+
+Interaction.
 
 
 
