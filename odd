@@ -90,7 +90,18 @@ interaction aims solely at determining the genotype of their offspring.
 Additionally, competition for resource/energy/space between individuals represents an indirect interaction.
 
 Stochasticity.
+Most of the submodels are carried out by all elegible individuals.
+Some submodels, however, happen with specific frequencies.
+These latter submodels are executed randomly in combination with individual probabilities.
+All decisions inside all of the submodels are stochastic (e.g., number of offspring) to maintain variability.
 
+Collectives.
+-
+
+Observation.
+At the end of the simulation and whenever the arena definition changes the properties of all individuals
+(including the properties of their locations) are recorded and written to files.
+Furthermore, all island colonizers are recorded and output in a similar way.
 
 
 5. Initialisation
