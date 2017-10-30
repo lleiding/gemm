@@ -119,6 +119,17 @@ Every other non-empty line defines one patch with a unique identifier (a number)
 Optionally, one can define the type of the patch (island or continent), whether it is isolated, the temperature, and the size.
 
 Other parameters specified at run time pertain to defining simulation scenarios.
+        "--seed", "-s"
+            help = "inital random seed"
+        "--maps", "-m"
+            help = "list of map files, comma separated"
+        "--linkage", "-l"
+            help = "gene linkage (\"none\", \"random\" or \"full\")"
+            default = "random"
+        "--tolerance", "-t"
+            help = "tolerance of sequence identity when reproducing (\"high\", \"evo\" or \"low\")"
+            default = "evo"
+
 [...]
 
 7. Submodels
