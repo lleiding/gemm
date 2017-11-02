@@ -87,7 +87,19 @@ and how (c) landscape heterogeneity (habitat niche diverstiy) and (d) topographi
 
 
 \section{Material and Methods}
+We use an individual based metacommunity model written in julia \cite{JULIALANG}.
+Each individual is characterized by a set of genetically controlled traits and is submitted to processes of
+establishment, competition, growth, (density independent) mortality, reproduction and dispersal.
+Each of which processes is affected by the individuals' characteristics.
+The simulation arena consists of a larger landmass (the mainland) holding an initial pool of evolving populations and a smaller, initially unpopulated island some distance apart.
+During the course of the simulation, individuals may disperse from the mainland to the island, thus colonizing it.
 
+A detailed protocol can be found in the appendix (\cite{grimm2010odd}, XXX).
+
+We record the complete state of our simulation world at the end of a simulation run and each time the arena changes (geomorphological dynamics).
+We additionally record every individual that colonizes the island to track it in the phylogeny.
+
+Using the thus simulated data, we calculate a phylogeny of the extant species, species numbers, etc. [WHAT ELSE?]
 \section{Results}
 
 \section{Discussion}
