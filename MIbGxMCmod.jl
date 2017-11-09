@@ -471,16 +471,15 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     idx = 1
     temp = patch.altitude
     while idx <= size(patch.community,1)
-        if !traitsexist(patch.community[idx], ["repradius", "reprate", "repsize", "reptol", "seedsize", "mutprob"])
+        if !traitsexist(patch.community[idx], ["repradius", "repsize", "reptol", "seedsize", "mutprob"])
             splice!(patch.community, idx)
             idx -= 1
         elseif !patch.community[idx].isnew
             currentmass = patch.community[idx].size
             seedsize = patch.community[idx].traits["seedsize"]
             if currentmass >= patch.community[idx].traits["repsize"]
-                meanoffs = patch.community[idx].traits["reprate"]
                 reptol = patch.community[idx].traits["reptol"]
-                metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * patch.community[idx].fitness
+                metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*temp)) * patch.community[idx].fitness
                 noffs = rand(Poisson(metaboffs)) # add some stochasticity
                 posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
                 if length(posspartners) > 0
