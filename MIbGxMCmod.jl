@@ -452,7 +452,10 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     ind.isnew = false
     posspartners
 end
-
+"""
+    reproduce!(a, x)
+Reproduction of individuals in a patch x whithin a world a
+"""
 function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     idx = 1
     temp = patch.altitude
