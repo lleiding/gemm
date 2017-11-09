@@ -76,7 +76,7 @@ end
         establish!(world)
         compete!(world)
         grow!(world)
-        age!(world)
+        survive!(world)
         reproduce!(world)
         colonizers = disperse!(world)
         length(colonizers) > 1 && recordcolonizers(colonizers, mapfile, settings, seed, t)
