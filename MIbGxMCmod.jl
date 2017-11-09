@@ -253,16 +253,16 @@ end
     grow!(p)
 Growth of individuals in patch `p`
 """
-function grow!(patch::Patch)
+function grow!(patch::Patch) # WORK IN PROGRESS
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        if !traitsexist(patch.community[idx], ["growthrate"])
+        if !traitsexist(patch.community[idx], ["maxsize"])
             splice!(patch.community, idx)
             idx -= 1
         else
             if !patch.community[idx].isnew
-                growthrate = patch.community[idx].traits["growthrate"]
+                maxsize = patch.community[idx].traits["maxsize"]
                 mass = patch.community[idx].size
                 newmass = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp)) # -> emergent maximum body size?
                 if newmass > 0 && mass > 0
