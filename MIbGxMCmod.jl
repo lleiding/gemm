@@ -457,24 +457,24 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     idx = 1
     temp = patch.altitude
     while idx <= size(patch.community,1)
-        if !traitsexist(patch.community[idx], ["repprob", "repradius", "reprate", "repsize", "reptol", "seedsize", "mutprob"])
+        if !traitsexist(patch.community[idx], ["repradius", "reprate", "repsize", "reptol", "seedsize", "mutprob"])
             splice!(patch.community, idx)
             idx -= 1
-        elseif !patch.community[idx].isnew && rand() <= patch.community[idx].traits["repprob"] * patch.community[idx].fitness
+        elseif !patch.community[idx].isnew
             currentmass = patch.community[idx].size
             seedsize = patch.community[idx].traits["seedsize"]
             if currentmass >= patch.community[idx].traits["repsize"]
                 meanoffs = patch.community[idx].traits["reprate"]
                 reptol = patch.community[idx].traits["reptol"]
-                metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
-                noffs = rand(Poisson(metaboffs))
-                posspartners = findposspartners(world, patch.community[idx], patch.location)
+                metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * patch.community[idx].fitness
+                noffs = rand(Poisson(metaboffs)) # add some stochasticity
+                posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
                 if length(posspartners) > 0
                     partner = rand(posspartners)
-                    partnergenome = meiosis(partner.genome, false) #CAVE: maybe move inside offspring loop?
-                    mothergenome = meiosis(patch.community[idx].genome, true)
                     for i in 1:noffs
-                        (size(partnergenome,1) < 1 || size(mothergenome,1) < 1) && continue
+                        partnergenome = meiosis(partner.genome, false) # offspring have different genome!
+                        mothergenome = meiosis(patch.community[idx].genome, true)
+                        (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
                         genome = deepcopy([partnergenome...,mothergenome...])
                         activategenes!(genome)
                         traits = chrms2traits(genome)
