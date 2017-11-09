@@ -353,15 +353,19 @@ function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Floa
     xdest,ydest
 end
 
+"""
+    disperse!(w)
+Dispersal of individuals within world (array of patches) w
+"""
 function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
     colonizers = Individual[]
     for patch in world
         idx = 1
         while idx <= size(patch.community,1)
-            if !traitsexist(patch.community[idx], ["dispmean", "dispprob", "dispshape"])
+            if !traitsexist(patch.community[idx], ["dispmean", "dispshape"])
                 splice!(patch.community,idx)
                 idx -= 1
-            elseif !patch.community[idx].isnew && patch.community[idx].age == 0 && rand() <= patch.community[idx].traits["dispprob"] * patch.community[idx].fitness
+            elseif !patch.community[idx].isnew && patch.community[idx].age == 0
                 dispmean = patch.community[idx].traits["dispmean"]
                 dispshape = patch.community[idx].traits["dispshape"]
                 patch.community[idx].isnew = true
@@ -452,9 +456,10 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     ind.isnew = false
     posspartners
 end
+
 """
-    reproduce!(a, x)
-Reproduction of individuals in a patch x whithin a world a
+    reproduce!(w, x)
+Reproduction of individuals in a patch x whithin a world (array of patches) w
 """
 function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     idx = 1
