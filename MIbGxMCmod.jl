@@ -229,20 +229,14 @@ function survive!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        if !traitsexist(patch.community[idx], ["mortality"])
-            splice!(patch.community, idx)
-            idx -= 1
-        else
-            if !patch.community[idx].isnew
-                mortality = patch.community[idx].traits["mortality"]
-                mass = patch.community[idx].size
-                dieprob = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
-                if rand() * patch.community[idx].fitness < dieprob
-                    splice!(patch.community, idx)
-                    idx -= 1
-                else
-                    patch.community[idx].age += 1
-                end
+        if !patch.community[idx].isnew
+            mass = patch.community[idx].size
+            dieprob = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
+            if rand() * patch.community[idx].fitness < dieprob
+                splice!(patch.community, idx)
+                idx -= 1
+            else
+                patch.community[idx].age += 1
             end
         end
         idx += 1
