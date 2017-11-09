@@ -219,7 +219,11 @@ function establish!(world::Array{Patch,1})
     end
 end
 
-function age!(patch::Patch)
+"""
+    survive!(p)
+denstity independent survival of individuals in patch `p`
+"""
+function survive!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
@@ -243,12 +247,16 @@ function age!(patch::Patch)
     end
 end
 
-function age!(world::Array{Patch,1})
+function survive!(world::Array{Patch,1})
     for patch in world
-        age!(patch) # pmap(!,patch) ???
+        survive!(patch) # pmap(!,patch) ???
     end
 end
 
+"""
+    grow!(p)
+Growth of individuals in patch `p`
+"""
 function grow!(patch::Patch)
     temp = patch.altitude
     idx = 1
@@ -280,8 +288,8 @@ function grow!(world::Array{Patch,1})
 end
 
 """
-    findisland(x)
-find out in which direction from the continent the island(s) lie(s).
+    findisland(w)
+within world `w`, find out in which direction from the continent the island(s) lie(s).
 """
 function findisland(world::Array{Patch,1})
     xmin = minimum(map(x->x.location[1],world))
@@ -307,7 +315,7 @@ end
 
 """
     checkborderconditions!(w, x, y)
-check if coordinates x and y lie within world w and correct if not,
+check if coordinates `x` and `y` lie within world `w` and correct if not,
 considering defined border conditions.
 """
 function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Float64)
@@ -357,7 +365,7 @@ end
 
 """
     disperse!(w)
-Dispersal of individuals within world (array of patches) w
+Dispersal of individuals within world (array of patches) `w`
 """
 function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
     colonizers = Individual[]
@@ -460,8 +468,8 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
 end
 
 """
-    reproduce!(w, x)
-Reproduction of individuals in a patch x whithin a world (array of patches) w
+    reproduce!(w, p)
+Reproduction of individuals in a patch `p` whithin a world (array of patches) `w`
 """
 function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     idx = 1
