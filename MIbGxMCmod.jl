@@ -306,7 +306,9 @@ function findisland(world::Array{Patch,1})
 end
 
 """
-
+    checkborderconditions!(w, x, y)
+check if coordinates x and y lie within world w and correct if not,
+considering defined border conditions.
 """
 function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Float64)
     xmin = minimum(map(x->x.location[1],world))
