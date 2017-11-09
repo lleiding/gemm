@@ -20,7 +20,6 @@ export Patch, # types
 
 const boltz = 1.38064852e-23 # J/K = m2⋅kg/(s2⋅K)
 const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
-const normconst = 1e10 # normalization constant to get biologically realistic orders of magnitude
 const growthratebase = exp(24.8) # global base growth from Brown et al. 2004
 const mortalitybase = exp(19.2) # global base mortality from Brown et al. 2004
 const fertilitybase = exp(26.0) # global base reproduction rate from Brown et al. 2004, alternatively 23.8
@@ -237,8 +236,8 @@ function survive!(patch::Patch)
             if !patch.community[idx].isnew
                 mortality = patch.community[idx].traits["mortality"]
                 mass = patch.community[idx].size
-                dieprob = mortality * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst
-                if rand() > (1-dieprob) * patch.community[idx].fitness
+                dieprob = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
+                if rand() * patch.community[idx].fitness < dieprob
                     splice!(patch.community, idx)
                     idx -= 1
                 else
@@ -271,7 +270,7 @@ function grow!(patch::Patch)
             if !patch.community[idx].isnew
                 growthrate = patch.community[idx].traits["growthrate"]
                 mass = patch.community[idx].size
-                newmass = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp)) * normconst # -> emergent maximum body size!
+                newmass = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp)) # -> emergent maximum body size?
                 if newmass > 0 && mass > 0
                     patch.community[idx].size = newmass
                 else
