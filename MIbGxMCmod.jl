@@ -14,7 +14,7 @@ using Distributions#, Plots
 
 export Patch, # types
     setupdatadir, recordcolonizers, readmapfile, writerawdata, writedata, analysis,
-    checkviability!, establish!, age!, grow!, disperse!, compete!, reproduce!,
+    checkviability!, establish!, survive!, grow!, disperse!, compete!, reproduce!,
     createworld, updateworld! # functions
 
 
