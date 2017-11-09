@@ -221,20 +221,20 @@ end
 
 """
     survive!(p)
-denstity independent survival of individuals in patch `p`
+density independent survival of individuals in patch `p`
 """
 function survive!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        if !traitsexist(patch.community[idx], ["survivalprob"])
+        if !traitsexist(patch.community[idx], ["mortality"])
             splice!(patch.community, idx)
             idx -= 1
         else
             if !patch.community[idx].isnew
-                survivalprob = patch.community[idx].traits["survivalprob"]
+                mortality = patch.community[idx].traits["mortality"]
                 mass = patch.community[idx].size
-                dieprob = survivalprob * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst
+                dieprob = mortality * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst
                 if rand() > (1-dieprob) * patch.community[idx].fitness
                     splice!(patch.community, idx)
                     idx -= 1
@@ -600,7 +600,7 @@ end
 
 function genesis(linkage::String="random", tolerance::String="evo",
                  nspecs::Int64=100, meangenes::Int64=meangenes,
-                 traitnames::Array{String,1} = ["survivalprob",
+                 traitnames::Array{String,1} = ["mortality",
                                                 "dispmean",
                                                 "dispprob",
                                                 "dispshape",
