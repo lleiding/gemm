@@ -21,7 +21,7 @@ export Patch, # types
 const boltz = 1.38064852e-23 #  J/K = m2⋅kg/(s2⋅K)
 const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
 const normconst = 1e10 # normalization constant to get biologically realistic orders of magnitude
-const mutscaling = 50 #parse(ARGS[2])
+const phylconstr = 50 #parse(ARGS[2])
 const meangenes = 20 # mean number of genes per individual
 const mutationrate = 1e-3
 
@@ -143,11 +143,11 @@ function mutate!(ind::Individual, temp::Float64)
                     for trait in gene.codes
                         contains(trait.name, "rep") && contains(trait.name, "tol") && continue # MARK CAVE!
                         trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
-                        newvalue = trait.value + rand(Normal(0, trait.value/mutscaling)) # CAVE: mutscaling! new value for trait
+                        newvalue = trait.value + rand(Normal(0, trait.value/phylconstr)) # CAVE: phylconstr! new value for trait
                         newvalue < 0 && (newvalue=abs(newvalue))
                         (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
                         while newvalue == 0 #&& contains(trait.name,"mut")
-                            newvalue = trait.value + rand(Normal(0, trait.value/mutscaling))
+                            newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
                         end
                         trait.value = newvalue
                     end
