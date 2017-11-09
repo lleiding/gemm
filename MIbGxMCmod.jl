@@ -227,14 +227,14 @@ function survive!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        if !traitsexist(patch.community[idx], ["ageprob"])
+        if !traitsexist(patch.community[idx], ["survivalprob"])
             splice!(patch.community, idx)
             idx -= 1
         else
             if !patch.community[idx].isnew
-                ageprob = patch.community[idx].traits["ageprob"]
+                survivalprob = patch.community[idx].traits["survivalprob"]
                 mass = patch.community[idx].size
-                dieprob = ageprob * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst
+                dieprob = survivalprob * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst
                 if rand() > (1-dieprob) * patch.community[idx].fitness
                     splice!(patch.community, idx)
                     idx -= 1
@@ -600,7 +600,7 @@ end
 
 function genesis(linkage::String="random", tolerance::String="evo",
                  nspecs::Int64=100, meangenes::Int64=meangenes,
-                 traitnames::Array{String,1} = ["ageprob",
+                 traitnames::Array{String,1} = ["survivalprob",
                                                 "dispmean",
                                                 "dispprob",
                                                 "dispshape",
