@@ -20,7 +20,7 @@ export Patch, # types
 
 const boltz = 1.38064852e-23 # J/K = m2⋅kg/(s2⋅K)
 const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
-const growthrate = exp(24.8) # global base growth from Brown et al. 2004
+const growthrate = exp(25.2) # global base growth/biomass production from Brown et al. 2004
 const mortality = exp(19.2) # global base mortality from Brown et al. 2004
 const fertility = exp(26.0) # global base reproduction rate from Brown et al. 2004, alternatively 23.8
 const phylconstr = 50 #parse(ARGS[2])
@@ -264,7 +264,7 @@ function grow!(patch::Patch) # WORK IN PROGRESS
             if !patch.community[idx].isnew
                 maxsize = patch.community[idx].traits["maxsize"]
                 mass = patch.community[idx].size
-                newmass = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp)) # -> emergent maximum body size?
+                metabolicrate = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp))
                 if newmass > 0 && mass > 0
                     patch.community[idx].size = newmass
                 else
