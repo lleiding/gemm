@@ -136,7 +136,7 @@ function mutate!(ind::Individual, temp::Float64)
         for gene in chrm.genes
             charseq = collect(gene.sequence)
             for i in eachindex(charseq)
-                if rand() <= prob*exp(-act/(boltz*temp)) * normconst
+                if rand() <= prob * exp(-act/(boltz*temp))
                     newbase = rand(collect("acgt"),1)[1]
                     while newbase == charseq[i]
                         newbase = rand(collect("acgt"),1)[1]
