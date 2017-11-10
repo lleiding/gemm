@@ -89,7 +89,7 @@ end
 
 @everywhere function runit(firstrun::Bool,settings::Dict{String,Any},seed::Int64=0)
     seed != 0 && srand(seed)
-    mapfiles =  map(x->String(x),split(allargs["maps"],","))
+    mapfiles =  map(x->String(x),split(settings["maps"],","))
     if firstrun
         world=createworld([["1","1","1"]],settings)
         simulation(world, settings, "", seed, 10)
