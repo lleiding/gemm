@@ -264,7 +264,8 @@ function grow!(patch::Patch) # WORK IN PROGRESS
             if !patch.community[idx].isnew
                 maxsize = patch.community[idx].traits["maxsize"]
                 mass = patch.community[idx].size
-                metabolicrate = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp))
+                growth = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp))
+                newmass = mass + growth
                 if newmass > 0 && mass > 0
                     patch.community[idx].size = newmass
                 else
