@@ -25,7 +25,7 @@ const mortality = exp(19.2) # global base mortality from Brown et al. 2004
 const fertility = exp(26.0) # global base reproduction rate from Brown et al. 2004, alternatively 23.8
 const phylconstr = 50 #parse(ARGS[2])
 const meangenes = 20 # mean number of genes per individual
-const mutationrate = 1e-3
+const mutationrate = 1e-3 * 0.3e11 # 1 base in 1000, correction factor for metabolic function
 
 
 ## Types:
