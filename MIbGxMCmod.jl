@@ -677,7 +677,7 @@ function readmapfile(filename::String)
         timesteps = parse(Int,filter(x->size(x,1)==1,mapentries)[1][1])
     catch
         timesteps = 1000
-        warn("your mapfile \"$filename\" does not include timestep information. Assumed $timesteps timesteps.")
+        warn("your mapfile \"$filename\" does not include timestep information. Assuming $timesteps timesteps.")
     end
     mapentries = filter(x->size(x,1)>1,mapentries)
     return timesteps,mapentries
