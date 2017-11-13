@@ -170,7 +170,7 @@ function checkviability!(patch::Patch) # may consider additional rules... # mayb
         0 in collect(values(patch.community[idx].traits)) && (dead = true)
         patch.community[idx].traits["repsize"] <= patch.community[idx].traits["seedsize"] && (dead = true)
         if dead
-            splice!(patch.community,idx) # or else kill it
+            splice!(patch.community,idx)
             idx -= 1
         end
         idx += 1
@@ -221,8 +221,8 @@ function establish!(patch::Patch, nniches::Int64=1)
                 idx -= 1
                 continue
             elseif patch.community[idx].isnew || patch.community[idx].age == 0
-                opt = patch.community[idx].traits["opt"]
-                tol = patch.community[idx].traits["tol"]
+                opt = patch.community[idx].traits["precopt"]
+                tol = patch.community[idx].traits["prectol"]
                 fitness -= 1 - gausscurve(opt, tol, patch.nichea)
                 fitness > 1 && (fitness = 1) # should be obsolete
                 fitness < 0 && (fitness = 0) # should be obsolete
@@ -656,7 +656,7 @@ function genesis(linkage::String="random", tolerance::String="evo",
         traitdict = chrms2traits(chromosomes)
         popsize = rand(1:10)
         for i in 1:popsize
-            push!(community, Individual(chromosomes,traitdict,0,true,1.0,rand()))
+            push!(community, Individual(chromosomes,traitdict,0,true,1.0,exp(-10 + 20 * rand())))
         end
     end
     community
