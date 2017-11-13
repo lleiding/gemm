@@ -549,11 +549,11 @@ end
 
 function createtraits(traitnames::Array{String,1}, tolerance::String="evo")
     traits = Trait[]
-    seedsize = rand()
-    repsize = rand()
+    seedsize = exp(-10 + 18 * rand()) # smaller range for seeds
+    repsize = exp(-10 + 20 * rand()) # smaller range for seeds
     while repsize <= seedsize
-        seedsize = rand()
-        repsize = rand()
+        seedsize = exp(-10 + 18 * rand())
+        repsize = exp(-10 + 20 * rand())
     end
     for name in traitnames
         if contains(name,"rate")
