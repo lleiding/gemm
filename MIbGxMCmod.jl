@@ -194,22 +194,55 @@ function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
     y = a * exp(-(x-b)^2/(2*c^2))
 end
 
+"""
+    establish!(p, n)
+establishment of individuals in patch `p`. Sets fitness scaling parameter
+according to adaptation to number `n` niches of the surrounding environment.
+"""
 function establish!(patch::Patch, nniches::Int64=1)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
+        fitness = 1
         if !traitsexist(patch.community[idx], ["temptol", "tempopt"])
             splice!(patch.community, idx) # kill it!
             idx -= 1
+            continue
         elseif patch.community[idx].isnew || patch.community[idx].age == 0
-            tempopt = patch.community[idx].traits["tempopt"]
-            temptol = patch.community[idx].traits["temptol"]
-            fitness = gausscurve(tempopt, temptol, temp)
+            opt = patch.community[idx].traits["tempopt"]
+            tol = patch.community[idx].traits["temptol"]
+            fitness -= 1 - gausscurve(opt, tol, temp)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
-            patch.community[idx].fitness = fitness
-            patch.community[idx].isnew = false
         end
+        if nniches == 2
+            if !traitsexist(patch.community[idx], ["prectol", "precopt"])
+                splice!(patch.community, idx) # kill it!
+                idx -= 1
+                continue
+            elseif patch.community[idx].isnew || patch.community[idx].age == 0
+                opt = patch.community[idx].traits["opt"]
+                tol = patch.community[idx].traits["tol"]
+                fitness -= 1 - gausscurve(opt, tol, patch.nichea)
+                fitness > 1 && (fitness = 1) # should be obsolete
+                fitness < 0 && (fitness = 0) # should be obsolete
+            end
+        end
+        if nniches == 3
+            if !traitsexist(patch.community[idx], ["nichetol", "nicheopt"])
+                splice!(patch.community, idx) # kill it!
+                idx -= 1
+                continue
+            elseif patch.community[idx].isnew || patch.community[idx].age == 0
+                opt = patch.community[idx].traits["nicheopt"]
+                tol = patch.community[idx].traits["nichetol"]
+                fitness -= 1 - gausscurve(opt, tol, patch.nicheb)
+                fitness > 1 && (fitness = 1) # should be obsolete
+                fitness < 0 && (fitness = 0) # should be obsolete
+            end
+        end  
+        patch.community[idx].fitness = fitness
+        patch.community[idx].isnew = false
         idx += 1
     end
 end
