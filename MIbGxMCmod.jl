@@ -26,7 +26,7 @@ const fertility = exp(26.0) # global base reproduction rate from Brown et al. 20
 const phylconstr = 50 #parse(ARGS[2])
 const meangenes = 20 # mean number of genes per individual
 const mutationrate = 1e-3 * 0.3e11 # 1 base in 1000, correction factor for metabolic function
-
+const isolationweight = 3 # additional distance to be crossed when dispersing from or to isolated patches
 
 ## Types:
 #########
@@ -194,7 +194,7 @@ function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
     y = a * exp(-(x-b)^2/(2*c^2))
 end
 
-function establish!(patch::Patch)
+function establish!(patch::Patch, nniches::Int64=1)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
@@ -215,9 +215,9 @@ function establish!(patch::Patch)
 end
 
 
-function establish!(world::Array{Patch,1})
+function establish!(world::Array{Patch,1}, nniches::Int64=1)
     for patch in world
-        establish!(patch) # pmap(!,patch) ???
+        establish!(patch, nniches) # pmap(!,patch) ???
     end
 end
 
@@ -386,8 +386,8 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
                 possdests = find(x->in(x.location,targets),world)
                 if size(possdests,1) > 0 # if no viable target patch, individual dies
                     destination = rand(possdests)
-                    originisolated = patch.isolated && rand() <= indleft.traits["dispprob"]
-                    targetisolated = world[destination].isolated && rand() <= indleft.traits["dispprob"]
+                    originisolated = patch.isolated && rand(Logistic(dispmean,dispshape) >= isolationweight # additional roll for isolated origin patch
+                    targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape) >= isolationweight # additional roll for isolated target patch
                     (!originisolated && !targetisolated) && push!(world[destination].community,indleft)
                     !patch.isisland && world[destination].isisland && push!(colonizers, indleft)
                 end
@@ -598,14 +598,15 @@ function genesis(linkage::String="random", tolerance::String="evo",
                  nspecs::Int64=100, meangenes::Int64=meangenes,
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",
-                                                "maxsize",
                                                 "mutprob",
+                                                "precopt",
+                                                "prectol",
                                                 "repradius",
                                                 "repsize",
                                                 "reptol",
                                                 "seedsize",
-                                                "temptol",
-                                                "tempopt"]) # minimal required traitnames
+                                                "tempopt",
+                                                "temptol"]) # minimal required traitnames
     community = Individual[]
     for spec in 1:nspecs
         ngenes = rand(Poisson(meangenes))
