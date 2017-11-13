@@ -38,9 +38,9 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
             required = false
             default = "random"
         "--nniches", "-n"
-            help = "number of environmental niche traits "
+            help = "number of environmental niche traits (1 -- 3)"
             arg_type = Int
-            range_tester = x -> x > 0
+            range_tester = x -> x > 0 && x <= 3
             required = false
             default = 1
         "--tolerance", "-t"
