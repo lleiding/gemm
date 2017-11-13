@@ -82,6 +82,7 @@ end
         establish!(world, settings["nniches"])
         compete!(world)
         grow!(world)
+        compete!(world)
         survive!(world)
         reproduce!(world)
         colonizers = disperse!(world)
