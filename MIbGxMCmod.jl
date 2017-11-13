@@ -419,8 +419,8 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
                 possdests = find(x->in(x.location,targets),world)
                 if size(possdests,1) > 0 # if no viable target patch, individual dies
                     destination = rand(possdests)
-                    originisolated = patch.isolated && rand(Logistic(dispmean,dispshape) >= isolationweight # additional roll for isolated origin patch
-                    targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape) >= isolationweight # additional roll for isolated target patch
+                    originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) >= isolationweight # additional roll for isolated origin patch
+                    targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) >= isolationweight # additional roll for isolated target patch
                     (!originisolated && !targetisolated) && push!(world[destination].community,indleft)
                     !patch.isisland && world[destination].isisland && push!(colonizers, indleft)
                 end
