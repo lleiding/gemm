@@ -37,6 +37,12 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
             range_tester = x->in(x,["none", "random", "full"])
             required = false
             default = "random"
+        "--nniches", "-n"
+            help = "number of environmental niche traits "
+            arg_type = Int
+            range_tester = x -> x > 0
+            required = false
+            default = 1
         "--tolerance", "-t"
             help = "tolerance of sequence identity when reproducing (\"high\", \"evo\" or \"low\")"
             arg_type = String
@@ -48,7 +54,7 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
             arg_type = String
             required = false
             default = string(Dates.today())
-        "--heterogeneity", "-n" # this ...
+        "--heterogeneity", "-e" # this ...
             help = "island heterogeneity, i.e. environmental niche variability (\"low\" or \"high\")"
             arg_type = String
             range_tester = x->in(x,["low", "high"])
@@ -73,7 +79,7 @@ end
     println("Starting simulation...")
     for t in 1:timesteps
         checkviability!(world)
-        establish!(world)
+        establish!(world, settings["nniches"])
         compete!(world)
         grow!(world)
         survive!(world)
