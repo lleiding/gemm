@@ -290,11 +290,11 @@ function grow!(patch::Patch) # WORK IN PROGRESS
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        if !traitsexist(patch.community[idx], ["maxsize"])
+        if !traitsexist(patch.community[idx], ["repsize"]) # TODO: maybe stop growth if reached repsize 
             splice!(patch.community, idx)
             idx -= 1
         elseif !patch.community[idx].isnew
-            maxsize = patch.community[idx].traits["maxsize"]
+            repsize = patch.community[idx].traits["repsize"]
             mass = patch.community[idx].size
             growth = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp))
             newmass = mass + growth
@@ -684,7 +684,7 @@ end
 function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,Any})
     println("Creating world...")
     world = Patch[]
-    area = 100 # CAVE: just for now...
+    area = 10000 # CAVE: just for now... (100m x 100m)
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
                     Each line must contain patch information with at least \n
