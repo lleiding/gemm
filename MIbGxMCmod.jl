@@ -823,7 +823,11 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
             print(io, ind.fitness, sep)
             print(io, ind.size, sep)
             for key in traitkeys
-                print(io, ind.traits[key], sep)
+                try
+                    print(io, ind.traits[key], sep)
+                catch
+                    print(io, "NA", sep)
+                end
             end
             println(io)
         end
