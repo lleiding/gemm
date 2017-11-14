@@ -215,7 +215,7 @@ function establish!(patch::Patch, nniches::Int64=1)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
         end
-        if nniches == 2
+        if nniches >= 2
             if !traitsexist(patch.community[idx], ["prectol", "precopt"])
                 splice!(patch.community, idx) # kill it!
                 idx -= 1
@@ -632,8 +632,8 @@ function genesis(linkage::String="random", tolerance::String="evo",
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",
                                                 "mutprob",
-                                                "precopt",
-                                                "prectol",
+                                                #"precopt",
+                                                #"prectol",
                                                 "repradius",
                                                 "repsize",
                                                 "reptol",
