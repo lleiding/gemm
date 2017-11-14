@@ -86,11 +86,8 @@ end
         survive!(world)
         reproduce!(world)
         colonizers = disperse!(world)
-        length(colonizers) > 1 && recordcolonizers(colonizers, mapfile, settings, seed, t)
-        (t<10 || mod(t, 1000) == 0) && writerawdata(world, mapfile, settings, seed, t)
-#        (t == 1 || mod(t,100) == 0) && analysis(world)
-        #        mod(timesteps,20) == 0 && visualisation(world,t==20)
-        #mod(timesteps,10) == 0 && println(t)
+        length(colonizers) >= 1 && recordcolonizers(colonizers, mapfile, settings, seed, t)
+        (t == 1 || mod(t, 1000)) == 0 && writerawdata(world, mapfile, settings, seed, t)
     end
 end
 
