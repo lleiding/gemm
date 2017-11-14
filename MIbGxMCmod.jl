@@ -704,6 +704,12 @@ function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,A
         if size(entry,1) > 5 && contains(lowercase(entry[6]),"isolated")
             newpatch.isolated = true
         end
+        if size(entry,1) > 6
+            newpatch.nichea = parse(Float64, entry[7])
+        end
+        if size(entry,1) > 7
+            newpatch.nicheb = parse(Float64, entry[8])
+        end
         !isisland && append!(newpatch.community,genesis(settings["linkage"], settings["tolerance"]))
         push!(world,newpatch)
     end
