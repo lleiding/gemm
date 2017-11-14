@@ -293,18 +293,16 @@ function grow!(patch::Patch) # WORK IN PROGRESS
         if !traitsexist(patch.community[idx], ["maxsize"])
             splice!(patch.community, idx)
             idx -= 1
-        else
-            if !patch.community[idx].isnew
-                maxsize = patch.community[idx].traits["maxsize"]
-                mass = patch.community[idx].size
-                growth = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp))
-                newmass = mass + growth
-                if newmass > 0 && mass > 0
-                    patch.community[idx].size = newmass
-                else
-                    splice!(patch.community, idx)
-                    idx -= 1
-                end
+        elseif !patch.community[idx].isnew
+            maxsize = patch.community[idx].traits["maxsize"]
+            mass = patch.community[idx].size
+            growth = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp))
+            newmass = mass + growth
+            if newmass > 0 && mass > 0
+                patch.community[idx].size = newmass
+            else
+                splice!(patch.community, idx)
+                idx -= 1
             end
         end
         idx += 1
