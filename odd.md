@@ -17,14 +17,9 @@ The realized trait value is the mean of the traits coded by maternal and paterna
 Traits thus controlled encompass
 the initial body mass (size) of offspring ("seedsize"),
 the body mass determining onset of maturity and thus reproductive capability ("repsize"),
-the groth rate ("growthrate"),
-the probability for density-independent mortality ("ageprob"),
 mean dispersal distance ("dispmean"),
-the probability of dispersal ("dispprob"),
 the shape of the dispersal kernel, controlling long-distance-dispersal ("dispshape"),
-the probability and thus frequence of reproduction ("repprob"),
 the radius in which an individual searches for a mate ("repradius"),
-the mean number of offspring in a reproduction event (litter size,n "reprate"),
 the threshold of sequence identity between mates determining genetic compatibility ("reptol"),
 values representing the optimum and the tolerance (standard deviation) of a physical niche parameter ("tempopt", "temptol",
 resp.).
@@ -49,9 +44,10 @@ the following processes:
 - (a) establishment,
 - (b) competition (individuals are sorted according to their body sizes (from small to large)),
 - (c) growth,
-- (d) Density independent mortality,
-- (e) reproduction,
-- (f) dispersal.
+- (d) competition (individuals are sorted according to their body sizes (from small to large)),
+- (e) Density independent mortality,
+- (f) reproduction,
+- (g) dispersal.
 
 Updates to individuals and thus the local communities happen instantaneously after a specific process has been employed
 (asynchronous updating).
