@@ -1,13 +1,11 @@
 ODD, after Grimm et al. 2010
 
-1. Purpose
-==========
+# 1. Purpose
 
 This model is designed to simulate several patterns across genetic, individual, population and (meta-)community levels.
 
 
-2. Entities, state variable and scales
-======================================
+# 2. Entities, state variable and scales
 
 Individuals (plants or animals) are the basic entity in the model.
 Each individual carries a diploid set of chromosomes, which in turn are comprised of genes.
@@ -41,25 +39,22 @@ All individuals within one patch constitute a community.
 
 Processes and updates are repeated every timestep, while each timestep represent approximately one generation.
 
-3. Process overview and scheduling
-==================================
+# 3. Process overview and scheduling
 
 In each discrete timestep each individual in each patch will (in no particular order unless otherwise stated) undergo
 the following processes:
-(a) establishment,
-(b) competition (individuals are sorted according to their body sizes (from small to large)),
-(c) growth,
-(d) Density independent mortality,
-(e) reproduction,
-(f) dispersal.
+- (a) establishment,
+- (b) competition (individuals are sorted according to their body sizes (from small to large)),
+- (c) growth,
+- (d) Density independent mortality,
+- (e) reproduction,
+- (f) dispersal.
 
 Updates to individuals and thus the local communities happen instantaneously after a specific process has been employed
 (asynchronous updating).
 
-4. Design concepts
-==================
+# 4. Design concepts
 
-[?]
 Basic principles.
 -----------------
 Metabolic theory of ecology (@submodel level).
@@ -114,15 +109,13 @@ At the end of the simulation and whenever the arena definition changes the prope
 Furthermore, all island colonizers are recorded and output in a similar way.
 
 
-5. Initialisation
-=================
+# 5. Initialisation
 
 The initialisation step creates individuals with randomly chosen parameters and traits and deposits clones of one kind
 of indivudual ("species") in one patch.
 At the end of initialisation each patch holds several populations of clones.
 
-6. Input
-========
+# 6. Input
 
 At the start of a simulation user defined parameters are read, containing also a definition of the simulation arena.
 This definition is provided in a separate plain text file.
@@ -145,15 +138,14 @@ Other parameters specified at run time pertain to defining simulation scenarios.
 ```
 [...]
 
-7. Submodels
-============
+# 7. Submodels
 
 ## Establishment.
 When an individual is new to a patch (by recent birth or dispersal event), their physical niche preferences
 are compared with the actual niche properties of the present patch.
 The individual fitness parameter is set according to the deviation from the optimum value considering the niche breadth
 as standard deviation of a gaussian curve.
-    `fitness = gausscurve(tempopt, temptol, temp) `
+    ```fitness = gausscurve(tempopt, temptol, temp) ```
 
 ## Competition.
 Individuals are sorted according to their body sizes (from small to large).
@@ -164,7 +156,7 @@ Once total bodymass is below carrying capacity the procedure is finished.
 ## Growth.
 An individual changes its size following the metabolic theory of ecology and an individual growth rate parameter
 modulated by the fitness parameter.
-    `newmass = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp)) * normconst`
+    ```newmass = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp)) * normconst```
 
 ## Density independent mortality.
 An individual is removed from the local community with a certain probability that is specified
@@ -177,7 +169,7 @@ Given a individual probability ("repprob", modified by the fitness parameter) an
 to reproduce.
 In the case of reproduction and if the individual is larger or equal the individual's reproductive size, first the number
 of offspring is randomly drawn, following the individual's trait value and the metabolic theory.
-    `metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst`
+    ```metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst```
 Following the individuals reproductive radius possible partners in the vicinity (patches whose distances fall within the
 radius) are selected based on whether they share the same chromosome number with the reproducing individual and
 whether the sequence identity between both individuals is equal or higher the reproducing individual's tolerance.
@@ -186,7 +178,7 @@ comprising the genome for the offspring.
 At this point every position in the offspring's basecode may mutate with a given probability.
 In the case of mutation all traits associated with the respective gene will randomly change value (normally distributed,
 with the standard deviation the quotient of the original value over a scaling constant).
-    `newvalue = trait.value + rand(Normal(0, trait.value/mutscaling))`
+    ```newvalue = trait.value + rand(Normal(0, trait.value/mutscaling))```
 The new individuals' trait values are then calculated as the means between maternal and paternal alleles and
 the individuals added to the community, marked as new and with their size set to the initial bodymass.
 
