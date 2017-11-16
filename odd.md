@@ -1,4 +1,7 @@
-ODD, after Grimm et al. 2010
+The  model  description  
+follows  the  ODD  (Overview,  Design  concepts,  
+Details)  protocol  (Grimm  et  al.,  2006;  
+2010)
 
 # 1. Purpose
 
