@@ -8,8 +8,9 @@ Details)  protocol  (Grimm  et  al.,  2006;
 This model is designed to simulate several patterns across genetic, individual, population and (meta-)community levels.
 
 
-# 2. Entities, state variable and scales
+# 2. Entities, state variables and scales
 
+- global constant base rates for MTE
 Individuals (plants or animals) are the basic entity in the model.
 Each individual carries a diploid set of chromosomes, which in turn are comprised of genes.
 Some of the genes code for on ore more traits (pleiotropy), while a trait can be dependent on more than one gene (polygene).
@@ -188,7 +189,7 @@ with the standard deviation the quotient of the original value over a scaling co
 ```
     newvalue = trait.value + rand(Normal(0, trait.value/mutscaling))
 ```
-The new individuals' trait values are then calculated as the means between maternal and paternal alleles and
+The new individuals' trait values are then calculated as the means between parental alleles and
 the individuals added to the community, marked as new and with their size set to the initial bodymass.
 
 ## Dispersal.
@@ -203,3 +204,5 @@ considered again for each isolated patch, whose barriers are to be crossed (orig
 Special attention is paid when the destination patch is of island type.
 In this case the dispersing individual (colonizer) is recorded and its properties together with the respective
 time step stored for later analysis.
+
+## Output/Calculation
