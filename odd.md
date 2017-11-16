@@ -145,7 +145,9 @@ When an individual is new to a patch (by recent birth or dispersal event), their
 are compared with the actual niche properties of the present patch.
 The individual fitness parameter is set according to the deviation from the optimum value considering the niche breadth
 as standard deviation of a gaussian curve.
-    ```fitness = gausscurve(tempopt, temptol, temp) ```
+```
+    fitness = gausscurve(tempopt, temptol, temp)
+```
 
 ## Competition.
 Individuals are sorted according to their body sizes (from small to large).
@@ -156,20 +158,26 @@ Once total bodymass is below carrying capacity the procedure is finished.
 ## Growth.
 An individual changes its size following the metabolic theory of ecology and an individual growth rate parameter
 modulated by the fitness parameter.
-    ```newmass = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp)) * normconst```
+```
+    newmass = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp)) * normconst
+```
 
 ## Density independent mortality.
 An individual is removed from the local community with a certain probability that is specified
 within that individual's traits.
 A lower fitness parameter increases mortality.
-    `dieprob = (ageprob * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst) * (1-fitness)`
+```
+    dieprob = (ageprob * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst) * (1-fitness)
+```
 
 ## Reproduction.
 Given a individual probability ("repprob", modified by the fitness parameter) an individual decides on whether
 to reproduce.
 In the case of reproduction and if the individual is larger or equal the individual's reproductive size, first the number
 of offspring is randomly drawn, following the individual's trait value and the metabolic theory.
-    ```metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst```
+```
+    metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
+```
 Following the individuals reproductive radius possible partners in the vicinity (patches whose distances fall within the
 radius) are selected based on whether they share the same chromosome number with the reproducing individual and
 whether the sequence identity between both individuals is equal or higher the reproducing individual's tolerance.
@@ -178,7 +186,9 @@ comprising the genome for the offspring.
 At this point every position in the offspring's basecode may mutate with a given probability.
 In the case of mutation all traits associated with the respective gene will randomly change value (normally distributed,
 with the standard deviation the quotient of the original value over a scaling constant).
-    ```newvalue = trait.value + rand(Normal(0, trait.value/mutscaling))```
+```
+    newvalue = trait.value + rand(Normal(0, trait.value/mutscaling))
+```
 The new individuals' trait values are then calculated as the means between maternal and paternal alleles and
 the individuals added to the community, marked as new and with their size set to the initial bodymass.
 
