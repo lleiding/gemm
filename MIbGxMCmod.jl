@@ -646,7 +646,7 @@ function genesis(linkage::String="random", tolerance::String="evo",
         elseif linkage == "full"
             nchrms = 1
         else
-            chrms = rand(1:ngenes)
+            nchrms = rand(1:ngenes)
         end
         traits = createtraits(traitnames, tolerance)
         genes = creategenes(ngenes,traits)
