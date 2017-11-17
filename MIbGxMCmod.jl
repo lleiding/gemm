@@ -842,8 +842,9 @@ function setupdatadir(settings::Dict{String, Any})
     !isdir(settings["dest"]) && mkdir(settings["dest"])
 end
 
-function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String, settings::Dict{String, Any})
-    filename = "$(settings["dest"])" * "/" * mapfile * "_seed" * "$seed" * ".out"
+function writedata(world::Array{Patch,1}, seed::Int64, mappath::String, settings::Dict{String, Any})
+    mapfile = split(mappath, "/")[end]
+    filename = "$(settings["dest"])" * "/" * mapfile * "_$(settings["linkage"])" * "lnk" * "_$(settings["tolerance"])" * "_seed" * "$seed" * ".out"
     counter = 0
     extension = ""
     while ispath(filename * extension)
@@ -863,7 +864,8 @@ function writedata(world::Array{Patch,1}, seed::Int64, mapfile::String, settings
     end
 end
 
-function writerawdata(world::Array{Patch,1}, mapfile::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
+function writerawdata(world::Array{Patch,1}, mappath::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
+    mapfile = split(mappath, "/")[end]
     filename = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_$(settings["linkage"])" * "lnk" * "_$(settings["tolerance"])" * "tol" * "_t" * "$timestep" * ".jl"
     counter = 0
     extension = ""
@@ -880,7 +882,8 @@ function writerawdata(world::Array{Patch,1}, mapfile::String, settings::Dict{Str
     end
 end
 
-function recordcolonizers(colonizers::Array{Individual, 1}, mapfile::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
+function recordcolonizers(colonizers::Array{Individual, 1}, mappath::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
+    mapfile = split(mappath, "/")[end]
     record = (timestep, colonizers)
     filename = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_$(settings["linkage"])" * "lnk" * "_$(settings["tolerance"])" * "tol" * "colonizers" * ".jl"
     touch(filename)
