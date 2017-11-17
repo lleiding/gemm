@@ -1,9 +1,7 @@
-#comment
+# Timesteps:
+1000
 
-#com
-
-1001
-
+# Continent:
 1 0 0 293 continent
 2 0 1 293 continent
 3 0 2 293 continent
@@ -25,6 +23,7 @@
 19 3 3 303 continent
 20 3 4 303 continent
 
+# Island:
 21 6 1 303 island
 22 6 2 303 island
 23 6 3 303 island
