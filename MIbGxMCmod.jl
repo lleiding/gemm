@@ -206,7 +206,6 @@ function establish!(patch::Patch, nniches::Int64=1)
         fitness = 1
         if !traitsexist(patch.community[idx], ["temptol", "tempopt"])
             splice!(patch.community, idx) # kill it!
-            idx -= 1
             continue
         elseif patch.community[idx].isnew || patch.community[idx].age == 0
             opt = patch.community[idx].traits["tempopt"]
@@ -215,31 +214,19 @@ function establish!(patch::Patch, nniches::Int64=1)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
         end
-        if nniches >= 2
-            if !traitsexist(patch.community[idx], ["prectol", "precopt"])
-                splice!(patch.community, idx) # kill it!
-                idx -= 1
-                continue
-            elseif patch.community[idx].isnew || patch.community[idx].age == 0
-                opt = patch.community[idx].traits["precopt"]
-                tol = patch.community[idx].traits["prectol"]
-                fitness -= 1 - gausscurve(opt, tol, patch.nichea)
-                fitness > 1 && (fitness = 1) # should be obsolete
-                fitness < 0 && (fitness = 0) # should be obsolete
-            end
+        if nniches >= 2 && (patch.community[idx].isnew || patch.community[idx].age == 0)
+            opt = patch.community[idx].traits["precopt"]
+            tol = patch.community[idx].traits["prectol"]
+            fitness -= 1 - gausscurve(opt, tol, patch.nichea)
+            fitness > 1 && (fitness = 1) # should be obsolete
+            fitness < 0 && (fitness = 0) # should be obsolete
         end
-        if nniches == 3
-            if !traitsexist(patch.community[idx], ["nichetol", "nicheopt"])
-                splice!(patch.community, idx) # kill it!
-                idx -= 1
-                continue
-            elseif patch.community[idx].isnew || patch.community[idx].age == 0
-                opt = patch.community[idx].traits["nicheopt"]
-                tol = patch.community[idx].traits["nichetol"]
-                fitness -= 1 - gausscurve(opt, tol, patch.nicheb)
-                fitness > 1 && (fitness = 1) # should be obsolete
-                fitness < 0 && (fitness = 0) # should be obsolete
-            end
+        if nniches == 3 && (patch.community[idx].isnew || patch.community[idx].age == 0)
+            opt = patch.community[idx].traits["nicheopt"]
+            tol = patch.community[idx].traits["nichetol"]
+            fitness -= 1 - gausscurve(opt, tol, patch.nicheb)
+            fitness > 1 && (fitness = 1) # should be obsolete
+            fitness < 0 && (fitness = 0) # should be obsolete
         end  
         patch.community[idx].fitness = fitness
         patch.community[idx].isnew = false
