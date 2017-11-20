@@ -15,7 +15,7 @@ using Distributions#, Plots
 export Patch, # types
     setupdatadir, recordcolonizers, readmapfile, writerawdata, writedata, analysis,
     checkviability!, establish!, survive!, grow!, disperse!, compete!, reproduce!,
-    createworld, updateworld! # functions
+    createworld, updateworld!, endsim, everythingdead # functions
 
 
 const boltz = 1.38064852e-23 # J/K = m2⋅kg/(s2⋅K)
