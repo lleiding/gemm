@@ -85,7 +85,7 @@ Patch(id,location) = Patch(id,location,298,100,false,0,0,Individual[],false)
 End simulation for reason `x`. Optionally provide the timestep `t`.
 `x` defaults to "alldead".
 """
-function endsim(reason::String = alldead, t::Int64 = 0)
+function endsim(reason::String = "alldead", t::Int64 = 0)
     if reason == "alldead"
         print("All individuals dead. Terminating simulation")
         t > 0 ? println("at t = $t.") : println(".")
