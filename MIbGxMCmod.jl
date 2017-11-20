@@ -15,7 +15,7 @@ using Distributions#, Plots
 export Patch, # types
     setupdatadir, recordcolonizers, readmapfile, writerawdata, writedata, analysis,
     checkviability!, establish!, survive!, grow!, disperse!, compete!, reproduce!,
-    createworld, updateworld!, endsim, everythingdead # functions
+    createworld, updateworld!, endsim, alldead # functions
 
 
 const boltz = 1.38064852e-23 # J/K = m2⋅kg/(s2⋅K)
@@ -94,10 +94,10 @@ function endsim(reason::String = "alldead", t::Int64 = 0)
 end
 
 """
-    everythingdead(w)
+    alldead(w)
 Check whether there are any individuals left in the world `w`.
 """
-function everythingdead(world::Array{Patch,1})
+function alldead(world::Array{Patch,1})
     totalcom = map(x -> length(x.community), world)
     sum(totalcom) == 0
 end
