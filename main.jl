@@ -78,6 +78,7 @@ end
 @everywhere function simulation(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, seed::Int64, timesteps::Int=1000)
     println("Starting simulation...")
     for t in 1:timesteps
+        alldead(world) && endsim("alldead", t)
         checkviability!(world)
         establish!(world, settings["nniches"])
         compete!(world)
