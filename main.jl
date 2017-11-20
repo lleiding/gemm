@@ -75,10 +75,13 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 end
 
 
-@everywhere function simulation(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, seed::Int64, timesteps::Int=1000)
+@everywhere function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, seed::Int64, timesteps::Int=1000)
     println("Starting simulation...")
     for t in 1:timesteps
-        alldead(world) && endsim("alldead", t)
+        if alldead(world)
+            println("t = $t: all individuals dead.")
+            return
+        end
         checkviability!(world)
         establish!(world, settings["nniches"])
         compete!(world)
@@ -97,13 +100,13 @@ end
     mapfiles =  map(x->String(x),split(settings["maps"],","))
     if firstrun
         world=createworld([["1","1","1"]],settings)
-        simulation(world, settings, "", seed, 10)
+        simulation!(world, settings, "", seed, 10)
     else
         for i in 1:length(mapfiles)
             timesteps,maptable = readmapfile(mapfiles[i])
             i == 1 && (world = createworld(maptable, settings))
             i > 1 && updateworld!(world,maptable)
-            simulation(world, settings, mapfiles[i], seed, timesteps)
+            simulation!(world, settings, mapfiles[i], seed, timesteps)
             writedata(world, seed, mapfiles[i], settings)
         end
     end
