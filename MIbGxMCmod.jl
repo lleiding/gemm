@@ -80,6 +80,27 @@ Patch(id,location) = Patch(id,location,298,100,false,0,0,Individual[],false)
 
 ## Methods/Functions:
 #####################
+"""
+    endsim([x], [t])
+End simulation for reason `x`. Optionally provide the timestep `t`.
+`x` defaults to "alldead".
+"""
+function endsim(reason::String = alldead, t::Int64 = 0)
+    if reason == "alldead"
+        print("All individuals dead. Terminating simulation")
+        t > 0 ? println("at t = $t.") : println(".")
+        exit()
+    end
+end
+
+"""
+    everythingdead(w)
+Check whether there are any individuals left in the world `w`.
+"""
+function everythingdead(world::Array{Patch,1})
+    totalcom = map(x -> length(x.community), world)
+    sum(totalcom) == 0
+end
 
 function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include further dynamics, errors...
     firstset = find(x->x.maternal,genome)
