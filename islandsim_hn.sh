@@ -7,4 +7,4 @@
 #SBATCH --mail-user=ludwig.leidinger@uni-wuerzburg.de # Email to which notifications will be sent
 #SBATCH --array=3-6
 
-/home/s216849/builds/julia-903644385b/bin/julia -p 4 main.jl -m mapfile1,mapfile"${SLURM_ARRAY_TASK_ID}" -s 1 -t high -l none -e low -c low
+/home/s216849/builds/julia-903644385b/bin/julia -p 3 main.jl -m mapfile1,mapfile"${SLURM_ARRAY_TASK_ID}" -s 1 -t high -l none -e low -c low
