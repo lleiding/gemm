@@ -863,7 +863,7 @@ function writerawdata(world::Array{Patch,1}, mappath::String, settings::Dict{Str
     end
     filename *= extension
     touch(filename)
-    println("Colonisation! Writing data to \"$filename\"...")
+    println("Writing raw data to \"$filename\"...")
     open(filename, "w") do file
         println(file, world)
     end
