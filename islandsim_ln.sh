@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -n 12 # Number of cores
-#SBATCH --mem-per-cpu=4G # Memory pool per core/task (see also --mem for all cores)
+#SBATCH --mem-per-cpu=8G # Memory pool per core/task (see also --mem for all cores)
 #SBATCH -o %N_%A_%a.out # File to which STDOUT will be written %a: comination of array and job %j
 #SBATCH -e %N_%A_%a.err # File to which STDERR will be written
 #SBATCH --mail-type=ALL # Type of email notification- BEGIN,END,FAIL,ALL
