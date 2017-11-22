@@ -95,7 +95,7 @@ Besides adaptive radiations(/evolution), changes in or different measures of geo
 In the following, we present a model that remedies both of the adressed shortcomings by implementing genetic processes on a niche-explicit background
 in an island biogeography framework.
 We will adress the questions of what relative impact does (a) genetic linkage and (b) reproductive isolation have on emerging species numbers and diversity,
-and how (c) landscape heterogeneity (habitat niche diverstiy) and (d) topographical complexity differently affect radiatons.
+and how (c) landscape heterogeneity (habitat niche diversity) and (d) topographical complexity differently affect radiatons.
 [further questions thus tackled: traits of colonizer species, ...]
 
 
@@ -111,10 +111,21 @@ During the course of the simulation, individuals may disperse from the mainland 
 
 A detailed protocol can be found in the appendix (\cite{grimm2010odd}, XXX).
 
-[SCENARIOS, REPLICATES]
+\subsection{scenarios}
+In the simulations, we modify the value and extent of
+(a) gene linkage,
+(b) reproductive isolation,
+(c) habitat diversity, and
+(d) topographical complexity
+to asses their relative contribution on community composition.
+\Cref{tab:scenarios} summarizes the parameters which were varied for the scenarios, their meaning and their values. %TODO: make table.
+For each parameter combination, we launched a number of %TODO: how much?
+replicates.
 
+\subsection{Data recording}
 We record the complete state of our simulation world at the end of a simulation run and each time the arena changes (geomorphological dynamics).
-We additionally record every individual that colonizes the island to track it in the phylogeny.
+Additionally, we store the state of the simulation arena each 1000 %TODO: how much exactly?
+time steps and record every individual that colonizes the island to track it in the phylogeny.
 
 Using the thus simulated data, we calculate a phylogeny of the extant species, species numbers, etc. [WHAT ELSE?]
 \section{Results}
