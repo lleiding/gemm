@@ -487,7 +487,7 @@ end
 
 function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int64, Int64})
     ind.isnew = true
-    radius = floor(ind.traits["repradius"] + 0.5) # to account for cell width ... or not??
+    radius = floor(ind.traits["repradius"] + 0.5) # CAVE: to account for cell width ... or not??
     coordinates = Tuple[]
     for x = -radius:radius, y = -radius:radius
         sqrt(x^2 + y^2) <= radius && push!(coordinates, (x + location[1], y + location[2]))
