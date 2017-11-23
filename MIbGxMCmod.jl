@@ -298,19 +298,21 @@ function grow!(patch::Patch) # WORK IN PROGRESS
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
-        if !traitsexist(patch.community[idx], ["repsize"]) # TODO: maybe stop growth if reached repsize 
+        if !traitsexist(patch.community[idx], ["repsize"])
             splice!(patch.community, idx)
             idx -= 1
         elseif !patch.community[idx].isnew
             repsize = patch.community[idx].traits["repsize"]
             mass = patch.community[idx].size
-            growth = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp))
-            newmass = mass + growth
-            if newmass > 0 && mass > 0
-                patch.community[idx].size = newmass
-            else
-                splice!(patch.community, idx)
-                idx -= 1
+            if mass < repsize # stop growth if reached repsize 
+                growth = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp))
+                newmass = mass + growth
+                if newmass > 0 && mass > 0
+                    patch.community[idx].size = newmass
+                else
+                    splice!(patch.community, idx)
+                    idx -= 1
+                end
             end
         end
         idx += 1
