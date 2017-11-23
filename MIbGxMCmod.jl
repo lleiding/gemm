@@ -671,7 +671,7 @@ function genesis(linkage::String="random", tolerance::String="evo",
         traitdict = chrms2traits(chromosomes)
         popsize = rand(1:10)
         for i in 1:popsize
-            push!(community, Individual(chromosomes,traitdict,0,true,1.0,exp(-10 + 20 * rand())))
+            push!(community, Individual(chromosomes,traitdict,0,true,1.0, traitdict["seedsize"]))
         end
     end
     community
