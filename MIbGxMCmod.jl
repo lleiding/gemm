@@ -699,7 +699,7 @@ end
 function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,Any})
     println("Creating world...")
     world = Patch[]
-    area = 100000 # CAVE: just for now... (may correspond to 1000m x 1000m)
+    area = 10000000 # CAVE: just for now... (may correspond to 1000m x 1000m)
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
                     Each line must contain patch information with at least \n
