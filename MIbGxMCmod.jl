@@ -25,7 +25,7 @@ const mortality = exp(19.2) # global base mortality from Brown et al. 2004
 const fertility = exp(26.0) # global base reproduction rate from Brown et al. 2004, alternatively 23.8
 const phylconstr = 50 #parse(ARGS[2])
 const meangenes = 20 # mean number of genes per individual
-const mutationrate = 1e3 * 0.3e11 # 1 base in 1000, correction factor for metabolic function
+const mutationrate = 1e-3 * 0.3e11 # 1 base in 1000, correction factor for metabolic function
 const isolationweight = 3 # additional distance to be crossed when dispersing from or to isolated patches
 
 ## Types:
@@ -699,7 +699,7 @@ end
 function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,Any})
     println("Creating world...")
     world = Patch[]
-    area = 1000000 # CAVE: just for now... (may correspond to 1000m x 1000m)
+    area = 100000 # CAVE: just for now... (may correspond to 1000m x 1000m)
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
                     Each line must contain patch information with at least \n
