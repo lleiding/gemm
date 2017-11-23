@@ -493,12 +493,19 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         sqrt(x^2 + y^2) <= radius && push!(coordinates, (x + location[1], y + location[2]))
     end
     coordinates = map(k -> checkborderconditions!(world, k[1], k[2]), coordinates)
+    order = map(x -> x.^2, coordinates) |> x -> map(sum, x) |> x -> map(sqrt, x) |> sortperm
+    coordinates = coordinates[order]
     posspartners = Individual[]
-    map(k -> append!(posspartners, k.community), filter(l -> in(l.location, coordinates), world))
-    filter!(k -> traitsexist(k, ["repsize"]), posspartners)
-    filter!(k -> k.size >= k.traits["repsize"], posspartners)
-    filter!(k -> iscompatible(k, ind), posspartners)
-    filter!(k -> !k.isnew, posspartners) # filter out mating individual
+    idx = 1 # check patches in order of increasing distance
+    while length(posspartners) == 0
+        idx > length(coordinates) && return posspartners
+        map(k -> append!(posspartners, k.community), filter(l -> in(l.location, coordinates[idx]), world))
+        filter!(k -> traitsexist(k, ["repsize"]), posspartners)
+        filter!(k -> k.size >= k.traits["repsize"], posspartners)
+        filter!(k -> iscompatible(k, ind), posspartners)
+        filter!(k -> !k.isnew, posspartners) # filter out mating individual
+        idx += 1
+    end
     ind.isnew = false
     posspartners
 end
