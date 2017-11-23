@@ -641,7 +641,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
 end
 
 function genesis(linkage::String="random", tolerance::String="evo",
-                 nspecs::Int64=1000, meangenes::Int64=meangenes,
+                 nspecs::Int64=10, meangenes::Int64=meangenes,
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",
                                                 "mutprob",
