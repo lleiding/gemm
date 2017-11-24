@@ -442,7 +442,7 @@ end
 
 function compete!(patch::Patch)
     sort!(patch.community, by = x -> x.size)
-    while sum(map(x -> sqrt(x.size), patch.community)) > patch.area # occupied area larger than available
+    while sum(map(x -> x.size, patch.community)) > patch.area # occupied area larger than available
         victim = rand(Geometric()) + 1
         victim > length(patch.community) && (victim = length(patch.community))
         splice!(patch.community, victim)
