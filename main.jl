@@ -100,7 +100,7 @@ end
     mapfiles =  map(x->String(x),split(settings["maps"],","))
     if firstrun
         world=createworld([["1","1","1"]],settings)
-        simulation!(world, settings, "", seed, 10)
+        simulation!(world, settings, "", seed, 5)
     else
         for i in 1:length(mapfiles)
             timesteps,maptable = readmapfile(mapfiles[i])
@@ -118,9 +118,9 @@ const allargs = parsecommandline()
 const startseed = allargs["seed"]
 const replicates = startseed:startseed+nprocesses-1
 
-#TT = STDOUT # save original STDOUT stream
+TT = STDOUT # save original STDOUT stream
 setupdatadir(allargs)
-#redirect_stdout()
-#pmap(x->runit(true,allargs,x),replicates) # compilation/optimization run
-#redirect_stdout(TT) # restore STDOUT
+redirect_stdout()
+pmap(x->runit(true,allargs,x),replicates) # compilation/optimization run
+redirect_stdout(TT) # restore STDOUT
 pmap(x->runit(false,allargs,x),replicates)
