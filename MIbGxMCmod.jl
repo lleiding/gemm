@@ -501,6 +501,9 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     idx = 1 # check patches in order of increasing distance
     while length(posspartners) == 0
         idx > length(coordinates) && break
+        targetpatch = filter(l -> l.location == coordinates[idx], world)
+        length(targetpatch) >= 1 ? community = targetpatch[1].community : community = Individual[]
+        append!(posspartners, community)
         map(k -> append!(posspartners, k.community), filter(l -> in(l.location, coordinates[idx]), world))
         filter!(k -> traitsexist(k, ["repsize"]), posspartners)
         filter!(k -> k.size >= k.traits["repsize"], posspartners)
