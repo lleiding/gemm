@@ -505,6 +505,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         length(targetpatch) >= 1 ? community = targetpatch[1].community : community = Individual[]
         append!(posspartners, community)
         map(k -> append!(posspartners, k.community), filter(l -> in(l.location, coordinates[idx]), world))
+        filter!(k -> k.age > 0, posspartners)
         filter!(k -> traitsexist(k, ["repsize"]), posspartners)
         filter!(k -> k.size >= k.traits["repsize"], posspartners)
         filter!(k -> iscompatible(k, ind), posspartners)
