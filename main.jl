@@ -83,6 +83,7 @@ end
             return
         end
         checkviability!(world)
+        compete!(world)
         establish!(world, settings["nniches"])
         grow!(world)
         compete!(world)
