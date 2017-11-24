@@ -704,7 +704,7 @@ end
 function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,Any})
     println("Creating world...")
     world = Patch[]
-    area = 1000 
+    area = 10 
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
                     Each line must contain patch information with at least \n
@@ -738,7 +738,7 @@ end
 
 function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) #TODO: add functionality to remove patches!
     println("Updating world...")
-    area = 1000 # CAVE: just for now...
+    area = 10 # CAVE: just for now...
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
                     Each line must contain patch information with at least \n
