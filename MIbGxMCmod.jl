@@ -567,8 +567,8 @@ end
 
 function createtraits(traitnames::Array{String,1}, tolerance::String="evo")
     traits = Trait[]
-    seedsize = exp(-20 + 8 * rand()) # smaller range for seeds
-    repsize = exp(-20 + 10 * rand()) # smaller range for seeds
+    seedsize = exp(-20 + 19 * rand()) # smaller range for seeds
+    repsize = exp(-20 + 20 * rand())
     while repsize <= seedsize
         seedsize = exp(-20 + 8 * rand())
         repsize = exp(-20 + 10 * rand())
