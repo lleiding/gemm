@@ -304,7 +304,7 @@ function grow!(patch::Patch) # WORK IN PROGRESS
         elseif !patch.community[idx].isnew
             repsize = patch.community[idx].traits["repsize"]
             mass = patch.community[idx].size
-            if mass < repsize # stop growth if reached repsize 
+            if true #mass < repsize # stop growth if reached repsize 
                 growth = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp))
                 newmass = mass + growth
                 if newmass > 0 && mass > 0
