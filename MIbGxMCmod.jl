@@ -536,7 +536,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                 posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
                 if length(posspartners) > 0
                     partner = rand(posspartners)
-                    for i in 1:noffs
+                    for i in 1:noffs # pmap?
                         partnergenome = meiosis(partner.genome, false) # offspring have different genome!
                         mothergenome = meiosis(patch.community[idx].genome, true)
                         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
@@ -704,7 +704,7 @@ end
 function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,Any})
     println("Creating world...")
     world = Patch[]
-    area = 10 
+    area = 1000 
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
                     Each line must contain patch information with at least \n
@@ -738,7 +738,7 @@ end
 
 function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) #TODO: add functionality to remove patches!
     println("Updating world...")
-    area = 10 # CAVE: just for now...
+    area = 1000 # CAVE: just for now...
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
                     Each line must contain patch information with at least \n
