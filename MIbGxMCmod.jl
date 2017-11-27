@@ -540,7 +540,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         partnergenome = meiosis(partner.genome, false) # offspring have different genome!
                         mothergenome = meiosis(patch.community[idx].genome, true)
                         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
-                        genome = deepcopy([partnergenome...,mothergenome...])
+                        genome = [partnergenome...,mothergenome...]
                         activategenes!(genome)
                         traits = chrms2traits(genome)
                         age = 0
