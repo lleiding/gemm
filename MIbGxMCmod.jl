@@ -570,8 +570,8 @@ function createtraits(traitnames::Array{String,1}, tolerance::String="evo")
     seedsize = exp(-20 + 19 * rand()) # smaller range for seeds
     repsize = exp(-20 + 20 * rand())
     while repsize <= seedsize
-        seedsize = exp(-20 + 8 * rand())
-        repsize = exp(-20 + 10 * rand())
+        seedsize = exp(-20 + 19 * rand())
+        repsize = exp(-20 + 20 * rand())
     end
     for name in traitnames
         if contains(name,"rate")

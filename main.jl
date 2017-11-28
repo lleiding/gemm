@@ -82,6 +82,7 @@ end
             println("t = $t: all individuals dead.")
             return
         end
+        println(t)
         checkviability!(world)
         compete!(world)
         establish!(world, settings["nniches"])
