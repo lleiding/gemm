@@ -627,15 +627,15 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
         chromosomes = Chromosome[]
         for chr in 1:nchrs
             if chr==1 # first chromosome
-                push!(chromosomes, Chromosome(genes[1:chrsplits[chr]],rand([false,true])))
+                push!(chromosomes, Chromosome(genes[1:chrsplits[chr]], true))
             elseif chr==nchrs # last chromosome
-                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):end],rand([false,true])))
+                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):end], true))
             else
-                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):chrsplits[chr]],rand([false,true])))
+                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):chrsplits[chr]], true))
             end
         end
     else # only one chromosome
-        chromosomes = [Chromosome(genes,rand([false,true]))]
+        chromosomes = [Chromosome(genes, true)]
     end
     secondset = deepcopy(chromosomes)
     for chrm in secondset
