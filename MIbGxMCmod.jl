@@ -526,7 +526,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
         if !traitsexist(patch.community[idx], ["repradius", "repsize", "reptol", "seedsize", "mutprob"])
             splice!(patch.community, idx)
             idx -= 1
-        elseif !patch.community[idx].isnew
+        elseif !patch.community[idx].isnew && patch.community[idx].age > 0
             currentmass = patch.community[idx].size
             seedsize = patch.community[idx].traits["seedsize"]
             if currentmass >= patch.community[idx].traits["repsize"]
