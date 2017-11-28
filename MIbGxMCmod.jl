@@ -522,6 +522,7 @@ Reproduction of individuals in a patch `p` whithin a world (array of patches) `w
 function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     idx = 1
     temp = patch.altitude
+    seedbank = Individual[]
     while idx <= size(patch.community,1)
         if !traitsexist(patch.community[idx], ["repradius", "repsize", "reptol", "seedsize", "mutprob"])
             splice!(patch.community, idx)
@@ -550,13 +551,14 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         ind = Individual(genome,traits,age,isnew,fitness,newsize)
                         !haskey(ind.traits,"mutprob") && continue # no mutation, no life ;)
                         mutate!(ind, patch.altitude)
-                        push!(patch.community,ind)
+                        push!(seedbank ,ind)
                     end
                 end
             end
         end
         idx += 1
     end
+    append!(patch.community, seedbank)
 end
 
 function reproduce!(world::Array{Patch,1})
