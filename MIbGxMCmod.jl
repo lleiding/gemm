@@ -652,7 +652,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
     chromosomes
 end
 
-function genesis(linkage::String="random", tolerance::String="evo",
+function genesis(settings::Dict{String,Any},
                  nspecs::Int64=10, meangenes::Int64=meangenes,
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",
@@ -668,14 +668,14 @@ function genesis(linkage::String="random", tolerance::String="evo",
     community = Individual[]
     for spec in 1:nspecs
         ngenes = rand(Poisson(meangenes))
-        if linkage == "none"
+        if settings["linkage"] == "none"
             nchrms = ngenes
-        elseif linkage == "full"
+        elseif settings["linkage"] == "full"
             nchrms = 1
         else
             nchrms = rand(1:ngenes)
         end
-        traits = createtraits(traitnames, tolerance)
+        traits = createtraits(traitnames, settings)
         genes = creategenes(ngenes,traits)
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
@@ -741,7 +741,7 @@ function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,A
         if size(entry,1) > 7
             newpatch.nicheb = parse(Float64, entry[8])
         end
-        !isisland && append!(newpatch.community,genesis(settings["linkage"], settings["tolerance"]))
+        !isisland && append!(newpatch.community,genesis(settings))
         push!(world,newpatch)
     end
     world
