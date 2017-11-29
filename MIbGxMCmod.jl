@@ -81,10 +81,10 @@ Patch(id,location) = Patch(id,location,298,100,false,0,0,Individual[],false)
 ## Methods/Functions:
 #####################
 """
-    endsim([x], [t])
-End simulation for reason `x`. Optionally provide the timestep `t`.
-`x` defaults to "alldead".
-"""
+        endsim([x], [t])
+    End simulation for reason `x`. Optionally provide the timestep `t`.
+    `x` defaults to "alldead".
+    """
 function endsim(reason::String = "alldead", t::Int64 = 0)
     if reason == "alldead"
         print("All individuals dead. Terminating simulation")
@@ -94,9 +94,9 @@ function endsim(reason::String = "alldead", t::Int64 = 0)
 end
 
 """
-    alldead(w)
-Check whether there are any individuals left in the world `w`.
-"""
+        alldead(w)
+    Check whether there are any individuals left in the world `w`.
+    """
 function alldead(world::Array{Patch,1})
     totalcom = map(x -> length(x.community), world)
     sum(totalcom) == 0
@@ -217,10 +217,10 @@ function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
 end
 
 """
-    establish!(p, n)
-establishment of individuals in patch `p`. Sets fitness scaling parameter
-according to adaptation to number `n` niches of the surrounding environment.
-"""
+        establish!(p, n)
+    establishment of individuals in patch `p`. Sets fitness scaling parameter
+    according to adaptation to number `n` niches of the surrounding environment.
+    """
 function establish!(patch::Patch, nniches::Int64=1)
     temp = patch.altitude
     idx = 1
@@ -264,9 +264,9 @@ function establish!(world::Array{Patch,1}, nniches::Int64=1)
 end
 
 """
-    survive!(p)
-density independent survival of individuals in patch `p`
-"""
+        survive!(p)
+    density independent survival of individuals in patch `p`
+    """
 function survive!(patch::Patch)
     temp = patch.altitude
     idx = 1
@@ -292,9 +292,9 @@ function survive!(world::Array{Patch,1})
 end
 
 """
-    grow!(p)
-Growth of individuals in patch `p`
-"""
+        grow!(p)
+    Growth of individuals in patch `p`
+    """
 function grow!(patch::Patch) # WORK IN PROGRESS
     temp = patch.altitude
     idx = 1
@@ -327,9 +327,9 @@ function grow!(world::Array{Patch,1})
 end
 
 """
-    findisland(w)
-within world `w`, find out in which direction from the continent the island(s) lie(s).
-"""
+        findisland(w)
+    within world `w`, find out in which direction from the continent the island(s) lie(s).
+    """
 function findisland(world::Array{Patch,1})
     xmin = minimum(map(x->x.location[1],world))
     xmax = maximum(map(x->x.location[1],world))
@@ -353,10 +353,10 @@ function findisland(world::Array{Patch,1})
 end
 
 """
-    checkborderconditions!(w, x, y)
-check if coordinates `x` and `y` lie within world `w` and correct if not,
-considering defined border conditions.
-"""
+        checkborderconditions!(w, x, y)
+    check if coordinates `x` and `y` lie within world `w` and correct if not,
+    considering defined border conditions.
+    """
 function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Float64)
     xmin = minimum(map(x->x.location[1],world))
     xmax = maximum(map(x->x.location[1],world))
@@ -403,9 +403,9 @@ function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Floa
 end
 
 """
-    disperse!(w)
-Dispersal of individuals within world (array of patches) `w`
-"""
+        disperse!(w)
+    Dispersal of individuals within world (array of patches) `w`
+    """
 function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
     colonizers = Individual[]
     for patch in world
@@ -517,9 +517,9 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
 end
 
 """
-    reproduce!(w, p)
-Reproduction of individuals in a patch `p` whithin a world (array of patches) `w`
-"""
+        reproduce!(w, p)
+    Reproduction of individuals in a patch `p` whithin a world (array of patches) `w`
+    """
 function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     idx = 1
     temp = patch.altitude
@@ -714,11 +714,11 @@ function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,A
     area = 1
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
-                    Each line must contain patch information with at least \n
-                    \t - a unique integer ID, \n
-                    \t - an integer x coordinate, \n
-                    \t - an integer y coordinate, \n
-                    separated by a whitespace character (<ID> <x> <y>).")
+                        Each line must contain patch information with at least \n
+                        \t - a unique integer ID, \n
+                        \t - an integer x coordinate, \n
+                            \t - an integer y coordinate, \n
+                            separated by a whitespace character (<ID> <x> <y>).")
         id = parse(Int64, entry[1])
         xcord = parse(Int64, entry[2])
         ycord = parse(Int64, entry[3])
@@ -736,6 +736,7 @@ function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,A
                 newpatch.nichea = parse(Float64, entry[7])
             catch
                 newpatch.nichea = rand([1:1000])
+            end
         end
         if size(entry,1) > 7
             newpatch.nicheb = parse(Float64, entry[8])
@@ -751,11 +752,11 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) 
     area = 1 # CAVE: just for now...
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
-                    Each line must contain patch information with at least \n
-                    \t - a unique integer ID, \n
-                    \t - an integer x coordinate, \n
-                    \t - an integer y coordinate, \n
-                    separated by a whitespace character (<ID> <x> <y>).")
+                            Each line must contain patch information with at least \n
+                            \t - a unique integer ID, \n
+                            \t - an integer x coordinate, \n
+                            \t - an integer y coordinate, \n
+                            separated by a whitespace character (<ID> <x> <y>).")
         id = parse(Int64, entry[1])
         xcord = parse(Int64, entry[2])
         ycord = parse(Int64, entry[3])
@@ -882,7 +883,7 @@ function writedata(world::Array{Patch,1}, seed::Int64, mappath::String, settings
         counter += 1
         if counter > 9
             warn("could not write to \"$filename$extension\": file exists. \n
-                Continuing anyway - data might be identical.")
+                        Continuing anyway - data might be identical.")
             return
         end
     end
