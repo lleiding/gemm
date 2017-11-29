@@ -164,6 +164,7 @@ function mutate!(ind::Individual, temp::Float64)
                     end
                     charseq[i] = newbase
                     for trait in gene.codes
+                        (contains(trait.name, "mutprob") && mutationrate != 0) && continue
                         contains(trait.name, "rep") && contains(trait.name, "tol") && continue # MARK CAVE!
                         trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
                         newvalue = trait.value + rand(Normal(0, trait.value/phylconstr)) # CAVE: phylconstr! new value for trait
