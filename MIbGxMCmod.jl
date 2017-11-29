@@ -568,7 +568,7 @@ function reproduce!(world::Array{Patch,1})
     end
 end
 
-function createtraits(traitnames::Array{String,1}, tolerance::String="evo")
+function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     traits = Trait[]
     seedsize = exp(-20 + 19 * rand()) # smaller range for seeds
     repsize = exp(-20 + 20 * rand())
@@ -584,9 +584,9 @@ function createtraits(traitnames::Array{String,1}, tolerance::String="evo")
         elseif contains(name, "mut")
             mutationrate == 0 ? push!(traits,Trait(name,rand(),true)) : push!(traits,Trait(name,mutationrate,true)) #CAVE: code values elsewhere?
         elseif contains(name, "rep") && contains(name, "tol")
-            if tolerance == "high"
+            if settings["tolerance"] == "high"
                 push!(traits,Trait(name,0.9,true))
-            elseif tolerance == "low"
+            elseif settings["tolerance"] == "low"
                 push!(traits,Trait(name,0.99,true)) #CAVE: code values elsewhere?
             else
                 push!(traits,Trait(name,rand()/10 + 0.9,true))
@@ -595,6 +595,8 @@ function createtraits(traitnames::Array{String,1}, tolerance::String="evo")
             push!(traits,Trait(name,repsize,true)) #CAVE: code values elsewhere?
         elseif contains(name, "seedsize")
             push!(traits,Trait(name,seedsize,true)) #CAVE: code values elsewhere?
+        elseif contains(name, "prec")
+            push!(traits, Trait(name, rand([1:1000], true)))
         else
             push!(traits,Trait(name,rand(),true))
         end
