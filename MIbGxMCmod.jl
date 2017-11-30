@@ -653,7 +653,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
 end
 
 function genesis(settings::Dict{String,Any},
-                 nspecs::Int64=10, meangenes::Int64=meangenes,
+                 nspecs::Int64=10, popsize::Int64 = 10, meangenes::Int64=meangenes,
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",
                                                 "mutprob",
@@ -679,7 +679,6 @@ function genesis(settings::Dict{String,Any},
         genes = creategenes(ngenes,traits)
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
-        popsize = rand(1:10)
         for i in 1:popsize
             push!(community, Individual(chromosomes,traitdict,0,true,1.0, traitdict["seedsize"]))
         end
