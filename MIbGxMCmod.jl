@@ -868,8 +868,18 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
     end
 end
 
+"""
+    setupdatadir(dir)
+creates the output directory. `dir` is a string containing the directory path.
+"""
 function setupdatadir(settings::Dict{String, Any})
-    !isdir(settings["dest"]) && mkdir(settings["dest"])
+    if !isdir(settings["dest"])
+        try
+            mkdir(settings["dest"])
+        catch
+            warn("could not create directory $(settings["dest"]). Assuming it already exists...")
+        end
+    end
 end
 
 function writedata(world::Array{Patch,1}, seed::Int64, mappath::String, settings::Dict{String, Any})
