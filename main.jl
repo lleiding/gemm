@@ -124,4 +124,4 @@ setupdatadir(allargs)
 redirect_stdout()
 pmap(x->runit(true,allargs,x),replicates) # compilation/optimization run
 redirect_stdout(TT) # restore STDOUT
-@time pmap(x->runit(false,allargs,x),replicates)
+pmap(x -> (@time runit(false,allargs,x)), replicates)
