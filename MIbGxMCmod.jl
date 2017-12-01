@@ -153,12 +153,14 @@ function chrms2traits(chrms::Array{Chromosome,1})
 end
 
 function mutate!(ind::Individual, temp::Float64)
+    mutation = false
     prob = ind.traits["mutprob"]
     for chrm in ind.genome
         for gene in chrm.genes
             charseq = collect(gene.sequence)
             for i in eachindex(charseq)
                 if rand() <= prob * exp(-act/(boltz*temp))
+                    mutation = true
                     newbase = rand(collect("acgt"),1)[1]
                     while newbase == charseq[i]
                         newbase = rand(collect("acgt"),1)[1]
@@ -181,8 +183,10 @@ function mutate!(ind::Individual, temp::Float64)
             gene.sequence = String(charseq)
         end
     end
-    traitdict = chrms2traits(ind.genome)
-    ind.traits = traitdict
+    if mutation        
+        traitdict = chrms2traits(ind.genome)
+        ind.traits = traitdict
+    end
 end
 
 function checkviability!(patch::Patch) # may consider additional rules... # maybe obsolete anyhow...
