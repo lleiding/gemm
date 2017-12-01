@@ -836,6 +836,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
                 print(io, "new", sep)
                 print(io, "fitness", sep)
                 print(io, "size", sep)
+                print(io, "lnkgunits", sep)
                 traitkeys = keys(ind.traits)
                 for key in traitkeys
                     print(io, key, sep)
@@ -851,11 +852,12 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
             print(io, patch.nichea, sep)
             ## print(io, patch.nicheb, sep)
             patch.isisland ? print(io, 1, sep) : print(io, 0, sep)
-            patch.isolated ? print(io, "yes", sep) : print(io, "no", sep)
+            patch.isolated ? print(io, 1, sep) : print(io, 0, sep)
             print(io, ind.age, sep)
-            ind.isnew ? print(io, "yes", sep) : print(io, "no", sep)
+            ind.isnew ? print(io, 1, sep) : print(io, 0, sep)
             print(io, ind.fitness, sep)
             print(io, ind.size, sep)
+            print(io, length(ind.genome), sep)
             for key in traitkeys
                 try
                     print(io, ind.traits[key], sep)
@@ -877,7 +879,7 @@ function setupdatadir(settings::Dict{String, Any})
         try
             mkdir(settings["dest"])
         catch
-            warn("could not create directory $(settings["dest"]). Assuming it already exists...")
+            warn("could not create directory \"$(settings["dest"])\". Assuming it already exists...")
         end
     end
 end
@@ -892,7 +894,7 @@ function writedata(world::Array{Patch,1}, seed::Int64, mappath::String, settings
         counter += 1
         if counter > 9
             warn("could not write to \"$filename$extension\": file exists. \n
-                        Continuing anyway - data might be identical.")
+Continuing anyway - data might be identical.")
             return
         end
     end
