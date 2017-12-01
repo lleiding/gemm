@@ -884,6 +884,12 @@ function setupdatadir(settings::Dict{String, Any})
     end
 end
 
+#TODO: complete docstring!
+"""
+    writedata(world, seed, path, settings)
+writes simulation output from `world` in table format to a file in `path`.
+`seed` and `setting` information is used for file name creation.
+"""
 function writedata(world::Array{Patch,1}, seed::Int64, mappath::String, settings::Dict{String, Any})
     mapfile = split(mappath, "/")[end]
     filename = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_lnk" * settings["linkage"] * "_tol" * settings["tolerance"] * "_t" * "$timestep" * ".out"
@@ -906,6 +912,12 @@ Continuing anyway - data might be identical.")
     end
 end
 
+#TODO: complete docstring!
+"""
+    writerawdata(world, path, settings, seed, t)
+writes raw julia data of the complete simulation state from `world` to a file in `path`.
+`seed`, `setting` and `t` (timestep) information is used for file name creation.
+"""
 function writerawdata(world::Array{Patch,1}, mappath::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
     mapfile = split(mappath, "/")[end]
     filename = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_lnk" * settings["linkage"] * "_tol" * settings["tolerance"] * "_t" * "$timestep" * ".jl"
@@ -924,6 +936,12 @@ function writerawdata(world::Array{Patch,1}, mappath::String, settings::Dict{Str
     end
 end
 
+#TODO: complete docstring!
+"""
+    recordcolonizers(colos, path, settings, seed, t)
+writes raw julia data of the colonizing individuals `colos` at timestep `t` to a file in `path`.
+`seed` and `setting` information is used for file name creation.
+"""
 function recordcolonizers(colonizers::Array{Individual, 1}, mappath::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
     mapfile = split(mappath, "/")[end]
     record = (timestep, colonizers)
