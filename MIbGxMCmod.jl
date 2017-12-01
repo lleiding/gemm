@@ -111,7 +111,7 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     for i in eachindex(firstset)
         push!(gameteidxs,rand([firstset[i],secondset[i]]))
     end
-    gamete = deepcopy(genome[gameteidxs]) #TODO somewhere here: crossing over!
+    gamete = genome[gameteidxs] #TODO somewhere here: crossing over!
     map(x->x.maternal=maternal,gamete)
     gamete
 end
@@ -153,14 +153,13 @@ function chrms2traits(chrms::Array{Chromosome,1})
 end
 
 function mutate!(ind::Individual, temp::Float64)
-    mutation = false
+    ind.genome = deepcopy(ind.genome)
     prob = ind.traits["mutprob"]
     for chrm in ind.genome
         for gene in chrm.genes
             charseq = collect(gene.sequence)
             for i in eachindex(charseq)
                 if rand() <= prob * exp(-act/(boltz*temp))
-                    mutation = true
                     newbase = rand(collect("acgt"),1)[1]
                     while newbase == charseq[i]
                         newbase = rand(collect("acgt"),1)[1]
@@ -183,10 +182,8 @@ function mutate!(ind::Individual, temp::Float64)
             gene.sequence = String(charseq)
         end
     end
-    if mutation        
-        traitdict = chrms2traits(ind.genome)
-        ind.traits = traitdict
-    end
+    traitdict = chrms2traits(ind.genome)
+    ind.traits = traitdict
 end
 
 function checkviability!(patch::Patch) # may consider additional rules... # maybe obsolete anyhow...
