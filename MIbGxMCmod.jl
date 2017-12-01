@@ -49,6 +49,7 @@ mutable struct Chromosome
 end
 
 mutable struct Individual
+    lineage::String
     genome::Array{Chromosome, 1}
     traits::Dict{String, Float64}
     age::Int64
@@ -549,7 +550,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         isnew = false
                         fitness = 1.0
                         newsize = seedsize
-                        ind = Individual(genome,traits,age,isnew,fitness,newsize)
+                        ind = Individual(lineage, genome,traits,age,isnew,fitness,newsize)
                         !haskey(ind.traits,"mutprob") && continue # no mutation, no life ;)
                         mutate!(ind, patch.altitude)
                         push!(seedbank ,ind)
@@ -667,6 +668,7 @@ function genesis(settings::Dict{String,Any},
                                                 "temptol"]) # minimal required traitnames
     community = Individual[]
     for spec in 1:nspecs
+        lineage = randstring(4)
         ngenes = rand(Poisson(meangenes))
         if settings["linkage"] == "none"
             nchrms = ngenes
@@ -680,7 +682,7 @@ function genesis(settings::Dict{String,Any},
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
         for i in 1:popsize
-            push!(community, Individual(chromosomes,traitdict,0,true,1.0, traitdict["seedsize"]))
+            push!(community, Individual(lineage, chromosomes,traitdict,0,true,1.0, traitdict["seedsize"]))
         end
     end
     community
