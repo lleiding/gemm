@@ -879,7 +879,7 @@ function setupdatadir(settings::Dict{String, Any})
         try
             mkdir(settings["dest"])
         catch
-            warn("could not create directory \"$(settings["dest"])\". Assuming it already exists...")
+            warn("could not create directory ", settings["dest"]), ". Assuming it already exists...")
         end
     end
 end
@@ -893,7 +893,7 @@ function writedata(world::Array{Patch,1}, seed::Int64, mappath::String, settings
         extension = "_$counter"
         counter += 1
         if counter > 9
-            warn("could not write to \"$filename$extension\": file exists. \n
+            warn("could not write to ", filename, extension, ": file exists. \n
 Continuing anyway - data might be identical.")
             return
         end
