@@ -207,7 +207,7 @@ function checkviability!(patch::Patch) # may consider additional rules... # mayb
         patch.community[idx].traits["repsize"] <= patch.community[idx].traits["seedsize"] && (dead = true)
         if dead
             splice!(patch.community,idx)
-            idx -= 1
+            continue
         end
         idx += 1
     end
