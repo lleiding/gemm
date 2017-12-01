@@ -879,7 +879,7 @@ function setupdatadir(settings::Dict{String, Any})
         try
             mkdir(settings["dest"])
         catch
-            warn("could not create directory ", settings["dest"]), ". Assuming it already exists...")
+            warn("could not create directory ", settings["dest"], ". Assuming it already exists...")
         end
     end
 end
