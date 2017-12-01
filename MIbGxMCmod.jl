@@ -188,7 +188,7 @@ end
 
 function mutate!(patch::Patch)
     for ind in patch.community
-        mutate!(ind, patch.altitude)
+        ind.age == 0 && mutate!(ind, patch.altitude)
     end
 end
 
