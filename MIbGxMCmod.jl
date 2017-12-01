@@ -840,6 +840,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
                 print(io, "fitness", sep)
                 print(io, "size", sep)
                 print(io, "lnkgunits", sep)
+                print(io, "ngenes", sep)
                 traitkeys = keys(ind.traits)
                 for key in traitkeys
                     print(io, key, sep)
@@ -861,6 +862,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
             print(io, ind.fitness, sep)
             print(io, ind.size, sep)
             print(io, length(ind.genome), sep)
+            print(io, sum(map(x -> length(x.genes), ind.genome)), sep)
             for key in traitkeys
                 try
                     print(io, ind.traits[key], sep)
