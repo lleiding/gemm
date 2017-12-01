@@ -897,7 +897,7 @@ writes simulation output from `world` in table format to a file in `path`.
 """
 function writedata(world::Array{Patch,1}, seed::Int64, mappath::String, settings::Dict{String, Any})
     mapfile = split(mappath, "/")[end]
-    filename = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_lnk" * settings["linkage"] * "_tol" * settings["tolerance"] * "_t" * "$timestep" * ".out"
+    filename = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_lnk" * settings["linkage"] * "_tol" * settings["tolerance"] * ".out"
     counter = 0
     extension = ""
     while ispath(filename * extension)
