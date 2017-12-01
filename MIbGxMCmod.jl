@@ -565,8 +565,6 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         fitness = 1.0
                         newsize = seedsize
                         ind = Individual(patch.community[idx].lineage, genome,traits,age,isnew,fitness,newsize)
-                        !haskey(ind.traits,"mutprob") && continue # no mutation, no life ;)
-                        mutate!(ind, patch.altitude)
                         push!(seedbank ,ind)
                     end
                 end
