@@ -558,7 +558,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         mothergenome = meiosis(patch.community[idx].genome, true)
                         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
                         genome = vcat(partnergenome,mothergenome)
-                        activategenes!(genome)
+                        #activategenes!(genome) # relict. might be removed
                         traits = chrms2traits(genome)
                         age = 0
                         isnew = false
