@@ -186,6 +186,18 @@ function mutate!(ind::Individual, temp::Float64)
     ind.traits = traitdict
 end
 
+function mutate!(patch::Patch)
+    for ind in patch.community
+        mutate!(ind, patch.altitude)
+    end
+end
+
+function mutate!(world::Array{Patch, 1})
+    for patch in world
+        mutate!(patch)
+    end
+end
+
 function checkviability!(patch::Patch) # may consider additional rules... # maybe obsolete anyhow...
     idx=1
     while idx <= size(patch.community,1)
