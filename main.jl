@@ -82,6 +82,7 @@ end
             println("t = $t: all individuals dead.")
             return
         end
+        (t == 1 || mod(t, 1000)) == 0 && writerawdata(world, mapfile, settings, seed, t)
         checkviability!(world)
         compete!(world)
         establish!(world, settings["nniches"])
@@ -91,7 +92,6 @@ end
         reproduce!(world)
         colonizers = disperse!(world)
         length(colonizers) >= 1 && recordcolonizers(colonizers, mapfile, settings, seed, t)
-        (t == 1 || mod(t, 1000)) == 0 && writerawdata(world, mapfile, settings, seed, t)
     end
 end
 
