@@ -111,8 +111,10 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     for i in eachindex(firstset)
         push!(gameteidxs,rand([firstset[i],secondset[i]]))
     end
-    gamete = genome[gameteidxs] #TODO somewhere here: crossing over!
-    map(x->x.maternal=maternal,gamete)
+    gamete = Chromosome[]
+    for i in gameteidxs
+        push!(gamete, Chromosome(genome[i].genes, maternal))
+    end
     gamete
 end
 
