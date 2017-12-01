@@ -85,6 +85,7 @@ end
         (t == 1 || mod(t, 1000)) == 0 && writerawdata(world, mapfile, settings, seed, t)
         checkviability!(world)
         compete!(world)
+        mutate!(world)
         establish!(world, settings["nniches"])
         grow!(world)
         compete!(world)
