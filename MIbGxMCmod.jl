@@ -849,13 +849,14 @@ end
 
 """
     dumpinds(world, io, sep)
-Output all individual data of `world` as table to `io`. Columns are separated by `sep`.
+Output all data of individuals in `world` as table to `io`. Columns are separated by `sep`.
 """
 function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
     header = true
     traitkeys = []
     for patch in world
         for ind in patch.community
+            ind.age == 0 && continue
             if header
                 print(io, "id", sep)
                 print(io, "xloc", sep)
@@ -876,6 +877,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
                 for key in traitkeys
                     print(io, key, sep)
                 end
+                print(io, "genome", sep)
                 println(io)
                 header = false
             end
@@ -901,6 +903,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
                     print(io, "NA", sep)
                 end
             end
+            print(io, getsequence(ind), sep)
             println(io)
         end
     end
