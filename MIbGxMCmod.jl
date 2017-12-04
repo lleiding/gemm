@@ -154,7 +154,7 @@ function chrms2traits(chrms::Array{Chromosome,1})
     traitdict
 end
 
-function mutate!(ind::Individual, temp::Float64)
+function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
     ind.genome = deepcopy(ind.genome)
     prob = ind.traits["mutprob"]
     for chrm in ind.genome
@@ -169,7 +169,7 @@ function mutate!(ind::Individual, temp::Float64)
                     charseq[i] = newbase
                     for trait in gene.codes
                         (contains(trait.name, "mutprob") && mutationrate != 0) && continue
-                        contains(trait.name, "reptol") && allargs["tolerance"] != "evo" && continue # MARK CAVE!
+                        contains(trait.name, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
                         trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
                         newvalue = trait.value + rand(Normal(0, trait.value/phylconstr)) # CAVE: phylconstr! new value for trait
                         newvalue < 0 && (newvalue=abs(newvalue))
@@ -188,15 +188,15 @@ function mutate!(ind::Individual, temp::Float64)
     ind.traits = traitdict
 end
 
-function mutate!(patch::Patch)
+function mutate!(patch::Patch, settings::Dict{String,Any})
     for ind in patch.community
-        ind.age == 0 && mutate!(ind, patch.altitude)
+        ind.age == 0 && mutate!(ind, patch.altitude, settings)
     end
 end
 
-function mutate!(world::Array{Patch, 1})
+function mutate!(world::Array{Patch, 1}, settings::Dict{String,Any})
     for patch in world
-        mutate!(patch)
+        mutate!(patch, settings)
     end
 end
 
