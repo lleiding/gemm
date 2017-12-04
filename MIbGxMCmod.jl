@@ -833,6 +833,24 @@ function analysis(world::Array{Patch,1})
     end
 end
 
+"""
+    getsequence(ind)
+Get the complete genome sequence from individual `ind`.
+"""
+function getsequence(ind::Individual)
+    sequence = ""
+    for chrm in ind.genome
+        for gene in chrm
+            sequence *= gene.sequence
+        end
+    end
+    sequence
+end
+
+"""
+    dumpinds(world, io, sep)
+Output all individual data of `world` as table to `io`. Columns are separated by `sep`.
+"""
 function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
     header = true
     traitkeys = []
