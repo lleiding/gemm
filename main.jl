@@ -11,16 +11,12 @@
 ## Every line describes one patch in the following format:
 ## <ID> <X-COORDINATE> <Y-COORDINATE> [<TYPE>]
 
-addprocs(0)
 thisDir = pwd()
 any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 
-#@everywhere include("MIbGxMCmod.jl")
+using MIbGxMCmod, ArgParse
 
-# using MIbGxMCmod # needs to be like this somehow...
-@everywhere using MIbGxMCmod, ArgParse
-
-@everywhere function parsecommandline()
+function parsecommandline()
     s = ArgParseSettings()
     @add_arg_table s begin
         "--seed", "-s"
@@ -75,7 +71,7 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 end
 
 
-@everywhere function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, seed::Int64, timesteps::Int=1000)
+function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, seed::Int64, timesteps::Int=1000)
     println("Starting simulation...")
     for t in 1:timesteps
         if alldead(world)
@@ -96,7 +92,7 @@ end
     end
 end
 
-@everywhere function runit(firstrun::Bool,settings::Dict{String,Any},seed::Int64=0)
+function runit(firstrun::Bool,settings::Dict{String,Any},seed::Int64=0)
     seed != 0 && srand(seed)
     mapfiles =  map(x->String(x),split(settings["maps"],","))
     if firstrun
@@ -122,6 +118,6 @@ const replicates = startseed:startseed+nprocesses-1
 TT = STDOUT # save original STDOUT stream
 setupdatadir(allargs)
 redirect_stdout()
-pmap(x->runit(true,allargs,x),replicates) # compilation/optimization run
+runit(true, allargs, startseed) # compilation/optimization run
 redirect_stdout(TT) # restore STDOUT
-pmap(x -> (@time runit(false,allargs,x)), replicates)
+@time runit(false, allargs, startseed)
