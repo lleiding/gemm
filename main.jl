@@ -86,7 +86,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
         grow!(world)
         compete!(world)
         survive!(world)
-        reproduce!(world)
+        reproduce!(world, settings)
         colonizers = disperse!(world)
         length(colonizers) >= 1 && recordcolonizers(colonizers, mapfile, settings, seed, t)
     end
