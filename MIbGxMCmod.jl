@@ -840,7 +840,7 @@ Get the complete genome sequence from individual `ind`.
 function getsequence(ind::Individual)
     sequence = ""
     for chrm in ind.genome
-        for gene in chrm
+        for gene in chrm.genes
             sequence *= gene.sequence
         end
     end
