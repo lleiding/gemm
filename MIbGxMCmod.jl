@@ -851,11 +851,12 @@ end
     dumpinds(world, io, sep)
 Output all data of individuals in `world` as table to `io`. Columns are separated by `sep`.
 """
-function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
+function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", onlyisland::Bool = false)
     header = true
     traitkeys = []
     counter = 0
     for patch in world
+        (onlyisland && !patch.isisland) && continue
         for ind in patch.community
             ind.age == 0 && continue
             counter += 1
