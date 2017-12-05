@@ -854,9 +854,11 @@ Output all data of individuals in `world` as table to `io`. Columns are separate
 function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
     header = true
     traitkeys = []
+    counter = 0
     for patch in world
         for ind in patch.community
             ind.age == 0 && continue
+            counter += 1
             if header
                 print(io, "id", sep)
                 print(io, "xloc", sep)
@@ -867,6 +869,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
                 ## print(io, "nicheb", sep)
                 print(io, "island", sep)
                 print(io, "isolation", sep)
+                print(io, "counter", sep)
                 print(io, "lineage", sep)
                 print(io, "age", sep)
                 print(io, "new", sep)
@@ -891,6 +894,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
             ## print(io, patch.nicheb, sep)
             patch.isisland ? print(io, 1, sep) : print(io, 0, sep)
             patch.isolated ? print(io, 1, sep) : print(io, 0, sep)
+            print(io, counter, sep)
             print(io, ind.lineage, sep)
             print(io, ind.age, sep)
             ind.isnew ? print(io, 1, sep) : print(io, 0, sep)
