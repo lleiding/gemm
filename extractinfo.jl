@@ -3,15 +3,25 @@
 ## Ludwig Leidinger 2017
 ## <l.leidinger@gmx.net>
 ##
-## Main simulation
+## Data extractor for raw julia data
 ##
-## For a list of options, run julia main.jl --help
-##
-## <MAPFILE> is a textfile containing information about the simulation arena
-## Every line describes one patch in the following format:
-## <ID> <X-COORDINATE> <Y-COORDINATE> [<TYPE>]
 
 thisDir = pwd()
 any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 
-using MIbGxMCmod, ArgParse
+using MIbGxMCmod, MIbGxMCmod.
+
+function extractinfo()
+    inputfile = ARGS[1]
+    world = include(inputfile)
+    outfile = inputfile * ".tsv"
+    if !ispath(outfile)
+        open(outfile, "w") do f
+            dumpinds(world, f)
+        end
+    else
+        dumpinds(world)
+    end
+end
+
+extractinfo()
