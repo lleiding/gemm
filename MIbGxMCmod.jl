@@ -14,7 +14,7 @@ using Distributions#, Plots
 
 export Patch, # types
     setupdatadir, recordcolonizers, readmapfile, writerawdata, writedata, analysis,
-    checkviability!, establish!, survive!, grow!, disperse!, compete!, reproduce!,
+    checkviability!, establish!, survive!, grow!, disperse!, compete!, reproduce!, mutate!,
     createworld, updateworld!, endsim, alldead # functions
 
 
@@ -111,8 +111,10 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     for i in eachindex(firstset)
         push!(gameteidxs,rand([firstset[i],secondset[i]]))
     end
-    gamete = deepcopy(genome[gameteidxs]) #TODO somewhere here: crossing over!
-    map(x->x.maternal=maternal,gamete)
+    gamete = Chromosome[]
+    for i in gameteidxs
+        push!(gamete, Chromosome(genome[i].genes, maternal))
+    end
     gamete
 end
 
@@ -152,15 +154,14 @@ function chrms2traits(chrms::Array{Chromosome,1})
     traitdict
 end
 
-function mutate!(ind::Individual, temp::Float64)
-    mutation = false
+function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
+    ind.genome = deepcopy(ind.genome)
     prob = ind.traits["mutprob"]
     for chrm in ind.genome
         for gene in chrm.genes
             charseq = collect(gene.sequence)
             for i in eachindex(charseq)
                 if rand() <= prob * exp(-act/(boltz*temp))
-                    mutation = true
                     newbase = rand(collect("acgt"),1)[1]
                     while newbase == charseq[i]
                         newbase = rand(collect("acgt"),1)[1]
@@ -168,7 +169,7 @@ function mutate!(ind::Individual, temp::Float64)
                     charseq[i] = newbase
                     for trait in gene.codes
                         (contains(trait.name, "mutprob") && mutationrate != 0) && continue
-                        contains(trait.name, "rep") && contains(trait.name, "tol") && continue # MARK CAVE!
+                        contains(trait.name, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
                         trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
                         newvalue = trait.value + rand(Normal(0, trait.value/phylconstr)) # CAVE: phylconstr! new value for trait
                         newvalue < 0 && (newvalue=abs(newvalue))
@@ -183,9 +184,19 @@ function mutate!(ind::Individual, temp::Float64)
             gene.sequence = String(charseq)
         end
     end
-    if mutation        
-        traitdict = chrms2traits(ind.genome)
-        ind.traits = traitdict
+    traitdict = chrms2traits(ind.genome)
+    ind.traits = traitdict
+end
+
+function mutate!(patch::Patch, settings::Dict{String,Any})
+    for ind in patch.community
+        ind.age == 0 && mutate!(ind, patch.altitude, settings)
+    end
+end
+
+function mutate!(world::Array{Patch, 1}, settings::Dict{String,Any})
+    for patch in world
+        mutate!(patch, settings)
     end
 end
 
@@ -198,7 +209,7 @@ function checkviability!(patch::Patch) # may consider additional rules... # mayb
         patch.community[idx].traits["repsize"] <= patch.community[idx].traits["seedsize"] && (dead = true)
         if dead
             splice!(patch.community,idx)
-            idx -= 1
+            continue
         end
         idx += 1
     end
@@ -549,15 +560,13 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         mothergenome = meiosis(patch.community[idx].genome, true)
                         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
                         genome = vcat(partnergenome,mothergenome)
-                        activategenes!(genome)
+                        #activategenes!(genome) # relict. might be removed
                         traits = chrms2traits(genome)
                         age = 0
                         isnew = false
                         fitness = 1.0
                         newsize = seedsize
                         ind = Individual(patch.community[idx].lineage, genome,traits,age,isnew,fitness,newsize)
-                        !haskey(ind.traits,"mutprob") && continue # no mutation, no life ;)
-                        mutate!(ind, patch.altitude)
                         push!(seedbank ,ind)
                     end
                 end
@@ -824,11 +833,30 @@ function analysis(world::Array{Patch,1})
     end
 end
 
+"""
+    getsequence(ind)
+Get the complete genome sequence from individual `ind`.
+"""
+function getsequence(ind::Individual)
+    sequence = ""
+    for chrm in ind.genome
+        for gene in chrm.genes
+            sequence *= gene.sequence
+        end
+    end
+    sequence
+end
+
+"""
+    dumpinds(world, io, sep)
+Output all data of individuals in `world` as table to `io`. Columns are separated by `sep`.
+"""
 function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
     header = true
     traitkeys = []
     for patch in world
         for ind in patch.community
+            ind.age == 0 && continue
             if header
                 print(io, "id", sep)
                 print(io, "xloc", sep)
@@ -839,6 +867,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
                 ## print(io, "nicheb", sep)
                 print(io, "island", sep)
                 print(io, "isolation", sep)
+                print(io, "lineage", sep)
                 print(io, "age", sep)
                 print(io, "new", sep)
                 print(io, "fitness", sep)
@@ -849,6 +878,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
                 for key in traitkeys
                     print(io, key, sep)
                 end
+                print(io, "genome", sep)
                 println(io)
                 header = false
             end
@@ -861,6 +891,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
             ## print(io, patch.nicheb, sep)
             patch.isisland ? print(io, 1, sep) : print(io, 0, sep)
             patch.isolated ? print(io, 1, sep) : print(io, 0, sep)
+            print(io, ind.lineage, sep)
             print(io, ind.age, sep)
             ind.isnew ? print(io, 1, sep) : print(io, 0, sep)
             print(io, ind.fitness, sep)
@@ -874,6 +905,7 @@ function dumpinds(world::Array{Patch,1},io::IO=STDOUT,sep::String="\t")
                     print(io, "NA", sep)
                 end
             end
+            print(io, getsequence(ind), sep)
             println(io)
         end
     end
