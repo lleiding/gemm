@@ -52,5 +52,5 @@ colnames(mapids) = 0:11
 pdf(file = "mapfile_image_temp.pdf", bg = "white", height = 5, width = 12)
 par(mar = c(0, 0, 0, 0))
 image(t(maptemp), col = terrain.colors(12)[3:6], xaxt = "n", yaxt = "n")
-legend(0.4, 0.45, legend = paste(unique(as.vector(maptemp))[1:4], " K"), col = terrain.colors(12)[3:6], pch = 15, bty ="n", cex=2)
+legend(0.4, 0.45, legend = paste(unique(as.vector(maptemp))[1:4], " K"), col = terrain.colors(12)[3:6], pch = 15, bty ="n", cex=3)
 dev.off()
