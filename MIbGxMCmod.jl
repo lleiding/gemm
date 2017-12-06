@@ -669,7 +669,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
 end
 
 function genesis(settings::Dict{String,Any},
-                 nspecs::Int64=10, popsize::Int64 = 10, meangenes::Int64=meangenes,
+                 nspecs::Int64=10, popsize::Int64 = 10,
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",
                                                 "mutprob",
@@ -684,6 +684,7 @@ function genesis(settings::Dict{String,Any},
     community = Individual[]
     for spec in 1:nspecs
         lineage = randstring(4)
+        meangenes = length(traitnames)
         ngenes = rand(Poisson(meangenes))
         if settings["linkage"] == "none"
             nchrms = ngenes
