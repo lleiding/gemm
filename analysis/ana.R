@@ -26,6 +26,12 @@ tre = hclust(dists) # CAVE: which method?
 grps = cutree(tre, h = 0.1) # conservative height of 0.1
 world$species = as.vector(grps)
 
+## plot tree:
+p = ggtree(as.phylo(baum))
+dd=data.frame(taxa=as.character(1:nrow(world)),Temperature=as.factor(world$temp))
+p <- p %<+% dd + geom_tippoint(aes(color=Temperature))
+p +scale_color_manual(values=terrain.colors(12)[3:6])
+
 ## simulation arena maps - temperature:
 row1 = c(288, 293, 293, 298, 303, NA, NA, NA, NA, NA, NA, NA)
 row2 = c(288, 293, 293, 298, 303, NA, NA, NA, 303, 298, 303, NA)
