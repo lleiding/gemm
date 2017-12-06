@@ -8,7 +8,7 @@ library(stats)
 library(ape)
 library(ggtree)
 ## library(dplyr)
-## library(vegan) # necessary?
+library(vegan)
 
 ## read main data:
 world = read.table("*.tsv", header = T)
@@ -54,3 +54,8 @@ par(mar = c(0, 0, 0, 0))
 image(t(maptemp), col = terrain.colors(12)[3:6], xaxt = "n", yaxt = "n")
 legend(0.4, 0.55, legend = paste(unique(as.vector(maptemp))[1:4], " K"), col = terrain.colors(12)[3:6], pch = 15, bty ="n", cex=3)
 dev.off()
+
+## NMDS:
+nmds=metaMDS(world[,c(10,13,16:22,25)], trymax=100)
+plot(nmds)
+plot(envfit(nmds, world[,c(10,13,16:22,25)]))
