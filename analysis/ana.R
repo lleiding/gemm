@@ -26,3 +26,29 @@ tre = hclust(dists) # CAVE: which method?
 grps = cutree(tre, h = 0.1) # conservative height of 0.1
 world$species = as.vector(grps)
 
+## simulation arena maps - temperature:
+row1 = c(288, 293, 293, 298, 303, NA, NA, NA, NA, NA, NA, NA)
+row2 = c(288, 293, 293, 298, 303, NA, NA, NA, 303, 298, 303, NA)
+row3 = c(288, 293, 293, 298, 303, NA, NA, NA, 298, 293, 298, NA)
+row4 = c(288, 293, 293, 298, 303, NA, NA, NA, 303, 298, 303, NA)
+row5 = c(288, 293, 293, 298, 303, NA, NA, NA, NA, NA, NA, NA)
+
+maptemp = rbind(row1, row2, row3, row4, row5)
+rownames(maptemp) = 0:4
+colnames(maptemp) = 0:11
+
+## IDs:
+rowa = c(1, 6, 11, 16, 21, NA, NA, NA, NA, NA, NA, NA)
+rowb = c(2, 7, 12, 17, 22, NA, NA, NA, 100, 103, 106, NA)
+rowc = c(3, 8, 13, 18, 23, NA, NA, NA, 101, 104, 107, NA)
+rowd = c(4, 9, 14, 19, 24, NA, NA, NA, 102, 105, 108, NA)
+rowe = c(5, 10, 15, 20, 25, NA, NA, NA, NA, NA, NA, NA)
+
+mapids = rbind(rowa, rowb, rowc, rowd, rowe)
+rownames(mapids) = 0:4
+colnames(mapids) = 0:11
+
+## plot maps:
+par(mar = c(0, 0, 0, 0))
+image(t(maptemp), col = terrain.colors(12)[3:6], xaxt = "n", yaxt = "n")
+legend(0.4, 0.45, legend = paste(unique(as.vector(maptemp))[1:4], " K"), col = terrain.colors(12)[3:6], pch = 15, bty ="n", cex=6)
