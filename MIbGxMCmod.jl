@@ -940,8 +940,8 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
                 end
             end
             marker =  neutralgenes[1]
-            println(">", counter)
-            println(marker)
+            println(io, ">", counter)
+            println(io, marker)
         end
     end
 end
