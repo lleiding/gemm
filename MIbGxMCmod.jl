@@ -554,6 +554,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                 metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*temp)) * patch.community[idx].fitness
                 noffs = rand(Poisson(metaboffs)) # add some stochasticity
                 posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
+                (length(possparters) == 0 && patch.isisland) && push!(posspartners, patch.community[idx])
                 if length(posspartners) > 0
                     partner = rand(posspartners)
                     for i in 1:noffs # pmap?
