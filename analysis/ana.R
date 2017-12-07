@@ -7,7 +7,7 @@
 library(stats)
 library(ape)
 library(ggtree)
-## library(dplyr)
+library(dplyr)
 library(vegan)
 
 ## read main data:
@@ -26,11 +26,18 @@ tre = hclust(dists) # CAVE: which method?
 grps = cutree(tre, h = 0.1) # conservative height of 0.1
 world$species = as.vector(grps)
 
+l=list()
+for(i in unique(full$island)){
+    l[[i+1]] = names(fgrps)[full$island==i]
+}
+tree=groupOTU(as.phylo(ftre), l)
+ggtree(tree, aes(color=group)) + theme(legend.position="left")
+
 ## plot tree:
-p = ggtree(as.phylo(baum))
-dd=data.frame(taxa=as.character(1:nrow(world)),Temperature=as.factor(world$temp))
-p <- p %<+% dd + geom_tippoint(aes(color=Temperature))
-p +scale_color_manual(values=terrain.colors(12)[3:6])
+p = ggtree(as.phylo(ftre))
+fdd=data.frame(taxa=as.character(1:nrow(full)),Temperature=as.factor(full$temp))
+p <- p %<+% fdd + geom_tippoint(aes(color=Temperature))
+p + scale_color_manual(values=terrain.colors(12)[3:6])
 
 ## simulation arena maps - temperature:
 row1 = c(288, 293, 293, 298, 303, NA, NA, NA, NA, NA, NA, NA)
@@ -62,6 +69,15 @@ legend(0.4, 0.55, legend = paste(unique(as.vector(maptemp))[1:4]-273, " °C"), c
 dev.off()
 
 ## NMDS:
-nmds=metaMDS(world[,c(10,13,16:22,25)], trymax=100)
-plot(nmds)
-plot(envfit(nmds, world[,c(10,13,16:22,25)]))
+fnmds=metaMDS(full[,c(10,13,16:22,25)], group = full$island, trymax=100)
+plot(fnmds)
+plot(envfit(nmds, full[,c(10,13,16:22,25)]))
+
+fnmds=metaMDS(full[,c(11,14,15:23,26)], trymax=100)
+
+pdf(file = "full.pdf", bg = "white", height = 5, width = 5)
+plot(fnmds, display="sites", type="n")
+cols=ifelse(full$island==1, "cyan", "salmon")
+points(fnmds, display="sites", col=cols, pch = 16)
+plot(envfit(fnmds, full[,c(11,14,15:23,26)]))
+dev.off()
