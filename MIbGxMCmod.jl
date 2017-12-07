@@ -922,6 +922,30 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
     end
 end
 
+function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", onlyisland::Bool = false)
+    header = true
+    traitkeys = []
+    counter = 0
+    for patch in world
+        (onlyisland && !patch.isisland) && continue
+        for ind in patch.community
+            ind.age == 0 && continue
+            counter += 1
+            neutralgenes = Gene[]
+            for chrm in ind.genome
+                for gene in chrm.genes
+                    if length(gene.codes) == 0
+                        push!(neutralgenes, gene.sequence)
+                    end
+                end
+            end
+            marker =  neutralgenes[1]
+            println(">", counter)
+            println(marker)
+        end
+    end
+end
+
 """
     setupdatadir(dir)
 creates the output directory. `dir` is a string containing the directory path.
