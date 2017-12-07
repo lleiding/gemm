@@ -931,7 +931,7 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
         for ind in patch.community
             ind.age == 0 && continue
             counter += 1
-            neutralgenes = Gene[]
+            neutralgenes = String[]
             for chrm in ind.genome
                 for gene in chrm.genes
                     if length(gene.codes) == 0
