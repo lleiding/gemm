@@ -27,10 +27,11 @@ grps = cutree(tre, h = 0.1) # conservative height of 0.1
 world$species = as.vector(grps)
 
 l=list()
-for(i in unique(full$island)){
-    l[[i+1]] = names(fgrps)[full$island==i]
+for(i in unique(none$island)){
+    j=ifelse(i==0, 1, 2)
+    l[[j]] = names(grps)[none$island==i]
 }
-tree=groupOTU(as.phylo(ftre), l)
+tree=groupOTU(as.phylo(tre), rev(l))
 ggtree(tree, aes(color=group)) + theme(legend.position="left")
 
 ## plot tree:
@@ -73,11 +74,11 @@ fnmds=metaMDS(full[,c(10,13,16:22,25)], group = full$island, trymax=100)
 plot(fnmds)
 plot(envfit(nmds, full[,c(10,13,16:22,25)]))
 
-fnmds=metaMDS(full[,c(11,14,15:23,26)], trymax=100)
+fnmds0=metaMDS(full0[,c(11,14,15:23,26)], trymax=100)
 
-pdf(file = "full.pdf", bg = "white", height = 5, width = 5)
-plot(fnmds, display="sites", type="n")
-cols=ifelse(full$island==1, "cyan", "salmon")
-points(fnmds, display="sites", col=cols, pch = 16)
-plot(envfit(fnmds, full[,c(11,14,15:23,26)]))
+pdf(file = "/home/ludwig/Desktop/full0.pdf", bg = "white", height = 5, width = 5)
+plot(fnmds0, display="sites", type="n")
+cols=ifelse(full0$island==1, "cyan", "salmon")
+points(fnmds0, display="sites", col=cols, pch = 16)
+plot(envfit(fnmds0, full0[,c(11,14,15:23,26)]))
 dev.off()
