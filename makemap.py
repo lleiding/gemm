@@ -23,7 +23,7 @@ def add_ocean():
     temp = 373
     x = 1000
     y = 0
-    print(id, x, y, "island")
+    print(id, x, y, temp, "island")
     print()
 
 print_map(9, 9, "continent")
