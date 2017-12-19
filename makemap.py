@@ -18,7 +18,7 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident):
             for y in range(ypos, ypos + ylen):
                 ident += 1
                 print(ident, x, y, temp, landtype)
-    else:
+    else: # perhaps just calculate distance to shortedge?
         shortedge = min([xlen, ylen])
         steps = math.ceil(shortedge / 2)
         temp = 298
