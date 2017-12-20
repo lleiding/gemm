@@ -27,7 +27,10 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident):
             step += 1
             for y in range(ypos, ypos + ylen):
                 ident += 1
-                print(ident, x, y, temp, landtype)
+                if x == xpos or x == xpos + xlen - 1 or y == ypos or y == ypos + ylen - 1: # island borders
+                    localtemp = temp
+                    
+                print(ident, x, y, localtemp, landtype)
     print()
 
 def add_ocean():
