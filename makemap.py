@@ -5,8 +5,9 @@
 
 import argparse
 import math
+import random
 
-def print_map(xlen, ylen, landtype, xpos, ypos, ident):
+def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol):
     print("#", landtype, ":")
     mintemp = 273
     maxtemp = 303
@@ -26,7 +27,8 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident):
                 ident += 1
                 mindist = min([abs(x - xpos), abs(y - ypos), abs(xpos + xlen - x - 1), abs(ypos + ylen - y - 1)])
                 localtemp = temp - mindist * tempstep
-                print(ident, x, y, localtemp, landtype)
+                isolated = "isolated" if random.random() < isol else isolated = ""
+                print(ident, x, y, localtemp, landtype, isolated)
     print()
 
 def add_ocean():
@@ -52,13 +54,15 @@ def print_all():
                         help = "x position")
     parser.add_argument("-y", "--latitude", type = int, default = 0,
                         help = "y position")
-    parser.add_argument("-i", "--identifier", type = int, default = 0,
+    parser.add_argument("-n", "--identifier", type = int, default = 0,
                         help = "start of identifying number")
+    parser.add_argument("-i", "--isolation", type = float, default = 0.0,
+                        help = "proportion of randomly distributed, isolated patches on island")
     args = parser.parse_args()
     print("# timesteps:")
     print(args.time)
     print()
-    print_map(args.width, args.height, args.land, args.longitute, args.latitude, args.identifier)
+    print_map(args.width, args.height, args.land, args.longitute, args.latitude, args.identifier, args.isolation)
     args.land == "continent" and add_ocean()
 
 print_all()
