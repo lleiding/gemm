@@ -18,19 +18,14 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident):
             for y in range(ypos, ypos + ylen):
                 ident += 1
                 print(ident, x, y, temp, landtype)
-    else: # perhaps just calculate distance to shortedge?
-        shortedge = min([xlen, ylen])
-        steps = math.ceil(shortedge / 2)
+    else:
         temp = 298
-        step = 0
+        tempstep = 3 # CAVE!
         for x in range(xpos, xpos + xlen):
-            step += 1
             for y in range(ypos, ypos + ylen):
                 ident += 1
-                if x == xpos or x == xpos + xlen - 1 or y == ypos or y == ypos + ylen - 1: # island borders
-                    localtemp = temp
-                elif steps > 1:
-                    localtemp = temp - 3
+                mindist = min([abs(x - xpos), abs(y - ypos), abs(xpos + xlen - x - 1), abs(ypos + ylen - y - 1)])
+                localtemp = temp - mindist * tempstep
                 print(ident, x, y, localtemp, landtype)
     print()
 
