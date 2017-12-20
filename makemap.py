@@ -29,7 +29,8 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident):
                 ident += 1
                 if x == xpos or x == xpos + xlen - 1 or y == ypos or y == ypos + ylen - 1: # island borders
                     localtemp = temp
-                    
+                elif steps > 1:
+                    localtemp = temp - 3
                 print(ident, x, y, localtemp, landtype)
     print()
 
