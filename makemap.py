@@ -27,7 +27,7 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol):
                 ident += 1
                 mindist = min([abs(x - xpos), abs(y - ypos), abs(xpos + xlen - x - 1), abs(ypos + ylen - y - 1)])
                 localtemp = temp - mindist * tempstep
-                isolated = ("isolated" if random.random() < isol else "")
+                isolated = "isolated" if random.random() < isol else ""
                 print(ident, x, y, localtemp, landtype, isolated)
     print()
 
