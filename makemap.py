@@ -11,24 +11,32 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol):
     print("#", landtype, ":")
     mintemp = 273
     maxtemp = 303
+    minprec = 0
+    maxprec = 1000
+    precstep = (maxprec - minprec) / ylen
     temp = mintemp
     if landtype == "continent":
+        prec = 0
         tempstep = round((maxtemp - mintemp) / ylen)
         for x in range(xpos, xpos + xlen):
+            prec = 0
             temp += tempstep
             for y in range(ypos, ypos + ylen):
                 ident += 1
                 print(ident, x, y, temp, landtype, "no")
+                prec += precstep
     else:
         temp = 298
         tempstep = 3 # CAVE!
         for x in range(xpos, xpos + xlen):
+            prec = 0
             for y in range(ypos, ypos + ylen):
                 ident += 1
                 mindist = min([abs(x - xpos), abs(y - ypos), abs(xpos + xlen - x - 1), abs(ypos + ylen - y - 1)])
                 localtemp = temp - mindist * tempstep
                 isolated = "isolated" if random.random() < isol else "no"
                 print(ident, x, y, localtemp, landtype, isolated)
+                prec += precstep
     print()
 
 def add_ocean():
