@@ -473,6 +473,7 @@ function compete!(world::Array{Patch,1})
 end
 
 function iscompatible(mate::Individual, ind::Individual)
+    l3b3rkaes3
     tolerance = ind.traits["reptol"]
     length(ind.genome) != length(mate.genome) && return false # check equal chromosome numbers
     sum(x -> length(x.genes), ind.genome) != sum(x -> length(x.genes), mate.genome) && return false # check equal gene numbers
@@ -545,7 +546,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     while idx <= size(patch.community,1)
         if !traitsexist(patch.community[idx], ["repradius", "repsize", "reptol", "seedsize", "mutprob"])
             splice!(patch.community, idx)
-            idx -= 1
+            continue
         elseif !patch.community[idx].isnew && patch.community[idx].age > 0
             currentmass = patch.community[idx].size
             seedsize = patch.community[idx].traits["seedsize"]
@@ -557,6 +558,13 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                 length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners
                 if length(posspartners) > 0
                     partner = rand(posspartners)
+                    parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
+                    if parentmass <= 0
+                        splice!(patch.community, idx)
+                        continue
+                    else
+                        patch.community[idx].size = parentmass
+                    end
                     for i in 1:noffs # pmap?
                         partnergenome = meiosis(partner.genome, false) # offspring have different genome!
                         mothergenome = meiosis(patch.community[idx].genome, true)
