@@ -7,12 +7,12 @@ import argparse
 import math
 import random
 
-def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol):
+def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol, precon):
     print("#", landtype, ":")
     mintemp = 273
     maxtemp = 303
     minprec = 0
-    maxprec = 1000
+    maxprec = 1000 if precon else maxprec = minprec
     precstep = (maxprec - minprec) / ylen
     temp = mintemp
     if landtype == "continent":
@@ -23,7 +23,7 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol):
             temp += tempstep
             for y in range(ypos, ypos + ylen):
                 ident += 1
-                print(ident, x, y, temp, landtype, "no")
+                print(ident, x, y, temp, landtype, "no", prec)
                 prec += precstep
     else:
         temp = 298
@@ -35,7 +35,7 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol):
                 mindist = min([abs(x - xpos), abs(y - ypos), abs(xpos + xlen - x - 1), abs(ypos + ylen - y - 1)])
                 localtemp = temp - mindist * tempstep
                 isolated = "isolated" if random.random() < isol else "no"
-                print(ident, x, y, localtemp, landtype, isolated)
+                print(ident, x, y, localtemp, landtype, isolated, prec)
                 prec += precstep
     print()
 
@@ -72,7 +72,7 @@ def print_all():
     print("# timesteps:")
     print(args.time)
     print()
-    print_map(args.width, args.height, args.land, args.longitute, args.latitude, args.identifier, args.isolation)
+    print_map(args.width, args.height, args.land, args.longitute, args.latitude, args.identifier, args.isolation, args.precipitation)
     args.land == "continent" and add_ocean()
 
 print_all()
