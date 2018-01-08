@@ -27,7 +27,7 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol):
                 ident += 1
                 mindist = min([abs(x - xpos), abs(y - ypos), abs(xpos + xlen - x - 1), abs(ypos + ylen - y - 1)])
                 localtemp = temp - mindist * tempstep
-                isolated = "isolated" if random.random() < isol else ""
+                isolated = "isolated" if random.random() < isol else "no"
                 print(ident, x, y, localtemp, landtype, isolated)
     print()
 
@@ -58,6 +58,8 @@ def print_all():
                         help = "start of identifying number")
     parser.add_argument("-i", "--isolation", type = float, default = 0.0,
                         help = "proportion of randomly distributed, isolated patches on island")
+    parser.add_argument("-p", "--precipitation", action = "store_true", default = False,
+                        help = "turns on additional environment niche")
     args = parser.parse_args()
     print("# timesteps:")
     print(args.time)
