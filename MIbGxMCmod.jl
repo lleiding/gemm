@@ -290,9 +290,9 @@ function survive!(patch::Patch)
         if !patch.community[idx].isnew
             mass = patch.community[idx].size
             dieprob = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
-            if rand() * patch.community[idx].fitness < dieprob
+            if rand() > (1 - dieprob) * patch.community[idx].fitness
                 splice!(patch.community, idx)
-                idx -= 1
+                continue
             else
                 patch.community[idx].age += 1
             end
