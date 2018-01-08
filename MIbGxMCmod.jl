@@ -613,9 +613,9 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
         elseif contains(name, "seedsize")
             push!(traits,Trait(name,seedsize,true)) #CAVE: code values elsewhere?
         elseif contains(name, "precopt")
-            push!(traits, Trait(name, rand(1:1000), true))
+            push!(traits, Trait(name, rand(0:1000), true))
         elseif contains(name, "prectol")
-            push!(traits, Trait(name, rand(1:500), true))
+            push!(traits, Trait(name, rand(0:500), true))
         else
             push!(traits,Trait(name,rand(),true))
         end
