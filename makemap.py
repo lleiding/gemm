@@ -18,7 +18,7 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol):
             temp += tempstep
             for y in range(ypos, ypos + ylen):
                 ident += 1
-                print(ident, x, y, temp, landtype)
+                print(ident, x, y, temp, landtype, "no")
     else:
         temp = 298
         tempstep = 3 # CAVE!
