@@ -759,7 +759,7 @@ separated by a whitespace character (<ID> <x> <y>).")
         if size(entry,1) > 5 && contains(lowercase(entry[6]),"isolated")
             newpatch.isolated = true
         end
-        if size(entry,1) > 6 || settings["heterogeneity"] == "high"
+        if size(entry,1) > 6 # || settings["heterogeneity"] == "high"
             try
                 newpatch.nichea = parse(Float64, entry[7])
             catch
