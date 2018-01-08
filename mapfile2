@@ -1,13 +1,30 @@
-#timesteps:
-1000
+# timesteps:
+20000
 
-#Island:
-100 8 1 303 island
-101 8 2 303 island
-102 8 3 303 island
-103 9 1 303 island
-104 9 2 298 island
-105 9 3 303 island
-106 10 1 303 island
-107 10 2 303 island
-108 10 3 303 island
+# island :
+1001 11 2 298 island no 0
+1002 11 3 298 island no 250.0
+1003 11 4 298 island no 500.0
+1004 11 5 298 island no 750.0
+1005 11 6 298 island no 1000.0
+1006 12 2 298 island no 0
+1007 12 3 295 island no 250.0
+1008 12 4 295 island no 500.0
+1009 12 5 295 island no 750.0
+1010 12 6 298 island no 1000.0
+1011 13 2 298 island no 0
+1012 13 3 295 island no 250.0
+1013 13 4 292 island no 500.0
+1014 13 5 295 island no 750.0
+1015 13 6 298 island no 1000.0
+1016 14 2 298 island no 0
+1017 14 3 295 island no 250.0
+1018 14 4 295 island no 500.0
+1019 14 5 295 island no 750.0
+1020 14 6 298 island no 1000.0
+1021 15 2 298 island no 0
+1022 15 3 298 island no 250.0
+1023 15 4 298 island no 500.0
+1024 15 5 298 island no 750.0
+1025 15 6 298 island no 1000.0
+
