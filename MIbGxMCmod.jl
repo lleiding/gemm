@@ -290,7 +290,7 @@ function survive!(patch::Patch)
         if !patch.community[idx].isnew
             mass = patch.community[idx].size
             dieprob = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
-            if rand() > (1 - dieprob) * patch.community[idx].fitness
+            if rand() < dieprob
                 splice!(patch.community, idx)
                 continue
             else
@@ -552,7 +552,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
             seedsize = patch.community[idx].traits["seedsize"]
             if currentmass >= patch.community[idx].traits["repsize"]
                 reptol = patch.community[idx].traits["reptol"]
-                metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*temp)) * patch.community[idx].fitness
+                metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*temp))
                 noffs = rand(Poisson(metaboffs)) # add some stochasticity
                 posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
                 length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners
