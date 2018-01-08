@@ -473,7 +473,6 @@ function compete!(world::Array{Patch,1})
 end
 
 function iscompatible(mate::Individual, ind::Individual)
-    l3b3rkaes3
     tolerance = ind.traits["reptol"]
     length(ind.genome) != length(mate.genome) && return false # check equal chromosome numbers
     sum(x -> length(x.genes), ind.genome) != sum(x -> length(x.genes), mate.genome) && return false # check equal gene numbers
