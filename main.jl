@@ -50,16 +50,6 @@ function parsecommandline()
             arg_type = String
             required = false
             default = string(Dates.today())
-        "--heterogeneity", "-e" # this ...
-            help = "island heterogeneity, i.e. environmental niche variability (\"low\" or \"high\")"
-            arg_type = String
-            range_tester = x->in(x,["low", "high"])
-            required = false
-        "--complexity", "-c" # ... and that IS CURRENTLY defined in the maps
-            help = "topographic island complexity, controlling intra-island isolation (\"low\" or \"high\")"
-            arg_type = String
-            range_tester = x->in(x,["low", "high"])
-            required = false
 #        "--flag1"
 #            help = "an option without argument, i.e. a flag"
 #            action = :store_true
