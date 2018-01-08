@@ -13,7 +13,7 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol, precon):
     maxtemp = 303
     minprec = 0
     maxprec = 1000 if precon else minprec
-    precstep = (maxprec - minprec) / ylen
+    precstep = (maxprec - minprec) / (ylen - 1)
     temp = mintemp
     if landtype == "continent":
         prec = 0
