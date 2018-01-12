@@ -184,8 +184,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
             gene.sequence = String(charseq)
         end
     end
-    traitdict = chrms2traits(ind.genome)
-    ind.traits = traitdict
+    ind.traits = chrms2traits(ind.genome)
 end
 
 function mutate!(patch::Patch, settings::Dict{String,Any})
