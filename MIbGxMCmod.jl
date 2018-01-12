@@ -451,38 +451,6 @@ function compete!(world::Array{Patch,1})
     end
 end
 
-function iscompatible(mate::Individual, ind::Individual)
-    tolerance = ind.traits["reptol"]
-    length(ind.genome) != length(mate.genome) && return false # check equal chromosome numbers
-    sum(x -> length(x.genes), ind.genome) != sum(x -> length(x.genes), mate.genome) && return false # check equal gene numbers
-    indgenes = Gene[] # TODO: this could be a separate function
-    for chrm in ind.genome
-        append!(indgenes, chrm.genes)
-    end
-    sort!(indgenes, by = x -> x.id)
-    mategenes = Gene[]
-    for chrm in mate.genome
-        append!(mategenes, chrm.genes)
-    end
-    sort!(mategenes, by = x -> x.id)
-    map(x -> x.id, indgenes) != map(x -> x.id, mategenes) && return false # check equal gene identity
-    indgenomesize = length(*(map(x -> String(x.sequence), indgenes)...))
-    mategenomesize = length(*(map(x -> String(x.sequence), mategenes)...))
-    1 - (abs(mategenomesize - indgenomesize) / mategenomesize) < tolerance && return false # check length difference of genome
-    basediffs = 0
-    for i in eachindex(indgenes)
-        for j in eachindex(indgenes[i].sequence)
-            try
-                indgenes[i].sequence[j] != mategenes[i].sequence[j] && (basediffs += 1) # alternatively use bioinformatics tools
-            catch # e.g., in case of differently long genomes
-                basediffs += 1
-            end
-        end
-    end
-    1 - (basediffs / mategenomesize) < tolerance && return false # CAVE: maybe compare w/ indgenome?
-    true
-end
-
 function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int64, Int64})
     ind.isnew = true
     radius = floor(ind.traits["repradius"] + 0.5) # CAVE: to account for cell width ... or not??
@@ -506,7 +474,6 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         filter!(k -> k.size >= k.traits["repsize"], posspartners)
         filter!(k -> !k.isnew, posspartners) # filter out mating individual
         filter!(k -> (k.traits["seedsize"] >= ind.traits["reptol"] * ind.traits["seedsize"]) && (ind.traits["reptol"] * k.traits["seedsize"] <= ind.traits["seedsize"]) , posspartners)
-        # filter!(k -> iscompatible(k, ind), posspartners)
         idx += 1
     end
     ind.isnew = false
