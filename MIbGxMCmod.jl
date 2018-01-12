@@ -316,7 +316,7 @@ function grow!(patch::Patch) # WORK IN PROGRESS
     while idx <= size(patch.community,1)
         if !traitsexist(patch.community[idx], ["repsize"])
             splice!(patch.community, idx)
-            idx -= 1
+            continue
         elseif !patch.community[idx].isnew
             repsize = patch.community[idx].traits["repsize"]
             mass = patch.community[idx].size
@@ -327,7 +327,7 @@ function grow!(patch::Patch) # WORK IN PROGRESS
                     patch.community[idx].size = newmass
                 else
                     splice!(patch.community, idx)
-                    idx -= 1
+                    continue
                 end
             end
         end
