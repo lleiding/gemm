@@ -173,9 +173,7 @@ function mutate!(patch::Patch, settings::Dict{String,Any})
 end
 
 function mutate!(world::Array{Patch, 1}, settings::Dict{String,Any})
-    for patch in world
-        mutate!(patch, settings)
-    end
+        pmap(x -> mutate!(x, settings), world)
 end
 
 function checkviability!(patch::Patch) # may consider additional rules... # maybe obsolete anyhow...
