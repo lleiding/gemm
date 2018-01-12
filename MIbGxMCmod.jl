@@ -194,9 +194,7 @@ function checkviability!(patch::Patch) # may consider additional rules... # mayb
 end
 
 function checkviability!(world::Array{Patch,1})
-    for patch in world
-        checkviability!(patch) # pmap(checkviability!,patch) ???
-    end
+    pmap(checkviability!, world)
 end
 
 function traitsexist(ind::Individual, traitnames::Array{String, 1})
