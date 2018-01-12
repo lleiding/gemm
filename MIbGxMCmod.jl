@@ -34,7 +34,6 @@ const isolationweight = 3 # additional distance to be crossed when dispersing fr
 mutable struct Trait
     name::String
     value::Float64
-    active::Bool
 end
 
 mutable struct Gene
@@ -118,25 +117,6 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     gamete
 end
 
-function activategenes!(chrms::Array{Chromosome,1})
-    genes = Gene[]
-    for chrm in chrms
-        append!(genes,chrm.genes)
-    end
-    traits = Trait[]
-    for gene in genes
-        append!(traits,gene.codes)
-    end
-    traits = unique(traits)
-    traitnames = map(x->x.name,traits)
-    traitnames = unique(traitnames)
-    for name in traitnames
-        idxs = find(x->x.name==name,traits)
-        map(x->traits[x].active = false,idxs)
-        map(x->traits[x].active = true,rand(idxs))
-    end
-end
-
 function chrms2traits(chrms::Array{Chromosome,1})
     genes = Gene[]
     for chrm in chrms
@@ -174,7 +154,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
                         newvalue = trait.value + rand(Normal(0, trait.value/phylconstr)) # CAVE: phylconstr! new value for trait
                         newvalue < 0 && (newvalue=abs(newvalue))
                         (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
-                        while newvalue == 0 #&& contains(trait.name,"mut")
+                        while newvalue <= 0 #&& contains(trait.name,"mut")
                             newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
                         end
                         trait.value = newvalue
@@ -204,7 +184,7 @@ function checkviability!(patch::Patch) # may consider additional rules... # mayb
     while idx <= size(patch.community,1)
         dead = false
         patch.community[idx].size <= 0 && (dead = true)
-        0 in collect(values(patch.community[idx].traits)) && (dead = true)
+        any(collect(values(patch.community[idx].traits) .<= 0) && (dead = true)
         patch.community[idx].traits["repsize"] <= patch.community[idx].traits["seedsize"] && (dead = true)
         if dead
             splice!(patch.community,idx)
@@ -568,7 +548,6 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         mothergenome = meiosis(patch.community[idx].genome, true)
                         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
                         genome = vcat(partnergenome,mothergenome)
-                        #activategenes!(genome) # relict. might be removed
                         traits = chrms2traits(genome)
                         age = 0
                         isnew = false
@@ -601,29 +580,29 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
     end
     for name in traitnames
         if contains(name,"rate")
-            push!(traits,Trait(name,rand()*100,true))
+            push!(traits,Trait(name,rand()*100))
         elseif contains(name, "temp") && contains(name, "opt")
-            push!(traits,Trait(name,rand()*60+263,true)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,rand()*60+263)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
-            mutationrate == 0 ? push!(traits,Trait(name,rand(),true)) : push!(traits,Trait(name,mutationrate,true)) #CAVE: code values elsewhere?
+            mutationrate == 0 ? push!(traits,Trait(name,rand())) : push!(traits,Trait(name,mutationrate,true)) #CAVE: code values elsewhere?
         elseif contains(name, "rep") && contains(name, "tol")
             if settings["tolerance"] == "high"
-                push!(traits,Trait(name,0.9,true))
+                push!(traits,Trait(name,0.9))
             elseif settings["tolerance"] == "low"
-                push!(traits,Trait(name,0.99,true)) #CAVE: code values elsewhere?
+                push!(traits,Trait(name,0.99)) #CAVE: code values elsewhere?
             else
-                push!(traits,Trait(name,rand(),true))
+                push!(traits,Trait(name,rand()))
             end
         elseif contains(name, "repsize")
-            push!(traits,Trait(name,repsize,true)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,repsize)) #CAVE: code values elsewhere?
         elseif contains(name, "seedsize")
-            push!(traits,Trait(name,seedsize,true)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,seedsize)) #CAVE: code values elsewhere?
         elseif contains(name, "precopt")
-            push!(traits, Trait(name, rand(0:1000), true))
+            push!(traits, Trait(name, rand(0:1000)))
         elseif contains(name, "prectol")
-            push!(traits, Trait(name, rand(0:500), true))
+            push!(traits, Trait(name, rand(0:500)))
         else
-            push!(traits,Trait(name,rand(),true))
+            push!(traits,Trait(name,rand()))
         end
     end
     traits
