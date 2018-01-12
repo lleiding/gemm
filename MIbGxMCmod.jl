@@ -38,7 +38,6 @@ end
 
 mutable struct Gene
     sequence::String
-    id::String
     codes::Array{Trait, 1}
 end
 
@@ -579,9 +578,8 @@ function creategenes(ngenes::Int64,traits::Array{Trait,1})
     genes = Gene[]
     for i in 1:ngenes
         sequence = String(rand(collect("acgt"), 20)) # arbitrary start sequence
-        id = randstring(8)
         codesfor = Trait[]
-        push!(genes,Gene(sequence,id,codesfor))
+        push!(genes,Gene(sequence, codesfor))
     end
     for trait in traits
         ncodinggenes = rand(Poisson(1))
