@@ -155,19 +155,19 @@ function chrms2traits(chrms::Array{Chromosome,1})
 end
 
 function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
-    ind.genome = deepcopy(ind.genome)
     prob = ind.traits["mutprob"]
     for chrm in ind.genome
-        for gene in chrm.genes
-            charseq = collect(gene.sequence)
+        for idx in eachindex(chrm.genes)
+            charseq = collect(chrm.genes[idx].sequence)
             for i in eachindex(charseq)
                 if rand() <= prob * exp(-act/(boltz*temp))
+                    chrm.genes[idx] = deepcopy(chrm.genes[idx])
                     newbase = rand(collect("acgt"),1)[1]
                     while newbase == charseq[i]
                         newbase = rand(collect("acgt"),1)[1]
                     end
                     charseq[i] = newbase
-                    for trait in gene.codes
+                    for trait in chrm.genes[idx].codes
                         (contains(trait.name, "mutprob") && mutationrate != 0) && continue
                         contains(trait.name, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
                         trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
@@ -181,7 +181,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
                     end
                 end
             end
-            gene.sequence = String(charseq)
+            chrm.genes[idx].sequence = String(charseq)
         end
     end
     ind.traits = chrms2traits(ind.genome)
