@@ -220,27 +220,27 @@ function establish!(patch::Patch, nniches::Int64=1)
     idx = 1
     while idx <= size(patch.community,1)
         fitness = 1
-        if !traitsexist(patch.community[idx], ["temptol", "tempopt"])
+        if !traitsexist(patch.community[idx], ["temptol", "tempopt"]) # CAVE: should check for more traits!
             splice!(patch.community, idx) # kill it!
             continue
         elseif patch.community[idx].isnew || patch.community[idx].age == 0
             opt = patch.community[idx].traits["tempopt"]
             tol = patch.community[idx].traits["temptol"]
-            fitness -= 1 - gausscurve(opt, tol, temp)
+            fitness *= gausscurve(opt, tol, temp)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
         end
         if nniches >= 2 && (patch.community[idx].isnew || patch.community[idx].age == 0)
             opt = patch.community[idx].traits["precopt"]
             tol = patch.community[idx].traits["prectol"]
-            fitness -= 1 - gausscurve(opt, tol, patch.nichea)
+            fitness *= gausscurve(opt, tol, patch.nichea)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
         end
         if nniches == 3 && (patch.community[idx].isnew || patch.community[idx].age == 0)
             opt = patch.community[idx].traits["nicheopt"]
             tol = patch.community[idx].traits["nichetol"]
-            fitness -= 1 - gausscurve(opt, tol, patch.nicheb)
+            fitness *= gausscurve(opt, tol, patch.nicheb)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
         end  
