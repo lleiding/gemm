@@ -592,7 +592,7 @@ function creategenes(ngenes::Int64,traits::Array{Trait,1})
         end
     end
     if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
-        push!(genes, Gene(String(rand(collect("acgt"), 20)), randstring(8), Trait[]))
+        push!(genes, Gene(String(rand(collect("acgt"), 20)), Trait[]))
     end
     genes
 end
