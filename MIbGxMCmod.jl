@@ -174,7 +174,7 @@ end
 
 function mutate!(world::Array{Patch, 1}, settings::Dict{String,Any})
     for patch in world
-        mutate!(patch, settings)
+        patch.isisland && mutate!(patch, settings)
     end
 end
 
@@ -195,7 +195,7 @@ end
 
 function checkviability!(world::Array{Patch,1})
     for patch in world
-        checkviability!(patch) # pmap(checkviability!,patch) ???
+        patch.isisland && checkviability!(patch) # pmap(checkviability!,patch) ???
     end
 end
 
@@ -253,7 +253,7 @@ end
 
 function establish!(world::Array{Patch,1}, nniches::Int64=1)
     for patch in world
-        establish!(patch, nniches) # pmap(!,patch) ???
+        patch.isisland && establish!(patch, nniches) # pmap(!,patch) ???
     end
 end
 
@@ -281,7 +281,7 @@ end
 
 function survive!(world::Array{Patch,1})
     for patch in world
-        survive!(patch) # pmap(!,patch) ???
+        patch.isisland && survive!(patch) # pmap(!,patch) ???
     end
 end
 
@@ -316,7 +316,7 @@ end
 
 function grow!(world::Array{Patch,1})
     for patch in world
-        grow!(patch) # pmap(!,patch) ???
+        patch.isisland && grow!(patch) # pmap(!,patch) ???
     end
 end
 
@@ -412,7 +412,11 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
                 dispmean = patch.community[idx].traits["dispmean"]
                 dispshape = patch.community[idx].traits["dispshape"]
                 patch.community[idx].isnew = true
-                indleft = splice!(patch.community,idx)
+                if patch.isisland
+                    indleft = splice!(patch.community,idx) # only remove individuals from islands!
+                else
+                    indleft = patch.community[idx]
+                end
                 xdir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # scaling so that geometric mean...
                 ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # ...follows original distribution
                 xdest = patch.location[1]+xdir
@@ -446,7 +450,7 @@ end
 
 function compete!(world::Array{Patch,1})
     for patch in world
-        compete!(patch) # pmap(!,patch) ???
+        patch.isisland && compete!(patch) # pmap(!,patch) ???
     end
 end
 
@@ -532,7 +536,7 @@ end
 
 function reproduce!(world::Array{Patch,1})
     for patch in world
-        reproduce!(world, patch) # pmap(!,patch) ???
+        patch.isisland && reproduce!(world, patch) # pmap(!,patch) ???
     end
 end
 
