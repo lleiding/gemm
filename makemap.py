@@ -76,6 +76,6 @@ def print_all():
         print(args.time)
         print()
     print_map(args.width, args.height, args.land, args.longitute, args.latitude, args.identifier, args.isolation, args.precipitation)
-    args.land == "continent" and !args.nodummy and add_ocean()
+    args.land == "continent" and not args.nodummy and add_ocean()
 
 print_all()
