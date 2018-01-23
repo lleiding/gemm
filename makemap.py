@@ -57,7 +57,7 @@ def print_all():
     parser.add_argument("-l", "--land", type = str, default = "continent",
                         choices = ["continent", "island"], help = "type of landmass")
     parser.add_argument("-t", "--time", type = int, default = 1000,
-                        help = "number of timesteps for which definition is valid")
+                        help = "number of timesteps for which definition is valid. A value of zero turns off output")
     parser.add_argument("-x", "--longitute", type = int, default = 0,
                         help = "x position")
     parser.add_argument("-y", "--latitude", type = int, default = 0,
