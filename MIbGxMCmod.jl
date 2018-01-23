@@ -961,8 +961,15 @@ function writerawdata(world::Array{Patch,1}, mappath::String, settings::Dict{Str
     filename *= extension
     touch(filename)
     println("Writing raw data to \"$filename\"...")
-    open(filename, "w") do file
-        println(file, world)
+    if timestep == 1
+        open(filename, "w") do file
+            println(file, world)
+        end
+    else
+        island = filter(x -> x.isisland, world)
+        open(filename, "w") do file
+            println(file, island)
+        end
     end
 end
 
