@@ -68,7 +68,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
             println("t = $t: all individuals dead.")
             return
         end
-        (t == 1 || mod(t, 1000) == 0) && writerawdata(world, mapfile, settings, seed, t)
+        (t == 1 || mod(t, 100) == 0) && writerawdata(world, mapfile, settings, seed, t)
         checkviability!(world)
         compete!(world)
         mutate!(world, settings)
