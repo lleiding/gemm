@@ -656,7 +656,7 @@ function genesis(settings::Dict{String,Any},
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
         for i in 1:popsize
-            push!(community, Individual(lineage, chromosomes,traitdict,0,true,1.0, traitdict["seedsize"]))
+            push!(community, Individual(lineage, chromosomes,traitdict,0,false,1.0, traitdict["seedsize"]))
         end
     end
     community
