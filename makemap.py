@@ -68,11 +68,14 @@ def print_all():
                         help = "proportion of randomly distributed, isolated patches on island")
     parser.add_argument("-p", "--precipitation", action = "store_true", default = False,
                         help = "turns on additional environment niche")
+    parser.add_argument("--nodummy", action = "store_true", default = False,
+                        help = "turns off creation of dummy island")
     args = parser.parse_args()
-    print("# timesteps:")
-    print(args.time)
-    print()
+    if args.time > 0:
+        print("# timesteps:")
+        print(args.time)
+        print()
     print_map(args.width, args.height, args.land, args.longitute, args.latitude, args.identifier, args.isolation, args.precipitation)
-    args.land == "continent" and add_ocean()
+    args.land == "continent" and !args.nodummy and add_ocean()
 
 print_all()
