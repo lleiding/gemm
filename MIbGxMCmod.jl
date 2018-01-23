@@ -429,7 +429,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
                     originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) >= isolationweight # additional roll for isolated origin patch
                     targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) >= isolationweight # additional roll for isolated target patch
                     (!originisolated && !targetisolated) && push!(world[destination].community,indleft)
-                    !patch.isisland && world[destination].isisland && push!(colonizers, indleft)
+                    !patch.isisland && world[destination].isisland && push!(colonizers, deepcopy(indleft)) # new independent individual
                 end
                 idx -= 1
             end
@@ -524,7 +524,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         fitness = 1.0
                         newsize = seedsize
                         ind = Individual(patch.community[idx].lineage, genome,traits,age,isnew,fitness,newsize)
-                        push!(seedbank ,ind)
+                        push!(seedbank ,ind) # maybe actually deepcopy!?
                     end
                 end
             end
