@@ -415,7 +415,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
                     patch.community[idx].isnew = true
                     indleft = splice!(patch.community,idx) # only remove individuals from islands!
                 else
-                    indleft = patch.community[idx]
+                    indleft = deepcopy(patch.community[idx])
                 end
                 xdir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # scaling so that geometric mean...
                 ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # ...follows original distribution
@@ -428,7 +428,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
                     destination = rand(possdests)
                     originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) >= isolationweight # additional roll for isolated origin patch
                     targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) >= isolationweight # additional roll for isolated target patch
-                    (!originisolated && !targetisolated) && push!(world[destination].community, deepcopy(indleft)) # new independent individual
+                    (!originisolated && !targetisolated) && push!(world[destination].community, indleft) # new independent individual
                     !patch.isisland && world[destination].isisland && push!(colonizers, indleft)
                 end
                 patch.isisland && (idx -= 1)
