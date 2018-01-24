@@ -504,7 +504,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                 metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*temp))
                 noffs = rand(Poisson(metaboffs)) # add some stochasticity
                 posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
-                length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners
+                length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners # CAVE!
                 if length(posspartners) > 0
                     partner = rand(posspartners)
                     parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
@@ -819,7 +819,7 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
     for patch in world
         (onlyisland && !patch.isisland) && continue
         for ind in patch.community
-            ind.age == 0 && continue
+#            ind.age == 0 && continue
             counter += 1
             if header
                 print(io, "id", sep)
