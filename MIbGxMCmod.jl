@@ -424,7 +424,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
                 # !patch.isisland && checkborderconditions!(world,xdest,ydest)
                 targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
                 possdests = find(x->in(x.location,targets),world)
-                filter!(x -> x.isisland, possdests) # disperse only to islands
+                filter!(x -> world[x].isisland, possdests) # disperse only to islands
                 if size(possdests,1) > 0 # if no viable target patch, individual dies
                     destination = rand(possdests)
                     originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) >= isolationweight # additional roll for isolated origin patch
