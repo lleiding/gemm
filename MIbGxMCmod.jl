@@ -411,8 +411,8 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
             elseif !patch.community[idx].isnew && patch.community[idx].age == 0
                 dispmean = patch.community[idx].traits["dispmean"]
                 dispshape = patch.community[idx].traits["dispshape"]
-                patch.community[idx].isnew = true
                 if patch.isisland
+                    patch.community[idx].isnew = true
                     indleft = splice!(patch.community,idx) # only remove individuals from islands!
                 else
                     indleft = patch.community[idx]
@@ -431,7 +431,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
                     (!originisolated && !targetisolated) && push!(world[destination].community, deepcopy(indleft)) # new independent individual
                     !patch.isisland && world[destination].isisland && push!(colonizers, indleft)
                 end
-                idx -= 1
+                patch.isisland && (idx -= 1)
             end
             idx += 1
         end
