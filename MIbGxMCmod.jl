@@ -421,7 +421,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
                 ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # ...follows original distribution
                 xdest = patch.location[1]+xdir
                 ydest = patch.location[2]+ydir
-                !patch.isisland && checkborderconditions!(world,xdest,ydest)
+                # !patch.isisland && checkborderconditions!(world,xdest,ydest)
                 targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
                 possdests = find(x->in(x.location,targets),world)
                 if size(possdests,1) > 0 # if no viable target patch, individual dies
