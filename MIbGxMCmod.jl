@@ -878,25 +878,31 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
 end
 
 function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", onlyisland::Bool = false)
-    header = true
-    traitkeys = []
     counter = 0
     for patch in world
         (onlyisland && !patch.isisland) && continue
         for ind in patch.community
             ind.age == 0 && continue
             counter += 1
-            neutralgenes = String[]
+            chrmno = 0
             for chrm in ind.genome
+                chrmno += 1
+                geneno = 0
                 for gene in chrm.genes
+                    geneno += 1
+                    traits = ""
                     if length(gene.codes) == 0
-                        push!(neutralgenes, gene.sequence)
+                        traits *= "neutral"
+                    else
+                        for trait in gene.codes
+                            traits *= trait.name * ","
+                        end
                     end
+                    header = ">$counter x$(patch.location[1]) y$(patch.location[2]) $(ind.lineage) c$chrmno g$geneno $traits"
+                    println(io, header)
+                    println(io, gene.sequence)
                 end
             end
-            marker =  neutralgenes[1]
-            println(io, ">", counter)
-            println(io, marker)
         end
     end
 end
