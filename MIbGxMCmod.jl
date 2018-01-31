@@ -125,7 +125,6 @@ function chrms2traits(chrms::Array{Chromosome,1})
     for gene in genes
         append!(traits,gene.codes)
     end
-    traits = unique(traits)
     traitdict = Dict{String,Float64}()
     for traitname in unique(map(x->x.name,traits))
         traitdict[traitname] = mean(map(x->x.value,filter(x->x.name==traitname,traits)))
