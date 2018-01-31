@@ -268,7 +268,7 @@ function survive!(patch::Patch)
         if !patch.community[idx].isnew
             mass = patch.community[idx].size
             dieprob = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
-            if rand() < dieprob
+            if rand() < dieprob / patch.community[idx].fitness
                 splice!(patch.community, idx)
                 continue
             else
@@ -300,7 +300,7 @@ function grow!(patch::Patch) # WORK IN PROGRESS
             repsize = patch.community[idx].traits["repsize"]
             mass = patch.community[idx].size
             if mass <= repsize # stop growth if reached repsize 
-                growth = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp))
+                growth = growthrate * mass^(3/4) * exp(-act/(boltz*temp))
                 newmass = mass + growth
                 if newmass > 0 && mass > 0
                     patch.community[idx].size = newmass
