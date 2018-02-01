@@ -502,7 +502,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
             if currentmass >= patch.community[idx].traits["repsize"]
                 reptol = patch.community[idx].traits["reptol"]
                 metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*temp))
-                noffs = rand(Poisson(metaboffs)) # add some stochasticity
+                noffs = rand(Poisson(metaboffs * patch.community[idx].fitness)) # add some stochasticity
                 posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
                 length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners # CAVE!
                 if length(posspartners) > 0
