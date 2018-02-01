@@ -206,6 +206,7 @@ function traitsexist(ind::Individual, traitnames::Array{String, 1})
 end
 
 function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
+    a != 1.0 && (a = 1 / (c * sqrt(2 * pi)))
     y = a * exp(-(x-b)^2/(2*c^2))
 end
 
@@ -225,21 +226,21 @@ function establish!(patch::Patch, nniches::Int64=1)
         elseif patch.community[idx].isnew || patch.community[idx].age == 0
             opt = patch.community[idx].traits["tempopt"]
             tol = patch.community[idx].traits["temptol"]
-            fitness *= gausscurve(opt, tol, temp)
+            fitness *= gausscurve(opt, tol, temp, 0.0)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
         end
         if nniches >= 2 && (patch.community[idx].isnew || patch.community[idx].age == 0)
             opt = patch.community[idx].traits["precopt"]
             tol = patch.community[idx].traits["prectol"]
-            fitness *= gausscurve(opt, tol, patch.nichea)
+            fitness *= gausscurve(opt, tol, patch.nichea, 0.0)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
         end
         if nniches == 3 && (patch.community[idx].isnew || patch.community[idx].age == 0)
             opt = patch.community[idx].traits["nicheopt"]
             tol = patch.community[idx].traits["nichetol"]
-            fitness *= gausscurve(opt, tol, patch.nicheb)
+            fitness *= gausscurve(opt, tol, patch.nicheb, 0.0)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
         end  
