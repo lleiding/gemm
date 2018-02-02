@@ -415,11 +415,11 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions, 
                 dispmean = patch.community[idx].traits["dispmean"]
                 dispshape = patch.community[idx].traits["dispshape"]
                 if patch.isisland
-                    patch.community[idx].isnew = true
                     indleft = splice!(patch.community,idx) # only remove individuals from islands!
                 else
                     indleft = deepcopy(patch.community[idx])
                 end
+                indleft.isnew = true
                 xdir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # scaling so that geometric mean...
                 ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # ...follows original distribution
                 xdest = patch.location[1]+xdir
