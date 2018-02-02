@@ -69,9 +69,9 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
             return
         end
         (t == 1 || mod(t, 1000) == 0) && writerawdata(world, mapfile, settings, seed, t)
+        establish!(world, settings["nniches"])
         checkviability!(world)
         compete!(world)
-        establish!(world, settings["nniches"])
         grow!(world)
         compete!(world)
         survive!(world)
