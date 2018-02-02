@@ -555,11 +555,13 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
     for name in traitnames
         if contains(name,"rate")
             push!(traits,Trait(name,rand()*100))
-        elseif contains(name, "temp") && contains(name, "opt")
-            push!(traits,Trait(name,rand()*60+263)) #CAVE: code values elsewhere?
+        elseif contains(name, "tempopt")
+            push!(traits,Trait(name, (rand() * 60) + 263)) #CAVE: code values elsewhere?
+        elseif contains(name, "temptol")
+            push!(traits,Trait(name,rand()*10)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
             mutationrate == 0 ? push!(traits,Trait(name,rand())) : push!(traits,Trait(name,mutationrate)) #CAVE: code values elsewhere?
-        elseif contains(name, "rep") && contains(name, "tol")
+        elseif contains(name, "reptol")
             if settings["tolerance"] == "high"
                 push!(traits,Trait(name,0.9))
             elseif settings["tolerance"] == "low"
