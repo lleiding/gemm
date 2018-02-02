@@ -21,7 +21,7 @@ export Patch, # types
 const boltz = 1.38064852e-23 # J/K = m2⋅kg/(s2⋅K)
 const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
 const growthrate = exp(25.2) # global base growth/biomass production from Brown et al. 2004
-const mortality = exp(20) # global base mortality from Brown et al. 2004 is 26.3, but competition and dispersal introduce add. mort.
+const mortality = exp(21.5) # global base mortality from Brown et al. 2004 is 26.3, but competition and dispersal introduce add. mort.
 const fertility = exp(23.8) # global base reproduction rate from Brown et al. 2004, alternatively 25.0
 const phylconstr = 10 #parse(ARGS[2])
 # const meangenes = 20 # mean number of genes per individual
@@ -546,11 +546,11 @@ end
 
 function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     traits = Trait[]
-    seedsize = exp(-10 + 30 * rand()) # smaller range for seeds
-    repsize = exp(-10 + 20 * rand())
+    seedsize = exp(-10 + 20 * rand()) # smaller range for seeds
+    repsize = exp(-10 + 30 * rand())
     while repsize <= seedsize
-        seedsize = exp(-10 + 30 * rand())
-        repsize = exp(-10 + 20 * rand())
+        seedsize = exp(-10 + 20 * rand())
+        repsize = exp(-10 + 30 * rand())
     end
     for name in traitnames
         if contains(name,"rate")
