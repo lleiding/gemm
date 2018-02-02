@@ -403,7 +403,7 @@ end
     disperse!(w)
 Dispersal of individuals within world (array of patches) `w`
 """
-function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
+function disperse!(world::Array{Patch,1}) # TODO: additional border conditions, refoctorize
     colonizers = Individual[]
     for patch in world
         idx = 1
