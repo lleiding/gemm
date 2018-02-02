@@ -148,7 +148,9 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
                     for trait in chrm.genes[idx].codes
                         (contains(trait.name, "mutprob") && mutationrate != 0) && continue
                         contains(trait.name, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
-                        trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
+                        while trait.value == 0
+                            trait.value = rand(Normal(0,0.01))
+                        end
                         newvalue = trait.value + rand(Normal(0, trait.value/phylconstr)) # CAVE: phylconstr! new value for trait
                         newvalue < 0 && (newvalue=abs(newvalue))
                         (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
