@@ -292,7 +292,7 @@ end
     grow!(p)
 Growth of individuals in patch `p`
 """
-function grow!(patch::Patch) # WORK IN PROGRESS
+function grow!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
