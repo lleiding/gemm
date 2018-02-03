@@ -650,6 +650,7 @@ function genesis(settings::Dict{String,Any},
         lineage = randstring(4)
         meangenes = length(traitnames)
         ngenes = rand(Poisson(meangenes))
+        ngenes < 1 && (ngenes = 1)
         if settings["linkage"] == "none"
             nchrms = ngenes
         elseif settings["linkage"] == "full"
