@@ -16,6 +16,9 @@ world = read.table("*.tsv", header = T)
 ## read sequences (fasta format!):
 seqs = read.dna(file="*.fa", format="fasta")
 
+## filter sequences according to header:
+nseqs = seqs[grep("neutral", dimnames(seqs)[[1]]),]
+
 ## compute distances:
 dists = dist.dna(seqs, model = "JC69") # use JukesCantor distances
 
