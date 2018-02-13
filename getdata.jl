@@ -31,8 +31,8 @@ function parsecommandline()
 end
 
 function extract(settings::Dict{String, Any})
-    infile = settings["input"]
-    world = include(infile)
+    world = include(settings["input"])
+    infile = split(settings["input"], "/")[end]
     open(settings["dest"]*"/"*infile*".out", "w") do file
         MIbGxMCmod.dumpinds(world, file)
     end
