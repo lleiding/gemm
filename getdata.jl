@@ -34,10 +34,10 @@ function extract(settings::Dict{String, Any})
     infile = settings["input"]
     world = include(infile)
     open(settings["dest"]*"/"*infile*".out", "w") do file
-        dumpinds(world, file)
+        MIbGxMCmod.dumpinds(world, file)
     end
     open(settings["dest"]*"/"*infile*".fa", "w") do file
-        makefasta(world, file)
+        MIbGxMCmod.makefasta(world, file)
     end
 end
 
