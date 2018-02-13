@@ -113,7 +113,7 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     for i in gameteidxs
         push!(gamete, Chromosome(genome[i].genes, maternal))
     end
-    gamete
+    deepcopy(gamete)
 end
 
 function chrms2traits(chrms::Array{Chromosome,1})
@@ -139,7 +139,6 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
             charseq = collect(chrm.genes[idx].sequence)
             for i in eachindex(charseq)
                 if rand() <= prob * exp(-act/(boltz*temp))
-                    chrm.genes[idx] = deepcopy(chrm.genes[idx])
                     newbase = rand(collect("acgt"),1)[1]
                     while newbase == charseq[i]
                         newbase = rand(collect("acgt"),1)[1]
