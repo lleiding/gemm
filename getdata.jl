@@ -16,10 +16,10 @@ function parsecommandline()
     s = ArgParseSettings()
     @add_arg_table s begin
         "--dest", "-d"
-            help = "output directory. Defaults to current date"
+            help = "output directory. Defaults to working directory"
             arg_type = String
             required = false
-            default = string(Dates.today())
+            default = "." #string(Dates.today())
 #        "--flag1"
 #            help = "an option without argument, i.e. a flag"
 #            action = :store_true
@@ -31,7 +31,14 @@ function parsecommandline()
 end
 
 function extract(settings::Dict{String, Any})
-    
+    infile = settings["input"]
+    world = include(infile)
+    open(settings["dest"]*"/"*infile*".out", "w") do file
+        dumpinds(world, file)
+    end
+    open(settings["dest"]*"/"*infile*".fa", "w") do file
+        makefasta(world, file)
+    end
 end
 
 allargs = parsecommandline()
