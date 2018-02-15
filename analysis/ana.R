@@ -23,7 +23,7 @@ nseqs = seqs[grep("neutral", dimnames(seqs)[[1]]),]
 dists = dist.dna(seqs, model = "JC69") # use JukesCantor distances
 
 ## calculate the tree:
-tre = hclust(dists, method = "ward.D2") # CAVE: which method? ward.D2 gives nicest results
+tre = hclust(dists, method = "ward.D2", labels = as.vector(sapply(nseqs, function(x) paste0(as.character(x), collapse="")))) # CAVE: which method? ward.D2 gives nicest results #TODO: labels don't work yet
 
 ## cluster tips:
 grps = cutree(tre, h = 0.1) # conservative height of 0.1
