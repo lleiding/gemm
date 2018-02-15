@@ -27,6 +27,7 @@ const phylconstr = 10 #parse(ARGS[2])
 # const meangenes = 20 # mean number of genes per individual
 const mutationrate = 1e-3 * 0.3e11 # 1 base in 1000, correction factor for metabolic function
 const isolationweight = 3 # additional distance to be crossed when dispersing from or to isolated patches
+const cellsize = 1e6 # ca. one ton carrying cap.
 
 ## Types:
 #########
@@ -692,7 +693,7 @@ end
 function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,Any})
     println("Creating world...")
     world = Patch[]
-    area = 1e6 # ca. one ton carrying cap.
+    area = cellsize
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
 Each line must contain patch information with at least \n
