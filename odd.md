@@ -13,42 +13,42 @@ This model is designed to simulate several patterns across genetic, individual, 
 - global constant base rates for MTE
 Individuals (plants or animals) are the basic entity in the model.
 Each individual carries a diploid set of chromosomes, which in turn are comprised of genes.
-Some of the genes code for on ore more traits (pleiotropy), while a trait can be dependent on more than one gene (polygene).
-The realized trait value is the mean of the traits coded by maternal and paternal alleles.
+Some of the genes code for one ore more traits (pleiotropy), while a trait can be dependent on more than one gene (polygene).
+The realized trait value is the mean of the trait alleles.
 Traits thus controlled encompass
 the initial body mass (size) of offspring ("seedsize"),
 the body mass determining onset of maturity and thus reproductive capability ("repsize"),
 mean dispersal distance ("dispmean"),
 the shape of the dispersal kernel, controlling long-distance-dispersal ("dispshape"),
 the radius in which an individual searches for a mate ("repradius"),
-the threshold of sequence identity between mates determining genetic compatibility ("reptol"),
-values representing the optimum and the tolerance (standard deviation) of a physical niche parameter ("tempopt", "temptol",
+the threshold of seed size similarity between mates determining compatibility ("reptol"),
+and values representing the optimum and the tolerance (standard deviation) of a physical niche parameter, such as temeperature and precipitation ("tempopt" and "temptol" or "precopt" and "prectol",
 resp.).
 Alternatively to be controlled by mutable genes, these traits can also be set to fixed values.
-Additionally, individuals carry attributes which describe their bodymass, their age and the combined effects of adaptation
-and life history (fitness).
+Additionally, individuals carry attributes which describe their bodymass, their age and their adaptation to the physical environment (fitness).
 Furthermore, every indivdual carries a marker which denotes whether a given individual has newly arrived to a patch/grid cell.
 
 Every individual is placed inside an arena of grid cells or patches, each of which has a unique location (coordinates)
-and is characterized by physical properties such as temperature and size (carrying capacity), but also isolation
+and is characterized by physical properties such as temperature, precipiation and size (carrying capacity), but also isolation
 (e.g., by barriers).
 Over the course of the simulation these properties (location or physical parameters) might change, reflecting
 geomorphological dynamics.
 All individuals within one patch constitute a community.
 
-Processes and updates are repeated every timestep, while each timestep represent approximately one generation.
+Processes and updates are repeated every timestep, while each timestep represent approximately one year/generation.
 
 # 3. Process overview and scheduling
 
 In each discrete timestep each individual in each patch will (in no particular order unless otherwise stated) undergo
 the following processes:
-- (a) establishment,
-- (b) competition (individuals are sorted according to their body sizes (from small to large)),
-- (c) growth,
-- (d) competition (individuals are sorted according to their body sizes (from small to large)),
-- (e) Density independent mortality,
-- (f) reproduction,
-- (g) dispersal.
+- (1) establishment
+- (2) filtering of unviable individuals
+- (3) competition (individuals are sorted according to their fitness)
+- (4) Density independent mortality,
+- (5) growth,
+- (6) competition (individuals are sorted according to their fitness)
+- (7) reproduction with mutation of offspring
+- (8) dispersal.
 
 Updates to individuals and thus the local communities happen instantaneously after a specific process has been employed
 (asynchronous updating).
@@ -58,11 +58,11 @@ Updates to individuals and thus the local communities happen instantaneously aft
 Basic principles.
 -----------------
 Metabolic theory of ecology (@submodel level).
-Adaptive and non-adaptive radiation/evolution. Submodel level, but geomorpholical change @system level.
+Adaptive and non-adaptive radiation/evolution. Submodel level, but geomorphological change @system level.
 Sexual reproduction.
 Niche theory. Both at system and submodel level. Each individual carries unique ecological and/or functional traits,
 as well as preferences for their physical environments.
-Resource/energy limitation (carrying capacity). System level property, but invoked ad submodel level.
+Resource/energy limitation (carrying capacity). System level property, but invoked at submodel level.
 
 Emergence.
 ----------
