@@ -157,12 +157,13 @@ the individual is removed from the community.
 
 
 ## Density independent mortality.
-An individual is removed from the local community with a certain probability that is specified
-within that individual's traits.
-A lower fitness parameter increases mortality.
+An individual is removed from the local community with a probability `p_mort` depending on its size `mass` and a global base
+mortality rate `mort`:
 ```
-    dieprob = (ageprob * mass^(-1/4) * exp(-act/(boltz*temp)) * normconst) * (1-fitness)
+    p_mort = mort * mass^(-1 / 4) * exp(-act / (boltz * temp))
 ```
+If it survives instead, its age is increased by one.
+
 
 ## Reproduction.
 Given a individual probability ("repprob", modified by the fitness parameter) an individual decides on whether
