@@ -120,7 +120,7 @@ We use an individual based metacommunity model written in julia \cite{JULIALANG}
 Each individual is characterized by a set of genetically controlled traits and is submitted to processes of
 establishment, competition, growth, (density independent) mortality, reproduction and dispersal.
 Each of which process is affected by the individuals' trait characteristics.
-The simulation arena consists of a larger landmass (the mainland) holding an initial pool of evolving populations and a smaller, initially unpopulated island some distance apart.
+The simulation arena consists of a larger landmass (the mainland) holding an initial random species pool and a smaller, initially unpopulated island some distance apart.
 During the course of the simulation, individuals may disperse from the mainland to the island, thus colonizing it.
 The complete state of the simulation is recorded every 1000 time steps for analysis.
 
@@ -129,20 +129,20 @@ A detailed protocol can be found in the appendix (\cite{grimm2010odd}, XXX).
 \subsection{scenarios}
 In the simulations, we modify the value and extent of
 (a) gene linkage,
-(b) reproductive isolation,
+(b) reproductive isolation (or reproduction compatibility),
 (c) habitat diversity, and
 (d) topographical complexity
 to asses their relative contribution on community composition.
 \Cref{tab:scenarios} summarizes the parameters which were varied for the scenarios, their meaning and their values. %TODO: make table.
-Each parameter combination replicated %TODO: how much?
-times.
+Each parameter combination was replicated %TODO: how much?
+times, setting a different random seed for each replicate.
 
 \subsection{Data recording}
-We record the complete state of our simulation world at the end of a simulation run and each time the arena changes (geomorphological dynamics).
+We record the complete state of our simulation world at the start and end of a simulation run and each time the arena changes (geomorphological dynamics).
 Additionally, we store the state of the simulation arena each 1000 %TODO: how much exactly?
-time steps and record every individual that colonizes the island to track it in the phylogeny.
+time steps and record every individual that colonizes the island to track changes.
 
-Using the thus simulated data, we calculate a phylogeny of the extant species, species numbers, etc. [WHAT ELSE?]
+Using the thus simulated data, we calculate a phylogenies of the colonizing lineages, species numbers, trait spaces etc. [WHAT ELSE?]
 
 \section{Results}
 
