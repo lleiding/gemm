@@ -122,23 +122,13 @@ At the end of initialisation each patch holds several different individuals, eac
 At the start of a simulation user defined parameters are read, containing also a definition of the simulation arena.
 This definition is provided in a separate plain text file.
 Within the text file a line at the top containing a single number defines the number of timesteps the arena definition is valid for.
-Every other non-empty line defines one patch with a unique identifier (a number),and the location of the patch as two coordinates.
-Optionally, one can define the type of the patch (island or continent), whether it is isolated, the temperature, and the size.
+Every other non-empty line defines one patch with a unique identifier (a number), and the location of the patch as two coordinates.
+Optionally, one can define the type of the patch (island or continent), whether it is isolated, the temperature, ~~and the size~~.
 
-Other parameters specified at run time pertain to defining simulation scenarios.
-```julia
-        "--seed", "-s"
-            help = "inital random seed"
-        "--maps", "-m"
-            help = "list of map files, comma separated"
-        "--linkage", "-l"
-            help = "gene linkage (\"none\", \"random\" or \"full\")"
-            default = "random"
-        "--tolerance", "-t"
-            help = "tolerance of sequence identity when reproducing (\"high\", \"evo\" or \"low\")"
-            default = "evo"
-```
-[...]
+Other parameters specified at run time pertain to defining simulation scenarios:  the inital random seed,
+a comma-separated list of the names of arena (maps) definition files, the degree of genetic linkage (none, random or full),
+and the compatibility tolerance of seed size values for reproduction (high, evolving or low).
+
 
 # 7. Submodels
 
