@@ -190,16 +190,18 @@ The new individuals' trait values are then calculated as the means of all allele
 the individuals added to the community, marked as new and with their size set to the initial bodymass (seed size).
 
 ## Dispersal.
-An individual disperses with an individual probability.
-If dispersal is chosen a distance is drawn randomly following a logistic distribution and mean and shape parameters
+After reproduction and mutation, each offspring individual may disperse.
+For each of these, a distance is drawn randomly following a logistic distribution with mean and shape parameters (which controls long-distance-dispersal)
 taken from the individual's traits.
 Subsequently, a patch is chosen randomly that fits the drawn distance.
-If such a patch is found the dispersing individual will be placed there and removed from the original community.
+If such a patch is found, the dispersing individual will be placed there and removed from the original community.
 The removal happens even when there is no destination patch to be found.
-In case origin or destination patch are marked as isolated the probability for successful dispersal needs to be
+In case origin or destination patch are marked as isolated, the probability for successful dispersal needs to be
 considered again for each isolated patch, whose barriers are to be crossed (origin and destination).
-Special attention is paid when the destination patch is of island type.
-In this case the dispersing individual (colonizer) is recorded and its properties together with the respective
+The barrier strength represents an additional distance, controlled by a global constant.
+Special attention is paid when the destination patch is of island type, while the origin is on the mainland.
+In this case the dispersing individual is copied to the new destinaction instead of moved.
+Additionally, each  of these colonizers is recorded and its properties together with the respective
 time step stored for later analysis.
 
 ## Output/Calculation
