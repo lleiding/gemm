@@ -24,7 +24,7 @@ Alternatively to be controlled by mutable genes, these traits can also be set to
 Additionally, individuals carry attributes which describe their bodymass, their age and their adaptation to the physical environment (fitness).
 Furthermore, every indivdual carries a marker which denotes whether a given individual has newly arrived to a patch/grid cell.
 
-The base rates for processes governed by the metabolic theory of ecology (Brown et al. 2005) - growth, reproduction, mortality -
+The base rates for processes governed by the metabolic theory of ecology (Brown et al. 2004) - growth, reproduction, mortality -
 are global constants. Mutation rate is also a global constant.
 
 Every individual is placed inside an arena of grid cells or patches, each of which has a unique location (coordinates)
