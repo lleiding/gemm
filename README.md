@@ -72,7 +72,7 @@ Emergence.
 Species/Populations/ecotypes. Only constrained via genetic properties.
 Community trait composition. Interplay of physical properties (environment, geographical properties) and within community
 (competition strength via reproduction, growth, etc.).
-Species numbers.
+Species numbers, endemics, speciation rate.
 
 Adaption. (+Objectives.)
 ------------------------
@@ -107,16 +107,15 @@ Collectives.
 
 Observation.
 ------------
-At the end of the simulation and whenever the arena definition changes the properties of all individuals
+At the start and end of the simulation and at regular time intervals between (1000 time steps), the properties of all individuals
 (including the properties of their locations) are recorded and written to files.
 Furthermore, all island colonizers are recorded and output in a similar way.
 
 
 # 5. Initialisation
 
-The initialisation step creates individuals with randomly chosen parameters and traits and deposits clones of one kind
-of indivudual ("species") in one patch.
-At the end of initialisation each patch holds several populations of clones.
+The initialisation step creates individuals with randomly chosen parameters and traits and deposits them in one patch.
+At the end of initialisation each patch holds several different individuals, each representing one lineage.
 
 # 6. Input
 
