@@ -149,11 +149,13 @@ Starting with the least fit individuals an individual will be removed from the l
 Once total bodymass is below carrying capacity, the procedure is finished.
 
 ## Growth.
-An individual changes its size following the metabolic theory of ecology and an individual growth rate parameter
-modulated by the fitness parameter.
+Given an individual has undergone establishment (new-marker set to "false"), an individual changes its size (mass + delta_mass) following the metabolic theory and the global base growth rate:
 ```
-    newmass = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp)) * normconst
+    delta_mass = growthrate * mass^(3 / 4) * exp(-act / (boltz * temp)) 
 ```
+In case this change results in negative body mass or the individual's initial body mass was less or equal zero,
+the individual is removed from the community.
+
 
 ## Density independent mortality.
 An individual is removed from the local community with a certain probability that is specified
