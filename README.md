@@ -202,3 +202,7 @@ Additionally, each  of these colonizers is recorded and its properties together 
 time step stored for later analysis.
 
 ## Output/Calculation
+Currently, output during the simulation happens as raw julia code.
+This can be converted to table format with each line representing one individual with all their properties and information about their location.
+Additionally, genetic information can be converted to fasta format, while headers contain information to identify individuals and associated traits.
+
