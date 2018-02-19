@@ -165,27 +165,29 @@ mortality rate `mort`:
 If it survives instead, its age is increased by one.
 
 
-## Reproduction.
-Given a individual probability ("repprob", modified by the fitness parameter) an individual decides on whether
-to reproduce.
-In the case of reproduction and if the individual is larger or equal the individual's reproductive size, first the number
-of offspring is randomly drawn, following the individual's trait value and the metabolic theory.
+## Reproduction and mutation.
+All individuals that have grown to or beyond their individual reproduction sizes may reproduce.
+The number of offspring is randomly drawn, following a Poisson distribution with a mean `n_offs` determined by the individual's
+size `mass` and a global base offspring number `meanoffs`:
 ```
-    metaboffs =  meanoffs * currentmass^(-1/4) * exp(-act/(boltz*temp)) * normconst
+    n_offs =  meanoffs * currentmass^(-1 / 4) * exp(-act / (boltz * temp))
 ```
 Following the individuals reproductive radius possible partners in the vicinity (patches whose distances fall within the
-radius) are selected based on whether they share the same chromosome number with the reproducing individual and
-whether the sequence identity between both individuals is equal or higher the reproducing individual's tolerance.
-If a suitable partner is found sets of haploid chromosomes from the diploid sets of both individuals are drawn randomly,
+radius) are selected based on whether they belong to the same lineage, have reached maturity (which includes having established on the patch) and whether their seed size trait (`seedsize_mate`) falls within the mating individual's tolerance interval (`reptol`), which is determined by the following logical examination
+```
+(seedsize_mate >= reptol * seedsize) && (reptol * seedsize_mate <= seedsize)
+```
+If a suitable partner is found, sets of haploid chromosomes from the diploid sets of both individuals are drawn randomly,
 comprising the genome for the offspring.
+In case of a unsuccessful mate search, it is possible to enable self-compatibility, which involves recombination as well. 
 At this point every position in the offspring's basecode may mutate with a given probability.
 In the case of mutation all traits associated with the respective gene will randomly change value (normally distributed,
-with the standard deviation the quotient of the original value over a scaling constant).
+with the standard deviation the quotient of the original value over a scaling constant - the phylogenetic constraint `phylconstr`).
 ```
-    newvalue = trait.value + rand(Normal(0, trait.value/mutscaling))
+    newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
 ```
-The new individuals' trait values are then calculated as the means between parental alleles and
-the individuals added to the community, marked as new and with their size set to the initial bodymass.
+The new individuals' trait values are then calculated as the means of all alleles and
+the individuals added to the community, marked as new and with their size set to the initial bodymass (seed size).
 
 ## Dispersal.
 An individual disperses with an individual probability.
