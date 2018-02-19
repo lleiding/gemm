@@ -138,14 +138,15 @@ are compared with the actual niche properties of the present patch.
 The individual fitness parameter is set according to the deviation from the optimum value considering the niche breadth
 as standard deviation of a gaussian curve.
 ```
-    fitness = gausscurve(tempopt, temptol, temp)
+(a = 1 / (tolerance * sqrt(2 * pi)))
+fitness = min(1, a * exp(-(value - optimum)^2 / (2 * tolerance^2)) )
 ```
 
 ## Competition.
-Individuals are sorted according to their body sizes (from small to large).
-Starting with small individuals an individual will be removed from the local community with high probability
+Individuals are sorted according to fitness (low to high).
+Starting with the least fit individuals an individual will be removed from the local community with high probability
 (following a geometric distribution), if the sum of the community's bodymasses exceed the available space.
-Once total bodymass is below carrying capacity the procedure is finished.
+Once total bodymass is below carrying capacity, the procedure is finished.
 
 ## Growth.
 An individual changes its size following the metabolic theory of ecology and an individual growth rate parameter
