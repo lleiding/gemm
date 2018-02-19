@@ -69,14 +69,14 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
             return
         end
         (t == 1 || mod(t, 1000) == 0) && writerawdata(world, mapfile, settings, seed, t)
+        establish!(world, settings["nniches"])
         checkviability!(world)
         compete!(world)
-        mutate!(world, settings)
-        establish!(world, settings["nniches"])
+        survive!(world)
         grow!(world)
         compete!(world)
-        survive!(world)
         reproduce!(world)
+        mutate!(world, settings)
         colonizers = disperse!(world)
         length(colonizers) >= 1 && recordcolonizers(colonizers, mapfile, settings, seed, t)
     end

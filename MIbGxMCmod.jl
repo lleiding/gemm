@@ -21,12 +21,13 @@ export Patch, # types
 const boltz = 1.38064852e-23 # J/K = m2⋅kg/(s2⋅K)
 const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
 const growthrate = exp(25.2) # global base growth/biomass production from Brown et al. 2004
-const mortality = exp(21) # global base mortality from Brown et al. 2004 is 26.3, but competition and dispersal introduce add. mort.
+const mortality = exp(21.5) # global base mortality from Brown et al. 2004 is 26.3, but competition and dispersal introduce add. mort.
 const fertility = exp(23.8) # global base reproduction rate from Brown et al. 2004, alternatively 25.0
-const phylconstr = 50 #parse(ARGS[2])
+const phylconstr = 10 #parse(ARGS[2])
 # const meangenes = 20 # mean number of genes per individual
 const mutationrate = 1e-3 * 0.3e11 # 1 base in 1000, correction factor for metabolic function
 const isolationweight = 3 # additional distance to be crossed when dispersing from or to isolated patches
+const cellsize = 1e6 # ca. one ton carrying cap.
 
 ## Types:
 #########
@@ -113,7 +114,7 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     for i in gameteidxs
         push!(gamete, Chromosome(genome[i].genes, maternal))
     end
-    gamete
+    deepcopy(gamete)
 end
 
 function chrms2traits(chrms::Array{Chromosome,1})
@@ -125,7 +126,6 @@ function chrms2traits(chrms::Array{Chromosome,1})
     for gene in genes
         append!(traits,gene.codes)
     end
-    traits = unique(traits)
     traitdict = Dict{String,Float64}()
     for traitname in unique(map(x->x.name,traits))
         traitdict[traitname] = mean(map(x->x.value,filter(x->x.name==traitname,traits)))
@@ -140,7 +140,6 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
             charseq = collect(chrm.genes[idx].sequence)
             for i in eachindex(charseq)
                 if rand() <= prob * exp(-act/(boltz*temp))
-                    chrm.genes[idx] = deepcopy(chrm.genes[idx])
                     newbase = rand(collect("acgt"),1)[1]
                     while newbase == charseq[i]
                         newbase = rand(collect("acgt"),1)[1]
@@ -149,7 +148,9 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
                     for trait in chrm.genes[idx].codes
                         (contains(trait.name, "mutprob") && mutationrate != 0) && continue
                         contains(trait.name, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
-                        trait.value == 0 && (trait.value = rand(Normal(0,0.01)))
+                        while trait.value == 0
+                            trait.value = rand(Normal(0,0.01))
+                        end
                         newvalue = trait.value + rand(Normal(0, trait.value/phylconstr)) # CAVE: phylconstr! new value for trait
                         newvalue < 0 && (newvalue=abs(newvalue))
                         (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
@@ -174,7 +175,7 @@ end
 
 function mutate!(world::Array{Patch, 1}, settings::Dict{String,Any})
     for patch in world
-        mutate!(patch, settings)
+        patch.isisland && mutate!(patch, settings)
     end
 end
 
@@ -185,6 +186,7 @@ function checkviability!(patch::Patch) # may consider additional rules... # mayb
         patch.community[idx].size <= 0 && (dead = true)
         any(collect(values(patch.community[idx].traits)) .<= 0) && (dead = true)
         patch.community[idx].traits["repsize"] <= patch.community[idx].traits["seedsize"] && (dead = true)
+        patch.community[idx].fitness <= 0 && (dead = true)
         if dead
             splice!(patch.community,idx)
             continue
@@ -195,7 +197,7 @@ end
 
 function checkviability!(world::Array{Patch,1})
     for patch in world
-        checkviability!(patch) # pmap(checkviability!,patch) ???
+        patch.isisland && checkviability!(patch) # pmap(checkviability!,patch) ???
     end
 end
 
@@ -207,6 +209,7 @@ function traitsexist(ind::Individual, traitnames::Array{String, 1})
 end
 
 function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
+    a != 1.0 && (a = 1 / (c * sqrt(2 * pi)))
     y = a * exp(-(x-b)^2/(2*c^2))
 end
 
@@ -226,21 +229,21 @@ function establish!(patch::Patch, nniches::Int64=1)
         elseif patch.community[idx].isnew || patch.community[idx].age == 0
             opt = patch.community[idx].traits["tempopt"]
             tol = patch.community[idx].traits["temptol"]
-            fitness *= gausscurve(opt, tol, temp)
+            fitness *= gausscurve(opt, tol, temp, 0.0)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
         end
         if nniches >= 2 && (patch.community[idx].isnew || patch.community[idx].age == 0)
             opt = patch.community[idx].traits["precopt"]
             tol = patch.community[idx].traits["prectol"]
-            fitness *= gausscurve(opt, tol, patch.nichea)
+            fitness *= gausscurve(opt, tol, patch.nichea, 0.0)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
         end
         if nniches == 3 && (patch.community[idx].isnew || patch.community[idx].age == 0)
             opt = patch.community[idx].traits["nicheopt"]
             tol = patch.community[idx].traits["nichetol"]
-            fitness *= gausscurve(opt, tol, patch.nicheb)
+            fitness *= gausscurve(opt, tol, patch.nicheb, 0.0)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
         end  
@@ -253,7 +256,7 @@ end
 
 function establish!(world::Array{Patch,1}, nniches::Int64=1)
     for patch in world
-        establish!(patch, nniches) # pmap(!,patch) ???
+        patch.isisland && establish!(patch, nniches) # pmap(!,patch) ???
     end
 end
 
@@ -281,7 +284,7 @@ end
 
 function survive!(world::Array{Patch,1})
     for patch in world
-        survive!(patch) # pmap(!,patch) ???
+        patch.isisland && survive!(patch) # pmap(!,patch) ???
     end
 end
 
@@ -289,7 +292,7 @@ end
     grow!(p)
 Growth of individuals in patch `p`
 """
-function grow!(patch::Patch) # WORK IN PROGRESS
+function grow!(patch::Patch)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
@@ -300,7 +303,7 @@ function grow!(patch::Patch) # WORK IN PROGRESS
             repsize = patch.community[idx].traits["repsize"]
             mass = patch.community[idx].size
             if mass <= repsize # stop growth if reached repsize 
-                growth = growthrate * patch.community[idx].fitness * mass^(3/4) * exp(-act/(boltz*temp))
+                growth = growthrate * mass^(3/4) * exp(-act/(boltz*temp))
                 newmass = mass + growth
                 if newmass > 0 && mass > 0
                     patch.community[idx].size = newmass
@@ -316,7 +319,7 @@ end
 
 function grow!(world::Array{Patch,1})
     for patch in world
-        grow!(patch) # pmap(!,patch) ???
+        patch.isisland && grow!(patch) # pmap(!,patch) ???
     end
 end
 
@@ -400,7 +403,7 @@ end
     disperse!(w)
 Dispersal of individuals within world (array of patches) `w`
 """
-function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
+function disperse!(world::Array{Patch,1}) # TODO: additional border conditions, refoctorize
     colonizers = Individual[]
     for patch in world
         idx = 1
@@ -411,23 +414,28 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
             elseif !patch.community[idx].isnew && patch.community[idx].age == 0
                 dispmean = patch.community[idx].traits["dispmean"]
                 dispshape = patch.community[idx].traits["dispshape"]
-                patch.community[idx].isnew = true
-                indleft = splice!(patch.community,idx)
+                if patch.isisland
+                    indleft = splice!(patch.community,idx) # only remove individuals from islands!
+                else
+                    indleft = deepcopy(patch.community[idx])
+                end
+                indleft.isnew = true
                 xdir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # scaling so that geometric mean...
                 ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # ...follows original distribution
                 xdest = patch.location[1]+xdir
                 ydest = patch.location[2]+ydir
-                !patch.isisland && checkborderconditions!(world,xdest,ydest)
+                # !patch.isisland && checkborderconditions!(world,xdest,ydest)
                 targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
                 possdests = find(x->in(x.location,targets),world)
+                filter!(x -> world[x].isisland, possdests) # disperse only to islands
                 if size(possdests,1) > 0 # if no viable target patch, individual dies
                     destination = rand(possdests)
-                    originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) >= isolationweight # additional roll for isolated origin patch
-                    targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) >= isolationweight # additional roll for isolated target patch
-                    (!originisolated && !targetisolated) && push!(world[destination].community,indleft)
+                    originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated origin patch
+                    targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated target patch
+                    (!originisolated && !targetisolated) && push!(world[destination].community, indleft) # new independent individual
                     !patch.isisland && world[destination].isisland && push!(colonizers, indleft)
                 end
-                idx -= 1
+                patch.isisland && (idx -= 1)
             end
             idx += 1
         end
@@ -436,8 +444,8 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions
 end
 
 function compete!(patch::Patch)
-    sort!(patch.community, by = x -> x.size)
-    while sum(map(x -> x.size, patch.community)) > patch.area # occupied area larger than available
+    sort!(patch.community, by = x -> x.fitness)
+    while sum(map(x -> x.size, patch.community)) >= patch.area # occupied area larger than available
         victim = rand(Geometric()) + 1
         victim > length(patch.community) && (victim = length(patch.community))
         splice!(patch.community, victim)
@@ -446,7 +454,7 @@ end
 
 function compete!(world::Array{Patch,1})
     for patch in world
-        compete!(patch) # pmap(!,patch) ???
+        patch.isisland && compete!(patch) # pmap(!,patch) ???
     end
 end
 
@@ -497,9 +505,9 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
             if currentmass >= patch.community[idx].traits["repsize"]
                 reptol = patch.community[idx].traits["reptol"]
                 metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*temp))
-                noffs = rand(Poisson(metaboffs)) # add some stochasticity
+                noffs = rand(Poisson(metaboffs * patch.community[idx].fitness)) # add some stochasticity
                 posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
-                length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners
+                length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners # CAVE!
                 if length(posspartners) > 0
                     partner = rand(posspartners)
                     parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
@@ -509,7 +517,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                     else
                         patch.community[idx].size = parentmass
                     end
-                    for i in 1:noffs # pmap?
+                    for i in 1:noffs # pmap? this loop could be factorized!
                         partnergenome = meiosis(partner.genome, false) # offspring have different genome!
                         mothergenome = meiosis(patch.community[idx].genome, true)
                         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
@@ -520,7 +528,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         fitness = 1.0
                         newsize = seedsize
                         ind = Individual(patch.community[idx].lineage, genome,traits,age,isnew,fitness,newsize)
-                        push!(seedbank ,ind)
+                        push!(seedbank ,ind) # maybe actually deepcopy!?
                     end
                 end
             end
@@ -532,26 +540,28 @@ end
 
 function reproduce!(world::Array{Patch,1})
     for patch in world
-        reproduce!(world, patch) # pmap(!,patch) ???
+        patch.isisland && reproduce!(world, patch) # pmap(!,patch) ???
     end
 end
 
 function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     traits = Trait[]
-    seedsize = exp(-20 + 12 * rand()) # smaller range for seeds
-    repsize = exp(-10 + 15 * rand())
+    seedsize = exp(-10 + 20 * rand()) # smaller range for seeds
+    repsize = exp(-10 + 30 * rand())
     while repsize <= seedsize
-        seedsize = exp(-20 + 12 * rand())
-        repsize = exp(-10 + 15 * rand())
+        seedsize = exp(-10 + 20 * rand())
+        repsize = exp(-10 + 30 * rand())
     end
     for name in traitnames
         if contains(name,"rate")
             push!(traits,Trait(name,rand()*100))
-        elseif contains(name, "temp") && contains(name, "opt")
-            push!(traits,Trait(name,rand()*60+263)) #CAVE: code values elsewhere?
+        elseif contains(name, "tempopt")
+            push!(traits,Trait(name, (rand() * 60) + 263)) #CAVE: code values elsewhere?
+        elseif contains(name, "temptol")
+            push!(traits,Trait(name,rand()*10)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
             mutationrate == 0 ? push!(traits,Trait(name,rand())) : push!(traits,Trait(name,mutationrate)) #CAVE: code values elsewhere?
-        elseif contains(name, "rep") && contains(name, "tol")
+        elseif contains(name, "reptol")
             if settings["tolerance"] == "high"
                 push!(traits,Trait(name,0.9))
             elseif settings["tolerance"] == "low"
@@ -623,7 +633,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
 end
 
 function genesis(settings::Dict{String,Any},
-                 nspecs::Int64=10, popsize::Int64 = 10,
+                 nspecs::Int64=1000, popsize::Int64 = 1,
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",
                                                 "mutprob",
@@ -640,6 +650,7 @@ function genesis(settings::Dict{String,Any},
         lineage = randstring(4)
         meangenes = length(traitnames)
         ngenes = rand(Poisson(meangenes))
+        ngenes < 1 && (ngenes = 1)
         if settings["linkage"] == "none"
             nchrms = ngenes
         elseif settings["linkage"] == "full"
@@ -652,7 +663,7 @@ function genesis(settings::Dict{String,Any},
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
         for i in 1:popsize
-            push!(community, Individual(lineage, chromosomes,traitdict,0,true,1.0, traitdict["seedsize"]))
+            push!(community, Individual(lineage, chromosomes,traitdict,0,false,1.0, traitdict["seedsize"]))
         end
     end
     community
@@ -682,7 +693,7 @@ end
 function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,Any})
     println("Creating world...")
     world = Patch[]
-    area = 1
+    area = cellsize
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
 Each line must contain patch information with at least \n
@@ -814,7 +825,7 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
     for patch in world
         (onlyisland && !patch.isisland) && continue
         for ind in patch.community
-            ind.age == 0 && continue
+#            ind.age == 0 && continue
             counter += 1
             if header
                 print(io, "id", sep)
@@ -873,25 +884,31 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
 end
 
 function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", onlyisland::Bool = false)
-    header = true
-    traitkeys = []
     counter = 0
     for patch in world
         (onlyisland && !patch.isisland) && continue
         for ind in patch.community
             ind.age == 0 && continue
             counter += 1
-            neutralgenes = String[]
+            chrmno = 0
             for chrm in ind.genome
+                chrmno += 1
+                geneno = 0
                 for gene in chrm.genes
+                    geneno += 1
+                    traits = ""
                     if length(gene.codes) == 0
-                        push!(neutralgenes, gene.sequence)
+                        traits *= "neutral"
+                    else
+                        for trait in gene.codes
+                            traits *= trait.name * ","
+                        end
                     end
+                    header = ">$counter x$(patch.location[1]) y$(patch.location[2]) $(ind.lineage) c$chrmno g$geneno $traits"
+                    println(io, header)
+                    println(io, gene.sequence)
                 end
             end
-            marker =  neutralgenes[1]
-            println(io, ">", counter)
-            println(io, marker)
         end
     end
 end
@@ -957,8 +974,15 @@ function writerawdata(world::Array{Patch,1}, mappath::String, settings::Dict{Str
     filename *= extension
     touch(filename)
     println("Writing raw data to \"$filename\"...")
-    open(filename, "w") do file
-        println(file, world)
+    if timestep == 1
+        open(filename, "w") do file
+            println(file, world)
+        end
+    else
+        island = filter(x -> x.isisland, world)
+        open(filename, "w") do file
+            println(file, island)
+        end
     end
 end
 
