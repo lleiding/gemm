@@ -10,7 +10,6 @@ This model is designed to simulate several patterns across genetic, individual, 
 
 # 2. Entities, state variables and scales
 
-- global constant base rates for MTE
 Individuals (plants or animals) are the basic entity in the model.
 Each individual carries a diploid set of chromosomes, which in turn are comprised of genes.
 Some of the genes code for one ore more traits (pleiotropy), while a trait can be dependent on more than one gene (polygene).
