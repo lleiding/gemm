@@ -6,14 +6,17 @@
 ]{biblatex}
 \addbibresource{refs.bib}
 
+\usepackage{graphicx}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{csquotes}
+\usepackage{cleveref}
 
 \title{The relative roles of genetic, ecological and environmental factors in species radiations}
 \author{Ludwig Leidinger}
 \date{\today}
 %
+
 \begin{document}
 \maketitle
 
@@ -56,7 +59,7 @@
 
 %% [NEW ANGLE:]
 % Island biota have always fascinated and inspired researchers (Darwin, Wallace, ...). %TODO: refs
-Islands are understood as suitable model systems for ecology and evolution due to their well definable characteristics like isolation. (e.g., Losos & Ricklefs 2009) %TODO: ref
+Islands are understood as suitable model systems for ecology and evolution due to their well definable characteristics like isolation. (e.g., Losos \& Ricklefs 2009) %TODO: ref
 Due to global change, however, island biota are also increasingly at risk.
 While often featuring unique species communities and harboring countless endemics, %TODO: refs
 islands are especially threatened by climate change, human impact and invasive species. %TODO: refs
@@ -67,7 +70,7 @@ A subset of these questions deals with the topic of speciation and radiations on
 Still, the proposed mechanisms so far include only ecological or geo-morphological processes,
 while genetic properties are hardly recognized in the island context.
 At the same time, an increasing number of studies investigates genetic processes and
-their effect on reproductive/ecological isolation of populations (e.g., Via & West 2008, Via 2001 and references therein).
+their effect on reproductive/ecological isolation of populations (e.g., Via \& West 2008, Via 2001 and references therein).
 
 One of the first and to this day highly influential formal theories of island biodiversity is MacArthur and Wilson's seminal equilibrium theory of island biogeography (ETIB). %TODO: ref
 In it, species richness on islands is the result of opposing rates of immigration and extinction, both of which in turn are modified by island size (area) and its distance from the mainland (isolation).
@@ -133,7 +136,7 @@ In the simulations, we modify the value and extent of
 (c) habitat diversity, and
 (d) topographical complexity
 to asses their relative contribution on community composition.
-\Cref{tab:scenarios} summarizes the parameters which were varied for the scenarios, their meaning and their values. %TODO: make table.
+\cref{tab:scenarios} summarizes the parameters which were varied for the scenarios, their meaning and their values. %TODO: make table.
 Each parameter combination was replicated %TODO: how much?
 times, setting a different random seed for each replicate.
 
@@ -147,14 +150,14 @@ Using the thus simulated data, we calculate a phylogenies of the colonizing line
 \section{Results}
 
 \begin{figure}
-  \includegraphics{}
+  %\includegraphics{}
   \caption{Number of linkage units and number of species per lineage XXX timesteps after colonization.
     [Histogram (with threshold category: strongly diversified lineages) or scatter plot.]}
   \label{specieslinkage}
 \end{figure}
 
 \begin{figure}
-  \includegraphics{}
+  %\includegraphics{}
   \caption{Trait space characteristics of lineages.
     (A) [Ordination] Trait space of successful colonizers compared to the mainland species pool. Each point represents a lineage.
     Arrows denote the traits.
