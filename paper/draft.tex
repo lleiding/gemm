@@ -121,6 +121,15 @@ The simulation arena consists of a larger landmass (the mainland) holding an ini
 During the course of the simulation, individuals may disperse from the mainland to the island, thus colonizing it.
 The complete state of the simulation is recorded every 1000 time steps for analysis.
 
+Building on the model of Cabral et al. (2017a, b), most of the biological rates are controlled following the metabolic theory
+of ecology (MTE, Brown et al.\ 2004).
+In MTE, a biological rate $b$ depends on the temperature $T$ and individual mass $M$, scaling a base rate $b_0$ as:
+\begin{equation}
+  $b=b_0*M^{3/4}*exp(-E_A/{k_B*T})$
+  \label{eq:MTE}
+\end{equation}
+with $E_A$ the activation energy and $k_B$ the Boltzman constant.
+
 A detailed protocol can be found in the appendix (\cite{grimm2010odd}, XXX).
 
 \subsection{scenarios}
