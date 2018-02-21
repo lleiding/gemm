@@ -94,7 +94,7 @@ function runit(firstrun::Bool,settings::Dict{String,Any},seed::Int64=0)
             i == 1 && (world = createworld(maptable, settings))
             i > 1 && updateworld!(world,maptable)
             simulation!(world, settings, mapfiles[i], seed, timesteps)
-            writedata(world, seed, mapfiles[i], settings, seed, 0)
+            writedata(world, mapfiles[i], settings, seed, 0)
         end
     end
 end
