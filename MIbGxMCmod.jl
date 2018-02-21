@@ -883,6 +883,7 @@ writes simulation output from `world` to separate table and fasta files.
 """
 function writedata(world::Array{Patch,1}, mappath::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
     mapfile = split(mappath, "/")[end]
+    length(mapfile) == 0 && return
     basename = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_lnk" * settings["linkage"] * "_tol" * settings["tolerance"] * "_t" * "$timestep"
     counter = 0
     extension = ""
