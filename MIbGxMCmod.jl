@@ -777,7 +777,6 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
     for patch in world
         (onlyisland && !patch.isisland) && continue
         for ind in patch.community
-#            ind.age == 0 && continue
             counter += 1
             if header
                 print(io, "id", sep)
