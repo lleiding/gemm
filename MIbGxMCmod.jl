@@ -801,20 +801,6 @@ function analysis(world::Array{Patch,1})
 end
 
 """
-    getsequence(ind)
-Get the complete genome sequence from individual `ind`.
-"""
-function getsequence(ind::Individual)
-    sequence = ""
-    for chrm in ind.genome
-        for gene in chrm.genes
-            sequence *= gene.sequence
-        end
-    end
-    sequence
-end
-
-"""
     dumpinds(world, io, sep)
 Output all data of individuals in `world` as table to `io`. Columns are separated by `sep`.
 """
@@ -849,7 +835,6 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
                 for key in traitkeys
                     print(io, key, sep)
                 end
-                print(io, "genome", sep)
                 println(io)
                 header = false
             end
@@ -877,7 +862,6 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
                     print(io, "NA", sep)
                 end
             end
-            print(io, getsequence(ind), sep)
             println(io)
         end
     end
@@ -901,7 +885,7 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
                         traits *= "neutral"
                     else
                         for trait in gene.codes
-                            traits *= trait.name * ","
+                            traits *= trait.name * "$(trait.value)" * ","
                         end
                     end
                     header = ">$counter x$(patch.location[1]) y$(patch.location[2]) $(ind.lineage) c$chrmno g$geneno $traits"
