@@ -78,7 +78,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
         reproduce!(world)
         mutate!(world, settings)
         colonizers = disperse!(world)
-        length(colonizers) >= 1 && println("t=$timesteps: colonization by $colonizers")#recordcolonizers(colonizers, mapfile, settings, seed, t)
+        length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, mapfile, settings, seed, t)
     end
 end
 
