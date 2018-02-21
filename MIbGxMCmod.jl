@@ -838,7 +838,6 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
     for patch in world
         (onlyisland && !patch.isisland) && continue
         for ind in patch.community
-            ind.age == 0 && continue
             counter += 1
             chrmno = 0
             for chrm in ind.genome
