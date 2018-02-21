@@ -879,29 +879,34 @@ end
 
 #TODO: complete docstring!
 """
-    writedata(world, seed, path, settings)
-writes simulation output from `world` in table format to a file in `path`.
-`seed` and `setting` information is used for file name creation.
+    writedata(world, path, settings, seed, timestep)
+writes simulation output from `world` to separate table and fasta files.
+`path`, `seed`, `timestep` and `setting` information is used for file name creation.
 """
-function writedata(world::Array{Patch,1}, seed::Int64, mappath::String, settings::Dict{String, Any})
+function writedata(world::Array{Patch,1}, mappath::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
     mapfile = split(mappath, "/")[end]
-    filename = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_lnk" * settings["linkage"] * "_tol" * settings["tolerance"] * ".out"
+    basename = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_lnk" * settings["linkage"] * "_tol" * settings["tolerance"] * "_t" * "$timestep"
     counter = 0
     extension = ""
-    while ispath(filename * extension)
+    while ispath(basename * extension * ".tsv") || ispath(basename * extension * ".fa")
         extension = "_$counter"
         counter += 1
         if counter > 9
-            warn("could not write to ", filename, extension, ": file exists. \n
+            warn("could not write to ", basename, extension, ": file exists. \n
 Continuing anyway - data might be identical.")
             return
         end
     end
-    filename *= extension
-    touch(filename)
-    println("Writing data to \"$filename\"...")
+    basename *= extension
+    filename = basename * ".tsv"
+    println("Writing data \"$filename\"")
     open(filename, "w") do file
-        dumpinds(world,file)
+        dumpinds(world, file, "\t", timestep > 1)
+    end
+    filename = basename * ".fa"
+    println("Writing fasta \"$filename\"")
+    open(filename, "w") do file
+        makefasta(world, file, "", timestep > 1)
     end
 end
 
