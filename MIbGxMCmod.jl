@@ -766,40 +766,6 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) 
     world
 end
 
-# function visualisation(world::Array{Patch,1},firstplot::Bool)
-#     xcords = map(x->Int(floor(x.location[1])),world)
-#     ycords = map(x->Int(floor(x.location[2])),world)
-#     popsizes = map(x->size(x.community,1),world)
-#     xmin = minimum(xcords)
-#     xmax = maximum(xcords)
-#     xshift = 1 - xmin
-#     ymin = minimum(ycords)
-#     ymax = maximum(ycords)
-#     yshift = 1 - ymin
-#     mat = zeros(length(ymin:ymax),length(xmin:xmax))
-#     mat[:] = -10
-#     for i in eachindex(popsizes)
-#         mat[ycords[i]+yshift,xcords[i]+xshift]=popsizes[i]
-#     end
-#     if firstplot
-#         gr()
-#         heatmap(mat,aspect_ratio=1,show=true)
-#     else
-#         heatmap(mat,aspect_ratio=1,show=true)
-#     end
-# end
-
-function analysis(world::Array{Patch,1})
-    for patch in world
-        #print("Patch #",patch.id," @",patch.location," (",patch.isisland,"): \t")
-        #println(size(patch.community,1))
-        idx = 1
-        while idx <= length(patch.community)
-            idx += 1
-        end
-    end
-end
-
 """
     dumpinds(world, io, sep)
 Output all data of individuals in `world` as table to `io`. Columns are separated by `sep`.
