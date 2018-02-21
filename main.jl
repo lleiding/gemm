@@ -68,7 +68,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
             println("t = $t: all individuals dead.")
             return
         end
-        (t == 1 || mod(t, 1000) == 0) && writerawdata(world, mapfile, settings, seed, t)
+        (t == 1 || mod(t, 1000) == 0) && writedata(world, mapfile, settings, seed, t)
         establish!(world, settings["nniches"])
         checkviability!(world)
         compete!(world)
@@ -94,7 +94,7 @@ function runit(firstrun::Bool,settings::Dict{String,Any},seed::Int64=0)
             i == 1 && (world = createworld(maptable, settings))
             i > 1 && updateworld!(world,maptable)
             simulation!(world, settings, mapfiles[i], seed, timesteps)
-            writedata(world, seed, mapfiles[i], settings)
+            writedata(world, seed, mapfiles[i], settings, seed, 0)
         end
     end
 end
