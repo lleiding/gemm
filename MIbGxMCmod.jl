@@ -209,8 +209,14 @@ function traitsexist(ind::Individual, traitnames::Array{String, 1})
 end
 
 function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
-    a != 1.0 && (a = 1 / (c * sqrt(2 * pi)))
-    y = a * exp(-(x-b)^2/(2*c^2))
+    if c != 0 && a != 1.0
+        a = 1 / (c * sqrt(2 * pi))
+        y = a * exp(-(x-b)^2/(2*c^2))
+    elseif c != 0
+        y = a * exp(-(x-b)^2/(2*c^2))
+    else
+        y = 0
+    end
 end
 
 """
