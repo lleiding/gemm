@@ -427,7 +427,6 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions, 
             elseif !patch.community[idx].isnew && patch.community[idx].age == 0
                 dispmean = patch.community[idx].traits["dispmean"]
                 dispshape = patch.community[idx].traits["dispshape"]
-                indleft.isnew = true
                 xdir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # scaling so that geometric mean...
                 ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # ...follows original distribution
                 xdest = patch.location[1]+xdir
@@ -443,6 +442,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions, 
                     if !patch.isisland
                         indleft = deepcopy(patch.community[idx])
                     end
+                    indleft.isnew = true
                     destination = rand(possdests)
                     originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated origin patch
                     targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated target patch
