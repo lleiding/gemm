@@ -680,7 +680,9 @@ function genesis(settings::Dict{String,Any},
         traitdict = chrms2traits(chromosomes)
         for i in 1:popsize
             newind = Individual(lineage, chromosomes, traitdict, 0, false, 1.0, traitdict["seedsize"])
-            mutate!(newind, 298.0, settings)
+            for n in 1:10
+                mutate!(newind, 298.0, settings) # enforce some variablity
+            end
             push!(community, newind)
         end
     end
