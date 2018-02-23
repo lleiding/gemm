@@ -569,7 +569,7 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
     for name in traitnames
         if contains(name,"rate")
             push!(traits,Trait(name,rand()*100))
-        elseif contains(name,"disp")
+        elseif contains(name,"dispshape")
             push!(traits, Trait(name, rand() * maxdispmean))
         elseif contains(name, "tempopt")
             push!(traits,Trait(name, (rand() * 60) + 263)) #CAVE: code values elsewhere?

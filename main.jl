@@ -86,7 +86,8 @@ function runit(firstrun::Bool,settings::Dict{String,Any},seed::Int64=0)
     seed != 0 && srand(seed)
     mapfiles =  map(x->String(x),split(settings["maps"],","))
     if firstrun
-        world=createworld([["1","1","1", "298", "island"]],settings)
+        world=createworld([["1","1","1", "298", "continent"]], settings) # initialise as populated continent
+        world[1].isisland = true # then set as island to enable processes
         simulation!(world, settings, "", seed, 5)
     else
         for i in 1:length(mapfiles)
