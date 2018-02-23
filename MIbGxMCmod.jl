@@ -28,6 +28,8 @@ const phylconstr = 10 #parse(ARGS[2])
 const mutationrate = 1e-3 * 0.3e11 # 1 base in 1000, correction factor for metabolic function
 const isolationweight = 3 # additional distance to be crossed when dispersing from or to isolated patches
 const cellsize = 1e6 # ca. one ton carrying cap.
+const maxdispmean = 10 # maximum mean dispersal distance
+
 
 ## Types:
 #########
@@ -566,6 +568,8 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
     for name in traitnames
         if contains(name,"rate")
             push!(traits,Trait(name,rand()*100))
+        elseif contains(name,"disp")
+            push!(traits, Trait(name, rand() * maxdispmean))
         elseif contains(name, "tempopt")
             push!(traits,Trait(name, (rand() * 60) + 263)) #CAVE: code values elsewhere?
         elseif contains(name, "temptol")
