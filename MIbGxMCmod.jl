@@ -526,7 +526,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                     partner = rand(posspartners)
                     parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
                     if parentmass <= 0
-                        splice!(patch.community, idx)
+                        idx += 1 #splice!(patch.community, idx)
                         continue
                     else
                         patch.community[idx].size = parentmass
