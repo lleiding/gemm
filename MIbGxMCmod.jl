@@ -238,7 +238,7 @@ function establish!(patch::Patch, nniches::Int64=1)
             end
             opt = patch.community[idx].traits["tempopt"]
             tol = patch.community[idx].traits["temptol"]
-            fitness *= gausscurve(opt, tol, temp, 1.0)
+            fitness *= gausscurve(opt, tol, temp, 0.0)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
             if nniches >= 2
@@ -248,14 +248,14 @@ function establish!(patch::Patch, nniches::Int64=1)
                 end
                 opt = patch.community[idx].traits["precopt"]
                 tol = patch.community[idx].traits["prectol"]
-                fitness *= gausscurve(opt, tol, patch.nichea, 1.0)
+                fitness *= gausscurve(opt, tol, patch.nichea, 0.0)
                 fitness > 1 && (fitness = 1) # should be obsolete
                 fitness < 0 && (fitness = 0) # should be obsolete
             end
             if nniches == 3
                 opt = patch.community[idx].traits["nicheopt"]
                 tol = patch.community[idx].traits["nichetol"]
-                fitness *= gausscurve(opt, tol, patch.nicheb, 1.0)
+                fitness *= gausscurve(opt, tol, patch.nicheb, 0.0)
                 fitness > 1 && (fitness = 1) # should be obsolete
                 fitness < 0 && (fitness = 0) # should be obsolete
             end  
