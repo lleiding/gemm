@@ -572,7 +572,7 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
         elseif contains(name,"dispshape")
             push!(traits, Trait(name, rand() * maxdispmean))
         elseif contains(name, "tempopt")
-            push!(traits,Trait(name, (rand() * 60) + 263)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name, 298.0))#(rand() * 60) + 263)) #CAVE: code values elsewhere?
         elseif contains(name, "temptol")
             push!(traits,Trait(name,rand()*10)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
@@ -590,7 +590,7 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
         elseif contains(name, "seedsize")
             push!(traits,Trait(name,seedsize)) #CAVE: code values elsewhere?
         elseif contains(name, "precopt")
-            push!(traits, Trait(name, rand(0:1000)))
+            push!(traits, Trait(name, 500))#rand(0:1000)))
         elseif contains(name, "prectol")
             push!(traits, Trait(name, rand(0:500)))
         else
