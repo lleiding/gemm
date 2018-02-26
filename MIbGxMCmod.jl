@@ -532,7 +532,6 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         patch.community[idx].size = parentmass
                     end
                     for i in 1:noffs # pmap? this loop could be factorized!
-                        println("reproduction by ", patch.community[idx].lineage, ": ", noffs)
                         partnergenome = meiosis(partner.genome, false) # offspring have different genome!
                         mothergenome = meiosis(patch.community[idx].genome, true)
                         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
