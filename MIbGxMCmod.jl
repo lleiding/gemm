@@ -29,6 +29,7 @@ const mutationrate = 1e-3 * 0.3e11 # 1 base in 1000, correction factor for metab
 const isolationweight = 3 # additional distance to be crossed when dispersing from or to isolated patches
 const cellsize = 1e6 # ca. one ton carrying cap.
 const maxdispmean = 10 # maximum mean dispersal distance
+const genelength = 100 # sequence length of genes
 
 
 ## Types:
@@ -603,7 +604,7 @@ end
 function creategenes(ngenes::Int64,traits::Array{Trait,1})
     genes = Gene[]
     for i in 1:ngenes
-        sequence = String(rand(collect("acgt"), 100)) # arbitrary start sequence
+        sequence = String(rand(collect("acgt"), genelength)) # arbitrary start sequence
         codesfor = Trait[]
         push!(genes,Gene(sequence, codesfor))
     end
@@ -618,7 +619,7 @@ function creategenes(ngenes::Int64,traits::Array{Trait,1})
         end
     end
     if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
-        push!(genes, Gene(String(rand(collect("acgt"), 20)), Trait[]))
+        push!(genes, Gene(String(rand(collect("acgt"), genelength)), Trait[]))
     end
     genes
 end
