@@ -38,7 +38,7 @@ function parsecommandline()
             arg_type = Int
             range_tester = x -> x > 0 && x <= 3
             required = false
-            default = 1
+            default = 2
         "--tolerance", "-t"
             help = "tolerance of sequence identity when reproducing (\"high\", \"evo\" or \"low\")"
             arg_type = String
