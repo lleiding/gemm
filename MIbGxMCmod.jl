@@ -603,7 +603,7 @@ end
 function creategenes(ngenes::Int64,traits::Array{Trait,1})
     genes = Gene[]
     for i in 1:ngenes
-        sequence = String(rand(collect("acgt"), 20)) # arbitrary start sequence
+        sequence = String(rand(collect("acgt"), 100)) # arbitrary start sequence
         codesfor = Trait[]
         push!(genes,Gene(sequence, codesfor))
     end
@@ -680,9 +680,7 @@ function genesis(settings::Dict{String,Any},
         traitdict = chrms2traits(chromosomes)
         for i in 1:popsize
             newind = Individual(lineage, chromosomes, traitdict, 0, false, 1.0, traitdict["seedsize"])
-            for n in 1:10
-                mutate!(newind, 298.0, settings) # enforce some variablity
-            end
+            mutate!(newind, 298.0, settings) # enforce some variablity
             push!(community, newind)
         end
     end
