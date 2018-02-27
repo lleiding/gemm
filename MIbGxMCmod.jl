@@ -578,14 +578,6 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
             push!(traits,Trait(name,rand()*10)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
             mutationrate == 0 ? push!(traits,Trait(name,rand())) : push!(traits,Trait(name,mutationrate)) #CAVE: code values elsewhere?
-        elseif contains(name, "reptol")
-            if settings["tolerance"] == "high"
-                push!(traits,Trait(name,0.9))
-            elseif settings["tolerance"] == "low"
-                push!(traits,Trait(name,0.99)) #CAVE: code values elsewhere?
-            else
-                push!(traits,Trait(name,rand() / 2 + 0.5))
-            end
         elseif contains(name, "repsize")
             push!(traits,Trait(name,repsize)) #CAVE: code values elsewhere?
         elseif contains(name, "seedsize")
@@ -594,6 +586,14 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
             push!(traits, Trait(name, rand(0:1000)))
         elseif contains(name, "prectol")
             push!(traits, Trait(name, rand(0:500)))
+        elseif contains(name, "reptol")
+            if settings["tolerance"] == "high"
+                push!(traits,Trait(name,0.25))
+            elseif settings["tolerance"] == "low"
+                push!(traits,Trait(name,0.7)) #CAVE: code values elsewhere?
+            else
+                push!(traits,Trait(name,rand()))
+            end
         else
             push!(traits,Trait(name,rand()))
         end
