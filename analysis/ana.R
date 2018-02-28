@@ -17,11 +17,12 @@ world = read.table("*.tsv", header = T)
 seqs = read.dna(file="*.fa", format="fasta")
 
 ## filter sequences according to header:
-nseqs = seqs[grep("neutral", dimnames(seqs)[[1]]),]
+nseqs = seqs[grep("neutral", names(seqs))]
+nseqs = nseqs[grep("qRB3", names(seqs))]
 rawseqs = as.vector(sapply(nseqs, function(x) paste0(as.character(x), collapse=""))) # get a vector of the sequences
 
 ## compute distances:
-dists = dist.dna(seqs, model = "JC69") # use JukesCantor distances
+dists = dist.dna(seqs, model = "JC69") # use JukesCantor distances, alternatively Felsenstein "F81"
 
 ## calculate the tree:
 tre = hclust(dists, method = "ward.D2") # CAVE: which method? ward.D2 gives nicest results
@@ -43,6 +44,11 @@ p = ggtree(as.phylo(ftre))
 fdd=data.frame(taxa=as.character(1:nrow(full)),Temperature=as.factor(full$temp))
 p <- p %<+% fdd + geom_tippoint(aes(color=Temperature))
 p + scale_color_manual(values=terrain.colors(12)[3:6])
+
+## get data from fasta headers:
+tseqs119k = seqs119k[grep("qRB3", names(seqs119k))]
+tseqs119k = tseqs119k[grep("tempopt", names(tseqs119k))]
+temps=unlist(strsplit(names(tseqs119k), "tempopt"))[c(FALSE, TRUE)] %>% strsplit(",") %>% unlist %>% as.numeric
 
 ## simulation arena maps - temperature:
 row1 = c(288, 293, 293, 298, 303, NA, NA, NA, NA, NA, NA, NA)
