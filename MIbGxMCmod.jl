@@ -154,12 +154,15 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
                         while trait.value <= 0
                             trait.value = abs(rand(Normal(0,0.01)))
                         end
-                        newvalue = trait.value + rand(Normal(0, trait.value/phylconstr)) # CAVE: maybe handle temp + prec separately
+                        oldvalue = trait.value
+                        contains(trait.name, "tempopt") && (oldvalue -= 273)
+                        newvalue = oldvalue + rand(Normal(0, oldvalue/phylconstr)) # CAVE: maybe handle temp + prec separately
                         newvalue < 0 && (newvalue=abs(newvalue))
                         (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
                         while newvalue <= 0 #&& contains(trait.name,"mut")
                             newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
                         end
+                        contains(trait.name, "tempopt") && (newvalue += 273)
                         trait.value = newvalue
                     end
                 end
