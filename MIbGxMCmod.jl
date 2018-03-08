@@ -586,9 +586,9 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
         elseif contains(name, "seedsize")
             push!(traits,Trait(name,seedsize)) #CAVE: code values elsewhere?
         elseif contains(name, "precopt")
-            push!(traits, Trait(name, rand(0:1000)))
+            push!(traits, Trait(name, rand() * 10))
         elseif contains(name, "prectol")
-            push!(traits, Trait(name, rand() * 100))
+            push!(traits, Trait(name, rand()))
         elseif contains(name, "reptol")
             if settings["tolerance"] == "high"
                 push!(traits,Trait(name,0.25))
