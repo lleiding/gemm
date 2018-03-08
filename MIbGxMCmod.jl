@@ -588,7 +588,7 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
         elseif contains(name, "precopt")
             push!(traits, Trait(name, rand(0:1000)))
         elseif contains(name, "prectol")
-            push!(traits, Trait(name, rand(0:500)))
+            push!(traits, Trait(name, rand() * 100))
         elseif contains(name, "reptol")
             if settings["tolerance"] == "high"
                 push!(traits,Trait(name,0.25))
