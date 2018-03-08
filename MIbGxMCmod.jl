@@ -739,7 +739,7 @@ separated by a whitespace character (<ID> <x> <y>).")
             try
                 newpatch.nichea = parse(Float64, entry[7])
             catch
-                newpatch.nichea = rand([1:1000])
+                newpatch.nichea = rand() * 10
             end
         end
         if size(entry,1) > 7
