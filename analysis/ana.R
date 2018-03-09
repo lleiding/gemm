@@ -17,12 +17,12 @@ world = read.table("*.tsv", header = T)
 seqs = read.dna(file="*.fa", format="fasta")
 
 ## filter sequences according to header:
-nseqs = seqs[grep("neutral", names(seqs))]
-nseqs = nseqs[grep("qRB3", names(seqs))]
+nseqs = seqs[grep("neutral", dimnames(seqs)[[1]]),]
+nseqs = nseqs[grep("sO1E", dimnames(nseqs)[[1]]),]
 rawseqs = as.vector(sapply(nseqs, function(x) paste0(as.character(x), collapse=""))) # get a vector of the sequences
 
 ## compute distances:
-dists = dist.dna(seqs, model = "JC69") # use JukesCantor distances, alternatively Felsenstein "F81"
+dists = dist.dna(nseqs, model = "JC69") # use JukesCantor distances, alternatively Felsenstein "F81"
 
 ## calculate the tree:
 tre = hclust(dists, method = "ward.D2") # CAVE: which method? ward.D2 gives nicest results
