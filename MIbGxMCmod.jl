@@ -653,7 +653,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
 end
 
 function genesis(settings::Dict{String,Any},
-                 nspecs::Int64=1000, popsize::Int64 = 10,
+                 nspecs::Int64=1000, popsize::Int64 = 0,
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",
                                                 "mutprob",
@@ -682,9 +682,9 @@ function genesis(settings::Dict{String,Any},
         genes = creategenes(ngenes,traits)
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
+        popsize = round(fertility * traitdict["repsize"]^(-1/4) * exp(-act/(boltz*traitdict["tempopt"]))) # population size determined by adult size and temperature niche optimum
+        newind = Individual(lineage, chromosomes, traitdict, 0, false, 1.0, traitdict["seedsize"])
         for i in 1:popsize
-            newind = Individual(lineage, chromosomes, traitdict, 0, false, 1.0, traitdict["seedsize"])
-            mutate!(newind, 298.0, settings) # enforce some variablity
             push!(community, newind)
         end
     end
