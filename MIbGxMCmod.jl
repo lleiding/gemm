@@ -653,7 +653,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
 end
 
 function genesis(settings::Dict{String,Any},
-                 nspecs::Int64=1000000, popsize::Int64 = 0,
+                 nspecs::Int64=10000000, popsize::Int64 = 0,
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",
                                                 "mutprob",
