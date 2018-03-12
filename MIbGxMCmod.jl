@@ -666,7 +666,8 @@ function genesis(settings::Dict{String,Any},
                                                 "tempopt",
                                                 "temptol"]) # minimal required traitnames
     community = Individual[]
-    for spec in 1:nspecs
+    totalmass = 0.0
+    while true 
         lineage = randstring(4)
         meangenes = length(traitnames)
         ngenes = rand(Poisson(meangenes))
@@ -683,6 +684,11 @@ function genesis(settings::Dict{String,Any},
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
         popsize = round(fertility * traitdict["repsize"]^(-1/4) * exp(-act/(boltz*traitdict["tempopt"]))) # population size determined by adult size and temperature niche optimum
+        popmass = popsize * traitdict["seedsize"]
+        if totalmass + popmass > cellsize # stop loop if cell is full
+            break
+        end
+        totalmass += popmass
         newind = Individual(lineage, chromosomes, traitdict, 0, false, 1.0, traitdict["seedsize"])
         for i in 1:popsize
             push!(community, newind)
