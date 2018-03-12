@@ -564,11 +564,11 @@ end
 
 function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     traits = Trait[]
-    seedsize = exp(-10 + 17 * rand()) # smaller range for seeds
-    repsize = exp(-7 + 30 * rand())
+    seedsize = exp(-10 + 20 * rand()) # corresponds to 45mug to 22kg
+    repsize = exp(0 + 17 * rand()) # 1g to 24t
     while repsize <= seedsize
-        seedsize = exp(-10 + 17 * rand())
-        repsize = exp(-7 + 30 * rand())
+        seedsize = exp(-10 + 20 * rand())
+        repsize = exp(0 + 17 * rand())
     end
     for name in traitnames
         if contains(name,"rate")
