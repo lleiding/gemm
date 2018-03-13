@@ -803,7 +803,7 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
     traitkeys = []
     counter = 0
     for patch in world
-        (onlyisland && !patch.isisland) && continue
+        (onlyisland && !patch.isisland) && continue # only one individual per species on mainland
         lineage = ""
         for ind in patch.community
             counter += 1
@@ -870,7 +870,7 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
         lineage = ""
         for ind in patch.community
             counter += 1
-            (!patch.isisland && ind.lineage == lineage) && continue
+            (!patch.isisland && ind.lineage == lineage) && continue # only one individual per species on mainland
             chrmno = 0
             for chrm in ind.genome
                 chrmno += 1
