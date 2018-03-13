@@ -804,8 +804,10 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
     counter = 0
     for patch in world
         (onlyisland && !patch.isisland) && continue
+        lineage = ""
         for ind in patch.community
             counter += 1
+            (!patch.isisland && ind.lineage == lineage) && continue
             if header
                 print(io, "id", sep)
                 print(io, "xloc", sep)
@@ -856,6 +858,7 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
                 end
             end
             println(io)
+            lineage = ind.lineage
         end
     end
 end
