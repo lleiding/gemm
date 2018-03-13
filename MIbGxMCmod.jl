@@ -476,6 +476,23 @@ function compete!(world::Array{Patch,1})
     end
 end
 
+function iscompatible(mate::Individual, ind::Individual)
+    tolerance = ind.traits["reptol"] # TODO check for existence of trait
+    indgene = "" # TODO search for gene with trait "compat"
+    mategene = "" # TODO search for gene with trait "compat"
+    basediffs = 0
+    for i in eachindex(indgene)
+        try
+            indgene[i] != mategene[i] && (basediffs += 1) # alternatively use bioinformatics tools
+        catch # e.g., in case of differently long genes
+            basediffs += 1
+        end
+    end
+    seqidentity = 1 - (basediffs / length(indgene))
+    seqidentity < tolerance && return false # CAVE: maybe compare w/ indgenome?
+    true
+end
+
 function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int64, Int64})
     ind.isnew = true
     radius = floor(ind.traits["repradius"] + 0.5) # CAVE: to account for cell width ... or not??
