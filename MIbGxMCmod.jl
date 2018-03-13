@@ -864,8 +864,10 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
     counter = 0
     for patch in world
         (onlyisland && !patch.isisland) && continue
+        lineage = ""
         for ind in patch.community
             counter += 1
+            (!patch.isisland && ind.lineage == lineage) && continue
             chrmno = 0
             for chrm in ind.genome
                 chrmno += 1
@@ -885,6 +887,7 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
                     println(io, gene.sequence)
                 end
             end
+            lineage = ind.lineage
         end
     end
 end
