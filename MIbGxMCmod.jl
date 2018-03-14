@@ -477,9 +477,19 @@ function compete!(world::Array{Patch,1})
 end
 
 function iscompatible(mate::Individual, ind::Individual)
-    tolerance = ind.traits["reptol"] # TODO check for existence of trait
-    indgene = "" # TODO search for gene with trait "compat"
-    mategene = "" # TODO search for gene with trait "compat"
+    tolerance = ind.traits["reptol"]
+    indgene = ""
+    for chrm in ind.genome
+        for gene in chrm.genes
+            any(x -> x.name == "compat", gene.codes) && (indgene *= gene.sequence)
+        end
+    end
+    mategene = ""
+    for chrm in mate.genome
+        for gene in chrm.genes
+            any(x -> x.name == "compat", gene.codes) && (mategene *= gene.sequence)
+        end
+    end
     basediffs = 0
     for i in eachindex(indgene)
         try
