@@ -525,7 +525,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         filter!(k -> traitsexist(k, ["repsize"]), posspartners)
         filter!(k -> k.size >= k.traits["repsize"], posspartners)
         filter!(k -> !k.isnew, posspartners) # filter out mating individual
-        filter!(k -> (k.traits["seedsize"] >= ind.traits["reptol"] * ind.traits["seedsize"]) && (ind.traits["reptol"] * k.traits["seedsize"] <= ind.traits["seedsize"]) , posspartners)
+        filter!(k -> iscompatible(k, ind), posspartners)
         idx += 1
     end
     ind.isnew = false
