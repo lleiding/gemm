@@ -21,7 +21,7 @@ export Patch, # types
 const boltz = 1.38064852e-23 # J/K = m2⋅kg/(s2⋅K)
 const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
 const growthrate = exp(25.2) # global base growth/biomass production from Brown et al. 2004
-const mortality = exp(20.6) # global base mortality from Brown et al. 2004 is 26.3, but competition and dispersal introduce add. mort.
+const mortality = exp(24) # global base mortality from Brown et al. 2004 is 26.3, but competition and dispersal introduce add. mort.
 const fertility = exp(30.0) # global base reproduction rate 23.8 from Brown et al. 2004, alternatively 25.0
 const phylconstr = 10 #parse(ARGS[2])
 # const meangenes = 20 # mean number of genes per individual
@@ -287,7 +287,8 @@ function survive!(patch::Patch)
     while idx <= size(patch.community,1)
         if !patch.community[idx].isnew
             mass = patch.community[idx].size
-            dieprob = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
+            deathrate = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
+            dieprob = 1 - exp(-deathrate)
             if rand() < dieprob
                 splice!(patch.community, idx)
                 continue
