@@ -21,15 +21,15 @@ export Patch, # types
 const boltz = 1.38064852e-23 # J/K = m2⋅kg/(s2⋅K)
 const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
 const growthrate = exp(25.2) # global base growth/biomass production from Brown et al. 2004
-const mortality = exp(23) # global base mortality from Brown et al. 2004 is 26.3, but competition and dispersal introduce add. mort.
+const mortality = exp(22) # global base mortality from Brown et al. 2004 is 26.3, but competition and dispersal introduce add. mort.
 const fertility = exp(30.0) # global base reproduction rate 23.8 from Brown et al. 2004, alternatively 25.0
 const phylconstr = 10 #parse(ARGS[2])
 # const meangenes = 20 # mean number of genes per individual
 const mutationrate = 1e-3 * 0.3e11 # 1 base in 1000, correction factor for metabolic function
 const isolationweight = 3 # additional distance to be crossed when dispersing from or to isolated patches
-const cellsize = 1e9 # ca. one kton carrying cap.
+const cellsize = 1e8 # ca. 100 tons carrying cap.
 const maxdispmean = 10 # maximum mean dispersal distance
-const genelength = 100 # sequence length of genes
+const genelength = 20 # sequence length of genes
 
 
 ## Types:
@@ -604,9 +604,9 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
         elseif contains(name,"dispshape")
             push!(traits, Trait(name, rand() * maxdispmean))
         elseif contains(name, "tempopt")
-            push!(traits,Trait(name, rand() * 60 + 263)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name, rand() * 40 + 273)) #CAVE: code values elsewhere?
         elseif contains(name, "temptol")
-            push!(traits,Trait(name,rand()*10)) #CAVE: code values elsewhere?
+            push!(traits,Trait(name,rand()*5)) #CAVE: code values elsewhere?
         elseif contains(name, "mut")
             mutationrate == 0 ? push!(traits,Trait(name,rand())) : push!(traits,Trait(name,mutationrate)) #CAVE: code values elsewhere?
         elseif contains(name, "repsize")
@@ -619,11 +619,11 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
             push!(traits, Trait(name, rand()))
         elseif contains(name, "reptol")
             if settings["tolerance"] == "high"
-                push!(traits,Trait(name,0.25))
+                push!(traits,Trait(name,0.8))
             elseif settings["tolerance"] == "low"
-                push!(traits,Trait(name,0.7)) #CAVE: code values elsewhere?
+                push!(traits,Trait(name,0.95)) #CAVE: code values elsewhere?
             else
-                push!(traits,Trait(name,rand()))
+                push!(traits,Trait(name, 0.5 + rand() * 0.5))
             end
         else
             push!(traits,Trait(name,rand()))
@@ -682,7 +682,7 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
 end
 
 function genesis(settings::Dict{String,Any},
-                 nspecs::Int64=10000000, popsize::Int64 = 0, # about 600-900 species per cell
+                 nspecs::Int64=100000000, popsize::Int64 = 0, # about 600-900 species per cell
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",
                                                 "mutprob",
