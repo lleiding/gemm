@@ -701,15 +701,15 @@ function genesis(settings::Dict{String,Any},
         meangenes = length(traitnames)
         ngenes = rand(Poisson(meangenes))
         ngenes < 1 && (ngenes = 1)
+        traits = createtraits(traitnames, settings)
+        genes = creategenes(ngenes,traits)
         if settings["linkage"] == "none"
-            nchrms = ngenes
+            nchrms = length(genes)
         elseif settings["linkage"] == "full"
             nchrms = 1
         else
-            nchrms = rand(1:ngenes)
+            nchrms = rand(1:length(genes))
         end
-        traits = createtraits(traitnames, settings)
-        genes = creategenes(ngenes,traits)
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
         popsize = round(fertility * traitdict["repsize"]^(-1/4) * exp(-act/(boltz*traitdict["tempopt"]))) # population size determined by adult size and temperature niche optimum
