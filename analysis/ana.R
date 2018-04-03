@@ -11,10 +11,12 @@ library(dplyr)
 library(vegan)
 
 ## read main data:
-world = read.table("*.tsv", header = T)
+args = commandArgs()
+basename = args[length(args)]
+world = read.table(paste0(basename, ".tsv"), header = T)
 
 ## read sequences (fasta format!):
-seqs = read.dna(file="*.fa", format="fasta")
+seqs = read.dna(file=paste0(basename, ".fa"), format="fasta")
 
 ## filter sequences according to header:
 nseqs = seqs[grep("neutral", dimnames(seqs)[[1]]),]
