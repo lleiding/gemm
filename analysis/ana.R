@@ -59,7 +59,7 @@ for(lineage in lineages){
 
     p = ggtree(drop.tip(as.phylo(tre), setdiff(world$tips, species$tips)))
     p = p %<+% species + geom_tippoint(aes(color=location, size=abundance))
-    p + theme(legend.position="right")
+    p + theme(legend.position="topleft")
 
     ## save phylo plots:
     ggsave(file=paste(basename, lineage, "pdf", sep= "."), height = 10, width = 10)
