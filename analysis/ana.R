@@ -39,8 +39,8 @@ dists = dist.dna(seqs, model = "F81") # use JukesCantor distances JC69, alternat
 tre = hclust(dists, method = "ward.D2") # CAVE: which method? ward.D2 gives nicest results
 
 ## cluster tips to create species:
-grps = cutree(tre, h = 0.1) # conservative height of 0.1w 0.8 for high tol, 0.95 for low tol
-world$species = grps
+grps = cutree(tre, h = 0.1) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
+world$species = paste(lineage, grps, sep = ".")
 world$specloc = paste(world$id, world$species, sep = ".")
 locspecab = table(world$specloc)
 
