@@ -18,35 +18,47 @@ allworld = read.table(paste0(basename, ".tsv"), header = T)
 
 ## read sequences (fasta format!):
 allseqs = read.dna(file=paste0(basename, ".fa"), format="fasta")
+headers = grep("compat", dimnames(allseqs)[[1]], value = T)[c(TRUE,FALSE)]
 
-## get id of most abundant lineage:
-lineage = names(which.max(table(world$lineage)))
+rownames(allworld) = headers
+allworld$tips = headers
+cols = ncol(allworld)
+allworld = allworld[,c(cols,1:cols-1)]
+names(allworld)[names(allworld) == "id"] = "ID"
 
-## subset
-world = allworld[allworld$lineage == lineage, ]
-seqs = seqs[grep(lineage, dimnames(seqs)[[1]]),]
+## get ids of most abundant lineages:
+lineages = names(table(allworld$lineage))[table(allworld$lineage) > 10]
 
-## filter sequences according to header:
-seqs = seqs[grep("compat", dimnames(seqs)[[1]]),]
+for(lineage in lineages){
+    ## subset
+    world = allworld[allworld$lineage == lineage, ]
+    seqs = allseqs[grep(lineage, dimnames(allseqs)[[1]]),]
 
-## one chromosome copy:
-seqs = seqs[c(TRUE,FALSE),]
+    ## filter sequences according to header:
+    seqs = seqs[grep("compat", dimnames(seqs)[[1]]),]
 
-## compute distances:
-dists = dist.dna(seqs, model = "F81") # use JukesCantor distances JC69, alternatively Felsenstein "F81"
+    ## one chromosome copy:
+    seqs = seqs[c(TRUE,FALSE),]
 
-## calculate the tree:
-tre = hclust(dists, method = "ward.D2") # CAVE: which method? ward.D2 gives nicest results
+    ## compute distances:
+    dists = dist.dna(seqs, model = "F81") # use JukesCantor distances JC69, alternatively Felsenstein "F81"
 
-## cluster tips to create species:
-grps = cutree(tre, h = 0.1) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
-world$species = paste(lineage, grps, sep = ".")
-world$specloc = paste(world$id, world$species, sep = ".")
-locspecab = table(world$specloc)
+    ## calculate the tree:
+    tre = hclust(dists, method = "ward.D2") # CAVE: which method? ward.D2 gives nicest results
 
-## make species table with abundance
-species = world[!duplicated(world$specloc),]
-species$abundance = table(world$specloc)
+    ## cluster tips to create species:
+    grps = cutree(tre, h = 0.1) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
+    world$species = paste(lineage, grps, sep = ".")
+    world$population = paste(world$id, world$species, sep = ".")
+    locspecab = table(world$population)
+
+    ## make species table with abundance
+    species = world[!duplicated(world$population),]
+    species$abundance = as.vector(table(world$population))
+
+    p = ggtree(drop.tip(as.phylo(tre), setdiff(world$tips, species$tips)))
+    p %<+% species + geom_tippoint(aes(color=paste0(xloc,yloc), size=abundance))
+}
 
 l=list()
 for(i in unique(none$island)){
