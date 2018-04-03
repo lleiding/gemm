@@ -13,25 +13,40 @@ library(vegan)
 ## read main data:
 args = commandArgs()
 basename = args[length(args)]
-world = read.table(paste0(basename, ".tsv"), header = T)
+
+allworld = read.table(paste0(basename, ".tsv"), header = T)
 
 ## read sequences (fasta format!):
-seqs = read.dna(file=paste0(basename, ".fa"), format="fasta")
+allseqs = read.dna(file=paste0(basename, ".fa"), format="fasta")
+
+## get id of most abundant lineage:
+lineage = names(which.max(table(world$lineage)))
+
+## subset
+world = allworld[allworld$lineage == lineage, ]
+seqs = seqs[grep(lineage, dimnames(seqs)[[1]]),]
 
 ## filter sequences according to header:
-nseqs = seqs[grep("neutral", dimnames(seqs)[[1]]),]
-nseqs = nseqs[grep("sO1E", dimnames(nseqs)[[1]]),]
-rawseqs = as.vector(sapply(nseqs, function(x) paste0(as.character(x), collapse=""))) # get a vector of the sequences
+seqs = seqs[grep("compat", dimnames(seqs)[[1]]),]
+
+## one chromosome copy:
+seqs = seqs[c(TRUE,FALSE),]
 
 ## compute distances:
-dists = dist.dna(nseqs, model = "JC69") # use JukesCantor distances, alternatively Felsenstein "F81"
+dists = dist.dna(seqs, model = "F81") # use JukesCantor distances JC69, alternatively Felsenstein "F81"
 
 ## calculate the tree:
 tre = hclust(dists, method = "ward.D2") # CAVE: which method? ward.D2 gives nicest results
 
-## cluster tips:
-grps = cutree(tre, h = 0.1) # conservative height of 0.1
-world$species = as.vector(grps)
+## cluster tips to create species:
+grps = cutree(tre, h = 0.1) # conservative height of 0.1w 0.8 for high tol, 0.95 for low tol
+world$species = grps
+world$specloc = paste(world$id, world$species, sep = ".")
+locspecab = table(world$specloc)
+
+## make species table with abundance
+species = world[!duplicated(world$specloc),]
+species$abundance = table(world$specloc)
 
 l=list()
 for(i in unique(none$island)){
