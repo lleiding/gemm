@@ -25,6 +25,7 @@ allworld$tips = headers
 cols = ncol(allworld)
 allworld = allworld[,c(cols,1:cols-1)]
 names(allworld)[names(allworld) == "id"] = "ID"
+allworld$location = paste(allworld$xloc, allworld$yloc, sep = ".")
 
 ## get ids of most abundant lineages:
 lineages = names(table(allworld$lineage))[table(allworld$lineage) > 10]
@@ -57,7 +58,7 @@ for(lineage in lineages){
     species$abundance = as.vector(table(world$population))
 
     p = ggtree(drop.tip(as.phylo(tre), setdiff(world$tips, species$tips)))
-    p %<+% species + geom_tippoint(aes(color=paste(xloc,yloc, sep = "."), size=abundance))
+    p = p %<+% species + geom_tippoint(aes(color=location, size=abundance))
     p + theme(legend.position="right")
 
     ## save phylo plots:
