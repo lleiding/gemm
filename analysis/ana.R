@@ -60,7 +60,7 @@ for(lineage in lineages){
     species$abundance = as.vector(table(world$population))
 
     p = ggtree(drop.tip(as.phylo(tre), setdiff(world$tips, species$tips)))
-    p = p %<+% species + geom_tippoint(aes(color=location, size=abundance)) + geom_tiplab(aes(label=species), geom='text')
+    p = p %<+% species + geom_tippoint(aes(color=location, size=abundance)) + geom_tiplab(aes(subset=!duplicated(species),label=species), geom='text')
     p + theme(legend.position="right")
 
     ## save phylo plots:
