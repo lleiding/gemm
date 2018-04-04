@@ -51,7 +51,7 @@ for(lineage in lineages){
 
     ## cluster tips to create species:
     grps = cutree(tre, h = 0.1) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
-    world$species = paste(lineage, grps, sep = ".")
+    world$species = paste0(grps)
     world$population = paste(world$location, world$species, sep = ".")
     locspecab = table(world$population)
 
