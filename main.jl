@@ -40,9 +40,9 @@ function parsecommandline()
             required = false
             default = 2
         "--tolerance", "-t"
-            help = "tolerance of sequence identity when reproducing (\"high\", \"evo\" or \"low\")"
+            help = "tolerance of sequence identity when reproducing (\"high\", \"evo\", \"low\" or \"none\")"
             arg_type = String
-            range_tester = x->in(x,["high", "evo", "low"])
+            range_tester = x->in(x,["high", "evo", "low", "none"])
             required = false
             default = "evo"
         "--dest", "-d"
