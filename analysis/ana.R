@@ -71,7 +71,7 @@ for(lineage in lineages){
     allspecies = rbind(allspecies, species)
 }
 
-m = ggplot(world, aes(xloc, yloc))
+m = ggplot(allworld, aes(xloc, yloc))
 m + geom_tile(aes(fill = temp, width = 0.95, height = 0.95)) +
     scale_fill_continuous(low="white", high="black") +
     geom_jitter(data = allspecies, aes(size = abundance, color = species, shape = lineage))
@@ -81,3 +81,6 @@ corename = unlist(strsplit(basename, "_"))[-length(unlist(strsplit(basename, "_"
 corename = c(corename, "t1")
 corename = paste(corename, collapse = "_")
 mainland = read.table(paste0(corename, ".tsv"), header = T)
+
+traitnames = c("lnkgunits", "ngenes", "temptol", "seedsize", "tempopt", "repsize", "repradius", "dispmean", "prectol", "precopt", "dispshape")
+
