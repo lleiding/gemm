@@ -23,7 +23,7 @@ headers = grep("compat", dimnames(allseqs)[[1]], value = T)[c(TRUE,FALSE)]
 rownames(allworld) = headers
 allworld$tips = headers
 cols = ncol(allworld)
-allworld = allworld[,c(cols,1:cols-1)]
+allworld = allworld[,c(cols,1:(cols-1))]
 names(allworld)[names(allworld) == "id"] = "ID"
 allworld$location = paste(allworld$xloc, allworld$yloc, sep = ".")
 
