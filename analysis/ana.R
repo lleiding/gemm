@@ -9,7 +9,7 @@ library(ape)
 library(ggtree)
 library(dplyr)
 library(vegan)
-library(phyloseq)
+#library(phyloseq)
 
 ## read main data:
 args = commandArgs()
@@ -21,15 +21,15 @@ allworld = read.table(paste0(basename, ".tsv"), header = T)
 allseqs = read.dna(file=paste0(basename, ".fa"), format="fasta")
 headers = grep("compat", dimnames(allseqs)[[1]], value = T)[c(TRUE,FALSE)]
 
-rownames(allworld) = headers
+#rownames(allworld) = headers
 allworld$tips = headers
 cols = ncol(allworld)
 allworld = allworld[,c(cols,1:(cols-1))]
 names(allworld)[names(allworld) == "id"] = "ID"
 allworld$location = paste(allworld$xloc, allworld$yloc, sep = ".")
 
-## get ids of lineages wit at least two individuals:
-lineages = names(table(allworld$lineage))[table(allworld$lineage) >= 2]
+## get ids of lineages with at least four individuals:
+lineages = names(table(allworld$lineage))[table(allworld$lineage) >= 5]
 
 allspecies = c()
 
