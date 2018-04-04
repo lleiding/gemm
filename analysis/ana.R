@@ -9,6 +9,7 @@ library(ape)
 library(ggtree)
 library(dplyr)
 library(vegan)
+library(phyloseq)
 
 ## read main data:
 args = commandArgs()
@@ -75,3 +76,8 @@ m + geom_tile(aes(fill = temp, width = 0.95, height = 0.95)) +
     scale_fill_continuous(low="white", high="black") +
     geom_jitter(data = allspecies, aes(size = abundance, color = species, shape = lineage))
 ggsave(file=paste(basename, "map", "pdf", sep= "."), height = 8, width = 10)
+
+corename = unlist(strsplit(basename, "_"))[-length(unlist(strsplit(basename, "_")))]
+corename = c(corename, "t1")
+corename = paste(corename, collapse = "_")
+mainland = read.table(paste0(corename, ".tsv"), header = T)
