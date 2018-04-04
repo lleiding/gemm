@@ -30,6 +30,8 @@ allworld$location = paste(allworld$xloc, allworld$yloc, sep = ".")
 ## get ids of most abundant lineages:
 lineages = names(table(allworld$lineage))[table(allworld$lineage) > 10]
 
+allspecies = c()
+
 for(lineage in lineages){
     ## subset
     world = allworld[allworld$lineage == lineage, ]
@@ -50,7 +52,7 @@ for(lineage in lineages){
     ## cluster tips to create species:
     grps = cutree(tre, h = 0.1) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
     world$species = paste(lineage, grps, sep = ".")
-    world$population = paste(world$id, world$species, sep = ".")
+    world$population = paste(world$location, world$species, sep = ".")
     locspecab = table(world$population)
 
     ## make species table with abundance
@@ -63,5 +65,13 @@ for(lineage in lineages){
 
     ## save phylo plots:
     ggsave(file=paste(basename, lineage, "pdf", sep= "."), height = 10, width = 10)
+
+    ## store all species:
+    allspecies = rbind(allspecies, species)
 }
 
+m = ggplot(world, aes(xloc, yloc))
+m + geom_tile(aes(fill = temp, width = 0.95, height = 0.95)) +
+    scale_fill_continuous(low="white", high="black") +
+    geom_jitter(data = allspecies, aes(size = abundance, color=species))
+ggsave(file=paste(basename, "map", "pdf", sep= "."), height = 10, width = 10)
