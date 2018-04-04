@@ -73,11 +73,13 @@ for(lineage in lineages){
     }
 }
 
-m = ggplot(allworld, aes(xloc, yloc))
-m + geom_tile(aes(fill = temp, width = 0.95, height = 0.95)) +
-    scale_fill_continuous(low="white", high="black") +
-    geom_jitter(data = allspecies, aes(size = abundance, color = species, shape = lineage))
-ggsave(file=paste(basename, "map", "pdf", sep= "."), height = 8, width = 10)
+if(length(allspecies) > 1){ # only continue if there were actually phylogenies made
+    m = ggplot(allworld, aes(xloc, yloc))
+    m + geom_tile(aes(fill = temp, width = 0.95, height = 0.95)) +
+        scale_fill_continuous(low="white", high="black") +
+        geom_jitter(data = allspecies, aes(size = abundance, color = species, shape = lineage))
+    ggsave(file=paste(basename, "map", "pdf", sep= "."), height = 8, width = 10)
+}
 
 corename = unlist(strsplit(basename, "_"))[-length(unlist(strsplit(basename, "_")))]
 corename = c(corename, "t1")
