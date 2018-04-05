@@ -619,9 +619,9 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
             push!(traits, Trait(name, rand()))
         elseif contains(name, "reptol")
             if settings["tolerance"] == "high"
-                push!(traits,Trait(name, 0.8))
+                push!(traits,Trait(name, 0.75))
             elseif settings["tolerance"] == "low"
-                push!(traits,Trait(name, 0.95)) #CAVE: code values elsewhere?
+                push!(traits,Trait(name, 0.9)) #CAVE: code values elsewhere?
             elseif settings["tolerance"] == "none"
                 push!(traits,Trait(name, 0.0)) #CAVE: code values elsewhere?
             else
