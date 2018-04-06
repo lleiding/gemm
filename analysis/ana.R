@@ -29,7 +29,7 @@ names(allworld)[names(allworld) == "id"] = "ID"
 allworld$location = paste(allworld$xloc, allworld$yloc, sep = ".")
 allworld$temp.C = allworld$temp - 273
 maxtemp = max(allworld$temp.C)
-allworld$habitat = paste0(allworld$temp.C, "C." allworld$nichea, "p")
+allworld$habitat = paste0(allworld$temp.C, "C.", allworld$nichea, "p")
 
 ## get ids of lineages with at least four individuals:
 lineages = names(table(allworld$lineage))[table(allworld$lineage) >= 5]
