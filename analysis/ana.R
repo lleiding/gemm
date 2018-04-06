@@ -56,8 +56,8 @@ for(lineage in lineages){
 
         ## cluster tips to create species:
         grps = cutree(tre, h = 0.2) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
-        world$species = paste0(grps)
-        world$population = paste(world$location, world$species, sep = ".")
+        world$speciesID = paste0(grps)
+        world$population = paste(world$location, world$speciesID, sep = ".")
         locspecab = table(world$population)
 
         ## make species table with abundance
@@ -65,7 +65,7 @@ for(lineage in lineages){
         species$abundance = as.vector(table(world$population))
 
         p = ggtree(drop.tip(as.phylo(tre), setdiff(world$tips, species$tips)))
-        p = p %<+% species + geom_tippoint(aes(color=nichea, size=abundance, alpha=temp/maxtemp)) + geom_tiplab(aes(subset=!duplicated(species),label=species), geom='text')
+        p = p %<+% species + geom_tippoint(aes(color=nichea, size=abundance, alpha=temp.C/maxtemp)) + geom_tiplab(aes(subset=!duplicated(speciesID),label=speciesID), geom='text')
         p + theme(legend.position="right")
 
         ## save phylo plots:
@@ -80,7 +80,7 @@ if(length(allspecies) > 1){ # only continue if there were actually phylogenies m
     m = ggplot(allworld, aes(xloc, yloc))
     m + geom_tile(aes(fill = temp.C, width = 0.95, height = 0.95)) +
         scale_fill_continuous(low="white", high="black") +
-        geom_jitter(data = allspecies, aes(size = abundance, color = species, shape = lineage))
+        geom_jitter(data = allspecies, aes(size = abundance, color = speciesID, shape = lineage))
     ggsave(file=paste(basename, "map", "pdf", sep= "."), height = 8, width = 10)
 }
 
