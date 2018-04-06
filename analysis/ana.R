@@ -81,6 +81,14 @@ if(length(allspecies) > 1){ # only continue if there were actually phylogenies m
     ggsave(file=paste(basename, "map", "pdf", sep= "."), height = 8, width = 10)
 }
 
+cat(c("lineage", "linkage", "n_species"), sep = "\t")
+cat("\n")
+for(lineage in unique(allspecies$lineage)){
+    nspecs = allspecies$species[allspecies$lineage == lineage] %>% unique %>% length
+    linkage = allspecies$species[allspecies$lineage == lineage] %>% unique
+    cat(c(lineage, linkage, nspecs), sep = "\t")
+    cat("\n")
+}
 corename = unlist(strsplit(basename, "_"))[-length(unlist(strsplit(basename, "_")))]
 corename = c(corename, "t1")
 corename = paste(corename, collapse = "_")
