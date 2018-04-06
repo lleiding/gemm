@@ -27,6 +27,9 @@ cols = ncol(allworld)
 allworld = allworld[,c(cols,1:(cols-1))]
 names(allworld)[names(allworld) == "id"] = "ID"
 allworld$location = paste(allworld$xloc, allworld$yloc, sep = ".")
+allworld$temp.C = allworld$temp - 273
+maxtemp = max(allworld$temp.C)
+allworld$habitat = paste0(allworld$temp.C, "C." allworld$nichea, "p")
 
 ## get ids of lineages with at least four individuals:
 lineages = names(table(allworld$lineage))[table(allworld$lineage) >= 5]
@@ -62,7 +65,7 @@ for(lineage in lineages){
         species$abundance = as.vector(table(world$population))
 
         p = ggtree(drop.tip(as.phylo(tre), setdiff(world$tips, species$tips)))
-        p = p %<+% species + geom_tippoint(aes(color=location, size=abundance)) + geom_tiplab(aes(subset=!duplicated(species),label=species), geom='text')
+        p = p %<+% species + geom_tippoint(aes(color=nichea, size=abundance, alpha=temp/maxtemp)) + geom_tiplab(aes(subset=!duplicated(species),label=species), geom='text')
         p + theme(legend.position="right")
 
         ## save phylo plots:
@@ -75,7 +78,7 @@ for(lineage in lineages){
 
 if(length(allspecies) > 1){ # only continue if there were actually phylogenies made
     m = ggplot(allworld, aes(xloc, yloc))
-    m + geom_tile(aes(fill = temp, width = 0.95, height = 0.95)) +
+    m + geom_tile(aes(fill = temp.C, width = 0.95, height = 0.95)) +
         scale_fill_continuous(low="white", high="black") +
         geom_jitter(data = allspecies, aes(size = abundance, color = species, shape = lineage))
     ggsave(file=paste(basename, "map", "pdf", sep= "."), height = 8, width = 10)
