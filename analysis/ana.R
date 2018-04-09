@@ -48,6 +48,12 @@ for(lineage in lineages){
         ## one chromosome copy:
         seqs = seqs[c(TRUE,FALSE),]
 
+        if(nrow(world) > 40000){
+           inds = sample(1:nrow(world), 40000)
+           allworld = allworld[inds,]
+           seqs = seqs[inds,]
+        }
+        
         ## compute distances:
         dists = dist.dna(seqs, model = "F81") # use JukesCantor distances JC69, alternatively Felsenstein "F81"
 
