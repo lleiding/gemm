@@ -95,7 +95,8 @@ for(lineage in unique(allspecies$lineage)){
 corename = unlist(strsplit(basename, "_"))[-length(unlist(strsplit(basename, "_")))]
 corename = c(corename, "t1")
 corename = paste(corename, collapse = "_")
-mainland = read.table(paste0(corename, ".tsv"), header = T)
+#mainland = read.table(paste0(corename, ".tsv"), header = T)
 
 traitnames = c("lnkgunits", "ngenes", "temptol", "seedsize", "tempopt", "repsize", "repradius", "dispmean", "prectol", "precopt", "dispshape")
 
+save.image(paste0(basename, ".R"))
