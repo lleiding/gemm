@@ -50,7 +50,7 @@ for(lineage in lineages){
 
         if(nrow(world) > 40000){
            inds = sample(1:nrow(world), 40000)
-           allworld = allworld[inds,]
+           world = world[inds,]
            seqs = seqs[inds,]
         }
         
