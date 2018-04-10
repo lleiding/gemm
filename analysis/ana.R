@@ -48,6 +48,10 @@ for(lineage in lineages){
         ## one chromosome copy:
         seqs = seqs[c(TRUE,FALSE),]
 
+        adults = world$size >= world$repsize
+        world = world[adults,]
+        seqs = seqs[adults,]
+
         if(nrow(world) > 40000){
            inds = sample(1:nrow(world), 40000)
            world = world[inds,]
@@ -62,7 +66,14 @@ for(lineage in lineages){
 
         ## cluster tips to create species:
         grps = cutree(tre, h = 0.2) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
-        world$speciesID = paste0(grps)
+        world$grps = grps
+        world$speciesID = 0
+        maxgrps = max(grps)
+        for(i in unique(grps[tre$order])){
+            world$speciesID[world$grps == i] = maxgrps
+            maxgrps = maxgrps - 1
+        }
+        #world$speciesID = paste0(grps)
         world$population = paste(world$location, world$speciesID, sep = ".")
         locspecab = table(world$population)
 
@@ -71,7 +82,7 @@ for(lineage in lineages){
         species$abundance = as.vector(table(world$population))
 
         p = ggtree(drop.tip(as.phylo(tre), setdiff(world$tips, species$tips)))
-        p = p %<+% species + geom_tippoint(aes(color=nichea, size=abundance, alpha=temp.C/maxtemp)) + geom_tiplab(aes(subset=!duplicated(speciesID),label=speciesID), geom='text')
+        p = p %<+% species + scale_color_gradient(low="blue", high="red") + geom_tippoint(aes(color=nichea, size=abundance, alpha=temp.C)) + geom_tiplab(aes(subset=!duplicated(speciesID),label=speciesID), geom='text')
         p + theme(legend.position="right")
 
         ## save phylo plots:
