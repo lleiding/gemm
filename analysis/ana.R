@@ -97,6 +97,7 @@ if(length(allspecies) > 1){ # only continue if there were actually phylogenies m
     m = ggplot(allworld, aes(xloc, yloc))
     m + geom_tile(aes(fill = temp.C, width = 0.95, height = 0.95)) +
         scale_fill_continuous(low="white", high="black") +
+        scale_color_gradientn(colours = rainbow(5)) +
         geom_jitter(data = allspecies, aes(size = abundance, color = speciesID, shape = lineage))
     ggsave(file=paste(basename, "map", "pdf", sep= "."), height = 8, width = 10)
 }
