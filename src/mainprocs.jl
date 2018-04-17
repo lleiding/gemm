@@ -83,6 +83,7 @@ function establish!(patch::Patch, nniches::Int64=1)
         if patch.community[idx].isnew || patch.community[idx].age == 0
             fitness = 1
             if !traitsexist(patch.community[idx], ["temptol", "tempopt"]) # CAVE: should check for more traits!
+                info(STDERR, "Individual killed due to missing trait(s).")
                 splice!(patch.community, idx) # kill it!
                 continue
             end
@@ -93,6 +94,7 @@ function establish!(patch::Patch, nniches::Int64=1)
             fitness < 0 && (fitness = 0) # should be obsolete
             if nniches >= 2
                 if !traitsexist(patch.community[idx], ["prectol", "precopt"]) # CAVE: should check for more traits!
+                    info(STDERR, "Individual killed due to missing trait(s).")
                     splice!(patch.community, idx) # kill it!
                     continue
                 end
@@ -161,6 +163,7 @@ function grow!(patch::Patch)
     idx = 1
     while idx <= size(patch.community,1)
         if !traitsexist(patch.community[idx], ["repsize"])
+            info(STDERR, "Individual killed due to missing trait(s).")
             splice!(patch.community, idx)
             continue
         elseif !patch.community[idx].isnew
@@ -197,6 +200,7 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions, 
         idx = 1
         while idx <= size(patch.community,1)
             if !traitsexist(patch.community[idx], ["dispmean", "dispshape"])
+                info(STDERR, "Individual killed due to missing trait(s).")
                 splice!(patch.community,idx)
                 continue
             elseif !patch.community[idx].isnew && patch.community[idx].age == 0
@@ -257,6 +261,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     seedbank = Individual[]
     while idx <= size(patch.community,1)
         if !traitsexist(patch.community[idx], ["repradius", "repsize", "reptol", "seedsize", "mutprob"])
+            info(STDERR, "Individual killed due to missing trait(s).")
             splice!(patch.community, idx)
             continue
         elseif !patch.community[idx].isnew && patch.community[idx].age > 0
