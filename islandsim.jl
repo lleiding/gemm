@@ -11,7 +11,7 @@
 ## Every line describes one patch in the following format:
 ## <ID> <X-COORDINATE> <Y-COORDINATE> [<TYPE>]
 
-thisDir = pwd()
+thisDir = pwd() * "/src"
 any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 
 using GeMM, ArgParse
