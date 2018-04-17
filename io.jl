@@ -1,3 +1,25 @@
+# IO functions for GeMM
+
+function readmapfile(filename::String)
+    println("Reading file \"$filename\"...")
+    mapstrings = String[]
+    open(filename) do file
+        mapstrings = readlines(file)
+    end
+    mapstrings = filter(x->!all(isspace,x),mapstrings) # remove empty lines
+    mapstrings = filter(x->x[1]!='#',mapstrings) # remove comment lines
+    mapsubstrings = map(split,mapstrings)
+    mapentries = map(x->map(String,x),mapsubstrings)
+    timesteps = 0
+    try
+        timesteps = parse(Int,filter(x->size(x,1)==1,mapentries)[1][1])
+    catch
+        timesteps = 1000
+        warn("your mapfile \"$filename\" does not include timestep information. Assuming $timesteps timesteps.")
+    end
+    mapentries = filter(x->size(x,1)>1,mapentries)
+    return timesteps,mapentries
+end
 
 """
     dumpinds(world, io, sep)
