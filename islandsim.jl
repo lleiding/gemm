@@ -64,10 +64,6 @@ end
 function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, seed::Int64, timesteps::Int=1000)
     println("Starting simulation...")
     for t in 1:timesteps
-        if alldead(world)
-            println("t = $t: all individuals dead.")
-            return
-        end
         (t == 1 || mod(t, 1000) == 0) && writedata(world, mapfile, settings, seed, t)
         establish!(world, settings["nniches"])
         checkviability!(world)
