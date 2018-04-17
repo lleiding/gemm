@@ -14,7 +14,7 @@
 thisDir = pwd()
 any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 
-using MIbGxMCmod, ArgParse
+using GeMM, ArgParse
 
 function parsecommandline()
     s = ArgParseSettings()
