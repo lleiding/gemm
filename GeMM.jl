@@ -1,6 +1,6 @@
 # Genome explicit Metacommunity Model - GeMM
 #
-# Ludwig Leidinger 2017
+# Ludwig Leidinger 2018
 # <l.leidinger@gmx.net>
 #
 # contains all custom types and functions necessary for eco-evo-env speciation island model
@@ -35,10 +35,10 @@ include("constants.jl")
 
 include("io.jl")
 
+include("subprocs.jl")
+
 include("init.jl")
 
 include("mainprocs.jl")
-
-include("subprocs.jl")
 
 end
