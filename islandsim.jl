@@ -62,7 +62,7 @@ end
 
 
 function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, seed::Int64, timesteps::Int=1000)
-    println("Starting simulation...")
+    info("Starting simulation...")
     for t in 1:timesteps
         (t == 1 || mod(t, 1000) == 0) && writedata(world, mapfile, settings, seed, t)
         establish!(world, settings["nniches"])
