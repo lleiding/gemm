@@ -86,7 +86,7 @@ for(lineage in lineages){
         p + theme(legend.position="right")
 
         ## save phylo plots:
-        ggsave(file=paste(basename, lineage, "pdf", sep= "."), height = 10, width = 10)
+        ggsave(file=paste0(basename, "_", lineage, ".pdf"), height = 10, width = 10)
 
         ## store all species:
         allspecies = rbind(allspecies, species)
@@ -99,7 +99,11 @@ if(length(allspecies) > 1){ # only continue if there were actually phylogenies m
         scale_fill_continuous(low="white", high="black") +
         scale_color_gradientn(colours = rainbow(5)) +
         geom_jitter(data = allspecies, aes(size = abundance, color = speciesID, shape = lineage))
-    ggsave(file=paste(basename, "map", "pdf", sep= "."), height = 8, width = 10)
+    ggsave(file=paste0(basename, "_map", ".pdf"), height = 8, width = 10)
+    ggplot(allspecies) + geom_bar(aes(abundance))
+    ggsave(file=paste0(basename, "_rankab", ".pdf"), height = 10, width = 10)
+    ggplot(allspecies) + geom_bar(aes(abundance), width=10) + facet_grid(yloc ~ xloc)
+    ggsave(file=paste0(basename, "_rankab_cells", ".pdf"), height = 10, width = 10)
 }
 
 cat(c("lineage", "linkage", "n_species"), sep = "\t")
@@ -118,3 +122,4 @@ corename = paste(corename, collapse = "_")
 traitnames = c("lnkgunits", "ngenes", "temptol", "seedsize", "tempopt", "repsize", "repradius", "dispmean", "prectol", "precopt", "dispshape")
 
 save.image(paste0(basename, ".R"))
+
