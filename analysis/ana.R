@@ -100,10 +100,16 @@ if(length(allspecies) > 1){ # only continue if there were actually phylogenies m
         scale_color_gradientn(colours = rainbow(5)) +
         geom_jitter(data = allspecies, aes(size = abundance, color = speciesID, shape = lineage))
     ggsave(file=paste0(basename, "_map", ".pdf"), height = 8, width = 10)
+    allspecies$rank[order(allspecies$abundance, decreasing =T)] = 1:nrow(allspecies)
     ggplot(allspecies) + geom_bar(aes(abundance))
     ggsave(file=paste0(basename, "_rankab", ".pdf"), height = 10, width = 10)
     ggplot(allspecies) + geom_bar(aes(abundance), width=10) + facet_grid(yloc ~ xloc)
     ggsave(file=paste0(basename, "_rankab_cells", ".pdf"), height = 10, width = 10)
+    community = with(allspecies, tapply(abundance, list(location, speciesID), mean, default = 0))
+    sac <- specaccum(community)
+    pdf(file=paste0(basename, "_sac", ".pdf"), width = 8, height = 8)
+    plot(sac, ci.type="polygon", ci.col="yellow")
+    dev.off()
 }
 
 cat(c("lineage", "linkage", "n_species"), sep = "\t")
