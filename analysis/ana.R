@@ -73,7 +73,7 @@ for(lineage in lineages){
             world$speciesID[world$grps == i] = maxgrps
             maxgrps = maxgrps - 1
         }
-        #world$speciesID = paste0(grps)
+        world$taxon = paste0(world$lineage, world$speciesID)
         world$population = paste(world$location, world$speciesID, sep = ".")
         locspecab = table(world$population)
 
@@ -109,7 +109,7 @@ if(length(allspecies) > 1){ # only continue if there were actually phylogenies m
     ggsave(file=paste0(basename, "_rankab", ".pdf"), height = 10, width = 10)
     ggplot(allspecies) + geom_col(aes(localrank, abundance)) + facet_grid(yloc ~ xloc)
     ggsave(file=paste0(basename, "_rankab_cells", ".pdf"), height = 10, width = 10)
-    community = with(allspecies, tapply(abundance, list(location, speciesID), mean, default = 0))
+    community = with(allspecies, tapply(abundance, list(location, taxon), mean, default = 0))
     sac <- specaccum(community)
     pdf(file=paste0(basename, "_sac", ".pdf"), width = 8, height = 8)
     plot(sac, ci.type="polygon", ci.col="yellow")
