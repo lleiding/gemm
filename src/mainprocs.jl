@@ -290,7 +290,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         traits = chrms2traits(genome)
                         age = 0
                         isnew = false
-                        fitness = 1.0
+                        fitness = 0.0
                         newsize = seedsize
                         ind = Individual(patch.community[idx].lineage, genome,traits,age,isnew,fitness,newsize)
                         push!(seedbank ,ind) # maybe actually deepcopy!?
