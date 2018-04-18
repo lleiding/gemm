@@ -87,7 +87,7 @@ end
 
 function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) #TODO: add functionality to remove patches!
     info("Updating world...")
-    area = 1 # CAVE: just for now...
+    area = cellsize
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
                             Each line must contain patch information with at least \n
