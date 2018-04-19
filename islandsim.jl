@@ -72,7 +72,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
         grow!(world, settings["static"])
         compete!(world, settings["static"])
         reproduce!(world, settings["static"])
-        mutate!(world, settings, settings["static"])
+        mutate!(world, settings)
         colonizers = disperse!(world, settings["static"])
         length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, mapfile, settings, seed, t)
     end
