@@ -45,7 +45,7 @@ end
 
 function mutate!(world::Array{Patch, 1}, settings::Dict{String,Any})
     for patch in world
-        patch.isisland && mutate!(patch, settings)
+        (patch.isisland || !settings["static"]) && mutate!(patch, settings)
     end
 end
 
@@ -65,9 +65,9 @@ function checkviability!(patch::Patch) # may consider additional rules... # mayb
     end
 end
 
-function checkviability!(world::Array{Patch,1})
+function checkviability!(world::Array{Patch,1}, static::Bool = true)
     for patch in world
-        patch.isisland && checkviability!(patch) # pmap(checkviability!,patch) ???
+        (patch.isisland || !static) && checkviability!(patch) # pmap(checkviability!,patch) ???
     end
 end
 
@@ -119,9 +119,9 @@ function establish!(patch::Patch, nniches::Int64=1)
 end
 
 
-function establish!(world::Array{Patch,1}, nniches::Int64=1)
+function establish!(world::Array{Patch,1}, nniches::Int64=1, static::Bool = true)
     for patch in world
-        patch.isisland && establish!(patch, nniches) # pmap(!,patch) ???
+        (patch.isisland || !static) && establish!(patch, nniches) # pmap(!,patch) ???
     end
 end
 
@@ -148,9 +148,9 @@ function survive!(patch::Patch)
     end
 end
 
-function survive!(world::Array{Patch,1})
+function survive!(world::Array{Patch,1}, static::Bool = true)
     for patch in world
-        patch.isisland && survive!(patch) # pmap(!,patch) ???
+        (patch.isisland || !static) && survive!(patch) # pmap(!,patch) ???
     end
 end
 
@@ -184,9 +184,9 @@ function grow!(patch::Patch)
     end
 end
 
-function grow!(world::Array{Patch,1})
+function grow!(world::Array{Patch,1}, static::Bool = true)
     for patch in world
-        patch.isisland && grow!(patch) # pmap(!,patch) ???
+        (patch.isisland || !static) && grow!(patch) # pmap(!,patch) ???
     end
 end
 
@@ -194,7 +194,7 @@ end
     disperse!(w)
 Dispersal of individuals within world (array of patches) `w`
 """
-function disperse!(world::Array{Patch,1}) # TODO: additional border conditions, refoctorize
+function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additional border conditions, refoctorize
     colonizers = ""
     for patch in world
         idx = 1
@@ -214,11 +214,11 @@ function disperse!(world::Array{Patch,1}) # TODO: additional border conditions, 
                 targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
                 possdests = find(x->in(x.location,targets),world)
                 filter!(x -> world[x].isisland, possdests) # disperse only to islands
-                if patch.isisland
+                if static && patch.isisland
                     indleft = splice!(patch.community,idx) # only remove individuals from islands!
                 end
                 if size(possdests,1) > 0 # if no viable target patch, individual dies
-                    if !patch.isisland
+                    if static && !patch.isisland
                         indleft = deepcopy(patch.community[idx])
                     end
                     indleft.isnew = true
@@ -245,9 +245,9 @@ function compete!(patch::Patch)
     end
 end
 
-function compete!(world::Array{Patch,1})
+function compete!(world::Array{Patch,1}, static::Bool = true)
     for patch in world
-        patch.isisland && compete!(patch) # pmap(!,patch) ???
+        (patch.isisland || !static) && compete!(patch) # pmap(!,patch) ???
     end
 end
 
@@ -303,8 +303,8 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     append!(patch.community, seedbank)
 end
 
-function reproduce!(world::Array{Patch,1})
+function reproduce!(world::Array{Patch,1}, static::Bool = true)
     for patch in world
-        patch.isisland && reproduce!(world, patch) # pmap(!,patch) ???
+        (patch.isisland || !static) && reproduce!(world, patch) # pmap(!,patch) ???
     end
 end
