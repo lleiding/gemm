@@ -4,7 +4,7 @@
 ## Ludwig Leidinger <ludwig.leidinger@uni-wuerzburg.de>
 ## Dec., 2017
 
-library(stats)
+library(stats) # what for?
 library(ape)
 library(ggtree)
 library(dplyr)
