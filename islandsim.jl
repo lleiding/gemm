@@ -50,9 +50,9 @@ function parsecommandline()
             arg_type = String
             required = false
             default = string(Dates.today())
-#        "--flag1"
-#            help = "an option without argument, i.e. a flag"
-#            action = :store_true
+        "--static"
+            help = "static mainland. Turns off any dynamics on the continent"
+            action = :store_true
 #        "arg1"
 #            help = "a positional argument"
 #            required = false
@@ -65,15 +65,15 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
     info("Starting simulation...")
     for t in 1:timesteps
         (t == 1 || mod(t, 1000) == 0) && writedata(world, mapfile, settings, seed, t)
-        establish!(world, settings["nniches"])
-        checkviability!(world)
-        compete!(world)
-        survive!(world)
-        grow!(world)
-        compete!(world)
-        reproduce!(world)
-        mutate!(world, settings)
-        colonizers = disperse!(world)
+        establish!(world, settings["nniches"], settings["static"])
+        checkviability!(world, settings["static"])
+        compete!(world, settings["static"])
+        survive!(world, settings["static"])
+        grow!(world, settings["static"])
+        compete!(world, settings["static"])
+        reproduce!(world, settings["static"])
+        mutate!(world, settings, settings["static"])
+        colonizers = disperse!(world, settings["static"])
         length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, mapfile, settings, seed, t)
     end
 end
