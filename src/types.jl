@@ -12,12 +12,12 @@ end
 
 mutable struct Individual
     lineage::String
+    size::Float64 # body mass
+    age::Int64
+    fitness::Float64 # rate scaling factor
+    isnew::Bool # indicator whether individual is new to a patch (after dispersal or birth)
     genome::Array{Chromosome, 1}
     traits::Dict{String, Float64}
-    age::Int64
-    isnew::Bool # indicator whether individual is new to a patch (after dispersal or birth)
-    fitness::Float64 # rate scaling factor
-    size::Float64 # body mass
     mtraits::Dict{String, Float64} # maternal traits
     ptraits::Dict{String, Float64} # paternal traits
 end
