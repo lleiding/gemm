@@ -282,19 +282,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                     else
                         patch.community[idx].size = parentmass
                     end
-                    for i in 1:noffs # pmap? this loop could be factorized!
-                        partnergenome = meiosis(partner.genome, false) # offspring have different genome!
-                        mothergenome = meiosis(patch.community[idx].genome, true)
-                        (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
-                        genome = vcat(partnergenome,mothergenome)
-                        traits = chrms2traits(genome)
-                        age = 0
-                        isnew = false
-                        fitness = 0.0
-                        newsize = seedsize
-                        ind = Individual(patch.community[idx].lineage, newsize, age, fitness, isnew, genome, traits, mtraits, ptraits)
-                        push!(seedbank ,ind) # maybe actually deepcopy!?
-                    end
+                    push!(seedbank, makeoffspring(noffs, patch.community[idx], partner))
                 end
             end
         end
