@@ -1,13 +1,8 @@
 # Types for GeMM
 
-mutable struct Trait
-    name::String
-    value::Float64
-end
-
 mutable struct Gene
     sequence::String
-    codes::Array{Trait, 1}
+    codes::Array{String, 1}
 end
 
 mutable struct Chromosome
