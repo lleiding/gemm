@@ -181,6 +181,24 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     posspartners
 end
 
+function makeoffspring(noffs::Int64, mate::Individual, partner::Individual)
+    seedbank = Individual[]
+    for i in 1:noffs # pmap?
+        partnergenome = meiosis(partner.genome, false) # offspring have different genome!
+        mothergenome = meiosis(mate.genome, true)
+        (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
+        genome = vcat(partnergenome,mothergenome)
+        traits = chrms2traits(genome)
+        age = 0
+        isnew = false
+        fitness = 0.0
+        newsize = seedsize
+        ind = Individual(mate.lineage, newsize, age, fitness, isnew, genome, traits, mtraits, ptraits)
+        push!(seedbank ,ind) # maybe actually deepcopy!?
+    end
+    seedbank
+end
+
 function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     traits = Trait[]
     seedsize = exp(-7 + 20 * rand()) # corresponds to 1mg to 22kg
