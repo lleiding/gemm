@@ -292,7 +292,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         isnew = false
                         fitness = 0.0
                         newsize = seedsize
-                        ind = Individual(patch.community[idx].lineage, genome,traits,age,isnew,fitness,newsize)
+                        ind = Individual(patch.community[idx].lineage, newsize, age, fitness, isnew, genome, traits, mtraits, ptraits)
                         push!(seedbank ,ind) # maybe actually deepcopy!?
                     end
                 end
