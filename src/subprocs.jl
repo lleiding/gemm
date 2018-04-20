@@ -9,10 +9,17 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
         push!(gameteidxs,rand([firstset[i],secondset[i]]))
     end
     gamete = Chromosome[]
+    mtraits = String[]
+    ptraits = String[]
     for i in gameteidxs
+        if genome[i].maternal
+            push!(mtraits, unique(vcat(map(x -> x.codes, genome[i].genes)...)))
+        else
+            push!(ptraits, unique(vcat(map(x -> x.codes, genome[i].genes)...)))
+        end
         push!(gamete, Chromosome(genome[i].genes, maternal))
     end
-    deepcopy(gamete)
+    deepcopy(gamete), traitdict
 end
 
 function chrms2traits(chrms::Array{Chromosome,1})
