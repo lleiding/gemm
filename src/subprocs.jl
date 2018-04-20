@@ -13,12 +13,14 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     ptraits = String[]
     for i in gameteidxs
         if genome[i].maternal
-            push!(mtraits, unique(vcat(map(x -> x.codes, genome[i].genes)...)))
+            push!(mtraits, vcat(map(x -> x.codes, genome[i].genes)...))
         else
-            push!(ptraits, unique(vcat(map(x -> x.codes, genome[i].genes)...)))
+            push!(ptraits, vcat(map(x -> x.codes, genome[i].genes)...))
         end
         push!(gamete, Chromosome(genome[i].genes, maternal))
     end
+    mtraits = unique(mtraits)
+    ptraits = unique(ptraits)
     deepcopy(gamete), traitdict
 end
 
