@@ -161,12 +161,12 @@ Continuing anyway - data might be identical.")
     filename = basename * ".tsv"
     println("Writing data \"$filename\"")
     open(filename, "w") do file
-        dumpinds(world, file, "\t", static || timestep > 1)
+        dumpinds(world, file, "\t", settings["static"] || timestep > 1)
     end
     filename = basename * ".fa"
     println("Writing fasta \"$filename\"")
     open(filename, "w") do file
-        makefasta(world, file, "", static || timestep > 1)
+        makefasta(world, file, "", settings["static"] || timestep > 1)
     end
 end
 
