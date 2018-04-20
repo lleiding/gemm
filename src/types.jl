@@ -18,6 +18,8 @@ mutable struct Individual
     isnew::Bool # indicator whether individual is new to a patch (after dispersal or birth)
     fitness::Float64 # rate scaling factor
     size::Float64 # body mass
+    mtraits::Dict{String, Float64} # maternal traits
+    ptraits::Dict{String, Float64} # paternal traits
 end
 
 mutable struct Patch
