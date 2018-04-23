@@ -205,7 +205,7 @@ function makeoffspring(noffs::Int64, mate::Individual, partner::Individual)
         age = 0
         isnew = false
         fitness = 0.0
-        newsize = seedsize
+        newsize = traits["seedsize"]
         ind = Individual(mate.lineage, newsize, age, fitness, isnew, genome, traits, mtraits, ptraits)
         push!(seedbank ,ind) # maybe actually deepcopy!?
     end
