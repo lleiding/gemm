@@ -28,9 +28,12 @@ end
 function chrms2traits(mtraits::Dict{String,Float64}, ptraits::Dict{String,Float64})
     if collect(keys(mtraits)) == collect(keys(ptraits))
         traitdict = Dict{String,Float64}()
-        for traitname in collect(keys(mtraits))
+        for traitname in keys(mtraits)
             traitdict[traitname] = mean(mtraits[traitname], ptraits[traitname])
         end
+    else
+        length(keys(mtraits)) >= length(keys(ptraits)) ? traitdict = mtraits : traitdict = ptraits
+        warn(STDERR, "paternal traits do not match. Returning haplotype.")
     end
     traitdict
 end
