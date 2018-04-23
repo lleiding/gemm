@@ -282,7 +282,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                     else
                         patch.community[idx].size = parentmass
                     end
-                    push!(seedbank, makeoffspring(noffs, patch.community[idx], partner))
+                    append!(seedbank, makeoffspring(noffs, patch.community[idx], partner))
                 end
             end
         end
