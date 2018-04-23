@@ -1,7 +1,7 @@
 # Subsidiary functions for GeMM
 
-function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include further dynamics, errors...
-    firstset = find(x->x.maternal,genome)
+function meiosis(genome::Array{Chromosome,1}, maternal::Bool, mtraits::Dict{String,Float64}, ptraits::Dict{String,Float64}) # TODO: include further dynamics, errors...
+    firstset = find(x->x.maternal,genome) # CAVE: chromosomes could still be mismatched!
     secondset = find(x->!x.maternal,genome)
     size(firstset,1) != size(secondset,1) && return Chromosome[] # CAVE: more elegant solution...
     gameteidxs = []
@@ -9,19 +9,25 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
         push!(gameteidxs,rand([firstset[i],secondset[i]]))
     end
     gamete = Chromosome[]
-    mtraits = String[]
-    ptraits = String[]
+    mtraitnames = String[]
+    ptraitnames = String[]
     for i in gameteidxs
         if genome[i].maternal
-            append!(mtraits, vcat(map(x -> x.codes, genome[i].genes)...)) # save all traitnames of genes in linkage unit
+            append!(mtraitnames, vcat(map(x -> x.codes, genome[i].genes)...)) # save all traitnames of genes in linkage unit
         else
-            append!(ptraits, vcat(map(x -> x.codes, genome[i].genes)...))
+            append!(ptraitnames, vcat(map(x -> x.codes, genome[i].genes)...))
         end
         push!(gamete, Chromosome(genome[i].genes, maternal))
     end
-    mtraits = unique(mtraits)
-    ptraits = unique(ptraits)
-    traitdict = vcat(mtraits, ptraits)
+    mtraitnames = unique(mtraitnames)
+    ptraitnames = unique(ptraitnames)
+    traitdict = Dict{String, Float64}()
+    for (k, v) in mtraits
+        in(k, mtraitnames) && push!(traitdict, k => v)
+    end
+    for (k, v) in ptraits
+        in(k, ptraitnames) && push!(traitdict, k => v)
+    end
     deepcopy(gamete), traitdict
 end
 
