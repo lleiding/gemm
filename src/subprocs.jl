@@ -13,9 +13,9 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     ptraits = String[]
     for i in gameteidxs
         if genome[i].maternal
-            push!(mtraits, vcat(map(x -> x.codes, genome[i].genes)...)) # save all traitnames of genes in linkage unit
+            append!(mtraits, vcat(map(x -> x.codes, genome[i].genes)...)) # save all traitnames of genes in linkage unit
         else
-            push!(ptraits, vcat(map(x -> x.codes, genome[i].genes)...))
+            append!(ptraits, vcat(map(x -> x.codes, genome[i].genes)...))
         end
         push!(gamete, Chromosome(genome[i].genes, maternal))
     end
