@@ -5,7 +5,7 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     secondset = find(x->!x.maternal,genome)
     size(firstset,1) != size(secondset,1) && return Chromosome[] # CAVE: more elegant solution...
     gameteidxs = []
-    for i in eachindex(firstset)
+    for i in eachindex(firstset) # randomly draw indices of maternal and paternal linkage units
         push!(gameteidxs,rand([firstset[i],secondset[i]]))
     end
     gamete = Chromosome[]
@@ -13,7 +13,7 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     ptraits = String[]
     for i in gameteidxs
         if genome[i].maternal
-            push!(mtraits, vcat(map(x -> x.codes, genome[i].genes)...))
+            push!(mtraits, vcat(map(x -> x.codes, genome[i].genes)...)) # save all traitnames of genes in linkage unit
         else
             push!(ptraits, vcat(map(x -> x.codes, genome[i].genes)...))
         end
@@ -21,6 +21,7 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     end
     mtraits = unique(mtraits)
     ptraits = unique(ptraits)
+    traitdict = vcat(mtraits, ptraits)
     deepcopy(gamete), traitdict
 end
 
