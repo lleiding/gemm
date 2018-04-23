@@ -38,7 +38,8 @@ function genesis(settings::Dict{String,Any},
             break
         end
         totalmass += popmass
-        newind = Individual(lineage, chromosomes, traitdict, 0, false, 1.0, traitdict["seedsize"])
+        # initialise new individuals as homozygotes:
+        newind = Individual(lineage, traitdict["seedsize"], 0, 0.0, false, chromosomes, traitdict, traitdict, traitdict)
         for i in 1:popsize
             push!(community, newind)
         end
