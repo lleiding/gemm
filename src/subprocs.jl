@@ -29,7 +29,7 @@ function chrms2traits(mtraits::Dict{String,Float64}, ptraits::Dict{String,Float6
     if collect(keys(mtraits)) == collect(keys(ptraits))
         traitdict = Dict{String,Float64}()
         for traitname in keys(mtraits)
-            traitdict[traitname] = mean(mtraits[traitname], ptraits[traitname])
+            traitdict[traitname] = mean([mtraits[traitname], ptraits[traitname]])
         end
     else
         length(keys(mtraits)) >= length(keys(ptraits)) ? traitdict = mtraits : traitdict = ptraits
