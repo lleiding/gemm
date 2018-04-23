@@ -109,7 +109,7 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
                         traits *= "neutral"
                     else
                         for trait in gene.codes
-                            traits *= trait.name * "$(trait.value)" * ","
+                            chrm.maternal ? traits *= trait * "$(ind.mtraits[trait])" * "," : traits *= trait * "$(ind.ptraits[trait])" * ","
                         end
                     end
                     header = ">$counter x$(patch.location[1]) y$(patch.location[2]) $(ind.lineage) c$chrmno g$geneno $traits"
