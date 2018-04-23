@@ -197,8 +197,8 @@ end
 function makeoffspring(noffs::Int64, mate::Individual, partner::Individual)
     seedbank = Individual[]
     for i in 1:noffs # pmap?
-        partnergenome, ptraits = meiosis(partner.genome, false) # offspring have different genome!
-        mothergenome, mtraits = meiosis(mate.genome, true)
+        partnergenome, ptraits = meiosis(partner.genome, false, partner.mtraits, partner.ptraits) # offspring have different genome!
+        mothergenome, mtraits = meiosis(mate.genome, true, mate.mtraits, mate.ptraits)
         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
         genome = vcat(partnergenome,mothergenome)
         traits = chrms2traits(mtraits, ptraits)
