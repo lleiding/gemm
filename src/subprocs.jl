@@ -250,27 +250,27 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
     traits
 end
 
-function creategenes(ngenes::Int64,traits::Array{Trait,1})
+function creategenes(ngenes::Int64,traits::Dict{String, Float64})
     genes = Gene[]
     for i in 1:ngenes
         sequence = String(rand(collect("acgt"), genelength)) # arbitrary start sequence
-        codesfor = Trait[]
+        codesfor = String[]
         push!(genes,Gene(sequence, codesfor))
     end
-    for trait in traits
+    for traitname in keys(traits)
         ncodinggenes = rand(Poisson(1))
         while ncodinggenes < 1  # make sure every trait is coded by at least 1 gene
             ncodinggenes = rand(Poisson(1))
         end
         codinggenes = rand(genes,ncodinggenes)
         for gene in codinggenes
-            push!(gene.codes,trait)
+            push!(gene.codes,traitname)
         end
     end
     if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
-        push!(genes, Gene(String(rand(collect("acgt"), genelength)), Trait[]))
+        push!(genes, Gene(String(rand(collect("acgt"), genelength)), String[]))
     end
-    push!(genes, Gene(String(rand(collect("acgt"), genelength)), [Trait("compat", 1.0)])) # create extra compatibility gene
+    push!(genes, Gene(String(rand(collect("acgt"), genelength)), ["compat"])) # create extra compatibility gene 1.0
     genes
 end
 
