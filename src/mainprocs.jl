@@ -34,7 +34,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
             chrm.genes[idx].sequence = String(charseq)
         end
     end
-    ind.traits = chrms2traits(ind.genome)
+    ind.traits = chrms2traits(ind.mtraits, ind.ptraits)
 end
 
 function mutate!(patch::Patch, settings::Dict{String,Any})
