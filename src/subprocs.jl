@@ -207,7 +207,7 @@ function makeoffspring(noffs::Int64, mate::Individual, partner::Individual)
 end
 
 function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
-    traits = Trait[]
+    traits = Dict{String, Float64}()
     seedsize = exp(-7 + 20 * rand()) # corresponds to 1mg to 22kg
     repsize = exp(0 + 17 * rand()) # 1g to 24t
     while repsize <= seedsize
@@ -216,35 +216,35 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
     end
     for name in traitnames
         if contains(name,"rate")
-            push!(traits,Trait(name,rand()*100))
+            traits[name] = rand()*100
         elseif contains(name,"dispshape")
-            push!(traits, Trait(name, rand() * maxdispmean))
+            traits[name] = rand() * maxdispmean
         elseif contains(name, "tempopt")
-            push!(traits,Trait(name, rand() * 40 + 273)) #CAVE: code values elsewhere?
+            traits[name] =  rand() * 40 + 273 #CAVE: code values elsewhere?
         elseif contains(name, "temptol")
-            push!(traits,Trait(name,rand()*5)) #CAVE: code values elsewhere?
+            traits[name] = rand() * 5 #CAVE: code values elsewhere?
         elseif contains(name, "mut")
-            mutationrate == 0 ? push!(traits,Trait(name,rand())) : push!(traits,Trait(name,mutationrate)) #CAVE: code values elsewhere?
+            mutationrate == 0 ? traits[name] = rand() : traits[name] = mutationrate #CAVE: code values elsewhere?
         elseif contains(name, "repsize")
-            push!(traits,Trait(name,repsize)) #CAVE: code values elsewhere?
+            traits[name] = repsize #CAVE: code values elsewhere?
         elseif contains(name, "seedsize")
-            push!(traits,Trait(name,seedsize)) #CAVE: code values elsewhere?
+            traits[name] = seedsize #CAVE: code values elsewhere?
         elseif contains(name, "precopt")
-            push!(traits, Trait(name, rand() * 10))
+            traits[name] = rand() * 10
         elseif contains(name, "prectol")
-            push!(traits, Trait(name, rand()))
+            traits[name] = rand()
         elseif contains(name, "reptol")
             if settings["tolerance"] == "high"
-                push!(traits,Trait(name, 0.75))
+                traits[name] =  0.75
             elseif settings["tolerance"] == "low"
-                push!(traits,Trait(name, 0.9)) #CAVE: code values elsewhere?
+                traits[name] =  0.9 #CAVE: code values elsewhere?
             elseif settings["tolerance"] == "none"
-                push!(traits,Trait(name, 0.01)) #CAVE: code values elsewhere?
+                traits[name] =  0.01 #CAVE: code values elsewhere?
             else
-                push!(traits,Trait(name, 0.5 + rand() * 0.5))
+                traits[name] =  0.5 + rand() * 0.5
             end
         else
-            push!(traits,Trait(name,rand()))
+            traits[name] = rand()
         end
     end
     traits
