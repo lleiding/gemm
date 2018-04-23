@@ -109,6 +109,7 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
                         traits *= "neutral"
                     else
                         for trait in gene.codes
+                            contains(trait, "compat") && continue
                             chrm.maternal ? traits *= trait * "$(ind.mtraits[trait])" * "," : traits *= trait * "$(ind.ptraits[trait])" * ","
                         end
                     end
