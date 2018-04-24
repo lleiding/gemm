@@ -130,13 +130,13 @@ function iscompatible(mate::Individual, ind::Individual)
     indgene = ""
     for chrm in ind.genome
         for gene in chrm.genes
-            any(x -> x.name == "compat", gene.codes) && (indgene *= gene.sequence)
+            any(x -> x.name == "compat", gene.codes) && (indgene = gene.sequence) # use one compatibility gene randomly
         end
     end
     mategene = ""
     for chrm in mate.genome
         for gene in chrm.genes
-            any(x -> x.name == "compat", gene.codes) && (mategene *= gene.sequence)
+            any(x -> x.name == "compat", gene.codes) && (mategene = gene.sequence) # use one compatibility gene randomly
         end
     end
     basediffs = 0
