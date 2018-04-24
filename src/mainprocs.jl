@@ -14,6 +14,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
                     end
                     charseq[i] = newbase
                     for trait in chrm.genes[idx].codes
+                        contains(trait, "compat") && continue # compat has no trait value!
                         (contains(trait, "mutprob") && mutationrate != 0) && continue
                         contains(trait, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
                         oldvalue = haplotraits[trait]
