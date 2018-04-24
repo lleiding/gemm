@@ -17,17 +17,17 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
                         (contains(trait, "mutprob") && mutationrate != 0) && continue
                         contains(trait, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
                         oldvalue = haplotraits[trait]
-                        contains(haplotraits[trait], "tempopt") && (oldvalue -= 273)
+                        contains(trait, "tempopt") && (oldvalue -= 273)
                         while oldvalue <= 0 # make sure sd of Normal dist != 0
                             oldvalue = abs(rand(Normal(0,0.01)))
                         end
                         newvalue = oldvalue + rand(Normal(0, oldvalue/phylconstr)) # CAVE: maybe handle temp + prec separately
                         newvalue < 0 && (newvalue=abs(newvalue))
-                        (newvalue > 1 && contains(haplotraits[trait],"prob")) && (newvalue=1)
-                        while newvalue <= 0 #&& contains(trait.name,"mut")
+                        (newvalue > 1 && contains(trait,"prob")) && (newvalue=1)
+                        while newvalue <= 0
                             newvalue = haplotraits[trait] + rand(Normal(0, haplotraits[trait]/phylconstr))
                         end
-                        contains(haplotraits[trait], "tempopt") && (newvalue += 273)
+                        contains(trait, "tempopt") && (newvalue += 273)
                         haplotraits[trait] = newvalue
                     end
                 end
