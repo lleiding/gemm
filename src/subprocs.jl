@@ -58,7 +58,7 @@ function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
     elseif c != 0
         y = a * exp(-(x-b)^2/(2*c^2))
     else
-        y = 0
+        y = 0.0
     end
 end
 
