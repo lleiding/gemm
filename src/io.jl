@@ -146,25 +146,25 @@ writes simulation output from `world` to separate table and fasta files.
 function writedata(world::Array{Patch,1}, mappath::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
     mapfile = split(mappath, "/")[end]
     length(mapfile) == 0 && return
-    basename = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_lnk" * settings["linkage"] * "_tol" * settings["tolerance"] * "_t" * "$timestep"
+    basepath = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_lnk" * settings["linkage"] * "_tol" * settings["tolerance"] * "_t" * "$timestep"
     counter = 0
     extension = ""
-    while ispath(basename * extension * ".tsv") || ispath(basename * extension * ".fa")
+    while ispath(basepath * extension * ".tsv") || ispath(basepath * extension * ".fa")
         extension = "_$counter"
         counter += 1
         if counter > 9
-            warn("could not write to ", basename, extension, ": file exists. \n
+            warn("could not write to ", basepath, extension, ": file exists. \n
 Continuing anyway - data might be identical.")
             return
         end
     end
-    basename *= extension
-    filename = basename * ".tsv"
+    basepath *= extension
+    filename = basepath * ".tsv"
     println("Writing data \"$filename\"")
     open(filename, "w") do file
         dumpinds(world, file, "\t", settings["static"] || timestep > 1)
     end
-    filename = basename * ".fa"
+    filename = basepath * ".fa"
     println("Writing fasta \"$filename\"")
     open(filename, "w") do file
         makefasta(world, file, "", settings["static"] || timestep > 1)
