@@ -3,6 +3,7 @@
 function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
     prob = ind.traits["mutprob"]
     for chrm in ind.genome
+        chrm.maternal ? haplotraits = ind.mtraits : haplotraits = ind.ptraits
         for idx in eachindex(chrm.genes)
             charseq = collect(chrm.genes[idx].sequence)
             for i in eachindex(charseq)
@@ -13,26 +14,27 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
                     end
                     charseq[i] = newbase
                     for trait in chrm.genes[idx].codes
-                        (contains(trait.name, "mutprob") && mutationrate != 0) && continue
-                        contains(trait.name, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
-                        oldvalue = trait.value
-                        contains(trait.name, "tempopt") && (oldvalue -= 273)
+                        (contains(trait, "mutprob") && mutationrate != 0) && continue
+                        contains(trait, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
+                        oldvalue = haplotraits[trait]
+                        contains(haplotraits[trait], "tempopt") && (oldvalue -= 273)
                         while oldvalue <= 0 # make sure sd of Normal dist != 0
                             oldvalue = abs(rand(Normal(0,0.01)))
                         end
                         newvalue = oldvalue + rand(Normal(0, oldvalue/phylconstr)) # CAVE: maybe handle temp + prec separately
                         newvalue < 0 && (newvalue=abs(newvalue))
-                        (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
+                        (newvalue > 1 && contains(haplotraits[trait],"prob")) && (newvalue=1)
                         while newvalue <= 0 #&& contains(trait.name,"mut")
-                            newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
+                            newvalue = haplotraits[trait] + rand(Normal(0, haplotraits[trait]/phylconstr))
                         end
-                        contains(trait.name, "tempopt") && (newvalue += 273)
-                        trait.value = newvalue
+                        contains(haplotraits[trait], "tempopt") && (newvalue += 273)
+                        haplotraits[trait] = newvalue
                     end
                 end
             end
             chrm.genes[idx].sequence = String(charseq)
         end
+        chrm.maternal ? ind.mtraits = haplotraits : ind.ptraits = haplotraits
     end
     ind.traits = chrms2traits(ind.mtraits, ind.ptraits)
 end
