@@ -173,7 +173,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         sqrt(x^2 + y^2) <= radius && push!(coordinates, (x + location[1], y + location[2]))
     end
     coordinates = map(k -> checkborderconditions!(world, k[1], k[2]), coordinates)
-    order = map(x -> x.^2, coordinates) |> x -> map(sum, x) |> x -> map(sqrt, x) |> sortperm
+    order = map(k -> k.^2, coordinates) |> l -> map(sum, l) |> m -> map(sqrt, m) |> sortperm
     coordinates = coordinates[order]
     posspartners = Individual[]
     idx = 1 # check patches in order of increasing distance
