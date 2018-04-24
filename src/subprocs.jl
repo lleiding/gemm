@@ -168,13 +168,15 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         idx > length(coordinates) && break
         targetpatch = filter(l -> l.location == coordinates[idx], world)
         length(targetpatch) >= 1 ? community = targetpatch[1].community : community = Individual[]
-        append!(posspartners, community)
-        filter!(k -> k.age > 0, posspartners)
-        filter!(k -> k.lineage == ind.lineage, posspartners)
-        filter!(k -> traitsexist(k, ["repsize"]), posspartners)
-        filter!(k -> k.size >= k.traits["repsize"], posspartners)
-        filter!(k -> !k.isnew, posspartners) # filter out mating individual
-        filter!(k -> iscompatible(k, ind), posspartners)
+        for mate in community
+            mate.age == 0 && continue
+            mate.lineage != ind.lineage && continue
+            traitsexist(mate, ["repsize"]) && continue
+            mate.size >= mate.traits["repsize"] && continue
+            mate.isnew && continue
+            !iscompatible(mate, ind) && continue
+            append!(posspartners, mate)
+        end
         idx += 1
     end
     ind.isnew = false
