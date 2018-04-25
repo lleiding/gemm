@@ -48,7 +48,7 @@ function mutate!(patch::Patch, settings::Dict{String,Any})
             splice!(patch.community, idx) # kill it!
             continue
         end
-        ind.age == 0 && mutate!(ind, patch.altitude, settings)
+        patch.community[idx].age == 0 && mutate!(patch.community[idx], patch.altitude, settings)
         idx += 1
     end
 end
