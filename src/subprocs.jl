@@ -39,7 +39,7 @@ function chrms2traits(mtraits::Dict{String,Float64}, ptraits::Dict{String,Float6
         end
     else
         length(keys(mtraits)) >= length(keys(ptraits)) ? traitdict = mtraits : traitdict = ptraits
-        warn(STDERR, "paternal traits do not match. Returning homozygote.")
+        warn(STDERR, "parental traits do not match. Returning homozygote.")
     end
     traitdict
 end
