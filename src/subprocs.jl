@@ -181,6 +181,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         idx > length(coordinates) && break
         targetpatch = filter(l -> l.location == coordinates[idx], world)
         length(targetpatch) >= 1 ? community = targetpatch[1].community : community = Individual[]
+        shuffle!(community) # randomly select potential mates
         for mate in community
             mate.age == 0 && continue
             mate.lineage != ind.lineage && continue
@@ -188,7 +189,8 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
             mate.size < mate.traits["repsize"] && continue
             mate.isnew && continue
             !iscompatible(mate, ind) && continue
-            append!(posspartners, mate)
+            push!(posspartners, mate)
+            length(posspartners) > 0 && break # quit searching if one mate is found
         end
         idx += 1
     end
