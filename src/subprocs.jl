@@ -3,7 +3,7 @@
 function meiosis(genome::Array{Chromosome,1}, maternal::Bool, mtraits::Dict{String,Float64}, ptraits::Dict{String,Float64}) # TODO: include further dynamics, errors...
     firstset = find(x->x.maternal,genome) # CAVE: chromosomes could still be mismatched!
     secondset = find(x->!x.maternal,genome)
-    size(firstset,1) != size(secondset,1) && return Chromosome[] # CAVE: more elegant solution...
+    size(firstset,1) != size(secondset,1) && return (Chromosome[], mtraits) # CAVE: more elegant solution...
     gameteidxs = []
     for i in eachindex(firstset) # randomly draw indices of maternal and paternal linkage units
         push!(gameteidxs,rand([firstset[i],secondset[i]]))
@@ -28,7 +28,7 @@ function meiosis(genome::Array{Chromosome,1}, maternal::Bool, mtraits::Dict{Stri
     for (k, v) in ptraits
         in(k, ptraitnames) && push!(traitdict, k => v)
     end
-    deepcopy(gamete), traitdict
+    (deepcopy(gamete), traitdict)
 end
 
 function chrms2traits(mtraits::Dict{String,Float64}, ptraits::Dict{String,Float64})
