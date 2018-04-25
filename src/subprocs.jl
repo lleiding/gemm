@@ -185,7 +185,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
             mate.age == 0 && continue
             mate.lineage != ind.lineage && continue
             traitsexist(mate, ["repsize"]) && continue
-            mate.size >= mate.traits["repsize"] && continue
+            mate.size < mate.traits["repsize"] && continue
             mate.isnew && continue
             !iscompatible(mate, ind) && continue
             append!(posspartners, mate)
