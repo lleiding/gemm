@@ -41,8 +41,15 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
 end
 
 function mutate!(patch::Patch, settings::Dict{String,Any})
-    for ind in patch.community
+    idx = 1
+    while idx <= length(patch.community)
+        if !traitsexist(patch.community[idx], ["temptol", "tempopt"]) # CAVE: should check for more traits!
+            info(STDERR, "Individual killed due to missing trait(s).")
+            splice!(patch.community, idx) # kill it!
+            continue
+        end
         ind.age == 0 && mutate!(ind, patch.altitude, settings)
+        idx += 1
     end
 end
 
