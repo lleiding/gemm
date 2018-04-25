@@ -32,7 +32,7 @@ function meiosis(genome::Array{Chromosome,1}, maternal::Bool, mtraits::Dict{Stri
 end
 
 function chrms2traits(mtraits::Dict{String,Float64}, ptraits::Dict{String,Float64})
-    if collect(keys(mtraits)) == collect(keys(ptraits))
+    if sort(collect(keys(mtraits))) == sort(collect(keys(ptraits)))
         traitdict = Dict{String,Float64}()
         for traitname in keys(mtraits)
             traitdict[traitname] = mean([mtraits[traitname], ptraits[traitname]])
