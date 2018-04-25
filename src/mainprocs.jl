@@ -262,7 +262,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     idx = 1
     temp = patch.altitude
     seedbank = Individual[]
-    while idx <= size(patch.community,1)
+    while idx <= length(patch.community)
         if !traitsexist(patch.community[idx], ["repradius", "repsize", "reptol", "seedsize", "mutprob"])
             info(STDERR, "Individual killed due to missing trait(s).")
             splice!(patch.community, idx)
@@ -280,12 +280,13 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                     partner = rand(posspartners)
                     parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
                     if parentmass <= 0
-                        idx += 1 #splice!(patch.community, idx)
+                        splice!(patch.community, idx)
                         continue
                     else
                         patch.community[idx].size = parentmass
                     end
-                    append!(seedbank, makeoffspring(noffs, patch.community[idx], partner))
+                    offspring = makeoffspring(noffs, patch.community[idx], partner)
+                    append!(seedbank, offspring)
                 end
             end
         end
