@@ -43,7 +43,7 @@ end
 function mutate!(patch::Patch, settings::Dict{String,Any})
     idx = 1
     while idx <= length(patch.community)
-        if !traitsexist(patch.community[idx], ["temptol", "tempopt"]) # CAVE: should check for more traits!
+        if !traitsexist(patch.community[idx], ["mutprob"]) # CAVE: should check for more traits!
             info(STDERR, "Individual killed due to missing trait(s).")
             splice!(patch.community, idx) # kill it!
             continue
