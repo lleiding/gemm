@@ -285,8 +285,8 @@ function creategenes(ngenes::Int64,traits::Dict{String, Float64})
 end
 
 function createchrs(nchrs::Int64,genes::Array{Gene,1})
-    ngenes=size(genes,1)
-    if nchrs>1
+    ngenes = length(genes)
+    if nchrs > 1
         chrsplits = sort(rand(1:ngenes,nchrs-1))
         chromosomes = Chromosome[]
         for chr in 1:nchrs
