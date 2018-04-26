@@ -7,6 +7,7 @@ end
 
 mutable struct Chromosome
     genes::Array{Gene, 1}
+    number::int64
     maternal::Bool # parental origin of chromosome
 end
 
