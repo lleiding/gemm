@@ -17,7 +17,7 @@ function meiosis(genome::Array{Chromosome,1}, maternal::Bool, mtraits::Dict{Stri
         else
             append!(ptraitnames, vcat(map(x -> x.codes, genome[i].genes)...))
         end
-        push!(gamete, Chromosome(genome[i].genes, maternal))
+        push!(gamete, Chromosome(genome[i].genes, genome[i].number, maternal))
     end
     mtraitnames = unique(mtraitnames)
     ptraitnames = unique(ptraitnames)
@@ -291,15 +291,15 @@ function createchrs(nchrs::Int64,genes::Array{Gene,1})
         chromosomes = Chromosome[]
         for chr in 1:nchrs
             if chr==1 # first chromosome
-                push!(chromosomes, Chromosome(genes[1:chrsplits[chr]], true))
+                push!(chromosomes, Chromosome(genes[1:chrsplits[chr]], chr, true))
             elseif chr==nchrs # last chromosome
-                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):end], true))
+                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):end], chr, true))
             else
-                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):chrsplits[chr]], true))
+                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):chrsplits[chr]], chr, true))
             end
         end
     else # only one chromosome
-        chromosomes = [Chromosome(genes, true)]
+        chromosomes = [Chromosome(genes, 1, true)]
     end
     secondset = deepcopy(chromosomes)
     for chrm in secondset
