@@ -1,0 +1,4 @@
+tests/
+paper/source.pdf
+*.aux
+*.log

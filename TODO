@@ -1,0 +1,10 @@
+# TODO Island invasion model
+
+* create global species pool
+* remove references to mainland
+* invade!() function
+* disturb!() function
+* create settings for:
+	- productivity
+	- disturbance
+	- propagule pressure
