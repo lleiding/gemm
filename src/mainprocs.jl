@@ -3,6 +3,7 @@
 function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
     prob = ind.traits["mutprob"]
     for chrm in ind.genome
+        chrm.maternal ? haplotraits = ind.mtraits : haplotraits = ind.ptraits
         for idx in eachindex(chrm.genes)
             charseq = collect(chrm.genes[idx].sequence)
             for i in eachindex(charseq)
@@ -13,33 +14,42 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
                     end
                     charseq[i] = newbase
                     for trait in chrm.genes[idx].codes
-                        (contains(trait.name, "mutprob") && mutationrate != 0) && continue
-                        contains(trait.name, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
-                        oldvalue = trait.value
-                        contains(trait.name, "tempopt") && (oldvalue -= 273)
+                        contains(trait, "compat") && continue # compat has no trait value!
+                        (contains(trait, "mutprob") && mutationrate != 0) && continue
+                        contains(trait, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
+                        oldvalue = haplotraits[trait]
+                        contains(trait, "tempopt") && (oldvalue -= 273)
                         while oldvalue <= 0 # make sure sd of Normal dist != 0
                             oldvalue = abs(rand(Normal(0,0.01)))
                         end
                         newvalue = oldvalue + rand(Normal(0, oldvalue/phylconstr)) # CAVE: maybe handle temp + prec separately
                         newvalue < 0 && (newvalue=abs(newvalue))
-                        (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
-                        while newvalue <= 0 #&& contains(trait.name,"mut")
-                            newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
+                        (newvalue > 1 && contains(trait,"prob")) && (newvalue=1)
+                        while newvalue <= 0
+                            newvalue = haplotraits[trait] + rand(Normal(0, haplotraits[trait]/phylconstr))
                         end
-                        contains(trait.name, "tempopt") && (newvalue += 273)
-                        trait.value = newvalue
+                        contains(trait, "tempopt") && (newvalue += 273)
+                        haplotraits[trait] = newvalue
                     end
                 end
             end
             chrm.genes[idx].sequence = String(charseq)
         end
+        chrm.maternal ? ind.mtraits = haplotraits : ind.ptraits = haplotraits
     end
-    ind.traits = chrms2traits(ind.genome)
+    ind.traits = chrms2traits(ind.mtraits, ind.ptraits)
 end
 
 function mutate!(patch::Patch, settings::Dict{String,Any})
-    for ind in patch.community
-        ind.age == 0 && mutate!(ind, patch.altitude, settings)
+    idx = 1
+    while idx <= length(patch.community)
+        if !traitsexist(patch.community[idx], ["mutprob"]) # CAVE: should check for more traits!
+            info(STDERR, "Individual killed due to missing trait(s).")
+            splice!(patch.community, idx) # kill it!
+            continue
+        end
+        patch.community[idx].age == 0 && mutate!(patch.community[idx], patch.altitude, settings)
+        idx += 1
     end
 end
 
@@ -259,7 +269,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     idx = 1
     temp = patch.altitude
     seedbank = Individual[]
-    while idx <= size(patch.community,1)
+    while idx <= length(patch.community)
         if !traitsexist(patch.community[idx], ["repradius", "repsize", "reptol", "seedsize", "mutprob"])
             info(STDERR, "Individual killed due to missing trait(s).")
             splice!(patch.community, idx)
@@ -277,24 +287,13 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                     partner = rand(posspartners)
                     parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
                     if parentmass <= 0
-                        idx += 1 #splice!(patch.community, idx)
+                        splice!(patch.community, idx)
                         continue
                     else
                         patch.community[idx].size = parentmass
                     end
-                    for i in 1:noffs # pmap? this loop could be factorized!
-                        partnergenome = meiosis(partner.genome, false) # offspring have different genome!
-                        mothergenome = meiosis(patch.community[idx].genome, true)
-                        (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
-                        genome = vcat(partnergenome,mothergenome)
-                        traits = chrms2traits(genome)
-                        age = 0
-                        isnew = false
-                        fitness = 0.0
-                        newsize = seedsize
-                        ind = Individual(patch.community[idx].lineage, genome,traits,age,isnew,fitness,newsize)
-                        push!(seedbank ,ind) # maybe actually deepcopy!?
-                    end
+                    offspring = makeoffspring(noffs, patch.community[idx], partner)
+                    append!(seedbank, offspring)
                 end
             end
         end
