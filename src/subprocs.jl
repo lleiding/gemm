@@ -1,6 +1,7 @@
 # Subsidiary functions for GeMM
 
 function meiosis(genome::Array{Chromosome,1}, maternal::Bool, mtraits::Dict{String,Float64}, ptraits::Dict{String,Float64}) # TODO: include further dynamics, errors...
+    sort!(genome, by = x -> x.number)
     firstset = find(x->x.maternal,genome) # CAVE: chromosomes could still be mismatched!
     secondset = find(x->!x.maternal,genome)
     length(firstset) != length(secondset) && return (Chromosome[], mtraits) # CAVE: more elegant solution...
