@@ -18,7 +18,7 @@ function genesis(settings::Dict{String,Any},
     community = Individual[]
     totalmass = 0.0
     while true 
-        lineage = randstring(4)
+        lineage = randstring(8)
         meangenes = length(traitnames)
         ngenes = rand(Poisson(meangenes))
         ngenes < 1 && (ngenes = 1)
