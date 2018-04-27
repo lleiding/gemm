@@ -2,34 +2,69 @@
 
 function meiosis(genome::Array{Chromosome,1}, maternal::Bool, mtraits::Dict{String,Float64}, ptraits::Dict{String,Float64}) # TODO: include further dynamics, errors...
     sort!(genome, by = x -> x.number)
-    firstset = find(x->x.maternal,genome) # CAVE: chromosomes could still be mismatched!
-    secondset = find(x->!x.maternal,genome)
-    length(firstset) != length(secondset) && return (Chromosome[], mtraits) # CAVE: more elegant solution...
-    gameteidxs = []
-    for i in eachindex(firstset) # randomly draw indices of maternal and paternal linkage units
-        push!(gameteidxs,rand([firstset[i],secondset[i]]))
-    end
+    # firstset = find(x->x.maternal,genome) # CAVE: chromosomes could still be mismatched!
+    # secondset = find(x->!x.maternal,genome)
+    # length(firstset) != length(secondset) && return (genome[firstset], mtraits) # CAVE: more elegant solution...
+    # gameteidxs = []
+    # for i in eachindex(firstset) # randomly draw indices of maternal and paternal linkage units
+    #     push!(gameteidxs,rand([firstset[i],secondset[i]]))
+    # end
     gamete = Chromosome[]
-    mtraitnames = String[]
-    ptraitnames = String[]
-    for i in gameteidxs
-        if genome[i].maternal
-            append!(mtraitnames, vcat(map(x -> x.codes, genome[i].genes)...)) # save all traitnames of genes in linkage unit
-        else
-            append!(ptraitnames, vcat(map(x -> x.codes, genome[i].genes)...))
+    chrmnos = map(x -> x.number, genome)
+    for number in unique(chrmnos)
+        push!(gamete, rand(filter(x -> x.number == number, genome)))
+    end
+    traitdict = Dict{String, Float64}() #maybe initialise as copy of mtraits
+    for chrm in gamete
+        for gene in chrm.genes
+            for traitname in gene.codes
+                chrm.maternal ? push!(traitdict, traitname => mtraits[traitname]) : push!(traitdict, traitname => ptraits[traitname])
+            end
         end
-        push!(gamete, Chromosome(genome[i].genes, genome[i].number, maternal))
     end
-    mtraitnames = unique(mtraitnames)
-    ptraitnames = unique(ptraitnames)
-    traitdict = Dict{String, Float64}()
-    for (k, v) in mtraits
-        in(k, mtraitnames) && push!(traitdict, k => v)
+    gamete = deepcopy(gamete)
+    for chrm in gamete
+        chrm.maternal = maternal
     end
-    for (k, v) in ptraits
-        in(k, ptraitnames) && push!(traitdict, k => v)
-    end
-    (deepcopy(gamete), traitdict)
+    (gamete, traitdict)
+    # mtraitnames = String[]
+    # ptraitnames = String[]
+    # ## DEBUGGING:
+    # alltraits = []
+    # allmtraits = []
+    # allptraits = []
+    # for chrm in genome
+    #     for gene in chrm.genes
+    #         append!(alltraits, gene.codes)
+    #         chrm.maternal && append!(allmtraits, gene.codes)
+    #         !chrm.maternal && append!(allptraits, gene.codes)
+    #     end
+    # end
+    # alltraits = unique(alltraits)
+    # allmtraits = unique(allmtraits)
+    # allptraits = unique(allptraits)
+    # ##/DEBUGGING
+    # for i in gameteidxs
+    #     for gene in genome[i].genes
+    #         if genome[i].maternal
+    #             append!(mtraitnames, gene.codes) # save all traitnames of genes in linkage unit
+    #         else
+    #             append!(ptraitnames, gene.codes)
+    #         end
+    #     end
+    #     push!(gamete, Chromosome(genome[i].genes, genome[i].number, maternal))
+    # end
+    # mtraitnames = unique(mtraitnames)
+    # ptraitnames = unique(ptraitnames)
+    # length(unique(vcat(mtraitnames, ptraitnames))) != length(mtraits) && println("INCONSISTENCY IN MEIOSIS (alltraits = ", length(alltraits), "(", length(allmtraits), "/", length(allptraits), ")",", haplotraits = ", length(unique(vcat(mtraitnames, ptraitnames))), ")")
+    # traitdict = Dict{String, Float64}() #maybe initialise as copy of mtraits
+    # for key in keys(mtraits)
+    #     in(key, mtraitnames) && (traitdict[key] = mtraits[key])
+    # end
+    # for key in keys(ptraits)
+    #     in(key, ptraitnames) && (traitdict[key] = ptraits[key])
+    # end
+    # (deepcopy(gamete), traitdict)
 end
 
 function chrms2traits(mtraits::Dict{String,Float64}, ptraits::Dict{String,Float64})
@@ -140,6 +175,7 @@ function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Floa
 end
 
 function iscompatible(mate::Individual, ind::Individual) # TODO: instead of concatenation, choose one compatibility sequence
+    length(ind.genome) != length(mate.genome) && return false
     tolerance = ind.traits["reptol"]
     indgene = ""
     for chrm in ind.genome
@@ -147,12 +183,14 @@ function iscompatible(mate::Individual, ind::Individual) # TODO: instead of conc
             any(x -> contains(x, "compat"), gene.codes) && (indgene = gene.sequence)
         end
     end
+    indgene == "" && return false
     mategene = ""
     for chrm in mate.genome
         for gene in chrm.genes
             any(x -> contains(x, "compat"), gene.codes) && (mategene = gene.sequence)
         end
     end
+    mategene == "" && return false
     basediffs = 0
     for i in eachindex(indgene)
         try
@@ -268,7 +306,7 @@ function creategenes(ngenes::Int64,traits::Dict{String, Float64})
         codesfor = String[]
         push!(genes,Gene(sequence, codesfor))
     end
-    for traitname in keys(traits)
+    for traitname in collect(keys(traits))
         ncodinggenes = rand(Poisson(1))
         while ncodinggenes < 1  # make sure every trait is coded by at least 1 gene
             ncodinggenes = rand(Poisson(1))
@@ -281,7 +319,6 @@ function creategenes(ngenes::Int64,traits::Dict{String, Float64})
     if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
         push!(genes, Gene(String(rand(collect("acgt"), genelength)), String[]))
     end
-    push!(genes, Gene(String(rand(collect("acgt"), genelength)), ["compat"])) # create extra compatibility gene 1.0
     genes
 end
 
