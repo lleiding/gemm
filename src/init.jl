@@ -13,7 +13,8 @@ function genesis(settings::Dict{String,Any},
                                                 "reptol",
                                                 "seedsize",
                                                 "tempopt",
-                                                "temptol"]) # minimal required traitnames
+                                                "temptol",
+                                                "compat"]) # minimal required traitnames
     community = Individual[]
     totalmass = 0.0
     while true 
