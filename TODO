@@ -1,5 +1,7 @@
 # TODO Island invasion model
 
+** initialize island species pool! **
+
 * create global species pool
 * remove references to mainland
 * invade!() function
