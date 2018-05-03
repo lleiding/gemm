@@ -6,6 +6,7 @@
 # no continent
 	
 # island - a 3x3 square with constant temperature and precipitation
+# TODO change to 5x5
 # id x y temp type isolated prec
 1 0 0 298 island no 5.0
 2 0 1 298 island no 5.0

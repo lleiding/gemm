@@ -57,7 +57,7 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
                 for key in traitkeys
                     print(io, key, sep)
                 end
-                println(io)
+                println(io, "\b") #remove the last sep and add a newline
                 header = false
             end
             print(io, patch.id, sep)
@@ -90,6 +90,8 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
     end
 end
 
+# XXX Not needed for the invasion experiments
+# FIXME traits have no property 'name' anymore
 function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", onlyisland::Bool = false)
     counter = 0
     for patch in world
@@ -109,8 +111,7 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
                         traits *= "neutral"
                     else
                         for trait in gene.codes
-                            contains(trait, "compat") && continue
-                            chrm.maternal ? traits *= trait * "$(ind.mtraits[trait])" * "," : traits *= trait * "$(ind.ptraits[trait])" * ","
+                            traits *= trait.name * "$(trait.value)" * ","
                         end
                     end
                     header = ">$counter x$(patch.location[1]) y$(patch.location[2]) $(ind.lineage) c$chrmno g$geneno $traits"
@@ -146,29 +147,31 @@ writes simulation output from `world` to separate table and fasta files.
 function writedata(world::Array{Patch,1}, mappath::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
     mapfile = split(mappath, "/")[end]
     length(mapfile) == 0 && return
-    basepath = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_lnk" * settings["linkage"] * "_tol" * settings["tolerance"] * "_t" * "$timestep"
+    # XXX adjust basename to show relevant parameters?
+    basename = "$(settings["dest"])/t$timestep"
     counter = 0
     extension = ""
-    while ispath(basepath * extension * ".tsv") || ispath(basepath * extension * ".fa")
+    while ispath(basename * extension * ".tsv") || ispath(basename * extension * ".fa")
         extension = "_$counter"
         counter += 1
         if counter > 9
-            warn("could not write to ", basepath, extension, ": file exists. \n
+            warn("could not write to ", basename, extension, ": file exists. \n
 Continuing anyway - data might be identical.")
             return
         end
     end
-    basepath *= extension
-    filename = basepath * ".tsv"
+    basename *= extension
+    filename = basename * ".tsv"
     println("Writing data \"$filename\"")
     open(filename, "w") do file
-        dumpinds(world, file, "\t", timestep > 1 && settings["static"])
+        dumpinds(world, file, "\t", settings["static"] || timestep > 1)
     end
-    filename = basepath * ".fa"
-    println("Writing fasta \"$filename\"")
-    open(filename, "w") do file
-        makefasta(world, file, "", timestep > 1 && settings["static"])
-    end
+    # FASTA not needed in invasion model
+    # filename = basename * ".fa"
+    # println("Writing fasta \"$filename\"")
+    # open(filename, "w") do file
+    #     makefasta(world, file, "", settings["static"] || timestep > 1)
+    # end
 end
 
 #TODO: complete docstring!

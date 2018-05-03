@@ -65,7 +65,7 @@ function parsecommandline()
 end
 
 function parseconfig(configfilename::String, settings::Dict{String,Any})
-    params = String["seed", "map", "linkage", "nniches", "tolerance", "dest",
+    params = String["seed", "maps", "linkage", "nniches", "tolerance", "dest",
                     "static", "propagule-pressure", "carrying-capacity", "disturbance"]
     configfile = open(configfilename)
     config = readlines(configfile)
@@ -84,14 +84,15 @@ function parseconfig(configfilename::String, settings::Dict{String,Any})
     for p in params
         !(p in keys(settings)) && warn("Parameter $p is not set!")
     end
+    cp(configfilename, settings["dest"]*"/"*configfilename, remove_destination=true)
     return settings
 end
 
 function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, seed::Int64, timesteps::Int=1000)
     info("Starting simulation...")
     for t in 1:timesteps
-        info("UPDATE $t")
-        (t == 1 || mod(t, 1000) == 0) && writedata(world, mapfile, settings, seed, t)
+        info("UPDATE $t, population size $(sum(x -> length(x.community), world))")
+        (t <= 10 || mod(t, 20) == 0) && writedata(world, mapfile, settings, seed, t)
         establish!(world, settings["nniches"], settings["static"])
         checkviability!(world, settings["static"])
         compete!(world, settings["static"])
@@ -112,11 +113,12 @@ function runit(settings::Dict{String,Any},seed::Int64=0)
     seed != 0 && srand(seed)
     mapfiles =  map(x->String(x),split(settings["maps"],","))
     for i in 1:length(mapfiles)
+        cp(mapfiles[i], settings["dest"]*"/"*mapfiles[i], remove_destination=true)
         timesteps,maptable = readmapfile(mapfiles[i])
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world,maptable)
         simulation!(world, settings, mapfiles[i], seed, timesteps)
-        writedata(world, mapfiles[i], settings, seed, 0)
+        writedata(world, mapfiles[i], settings, seed, -1)
     end
 end
 

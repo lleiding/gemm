@@ -2,6 +2,7 @@
 
 ** initialize island species pool! **
 
+* start with adult individuals
 * create global species pool
 * remove references to mainland
 * invade!() function
@@ -10,3 +11,5 @@
 	- productivity
 	- disturbance
 	- propagule pressure
+	- initial island species pool
+	- global species pool size

@@ -1,4 +1,4 @@
-tests/
+results/
 paper/source.pdf
 *.aux
 *.log

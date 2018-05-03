@@ -1,8 +1,7 @@
 # initialisation functions for GeMM
 
-
+# TODO start with adults
 function genesis(settings::Dict{String,Any},
-                 nspecs::Int64=10000000, popsize::Int64 = 0, # about 600-900 species per cell
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",
                                                 "mutprob",
@@ -33,14 +32,13 @@ function genesis(settings::Dict{String,Any},
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(traits, traits)
         popsize = round(fertility * traitdict["repsize"]^(-1/4) * exp(-act/(boltz*traitdict["tempopt"]))) # population size determined by adult size and temperature niche optimum
-        popmass = popsize * traitdict["seedsize"]
-        if totalmass + popmass > nspecs # stop loop if cell is full
+        totalmass += popsize * traitdict["seedsize"] #XXX or use repsize?
+        if totalmass > cellsize # stop loop if cell is full
             break
         end
-        totalmass += popmass
         # initialise new individuals as homozygotes:
-        newind = Individual(lineage, traitdict["seedsize"], 0, 0.0, false, chromosomes, traitdict, traitdict, traitdict)
         for i in 1:popsize
+            newind = Individual(lineage, traitdict["seedsize"], 0, 0.0, false, chromosomes, traitdict, traitdict, traitdict)
             push!(community, newind)
         end
     end
@@ -64,7 +62,7 @@ separated by a whitespace character (<ID> <x> <y>).")
         size(entry,1) > 3 ? temperature = parse(Float64, entry[4]) : temperature = 298.0
         isisland = false
         if size(entry,1) > 4 && contains(lowercase(entry[5]),"island")
-            isisland = true # islands do not receive an initial community
+            isisland = true
         end
         newpatch = Patch(id,(xcord,ycord),temperature,area,isisland)
         if size(entry,1) > 5 && contains(lowercase(entry[6]),"isolated")
@@ -80,7 +78,7 @@ separated by a whitespace character (<ID> <x> <y>).")
         if size(entry,1) > 7
             newpatch.nicheb = parse(Float64, entry[8])
         end
-        !isisland && append!(newpatch.community,genesis(settings))
+        append!(newpatch.community,genesis(settings))
         push!(world,newpatch)
     end
     world
@@ -102,7 +100,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}) 
         size(entry,1) > 3 ? temperature = parse(Float64, entry[4]) : temperature = 298.0
         isisland = false
         if size(entry,1) > 4 && contains(lowercase(entry[5]),"island")
-            isisland = true # islands do not receive an initial community
+            isisland = true
         end
         isolated = false
         if size(entry,1) > 5 && contains(lowercase(entry[6]),"isolated")

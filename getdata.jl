@@ -20,9 +20,6 @@ function parsecommandline()
             arg_type = String
             required = false
             default = "." #string(Dates.today())
-#        "--flag1"
-#            help = "an option without argument, i.e. a flag"
-#            action = :store_true
         "input"
             help = "name of input file with raw julia data"
             required = true
@@ -36,9 +33,10 @@ function extract(settings::Dict{String, Any})
     open(settings["dest"]*"/"*infile*".out", "w") do file
         MIbGxMCmod.dumpinds(world, file)
     end
-    open(settings["dest"]*"/"*infile*".fa", "w") do file
-        MIbGxMCmod.makefasta(world, file)
-    end
+    # XXX FASTA not needed for invasion experiments
+    # open(settings["dest"]*"/"*infile*".fa", "w") do file
+    #     MIbGxMCmod.makefasta(world, file)
+    # end
 end
 
 allargs = parsecommandline()
