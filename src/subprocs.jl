@@ -1,70 +1,36 @@
 # Subsidiary functions for GeMM
 
-function meiosis(genome::Array{Chromosome,1}, maternal::Bool, mtraits::Dict{String,Float64}, ptraits::Dict{String,Float64}) # TODO: include further dynamics, errors...
-    sort!(genome, by = x -> x.number)
-    # firstset = find(x->x.maternal,genome) # CAVE: chromosomes could still be mismatched!
-    # secondset = find(x->!x.maternal,genome)
-    # length(firstset) != length(secondset) && return (genome[firstset], mtraits) # CAVE: more elegant solution...
-    # gameteidxs = []
-    # for i in eachindex(firstset) # randomly draw indices of maternal and paternal linkage units
-    #     push!(gameteidxs,rand([firstset[i],secondset[i]]))
-    # end
+function meiosis(ind::Individual, maternal::Bool = true)
+    genome = sort(ind.genome, by = x -> x.number)
+    chrmnos = sort(unique(map(x -> x.number, genome)))
     gamete = Chromosome[]
-    chrmnos = map(x -> x.number, genome)
-    for number in unique(chrmnos)
-        push!(gamete, rand(filter(x -> x.number == number, genome)))
-    end
-    traitdict = Dict{String, Float64}() #maybe initialise as copy of mtraits
-    for chrm in gamete
-        for gene in chrm.genes
-            for traitname in gene.codes
-                chrm.maternal ? push!(traitdict, traitname => mtraits[traitname]) : push!(traitdict, traitname => ptraits[traitname])
-            end
+    for number in chrmnos
+        if length(filter(x -> x.number == number, genome)) != 2
+            warn("set of chromosomes not equal two. Returning empty gamete.")
+            return (Chromosome[], ind.mtraits)
+        else
+            chrm = rand(filter(x -> x.number == number, genome))
+            push!(gamete, deepcopy(chrm))
         end
     end
-    gamete = deepcopy(gamete)
+    if sort(unique(map(x -> x.number, gamete))) != chrmnos
+        warn("meiosis gone wrong. Returning empty gamete.")
+        return (Chromosome[], ind.mtraits)
+    end
+    traitdict = Dict{String, Float64}()
     for chrm in gamete
+        for gene in chrm.genes
+            for trait in gene.codes
+                chrm.maternal ? traitdict[trait] = ind.mtraits[trait] : traitdict[trait] = ind.ptraits[trait]
+            end
+        end
         chrm.maternal = maternal
     end
+    if length(traitdict) != length(ind.traits)
+        warn("meiosis gone wrong. Returning empty gamete.")
+        return (Chromosome[], ind.mtraits)
+    end
     (gamete, traitdict)
-    # mtraitnames = String[]
-    # ptraitnames = String[]
-    # ## DEBUGGING:
-    # alltraits = []
-    # allmtraits = []
-    # allptraits = []
-    # for chrm in genome
-    #     for gene in chrm.genes
-    #         append!(alltraits, gene.codes)
-    #         chrm.maternal && append!(allmtraits, gene.codes)
-    #         !chrm.maternal && append!(allptraits, gene.codes)
-    #     end
-    # end
-    # alltraits = unique(alltraits)
-    # allmtraits = unique(allmtraits)
-    # allptraits = unique(allptraits)
-    # ##/DEBUGGING
-    # for i in gameteidxs
-    #     for gene in genome[i].genes
-    #         if genome[i].maternal
-    #             append!(mtraitnames, gene.codes) # save all traitnames of genes in linkage unit
-    #         else
-    #             append!(ptraitnames, gene.codes)
-    #         end
-    #     end
-    #     push!(gamete, Chromosome(genome[i].genes, genome[i].number, maternal))
-    # end
-    # mtraitnames = unique(mtraitnames)
-    # ptraitnames = unique(ptraitnames)
-    # length(unique(vcat(mtraitnames, ptraitnames))) != length(mtraits) && println("INCONSISTENCY IN MEIOSIS (alltraits = ", length(alltraits), "(", length(allmtraits), "/", length(allptraits), ")",", haplotraits = ", length(unique(vcat(mtraitnames, ptraitnames))), ")")
-    # traitdict = Dict{String, Float64}() #maybe initialise as copy of mtraits
-    # for key in keys(mtraits)
-    #     in(key, mtraitnames) && (traitdict[key] = mtraits[key])
-    # end
-    # for key in keys(ptraits)
-    #     in(key, ptraitnames) && (traitdict[key] = ptraits[key])
-    # end
-    # (deepcopy(gamete), traitdict)
 end
 
 function chrms2traits(mtraits::Dict{String,Float64}, ptraits::Dict{String,Float64})
@@ -224,6 +190,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         for mate in community
             mate.age == 0 && continue
             mate.lineage != ind.lineage && continue
+            length(mate.genome) != length(ind.genome) && continue
             !traitsexist(mate, ["repsize"]) && continue
             mate.size < mate.traits["repsize"] && continue
             mate.isnew && continue
@@ -240,8 +207,8 @@ end
 function makeoffspring(noffs::Int64, mate::Individual, partner::Individual)
     seedbank = Individual[]
     for i in 1:noffs # pmap?
-        partnergenome, ptraits = meiosis(partner.genome, false, partner.mtraits, partner.ptraits) # offspring have different genome!
-        mothergenome, mtraits = meiosis(mate.genome, true, mate.mtraits, mate.ptraits)
+        partnergenome, ptraits = meiosis(partner, false) # offspring have different genome!
+        mothergenome, mtraits = meiosis(mate, true)
         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
         genome = vcat(partnergenome,mothergenome)
         traits = chrms2traits(mtraits, ptraits)
