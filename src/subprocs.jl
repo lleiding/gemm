@@ -190,7 +190,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         for mate in community
             mate.age == 0 && continue
             mate.lineage != ind.lineage && continue
-            length(mate.genome) != length(ind.genome) && continue
+            sort(unique(map(x -> x.number, mate.genome))) != sort(unique(map(x -> x.number, ind.genome))) && continue
             !traitsexist(mate, ["repsize"]) && continue
             mate.size < mate.traits["repsize"] && continue
             mate.isnew && continue
