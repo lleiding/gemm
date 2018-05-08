@@ -1,7 +1,7 @@
 # Subsidiary functions for GeMM
 
 function meiosis(ind::Individual, maternal::Bool = true)
-    genome = sort(ind.genome, by = x -> x.number)
+    genome = sort(deepcopy(ind.genome), by = x -> x.number)
     chrmnos = sort(unique(map(x -> x.number, genome)))
     gamete = Chromosome[]
     for number in chrmnos
