@@ -6,8 +6,13 @@ function meiosis(ind::Individual, maternal::Bool = true)
     gamete = Chromosome[]
     for number in chrmnos
         if length(filter(x -> x.number == number, genome)) != 2
-            warn("set of chromosomes not equal two. Returning empty gamete.")
-            return (Chromosome[], ind.mtraits)
+            if length(filter(x -> x.number == number, genome)) == 1
+                chrm = rand(filter(x -> x.number == number, genome))
+                warn("haploid set of chromosomes. Returning single copy.")
+            else
+                return (Chromosome[], ind.mtraits)
+                warn("set of chromosomes not equal two. Returning empty gamete.")
+            end
         else
             chrm = rand(filter(x -> x.number == number, genome))
             push!(gamete, chrm)
