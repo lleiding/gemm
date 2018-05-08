@@ -9,12 +9,14 @@ function meiosis(ind::Individual, maternal::Bool = true)
             if length(filter(x -> x.number == number, genome)) == 1
                 chrm = rand(filter(x -> x.number == number, genome))
                 warn("haploid set of chromosomes. Continuing with single copy.")
+                push!(gamete, chrm)
             elseif length(filter(x -> x.number == number, genome)) < 1 
                 warn("set of chromosomes not equal two. Returning empty gamete.")
                 return (Chromosome[], ind.mtraits)
             else
                 chrm = rand(filter(x -> x.number == number, genome))
                 warn("polyploid set of chromosomes. Continuing with single copy.")
+                push!(gamete, chrm)
             end
         else
             chrm = rand(filter(x -> x.number == number, genome))
