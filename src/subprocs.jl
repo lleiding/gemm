@@ -24,7 +24,7 @@ function meiosis(ind::Individual, maternal::Bool = true)
             push!(gamete, chrm)
         end
     end
-    if sort(map(x -> x.number, gamete)) != chrmnos
+    if sort(vcat(map(x -> x.number, gamete)...)) != chrmnos
         warn("meiosis gone wrong: missing chromosomes. Returning empty gamete.")
         return (Chromosome[], ind.mtraits)
     end

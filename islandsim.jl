@@ -102,9 +102,6 @@ const allargs = parsecommandline()
 const startseed = allargs["seed"]
 const replicates = startseed:startseed+nprocesses-1
 
-TT = STDOUT # save original STDOUT stream
 setupdatadir(allargs)
-redirect_stdout()
-runit(true, allargs, startseed) # compilation/optimization run
-redirect_stdout(TT) # restore STDOUT
+
 @time runit(false, allargs, startseed)
