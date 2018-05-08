@@ -23,6 +23,8 @@ function genesis(settings::Dict{String,Any},
         ngenes = rand(Poisson(meangenes))
         ngenes < 1 && (ngenes = 1)
         traitdict = createtraits(traitnames, settings)
+        mtraits = deepcopy(traitdict)
+        ptraits = deepcopy(traitdict)
         genes = creategenes(ngenes,traitdict)
         if settings["linkage"] == "none"
             nchrms = length(genes)
@@ -39,7 +41,7 @@ function genesis(settings::Dict{String,Any},
         end
         totalmass += popmass
         # initialise new individuals as homozygotes:
-        newind = Individual(lineage, traitdict["seedsize"], 0, 0.0, false, chromosomes, traitdict, traitdict, traitdict)
+        newind = Individual(lineage, traitdict["seedsize"], 0, 0.0, false, chromosomes, traitdict, mtraits, ptraits)
         for i in 1:popsize
             push!(community, newind)
         end
