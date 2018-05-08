@@ -8,13 +8,13 @@ function meiosis(ind::Individual, maternal::Bool = true)
         if length(filter(x -> x.number == number, genome)) != 2
             if length(filter(x -> x.number == number, genome)) == 1
                 chrm = rand(filter(x -> x.number == number, genome))
-                warn("haploid set of chromosomes. Returning single copy.")
+                warn("haploid set of chromosomes. Continuing with single copy.")
             elseif length(filter(x -> x.number == number, genome)) < 1 
                 warn("set of chromosomes not equal two. Returning empty gamete.")
                 return (Chromosome[], ind.mtraits)
             else
                 chrm = rand(filter(x -> x.number == number, genome))
-                warn("polyploid set of chromosomes. Returning single copy.")
+                warn("polyploid set of chromosomes. Continuing with single copy.")
             end
         else
             chrm = rand(filter(x -> x.number == number, genome))
@@ -22,7 +22,7 @@ function meiosis(ind::Individual, maternal::Bool = true)
         end
     end
     if sort(unique(map(x -> x.number, gamete))) != chrmnos
-        warn("meiosis gone wrong. Returning empty gamete.")
+        warn("meiosis gone wrong: missing chromosomes. Returning empty gamete.")
         return (Chromosome[], ind.mtraits)
     end
     traitdict = Dict{String, Float64}()
@@ -35,7 +35,7 @@ function meiosis(ind::Individual, maternal::Bool = true)
         chrm.maternal = maternal
     end
     if length(traitdict) != length(ind.traits)
-        warn("meiosis gone wrong. Returning empty gamete.")
+        warn("meiosis gone wrong: missing traits. Returning empty gamete.")
         return (Chromosome[], ind.mtraits)
     end
     (gamete, traitdict)
