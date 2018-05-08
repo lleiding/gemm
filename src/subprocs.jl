@@ -1,8 +1,9 @@
 # Subsidiary functions for GeMM
 
 function meiosis(ind::Individual, maternal::Bool = true)
-    genome = sort(deepcopy(ind.genome), by = x -> x.number)
-    chrmnos = sort(unique(map(x -> x.number, genome)))
+    indgenome = deepcopy(ind.genome)
+    genome = sort(indgenome, by = x -> x.number)
+    chrmnos = unique(sort(vcat(map(x -> x.number, genome)...)))
     gamete = Chromosome[]
     for number in chrmnos
         if length(filter(x -> x.number == number, genome)) != 2
@@ -23,7 +24,7 @@ function meiosis(ind::Individual, maternal::Bool = true)
             push!(gamete, chrm)
         end
     end
-    if sort(unique(map(x -> x.number, gamete))) != chrmnos
+    if sort(map(x -> x.number, gamete)) != chrmnos
         warn("meiosis gone wrong: missing chromosomes. Returning empty gamete.")
         return (Chromosome[], ind.mtraits)
     end
@@ -200,7 +201,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         for mate in community
             mate.age == 0 && continue
             mate.lineage != ind.lineage && continue
-            sort(unique(map(x -> x.number, mate.genome))) != sort(unique(map(x -> x.number, ind.genome))) && continue
+            sort(unique(map(x -> x.number, mate.genome))) != sort(unique(map(y -> y.number, ind.genome))) && continue
             !traitsexist(mate, ["repsize"]) && continue
             mate.size < mate.traits["repsize"] && continue
             mate.isnew && continue
