@@ -10,7 +10,7 @@ function meiosis(ind::Individual, maternal::Bool = true)
             return (Chromosome[], ind.mtraits)
         else
             chrm = rand(filter(x -> x.number == number, genome))
-            push!(gamete, deepcopy(chrm))
+            push!(gamete, chrm)
         end
     end
     if sort(unique(map(x -> x.number, gamete))) != chrmnos
