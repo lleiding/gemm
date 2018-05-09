@@ -8,7 +8,7 @@
 module GeMM
 
 
-using Distributions#, Plots
+using Distributions
 
 
 export Patch, # types
@@ -17,7 +17,6 @@ export Patch, # types
     readmapfile,
     writerawdata,
     writedata,
-    analysis,
     checkviability!,
     establish!,
     survive!,
