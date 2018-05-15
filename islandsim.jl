@@ -22,8 +22,9 @@ using GeMM, ArgParse
 # Return the default settings. All parameters must be registered here.
 function defaultSettings()
     Dict([# general software settings
-          ("seed", 1),
+          ("seed", 1), # seed = 0 -> random seed
           ("maps", nothing),
+          ("config", nothing),
           ("fasta", true),
           ("dest", string(Dates.today())),
           # main model settings
@@ -100,7 +101,6 @@ function parseconfig(configfilename::String, settings::Dict{String,Any})
             warn(c[1]*" is not a recognized parameter!")
         end
     end
-    cp(configfilename, settings["dest"]*"/"*configfilename, remove_destination=true)
     return settings
 end
 
@@ -127,14 +127,14 @@ end
 
 function runit(settings::Dict{String,Any},seed::Int64=0)
     seed != 0 && srand(seed)
-    mapfiles =  map(x->String(x),split(settings["maps"],","))
-    for i in 1:length(mapfiles)
-        cp(mapfiles[i], settings["dest"]*"/"*mapfiles[i], remove_destination=true)
-        timesteps,maptable = readmapfile(mapfiles[i])
+    settings["maps"] = map(x->String(x),split(settings["maps"],","))
+    setupdatadir(settings)
+    for i in 1:length(settings["maps"])
+        timesteps,maptable = readmapfile(settings["maps"][i])
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world,maptable)
-        simulation!(world, settings, mapfiles[i], seed, timesteps)
-        writedata(world, mapfiles[i], settings, seed, -1)
+        simulation!(world, settings, settings["maps"][i], seed, timesteps)
+        writedata(world, settings["maps"][i], settings, seed, -1)
     end
 end
 

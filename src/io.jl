@@ -124,14 +124,22 @@ end
 
 """
     setupdatadir(dir)
-creates the output directory. `dir` is a string containing the directory path.
+Creates the output directory and copies relevant files into it.
+If the output directory already includes files, create a new
+directory by appending a counter.
 """
 function setupdatadir(settings::Dict{String, Any})
-    if !isdir(settings["dest"])
-        try
-            mkdir(settings["dest"])
-        catch
-            warn("could not create directory ", settings["dest"], ". Assuming it already exists...")
+    if isdir(settings["dest"]) && !isempty(readdir(settings["dest"]))
+        replicate = filter(c -> isnumber(c), settings["dest"])
+        isempty(replicate) ? replicate = 1 : replicate = parse(Int, replicate)+1
+        settings["dest"] = filter(c -> !isnumber(c), settings["dest"]) * string(replicate)
+        setupdatadir(settings)
+    else
+        info("Setting up output directory $(settings["dest"])")
+        mkpath(settings["dest"])
+        cp(settings["config"], joinpath(settings["dest"], settings["config"]))
+        for m in settings["maps"]
+            cp(m, joinpath(settings["dest"], m))
         end
     end
 end
@@ -145,19 +153,8 @@ writes simulation output from `world` to separate table and fasta files.
 function writedata(world::Array{Patch,1}, mappath::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
     mapfile = split(mappath, "/")[end]
     length(mapfile) == 0 && return
-    basename = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_lnk" * settings["linkage"] * "_tol" * settings["tolerance"] * "_t" * "$timestep"
-    counter = 0
-    extension = ""
-    while ispath(basename * extension * ".tsv") || ispath(basename * extension * ".fa")
-        extension = "_$counter"
-        counter += 1
-        if counter > 9
-            warn("could not write to ", basename, extension, ": file exists. \n
-Continuing anyway - data might be identical.")
-            return
-        end
-    end
-    basename *= extension
+    basename = "t" * string(timestep) * "_s" * string(seed)
+    basename = joinpath(settings["dest"], basename)
     filename = basename * ".tsv"
     println("Writing data \"$filename\"")
     open(filename, "w") do file
