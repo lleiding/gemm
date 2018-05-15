@@ -18,17 +18,33 @@ thisDir = pwd() * "/src"
 any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 
 using GeMM, ArgParse
-using ProfileView #DEBUG
 
-Profile.init(n=10^8, delay=0.005) #DEBUG
+# Return the default settings. All parameters must be registered here.
+function defaultSettings()
+    Dict([# general software settings
+          ("seed", 1),
+          ("maps", nothing),
+          ("fasta", true),
+          ("dest", string(Dates.today())),
+          # main model settings
+          ("linkage", "random"),
+          ("nniches", 2),
+          ("tolerance", "evo"),
+          ("static", true),
+          # invasion scenario settings
+          ("propagule-pressure", 0),
+          ("carrying-capacity", 100),
+          ("disturbance", 0)])
+end
 
 function parsecommandline()
+    defaults = defaultSettings()
     s = ArgParseSettings()
     @add_arg_table s begin
         "--seed", "-s"
             help = "inital random seed"
             arg_type = Int
-            default = 1
+            default = defaults["seed"]
         "--maps", "-m"
             help = "list of map files, comma separated"
             arg_type = String
@@ -42,37 +58,37 @@ function parsecommandline()
             arg_type = String
             range_tester = x->in(x,["none", "random", "full"])
             required = false
-            default = "random"
+            default = defaults["linkage"]
         "--nniches", "-n"
             help = "number of environmental niche traits (1 -- 3)"
             arg_type = Int
             range_tester = x -> x > 0 && x <= 3
             required = false
-            default = 2
+            default = defaults["nniches"]
         "--tolerance", "-t"
             help = "tolerance of sequence identity when reproducing (\"high\", \"evo\", \"low\" or \"none\")"
             arg_type = String
             range_tester = x->in(x,["high", "evo", "low", "none"])
             required = false
-            default = "evo"
+            default = defaults["tolerance"]
         "--dest", "-d"
             help = "output directory. Defaults to current date"
             arg_type = String
             required = false
-            default = string(Dates.today())
+            default = defaults["dest"]
         "--static"
             help = "static mainland. Turns off any dynamics on the continent"
             action = :store_true
         end
-    return parse_args(s)
+    return merge(defaults, parse_args(s))
 end
 
 function parseconfig(configfilename::String, settings::Dict{String,Any})
-    params = String["seed", "maps", "linkage", "nniches", "tolerance", "dest",
-                    "static", "propagule-pressure", "carrying-capacity", "disturbance"]
+    params = keys(defaultSettings())
     configfile = open(configfilename)
     config = readlines(configfile)
     close(configfile)
+    #TODO Ignore comments that don't start on the first character of the line
     filter!(x -> isempty(strip(x)) || (x[1] != '#'), config)
     config = map(split, config)
     for c in config
@@ -83,9 +99,6 @@ function parseconfig(configfilename::String, settings::Dict{String,Any})
         else
             warn(c[1]*" is not a recognized parameter!")
         end
-    end
-    for p in params
-        !(p in keys(settings)) && warn("Parameter $p is not set!")
     end
     cp(configfilename, settings["dest"]*"/"*configfilename, remove_destination=true)
     return settings
@@ -120,7 +133,7 @@ function runit(settings::Dict{String,Any},seed::Int64=0)
         timesteps,maptable = readmapfile(mapfiles[i])
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world,maptable)
-        simulation!(world, settings, mapfiles[i], seed, timesteps) #DEBUG
+        simulation!(world, settings, mapfiles[i], seed, timesteps)
         writedata(world, mapfiles[i], settings, seed, -1)
     end
 end
@@ -138,5 +151,3 @@ const replicates = startseed:startseed+nprocesses-1
 
 
 @time runit(allargs, startseed)
-
-#ProfileView.view(Profile.fetch()) #DEBUG
