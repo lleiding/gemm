@@ -5,6 +5,9 @@
 # Ludwig Leidinger 2018
 # <l.leidinger@gmx.net>
 #
+# Daniel Vedder 2018
+# <daniel.vedder@stud-mail.uni-wuerzburg.de>
+#
 # For a list of options, run `julia islandsim.jl --help`
 #
 # <MAPFILE> is a textfile containing information about the simulation arena
@@ -15,6 +18,9 @@ thisDir = pwd() * "/src"
 any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 
 using GeMM, ArgParse
+using ProfileView #DEBUG
+
+Profile.init(n=10^8, delay=0.005) #DEBUG
 
 function parsecommandline()
     s = ArgParseSettings()
@@ -26,7 +32,11 @@ function parsecommandline()
         "--maps", "-m"
             help = "list of map files, comma separated"
             arg_type = String
-            required = true
+            required = false
+        "--config", "-c"
+            help = "name of the config file"
+            arg_type = String
+            required = false
         "--linkage", "-l"
             help = "gene linkage (\"none\", \"random\" or \"full\")"
             arg_type = String
@@ -53,55 +63,80 @@ function parsecommandline()
         "--static"
             help = "static mainland. Turns off any dynamics on the continent"
             action = :store_true
-#        "arg1"
-#            help = "a positional argument"
-#            required = false
         end
     return parse_args(s)
 end
 
+function parseconfig(configfilename::String, settings::Dict{String,Any})
+    params = String["seed", "maps", "linkage", "nniches", "tolerance", "dest",
+                    "static", "propagule-pressure", "carrying-capacity", "disturbance"]
+    configfile = open(configfilename)
+    config = readlines(configfile)
+    close(configfile)
+    filter!(x -> isempty(strip(x)) || (x[1] != '#'), config)
+    config = map(split, config)
+    for c in config
+        if length(c) != 2
+            warn("Bad config file syntax: $c")
+        elseif c[1] in params
+            settings[c[1]] = parse(c[2])
+        else
+            warn(c[1]*" is not a recognized parameter!")
+        end
+    end
+    for p in params
+        !(p in keys(settings)) && warn("Parameter $p is not set!")
+    end
+    cp(configfilename, settings["dest"]*"/"*configfilename, remove_destination=true)
+    return settings
+end
 
 function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, seed::Int64, timesteps::Int=1000)
     info("Starting simulation...")
     for t in 1:timesteps
-        (t == 1 || mod(t, 1000) == 0) && writedata(world, mapfile, settings, seed, t)
+        info("UPDATE $t, population size $(sum(x -> length(x.community), world))")
+        (t <= 10 || mod(t, 20) == 0) && writedata(world, mapfile, settings, seed, t)
         establish!(world, settings["nniches"], settings["static"])
         checkviability!(world, settings["static"])
         compete!(world, settings["static"])
         survive!(world, settings["static"])
+        #TODO disturb!(world, settings)
         grow!(world, settings["static"])
         compete!(world, settings["static"])
         reproduce!(world, settings["static"])
-        mutate!(world, settings)
+        #mutate!(world, settings) #XXX Disabled for invasion experiment
+        #TODO invaders = invade!(world, settings["propagule-pressure"])
+        #TODO length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, mapfile, settings, seed, t)
         colonizers = disperse!(world, settings["static"])
         length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, mapfile, settings, seed, t)
     end
 end
 
-function runit(firstrun::Bool,settings::Dict{String,Any},seed::Int64=0)
+function runit(settings::Dict{String,Any},seed::Int64=0)
     seed != 0 && srand(seed)
     mapfiles =  map(x->String(x),split(settings["maps"],","))
-    if firstrun
-        world=createworld([["1","1","1", "298", "continent"]], settings) # initialise as populated continent
-        world[1].isisland = true # then set as island to enable processes
-        simulation!(world, settings, "", seed, 5)
-    else
-        for i in 1:length(mapfiles)
-            timesteps,maptable = readmapfile(mapfiles[i])
-            i == 1 && (world = createworld(maptable, settings))
-            i > 1 && updateworld!(world,maptable)
-            simulation!(world, settings, mapfiles[i], seed, timesteps)
-            writedata(world, mapfiles[i], settings, seed, 0)
-        end
+    for i in 1:length(mapfiles)
+        cp(mapfiles[i], settings["dest"]*"/"*mapfiles[i], remove_destination=true)
+        timesteps,maptable = readmapfile(mapfiles[i])
+        i == 1 && (world = createworld(maptable, settings))
+        i > 1 && updateworld!(world,maptable)
+        simulation!(world, settings, mapfiles[i], seed, timesteps) #DEBUG
+        writedata(world, mapfiles[i], settings, seed, -1)
     end
+end
+
+## Settings
+const allargs = parsecommandline()
+if haskey(allargs, "config") && allargs["config"] != nothing
+    allargs = parseconfig(allargs["config"], allargs)
 end
 
 ## Parallel stuff:
 const nprocesses = nworkers()
-const allargs = parsecommandline()
 const startseed = allargs["seed"]
 const replicates = startseed:startseed+nprocesses-1
 
-setupdatadir(allargs)
 
-@time runit(false, allargs, startseed)
+@time runit(allargs, startseed)
+
+#ProfileView.view(Profile.fetch()) #DEBUG
