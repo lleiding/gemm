@@ -22,21 +22,21 @@ using GeMM, ArgParse
 # Return the default settings. All parameters must be registered here.
 function defaultSettings()
     Dict([# general software settings
-          ("seed", 1), # seed = 0 -> random seed
-          ("maps", nothing),
-          ("config", nothing),
-          ("fasta", true),
-          ("dest", string(Dates.today())),
+          ("seed", 1), # for the RNG, seed = 0 -> random seed
+          ("maps", nothing), # comma-separated list of map files
+          ("config", nothing), # configuration file name
+          ("fasta", true), # record fasta data?
+          ("dest", string(Dates.today())), # output folder name
           # main model settings
-          ("linkage", "random"),
-          ("nniches", 2),
-          ("tolerance", "evo"),
-          ("static", true),
-          ("mutate", true),
-          # invasion scenario settings
-          ("propagule-pressure", 0),
-          ("carrying-capacity", 100),
-          ("disturbance", 0)])
+          ("linkage", "random"), # gene linkage type
+          ("nniches", 2), # number of environmental niches (max. 3)
+          ("tolerance", "evo"), # XXX ???
+          ("static", true), # mainland sites don't undergo ecological processes
+          ("mutate", true), # mutations occur
+          ("cellsize", 100), # maximum biomass per cell in tonnes
+          # invasion specific settings
+          ("propagule-pressure", 0), # TODO
+          ("disturbance", 0)]) # percentage of individuals killed per update per cell
 end
 
 function parsecommandline()
@@ -132,11 +132,12 @@ end
 function runit(settings::Dict{String,Any},seed::Int64=0)
     seed != 0 && srand(seed)
     settings["maps"] = map(x->String(x),split(settings["maps"],","))
+    settings["cellsize"] *= 1e6 #convert tonnes to grams
     setupdatadir(settings)
     for i in 1:length(settings["maps"])
         timesteps,maptable = readmapfile(settings["maps"][i])
         i == 1 && (world = createworld(maptable, settings))
-        i > 1 && updateworld!(world,maptable)
+        i > 1 && updateworld!(world,maptable,settings["cellsize"])
         simulation!(world, settings, settings["maps"][i], seed, timesteps)
         writedata(world, settings["maps"][i], settings, seed, -1)
     end

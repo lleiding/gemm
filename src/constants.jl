@@ -9,7 +9,6 @@ const phylconstr = 10 #parse(ARGS[2])
 # const meangenes = 20 # mean number of genes per individual
 const mutationrate = 1e-3 * 0.3e11 # 1 base in 1000, correction factor for metabolic function
 const isolationweight = 3 # additional distance to be crossed when dispersing from or to isolated patches
-const cellsize = 1e8 # ca. 100 tons carrying cap.
 const maxdispmean = 10 # maximum mean dispersal distance
 const genelength = 20 # sequence length of genes
 
