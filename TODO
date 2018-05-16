@@ -1,12 +1,19 @@
 # TODO Island invasion model
 
-** initialize island species pool! **
-
-* start with adult individuals
+* start with adult individuals?
 * create global species pool
 * invade!() function
 * create settings for:
 	- propagule pressure
-	- initial island species pool
+	- initial species pool
 	- global species pool size
 	- constants (from constants.jl)
+
+
+# Notes
+
+* Is it possible that there are vastly more individuals on a patch than its
+	cellsize would allow?
+
+* How much memory does one individual use? (Rough calculations suggest 20KB,
+	this seems somewhat high...)

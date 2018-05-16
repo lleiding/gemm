@@ -186,7 +186,9 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     posspartners
 end
 
-function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any})
+    #XXX: this is all very ugly. (case/switch w/ v. 2.0+?)
+    #TODO Default trait values need to appear elsewhere!
     traits = Trait[]
     seedsize = exp(-7 + 20 * rand()) # corresponds to 1mg to 22kg
     repsize = exp(0 + 17 * rand()) # 1g to 24t

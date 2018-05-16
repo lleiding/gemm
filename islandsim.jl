@@ -30,13 +30,13 @@ function defaultSettings()
           # main model settings
           ("linkage", "random"), # gene linkage type
           ("nniches", 2), # number of environmental niches (max. 3)
-          ("tolerance", "evo"), # XXX ???
+          ("tolerance", "evo"), # reproductive compatibility tolerance
           ("static", true), # mainland sites don't undergo ecological processes
           ("mutate", true), # mutations occur
-          ("cellsize", 100), # maximum biomass per cell in tonnes
+          ("cellsize", 100), # maximum biomass per patch in tonnes
           # invasion specific settings
           ("propagule-pressure", 0), # TODO
-          ("disturbance", 0)]) # percentage of individuals killed per update per cell
+          ("disturbance", 0)]) # percentage of individuals killed per update per patch
 end
 
 function parsecommandline()

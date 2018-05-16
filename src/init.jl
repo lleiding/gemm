@@ -2,7 +2,6 @@
 
 
 function genesis(settings::Dict{String,Any},
-                 nspecs::Int64=10000000, popsize::Int64 = 0, # about 600-900 species per cell
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",
                                                 "mutprob",
@@ -16,7 +15,7 @@ function genesis(settings::Dict{String,Any},
                                                 "temptol"]) # minimal required traitnames
     community = Individual[]
     totalmass = 0.0
-    while true 
+    while totalmass < settings["cellsize"] 
         lineage = randstring(4)
         meangenes = length(traitnames)
         ngenes = rand(Poisson(meangenes))
@@ -33,14 +32,14 @@ function genesis(settings::Dict{String,Any},
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
         popsize = round(fertility * traitdict["repsize"]^(-1/4) * exp(-act/(boltz*traitdict["tempopt"]))) # population size determined by adult size and temperature niche optimum
-        popmass = popsize * traitdict["seedsize"] #XXX change to repsize?
-        if totalmass + popmass > nspecs # stop loop if cell is full
-            break
-        end
+        popmass = popsize * traitdict["repsize"] #XXX change to seedsize?
         totalmass += popmass
-        newind = Individual(lineage, chromosomes, traitdict, 0, false, 1.0, traitdict["seedsize"])
+        if totalmass + popmass > settings["cellsize"]
+            popmass = settings["cellsize"] - totalmass
+        end
+        newind = Individual(lineage, chromosomes, traitdict, 0, false, 1.0, traitdict["repsize"]) #XXX change to seedsize?
         for i in 1:popsize
-            push!(community, newind)
+            push!(community, deepcopy(newind))
         end
     end
     community

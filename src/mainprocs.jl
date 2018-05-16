@@ -159,7 +159,7 @@ end
 species-independent mortality due to disturbance on patch `p`
 """
 function disturb!(patch::Patch, intensity::Int64)
-    intensity == 0 && return
+    (intensity == 0 || length(patch.community) == 0) && return
     intensity > 100 && error("intensity must be less than 100%")
     deaths = Integer(round(length(patch.community) * (intensity/100)))
     dead = unique(rand(1:length(patch.community), deaths))
@@ -278,7 +278,7 @@ end
     reproduce!(w, p)
 Reproduction of individuals in a patch `p` whithin a world (array of patches) `w`
 """
-function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
+function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactor!
     idx = 1
     temp = patch.altitude
     seedbank = Individual[]
@@ -301,7 +301,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                 posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
                 # length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners # CAVE!
                 if length(posspartners) > 0
-                    partner = rand(posspartners)
+                    partner = rand(posspartners) #XXX There is at most one posspartner!
                     parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
                     if parentmass <= 0
                         idx += 1 #splice!(patch.community, idx)
@@ -327,6 +327,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
         end
         idx += 1
     end
+    info("Patch $(patch.id): $(length(patch.community)) individuals, $(length(seedbank)) offspring.")
     append!(patch.community, seedbank)
 end
 
