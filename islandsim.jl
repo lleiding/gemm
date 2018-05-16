@@ -32,6 +32,7 @@ function defaultSettings()
           ("nniches", 2),
           ("tolerance", "evo"),
           ("static", true),
+          ("mutate", true),
           # invasion scenario settings
           ("propagule-pressure", 0),
           ("carrying-capacity", 100),
@@ -85,13 +86,16 @@ function parsecommandline()
 end
 
 function parseconfig(configfilename::String, settings::Dict{String,Any})
+    # Read in the config file
     params = keys(defaultSettings())
     configfile = open(configfilename)
     config = readlines(configfile)
     close(configfile)
-    #TODO Ignore comments that don't start on the first character of the line
+    # Remove comments and tokenize
     filter!(x -> isempty(strip(x)) || (x[1] != '#'), config)
+    config = map(s -> strip(split(s, '#')[1]), config)
     config = map(split, config)
+    # Parse parameters
     for c in config
         if length(c) != 2
             warn("Bad config file syntax: $c")
@@ -117,7 +121,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
         grow!(world, settings["static"])
         compete!(world, settings["static"])
         reproduce!(world, settings["static"])
-        #mutate!(world, settings) #XXX Disabled for invasion experiment
+        settings["mutate"] && mutate!(world, settings)
         #TODO invaders = invade!(world, settings["propagule-pressure"])
         #TODO length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, mapfile, settings, seed, t)
         colonizers = disperse!(world, settings["static"])
