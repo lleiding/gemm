@@ -4,12 +4,11 @@
 
 * start with adult individuals
 * create global species pool
-* remove references to mainland
 * invade!() function
 * disturb!() function
 * create settings for:
 	- productivity
-	- disturbance
+	- mutation
 	- propagule pressure
 	- initial island species pool
 	- global species pool size

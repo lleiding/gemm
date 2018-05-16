@@ -2,20 +2,18 @@
 	
 # timesteps:
 #1000
-3
+25
 
-# no continent
-	
-# island - a 3x3 square with constant temperature and precipitation
-# TODO change to 5x5
+# invasible region - a 3x3 square with constant temperature and precipitation
+# XXX change to 5x5?
 # id x y temp type isolated prec
-1 0 0 298 island no 5.0
-2 0 1 298 island no 5.0
-3 0 2 298 island no 5.0
-4 1 0 298 island no 5.0
-5 1 1 298 island no 5.0
-6 1 2 298 island no 5.0
-7 2 0 298 island no 5.0
-8 2 1 298 island no 5.0
-9 2 2 298 island no 5.0
+1 0 0 298 mainland no 5.0
+2 0 1 298 mainland no 5.0
+3 0 2 298 mainland no 5.0
+4 1 0 298 mainland no 5.0
+5 1 1 298 mainland no 5.0
+6 1 2 298 mainland no 5.0
+7 2 0 298 mainland no 5.0
+8 2 1 298 mainland no 5.0
+9 2 2 298 mainland no 5.0
 

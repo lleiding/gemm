@@ -155,6 +155,29 @@ function survive!(world::Array{Patch,1}, static::Bool = true)
 end
 
 """
+    disturb!(p,i)
+species-independent mortality due to disturbance on patch `p`
+"""
+function disturb!(patch::Patch, intensity::Int64)
+    intensity == 0 && return
+    intensity > 100 && error("intensity must be less than 100%")
+    deaths = Integer(round(length(patch.community) * (intensity/100)))
+    dead = unique(rand(1:length(patch.community), deaths))
+    while length(dead) < deaths
+        newdead = rand(1:length(patch.community), deaths-length(dead))
+        dead = unique(vcat(dead, newdead))
+    end
+    sort!(dead)
+    deleteat!(patch.community, dead)
+end
+
+function disturb!(world::Array{Patch,1}, intensity::Int64, static::Bool = true)
+    for patch in world
+        (patch.isisland || !static) && disturb!(patch, intensity)
+    end
+end
+
+"""
     grow!(p)
 Growth of individuals in patch `p`
 """

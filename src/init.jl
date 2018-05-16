@@ -33,7 +33,7 @@ function genesis(settings::Dict{String,Any},
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
         popsize = round(fertility * traitdict["repsize"]^(-1/4) * exp(-act/(boltz*traitdict["tempopt"]))) # population size determined by adult size and temperature niche optimum
-        popmass = popsize * traitdict["seedsize"]
+        popmass = popsize * traitdict["seedsize"] #XXX change to repsize?
         if totalmass + popmass > nspecs # stop loop if cell is full
             break
         end

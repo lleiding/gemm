@@ -20,6 +20,7 @@ export Patch, # types
     checkviability!,
     establish!,
     survive!,
+    disturb!,
     grow!,
     disperse!,
     compete!,
