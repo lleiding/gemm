@@ -1,8 +1,6 @@
 # initialisation functions for GeMM
 
-
 function genesis(settings::Dict{String,Any},
-                 nspecs::Int64=10000000, popsize::Int64 = 0, # about 600-900 species per cell
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",
                                                 "mutprob",
@@ -34,7 +32,7 @@ function genesis(settings::Dict{String,Any},
         traitdict = chrms2traits(chromosomes)
         popsize = round(fertility * traitdict["repsize"]^(-1/4) * exp(-act/(boltz*traitdict["tempopt"]))) # population size determined by adult size and temperature niche optimum
         popmass = popsize * traitdict["seedsize"] #XXX change to repsize?
-        if totalmass + popmass > nspecs # stop loop if cell is full
+        if totalmass + popmass > settings["cellsize"] # stop loop if cell is full
             break
         end
         totalmass += popmass
