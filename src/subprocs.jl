@@ -130,13 +130,13 @@ function iscompatible(mate::Individual, ind::Individual)
     indgene = ""
     for chrm in ind.genome
         for gene in chrm.genes
-            any(x -> x.name == "compat", gene.codes) && (indgene = gene.sequence) # use one compatibility gene randomly
+            any(x -> x.name == "compat", gene.codes) && (indgene = num2seq(gene.sequence)) # use one compatibility gene randomly
         end
     end
     mategene = ""
     for chrm in mate.genome
         for gene in chrm.genes
-            any(x -> x.name == "compat", gene.codes) && (mategene = gene.sequence) # use one compatibility gene randomly
+            any(x -> x.name == "compat", gene.codes) && (mategene = num2seq(gene.sequence)) # use one compatibility gene randomly
         end
     end
     basediffs = 0
@@ -232,12 +232,41 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any})
     traits
 end
 
+"""
+    seq2num(sequence)
+Convert a DNA base sequence (a string) into binary and then into an integer.
+This saves memory.
+"""
+function seq2num(sequence::String)
+    bases = "atcg"
+    binary = ""
+    for base in sequence
+        binary *= bin(search(bases, base)-1, 2)
+    end
+    parse(Int64, binary, 2)
+end
+
+"""
+    num2seq(n)
+Convert an integer into binary and then into a DNA base sequence string.
+"""
+function num2seq(n::Int64)
+    bases = "atcg"
+    binary = bin(n, genelength*2)
+    sequence = ""
+    for i in 1:2:length(binary)
+        sequence *= string(bases[parse(Int, binary[i:(i+1)], 2)+1])
+    end
+    sequence
+end
+
 function creategenes(ngenes::Int64,traits::Array{Trait,1})
     genes = Gene[]
     for i in 1:ngenes
         sequence = String(rand(collect("acgt"), genelength)) # arbitrary start sequence
+        seqint = seq2num(sequence)
         codesfor = Trait[]
-        push!(genes,Gene(sequence, codesfor))
+        push!(genes,Gene(seqint, codesfor))
     end
     for trait in traits
         ncodinggenes = rand(Poisson(1))
@@ -250,9 +279,9 @@ function creategenes(ngenes::Int64,traits::Array{Trait,1})
         end
     end
     if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
-        push!(genes, Gene(String(rand(collect("acgt"), genelength)), Trait[]))
+        push!(genes, Gene(seq2num(String(rand(collect("acgt"), genelength))), Trait[]))
     end
-    push!(genes, Gene(String(rand(collect("acgt"), genelength)), [Trait("compat", 1.0)])) # create extra compatibility gene
+    push!(genes, Gene(seq2num(String(rand(collect("acgt"), genelength))), [Trait("compat", 1.0)])) # create extra compatibility gene
     genes
 end
 

@@ -114,7 +114,7 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
                     end
                     header = ">$counter x$(patch.location[1]) y$(patch.location[2]) $(ind.lineage) c$chrmno g$geneno $traits"
                     println(io, header)
-                    println(io, gene.sequence)
+                    println(io, num2seq(gene.sequence))
                 end
             end
             lineage = ind.lineage

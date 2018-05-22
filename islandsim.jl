@@ -139,6 +139,8 @@ function runit(settings::Dict{String,Any},seed::Int64=0)
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
         simulation!(world, settings, settings["maps"][i], seed, timesteps)
+        println("Memory usage:\n\nWorld - $(Base.summarysize(world))")
+        println("Individual - $(mean(map(x -> Base.summarysize(x), world[1].community)))")
         writedata(world, settings["maps"][i], settings, seed, -1)
     end
 end
