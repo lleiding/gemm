@@ -1,5 +1,28 @@
 # IO functions for GeMM
 
+function parseconfig(configfilename::String, settings::Dict{String,Any})
+    # Read in the config file
+    params = keys(defaultSettings())
+    open(configfilename) do configfile
+        config = readlines(configfile)
+    end
+    # Remove comments and tokenize
+    filter!(x -> isempty(strip(x)) || (x[1] != '#'), config)
+    config = map(s -> strip(split(s, '#')[1]), config)
+    config = map(split, config)
+    # Parse parameters
+    for c in config
+        if length(c) != 2
+            warn("Bad config file syntax: $c")
+        elseif c[1] in params
+            settings[c[1]] = parse(c[2])
+        else
+            warn(c[1]*" is not a recognized parameter!")
+        end
+    end
+    return settings
+end
+
 function readmapfile(filename::String)
     println("Reading file \"$filename\"...")
     mapstrings = String[]

@@ -12,6 +12,7 @@ using Distributions
 
 
 export Patch, # types
+    parseconfig,
     setupdatadir,
     recordcolonizers,
     readmapfile,
