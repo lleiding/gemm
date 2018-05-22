@@ -88,9 +88,9 @@ end
 function parseconfig(configfilename::String, settings::Dict{String,Any})
     # Read in the config file
     params = keys(defaultSettings())
-    configfile = open(configfilename)
-    config = readlines(configfile)
-    close(configfile)
+    open(configfilename) do configfile
+        config = readlines(configfile)
+    end
     # Remove comments and tokenize
     filter!(x -> isempty(strip(x)) || (x[1] != '#'), config)
     config = map(s -> strip(split(s, '#')[1]), config)
