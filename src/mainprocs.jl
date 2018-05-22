@@ -4,7 +4,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
     prob = ind.traits["mutprob"]
     for chrm in ind.genome
         for idx in eachindex(chrm.genes)
-            charseq = collect(chrm.genes[idx].sequence)
+            charseq = collect(num2seq(chrm.genes[idx].sequence))
             for i in eachindex(charseq)
                 if rand() <= prob * exp(-act/(boltz*temp))
                     newbase = rand(collect("acgt"),1)[1]
@@ -31,7 +31,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
                     end
                 end
             end
-            chrm.genes[idx].sequence = String(charseq)
+            chrm.genes[idx].sequence = seq2num(String(charseq))
         end
     end
     ind.traits = chrms2traits(ind.genome)
