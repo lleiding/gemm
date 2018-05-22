@@ -188,10 +188,10 @@ end
 
 function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     traits = Trait[]
-    seedsize = exp(-7 + 20 * rand()) # corresponds to 1mg to 22kg
+    seedsize = exp(-7 + 17 * rand()) # corresponds to 1mg to 22kg
     repsize = exp(0 + 17 * rand()) # 1g to 24t
     while repsize <= seedsize
-        seedsize = exp(-7 + 20 * rand())
+        seedsize = exp(-7 + 17 * rand())
         repsize = exp(0 + 17 * rand())
     end
     for name in traitnames
