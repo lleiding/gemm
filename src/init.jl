@@ -38,6 +38,7 @@ function genesis(settings::Dict{String,Any},
         totalmass += popmass
         newind = Individual(lineage, chromosomes, traitdict, 0, false, 1.0, traitdict["seedsize"])
         for i in 1:popsize
+            !settings["static"] && (newind = deepcopy(newind))
             push!(community, newind)
         end
     end
