@@ -11,7 +11,10 @@ module GeMM
 using Distributions
 
 
-export Patch, # types
+export
+    # types:
+    Patch,
+    # functions:
     parseconfig,
     setupdatadir,
     recordcolonizers,
@@ -28,7 +31,7 @@ export Patch, # types
     reproduce!,
     mutate!,
     createworld,
-    updateworld! # functions
+    updateworld!
 
 include("types.jl")
 
