@@ -8,7 +8,9 @@
 module GeMM
 
 
-using Distributions
+using
+    Distributions,
+    ArgParse
 
 
 export
@@ -16,6 +18,7 @@ export
     Patch,
     # functions:
     parseconfig,
+    parsecommandline,
     setupdatadir,
     recordcolonizers,
     readmapfile,

@@ -17,73 +17,7 @@
 thisDir = pwd() * "/src"
 any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 
-using GeMM, ArgParse
-
-# Return the default settings. All parameters must be registered here.
-function defaultSettings()
-    Dict(# general software settings
-          "seed" => 1, # for the RNG, seed = 0 -> random seed
-          "maps" => nothing, # comma-separated list of map files
-          "config" => nothing, # configuration file name
-          "fasta" => true, # record fasta data?
-          "dest" => string(Dates.today()), # output folder name
-          # main model settings
-          "linkage" => "random", # gene linkage type
-          "nniches" => 2, # number of environmental niches (max. 3)
-          "tolerance" => "low", # sequence similarity threshold for reproduction
-          "static" => true, # mainland sites don't undergo eco-evolutionary processes
-          "mutate" => true, # mutations occur
-          "cellsize" => 100, # maximum biomass per cell in tonnes
-          # invasion specific settings
-          "propagule-pressure" => 0, # TODO
-          "disturbance" => 0) # percentage of individuals killed per update per cell
-end
-
-function parsecommandline()
-    defaults = defaultSettings()
-    s = ArgParseSettings()
-    @add_arg_table s begin
-        "--seed", "-s"
-            help = "inital random seed"
-            arg_type = Int
-            default = defaults["seed"]
-        "--maps", "-m"
-            help = "list of map files, comma separated"
-            arg_type = String
-            required = false
-        "--config", "-c"
-            help = "name of the config file"
-            arg_type = String
-            required = false
-        "--linkage", "-l"
-            help = "gene linkage (\"none\", \"random\" or \"full\")"
-            arg_type = String
-            range_tester = x->in(x,["none", "random", "full"])
-            required = false
-            default = defaults["linkage"]
-        "--nniches", "-n"
-            help = "number of environmental niche traits (1 -- 3)"
-            arg_type = Int
-            range_tester = x -> x > 0 && x <= 3
-            required = false
-            default = defaults["nniches"]
-        "--tolerance", "-t"
-            help = "tolerance of sequence identity when reproducing (\"high\", \"evo\", \"low\" or \"none\")"
-            arg_type = String
-            range_tester = x->in(x,["high", "evo", "low", "none"])
-            required = false
-            default = defaults["tolerance"]
-        "--dest", "-d"
-            help = "output directory. Defaults to current date"
-            arg_type = String
-            required = false
-            default = defaults["dest"]
-        "--static"
-            help = "static mainland. Turns off any dynamics on the continent"
-            action = :store_true
-        end
-    return merge(defaults, parse_args(s))
-end
+using GeMM
 
 function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, seed::Int64, timesteps::Int=1000)
     info("Starting simulation...")
