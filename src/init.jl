@@ -32,12 +32,13 @@ function genesis(settings::Dict{String,Any},
         chromosomes = createchrs(nchrms,genes)
         traitdict = chrms2traits(chromosomes)
         popsize = round(fertility * traitdict["repsize"]^(-1/4) * exp(-act/(boltz*traitdict["tempopt"]))) # population size determined by adult size and temperature niche optimum
-        popmass = popsize * traitdict["repsize"] #XXX change to seedsize?
+        settings["initadults"]? indsize = traitdict["repsize"] : indsize = traitdict["seedsize"]
+        popmass = popsize * indsize
         totalmass += popmass
         if totalmass + popmass > settings["cellsize"]
             popmass = settings["cellsize"] - totalmass
         end
-        newind = Individual(lineage, chromosomes, traitdict, 0, false, 1.0, traitdict["repsize"]) #XXX change to seedsize?
+        newind = Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize)
         for i in 1:popsize
             push!(community, deepcopy(newind))
         end

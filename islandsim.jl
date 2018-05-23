@@ -14,7 +14,7 @@
 # Every line describes one patch in the following format:
 # <ID> <X-COORDINATE> <Y-COORDINATE> [<TYPE>]
 
-thisDir = pwd() * "/src"
+thisDir = joinpath(pwd(), "src")
 any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 
 using GeMM, ArgParse
@@ -34,7 +34,8 @@ function defaultSettings()
           ("static", true), # mainland sites don't undergo ecological processes
           ("mutate", true), # mutations occur
           ("cellsize", 100), # maximum biomass per patch in tonnes
-          # invasion specific settings
+    	  ("initadults", false), # individuals are initiated with adults size
+    	  # invasion specific settings
           ("propagule-pressure", 0), # TODO
           ("disturbance", 0)]) # percentage of individuals killed per update per patch
 end
@@ -112,7 +113,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
     info("Starting simulation...")
     for t in 1:timesteps
         info("UPDATE $t, population size $(sum(x -> length(x.community), world))")
-        (t <= 10 || mod(t, 20) == 0) && writedata(world, mapfile, settings, seed, t)
+        (t <= 10 || mod(t, 20) == 0) && writedata(world, settings, t)
         establish!(world, settings["nniches"], settings["static"])
         checkviability!(world, settings["static"])
         compete!(world, settings["static"])
@@ -123,9 +124,9 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
         reproduce!(world, settings["static"])
         settings["mutate"] && mutate!(world, settings)
         #TODO invaders = invade!(world, settings["propagule-pressure"])
-        #TODO length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, mapfile, settings, seed, t)
+        #TODO length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, settings, t)
         colonizers = disperse!(world, settings["static"])
-        length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, mapfile, settings, seed, t)
+        length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, settings, t)
     end
 end
 
@@ -139,9 +140,10 @@ function runit(settings::Dict{String,Any},seed::Int64=0)
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
         simulation!(world, settings, settings["maps"][i], seed, timesteps)
-        println("Memory usage:\n\nWorld - $(Base.summarysize(world))")
-        println("Individual - $(mean(map(x -> Base.summarysize(x), world[1].community)))")
-        writedata(world, settings["maps"][i], settings, seed, -1)
+        println("WORLD POPULATION: $(sum(x -> length(x.community), world))") #DEBUG
+        println("WORLD MEMORY: $(round(Base.summarysize(world)/1024^2, 2)) MB") #DEBUG
+        #println("Individual - $(mean(map(x -> Base.summarysize(x), world[1].community)))") #DEBUG
+        writedata(world, settings, -1)
     end
 end
 

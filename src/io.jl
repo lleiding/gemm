@@ -109,10 +109,14 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
                         traits *= "neutral"
                     else
                         for trait in gene.codes
-                            traits *= trait.name * "$(trait.value)" * ","
+                            traits *= trait.name * string(trait.value) * ","
                         end
                     end
-                    header = ">$counter x$(patch.location[1]) y$(patch.location[2]) $(ind.lineage) c$chrmno g$geneno $traits"
+                    #XXX Don't use string interpolation:
+                    # https://docs.julialang.org/en/stable/manual/performance-tips/#Avoid-string-interpolation-for-I/O-1
+                    #header = ">$counter x$(patch.location[1]) y$(patch.location[2]) $(ind.lineage) c$chrmno g$geneno $traits"
+                    header = ">"*counter*" x"*string(patch.location[1])*" y"*string(patch.location[2])
+                    header *= " "*ind.lineage*" c"*str(chrmno)*" g"*string(geneno)*" "*string(traits)
                     println(io, header)
                     println(io, num2seq(gene.sequence))
                 end
@@ -146,14 +150,12 @@ end
 
 #TODO: complete docstring!
 """
-    writedata(world, path, settings, seed, timestep)
+    writedata(world, settings, timestep)
 writes simulation output from `world` to separate table and fasta files.
-`path`, `seed`, `timestep` and `setting` information is used for file name creation.
+`timestep` and `setting` information is used for file name creation.
 """
-function writedata(world::Array{Patch,1}, mappath::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
-    mapfile = split(mappath, "/")[end]
-    length(mapfile) == 0 && return
-    basename = "t" * string(timestep) * "_s" * string(seed)
+function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int64)
+    basename = "t" * string(timestep) * "_s" * string(settings["seed"])
     basename = joinpath(settings["dest"], basename)
     filename = basename * ".tsv"
     println("Writing data \"$filename\"")
@@ -171,21 +173,13 @@ end
 
 #TODO: complete docstring!
 """
-    writerawdata(world, path, settings, seed, t)
-writes raw julia data of the complete simulation state from `world` to a file in `path`.
-`seed`, `setting` and `t` (timestep) information is used for file name creation.
+    writerawdata(world, settings, t)
+writes raw julia data of the complete simulation state from `world` to file in the output directory.
+`setting` and `t` (timestep) information is used for file name creation.
 """
-function writerawdata(world::Array{Patch,1}, mappath::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
-    mapfile = split(mappath, "/")[end]
-    filename = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_lnk" * settings["linkage"] * "_tol" * settings["tolerance"] * "_t" * "$timestep" * ".jl"
-    counter = 0
-    extension = ""
-    while ispath(filename * extension)
-        extension = "_$counter"
-        counter += 1
-        counter > 9 && error("file \"$filename$extension\" exists. Please clear your directory.")
-    end
-    filename *= extension
+function writerawdata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int64)
+    filename = "t" * string(timestep) * "_s" * string(settings["seed"]) * ".jl"
+    filename = joinpath(settings["dest"], filename)
     touch(filename)
     println("Writing raw data to \"$filename\"...")
     if timestep == 1
@@ -202,16 +196,16 @@ end
 
 #TODO: complete docstring!
 """
-    recordcolonizers(colos, path, settings, seed, t)
-writes raw julia data of the colonizing individuals `colos` at timestep `t` to a file in `path`.
+    recordcolonizers(colos, settings, t)
+writes raw julia data of the colonizing individuals `colos` at timestep `t` to file.
 `seed` and `setting` information is used for file name creation.
 """
-function recordcolonizers(colonizers::Array{Individual, 1}, mappath::String, settings::Dict{String, Any}, seed::Int64, timestep::Int64)
-    mapfile = split(mappath, "/")[end]
+function recordcolonizers(colonizers::Array{Individual, 1}, settings::Dict{String, Any}, timestep::Int64)
     record = (timestep, colonizers)
-    filename = "$(settings["dest"])" * "/" * mapfile * "_s" * "$seed" * "_lnk" * settings["linkage"] * "_tol" * settings["tolerance"] * "_colonizers" * ".jl"
+    filename = "t" * string(timestep) * "_s" * string(settings["seed"] * "_colonizers.jl")
+    filename = joinpath(settings["dest"], filename)
     touch(filename)
-    println("Colonisation! Writing data to ", filename, "...")
+    println("Colonisation. Writing data to ", filename, "...")
     open(filename, "a") do file
         println(file, record)
     end

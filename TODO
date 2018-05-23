@@ -1,8 +1,9 @@
 # TODO Island invasion model
 
-* start with adult individuals?
 * create global species pool
 * invade!() function
+* point-of-entry for invasion (on map)
+* write log files and save to output dir
 * create settings for:
 	- propagule pressure
 	- initial species pool
@@ -14,6 +15,3 @@
 
 * Is it possible that there are vastly more individuals on a patch than its
 	cellsize would allow?
-
-* How much memory does one individual use? (Rough calculations suggest 20KB,
-	this seems somewhat high...)
