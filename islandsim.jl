@@ -23,7 +23,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
     info("Starting simulation")
     for t in 1:timesteps
         info("UPDATE $t, population size $(sum(x -> length(x.community), world))")
-        (t == 1 || mod(t, settings["outfreq"]) == 0) && writedata(world, settings, t)
+        (t == 1 || mod(t, settings["outfreq"]) == 0) && writedata(world, settings, mapfile, t)
         establish!(world, settings["nniches"], settings["static"])
         checkviability!(world, settings["static"])
         compete!(world, settings["static"])
@@ -49,7 +49,7 @@ function runit(settings::Dict{String,Any})
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
         simulation!(world, settings, settings["maps"][i], timesteps)
-        writedata(world, settings, -1)
+        writedata(world, settings, settings["maps"][i], -1)
         println("WORLD POPULATION: $(sum(x -> length(x.community), world))") #DEBUG
         println("WORLD MEMORY: $(round(Base.summarysize(world)/1024^2, 2)) MB") #DEBUG
     end
@@ -57,7 +57,7 @@ end
 
 ## Settings
 const allargs = parsecommandline()
-if haskey(allargs, "config") && allargs["config"] != nothing
+if isfile(allargs["config"])
     allargs = parseconfig(allargs["config"], allargs)
 end
 

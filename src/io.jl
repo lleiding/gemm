@@ -181,9 +181,6 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
                             traits *= trait.name * string(trait.value) * ","
                         end
                     end
-                    #XXX Don't use string interpolation:
-                    # https://docs.julialang.org/en/stable/manual/performance-tips/#Avoid-string-interpolation-for-I/O-1
-                    #header = ">$counter x$(patch.location[1]) y$(patch.location[2]) $(ind.lineage) c$chrmno g$geneno $traits"
                     header = ">"*counter*" x"*string(patch.location[1])*" y"*string(patch.location[2])
                     header *= " "*ind.lineage*" c"*str(chrmno)*" g"*string(geneno)*" "*string(traits)
                     println(io, header)
@@ -210,9 +207,19 @@ function setupdatadir(settings::Dict{String, Any})
     else
         info("Setting up output directory $(settings["dest"])")
         mkpath(settings["dest"])
-        cp(settings["config"], joinpath(settings["dest"], settings["config"]))
+        writesettings(settings)
         for m in settings["maps"]
             cp(m, joinpath(settings["dest"], m))
+        end
+    end
+end
+
+function writesettings(settings::Dict{String, Any})
+    open(joinpath(settings["dest"], settings["config"]), "w") do f
+        println(f, "#\n# Island speciation model settings")
+        println(f, "# Run on $(Dates.format(Dates.now(), "d u Y H:M:S"))\n#\n")
+        for k in keys(settings)
+            println(f, "$k: $(settings[k])")
         end
     end
 end
@@ -223,8 +230,8 @@ end
 writes simulation output from `world` to separate table and fasta files.
 `timestep` and `setting` information is used for file name creation.
 """
-function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int64)
-    basename = "t" * string(timestep) * "_s" * string(settings["seed"])
+function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile::String, timestep::Int64)
+    basename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"])
     basename = joinpath(settings["dest"], basename)
     filename = basename * ".tsv"
     println("Writing data \"$filename\"")
@@ -246,8 +253,8 @@ end
 writes raw julia data of the complete simulation state from `world` to file in the output directory.
 `setting` and `t` (timestep) information is used for file name creation.
 """
-function writerawdata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int64)
-    filename = "t" * string(timestep) * "_s" * string(settings["seed"]) * ".jl"
+function writerawdata(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile::String, timestep::Int64)
+    filename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"]) * ".jl"
     filename = joinpath(settings["dest"], filename)
     touch(filename)
     println("Writing raw data to \"$filename\"...")
@@ -269,9 +276,9 @@ end
 writes raw julia data of the colonizing individuals `colos` at timestep `t` to file.
 `seed` and `setting` information is used for file name creation.
 """
-function recordcolonizers(colonizers::Array{Individual, 1}, settings::Dict{String, Any}, timestep::Int64)
+function recordcolonizers(colonizers::Array{Individual, 1}, settings::Dict{String, Any}, mapfile::String, timestep::Int64)
     record = (timestep, colonizers)
-    filename = "t" * string(timestep) * "_s" * string(settings["seed"] * "_colonizers.jl")
+    filename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"] * "_colonizers.jl")
     filename = joinpath(settings["dest"], filename)
     touch(filename)
     println("Colonisation. Writing data to ", filename, "...")
