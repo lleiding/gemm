@@ -31,9 +31,22 @@ function chrms2traits(chrms::Array{Chromosome,1})
     traitdict
 end
 
+function traitsexist(traits::Dict{String, Float64}, traitnames::Array{String, 1})
+    for trait in traitnames
+        if !haskey(traits, trait)
+            warn("Missing trait \"", trait, "\". Individual might be killed.")
+            return false
+        end
+    end
+    true
+end
+
 function traitsexist(ind::Individual, traitnames::Array{String, 1})
     for trait in traitnames
-        !haskey(ind.traits, trait) && return false
+        if !haskey(ind.traits, trait)
+            warn("Individual is missing trait \"", trait, "\". Might be killed.")
+            return false
+        end
     end
     true
 end
@@ -173,7 +186,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
             mate = targetpatch[1].community[mateidx]
             mate.age == 0 && continue
             mate.lineage != ind.lineage && continue
-            !traitsexist(mate, ["repsize"]) && continue
+            !traitsexist(mate.traits, ["repsize"]) && continue
             mate.size < mate.traits["repsize"] && continue
             mate.isnew && continue
             !iscompatible(mate, ind) && continue
