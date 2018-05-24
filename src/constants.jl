@@ -1,4 +1,4 @@
-# Constants for GeMM
+# Constants and settings for GeMM
 
 const boltz = 1.38064852e-23 # J/K = m2⋅kg/(s2⋅K)
 const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
@@ -11,4 +11,26 @@ const mutationrate = 1e-3 * 0.3e11 # 1 base in 1000, correction factor for metab
 const isolationweight = 3 # additional distance to be crossed when dispersing from or to isolated patches
 const maxdispmean = 10 # maximum mean dispersal distance
 const genelength = 20 # sequence length of genes
+
+# Return the default settings. All parameters must be registered here.
+function defaultSettings()
+    Dict(# general software settings
+          "seed" => 1, # for the RNG, seed = 0 -> random seed
+          "maps" => nothing, # comma-separated list of map files
+          "config" => nothing, # configuration file name
+          "fasta" => true, # record fasta data?
+          "dest" => string(Dates.today()), # output folder name
+          "outfreq" => 1000, # output frequency
+          # main model settings
+          "linkage" => "random", # gene linkage type
+          "nniches" => 2, # number of environmental niches (max. 3)
+          "tolerance" => "low", # sequence similarity threshold for reproduction
+          "static" => true, # mainland sites don't undergo eco-evolutionary processes
+          "mutate" => true, # mutations occur
+          "initadults" => false, # initialize organisms as adults
+          "cellsize" => 100, # maximum biomass per cell in tonnes
+          # invasion specific settings
+          "propagule-pressure" => 0, # TODO
+          "disturbance" => 0) # percentage of individuals killed per update per cell
+end
 

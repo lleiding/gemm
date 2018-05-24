@@ -1,26 +1,5 @@
 # IO functions for GeMM
 
-# Return the default settings. All parameters must be registered here.
-function defaultSettings()
-    Dict(# general software settings
-          "seed" => 1, # for the RNG, seed = 0 -> random seed
-          "maps" => nothing, # comma-separated list of map files
-          "config" => nothing, # configuration file name
-          "fasta" => true, # record fasta data?
-          "dest" => string(Dates.today()), # output folder name
-          # main model settings
-          "linkage" => "random", # gene linkage type
-          "nniches" => 2, # number of environmental niches (max. 3)
-          "tolerance" => "low", # sequence similarity threshold for reproduction
-          "static" => true, # mainland sites don't undergo eco-evolutionary processes
-          "mutate" => true, # mutations occur
-          "initadults" => false, # initialize organisms as adults
-          "cellsize" => 100, # maximum biomass per cell in tonnes
-          # invasion specific settings
-          "propagule-pressure" => 0, # TODO
-          "disturbance" => 0) # percentage of individuals killed per update per cell
-end
-
 function parsecommandline()
     defaults = defaultSettings()
     s = ArgParseSettings()

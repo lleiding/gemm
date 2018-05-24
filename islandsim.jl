@@ -23,7 +23,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
     info("Starting simulation")
     for t in 1:timesteps
         info("UPDATE $t, population size $(sum(x -> length(x.community), world))")
-        (t == 1 || mod(t, 1000) == 0) && writedata(world, settings, t)
+        (t == 1 || mod(t, settings["outfreq"]) == 0) && writedata(world, settings, t)
         establish!(world, settings["nniches"], settings["static"])
         checkviability!(world, settings["static"])
         compete!(world, settings["static"])

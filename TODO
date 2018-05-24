@@ -4,6 +4,8 @@
 * invade!() function
 * point-of-entry for invasion (on map)
 * write log files and save to output dir
+* write actual settings to outdir instead
+	of copying the config file
 * create settings for:
 	- propagule pressure
 	- initial island species pool
