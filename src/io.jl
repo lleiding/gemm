@@ -3,8 +3,16 @@
 function getsettings()
     defaults = defaultSettings()
     commandline = parsecommandline()
-    configs = parseconfig(commandline["config"])
-    merge(defaults, configs, commandline)
+    if isfile(commandline["config"])
+        configs = parseconfig(commandline["config"])
+    else
+        configs = Dict{String, Any}()
+    end
+    settings = merge(defaults, configs, commandline)
+    if settings["seed"] == 0
+        settings["seed"] = abs(rand(Int32))
+    end
+    settings
 end
 
 
