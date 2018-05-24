@@ -8,10 +8,17 @@
 module GeMM
 
 
-using Distributions
+using
+    Distributions,
+    ArgParse
 
 
-export Patch, # types
+export
+    # types:
+    Patch,
+    # functions:
+    parseconfig,
+    parsecommandline,
     setupdatadir,
     recordcolonizers,
     readmapfile,
@@ -27,7 +34,7 @@ export Patch, # types
     reproduce!,
     mutate!,
     createworld,
-    updateworld! # functions
+    updateworld!
 
 include("types.jl")
 

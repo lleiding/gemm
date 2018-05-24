@@ -1,6 +1,5 @@
 # initialisation functions for GeMM
 
-
 function genesis(settings::Dict{String,Any},
                  traitnames::Array{String,1} = ["dispmean",
                                                 "dispshape",

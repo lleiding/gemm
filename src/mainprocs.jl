@@ -160,6 +160,7 @@ species-independent mortality due to disturbance on patch `p`
 """
 function disturb!(patch::Patch, intensity::Int64)
     intensity == 0 && return
+    length(patch.community) <= 0 && return
     intensity > 100 && error("intensity must be less than 100%")
     deaths = Integer(round(length(patch.community) * (intensity/100)))
     dead = unique(rand(1:length(patch.community), deaths))
