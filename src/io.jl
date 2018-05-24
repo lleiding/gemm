@@ -234,7 +234,7 @@ function setupdatadir(settings::Dict{String, Any})
 end
 
 function writesettings(settings::Dict{String, Any})
-    open(joinpath(settings["dest"], "settings.conf", "w") do f
+    open(joinpath(settings["dest"], "settings.conf"), "w") do f
         println(f, "#\n# Island speciation model settings")
         println(f, "# Run on $(Dates.format(Dates.now(), "d u Y HH:MM:SS"))\n#\n")
         for k in keys(settings)
