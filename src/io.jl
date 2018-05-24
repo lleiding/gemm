@@ -8,7 +8,7 @@ function getsettings()
     else
         configs = Dict{String, Any}()
     end
-    settings = merge(defaults, configs, commandline)
+    settings = merge(defaults, commandline, configs) # XXX commandline should have highest priority, but overwrites with defaults
     if settings["seed"] == 0
         settings["seed"] = abs(rand(Int32))
     end
