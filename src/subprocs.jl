@@ -203,7 +203,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
             mate = targetpatch[1].community[mateidx]
             mate.lineage != ind.lineage && continue #XXX Changed position for speed
             mate.age == 0 && continue #XXX obsolete (new individuals only added after reproduction)
-            !traitsexist(mate, ["repsize"]) && continue #TODO should be an error!
+            !traitsexist(mate.traits, ["repsize"]) && continue
             mate.size < mate.traits["repsize"] && continue
             mate.isnew && continue
             !iscompatible(mate, ind) && continue
