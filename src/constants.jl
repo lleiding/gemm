@@ -16,8 +16,8 @@ const genelength = 20 # sequence length of genes
 function defaultSettings()
     Dict(# general software settings
           "seed" => 1, # for the RNG, seed = 0 -> random seed
-          "maps" => nothing, # comma-separated list of map files
-          "config" => "simulation.config", # configuration file name
+          "maps" => "", # comma-separated list of map files
+          "config" => "", # configuration file name
           "fasta" => true, # record fasta data?
           "dest" => string(Dates.today()), # output folder name
           "outfreq" => 1000, # output frequency
