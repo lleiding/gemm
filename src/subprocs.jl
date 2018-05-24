@@ -51,6 +51,22 @@ function traitsexist(ind::Individual, traitnames::Array{String, 1})
     true
 end
 
+function traitsexist(traits::Dict{String, Float64}, traitname::String)
+    if !haskey(traits, traitname)
+        warn("Missing trait \"", trait, "\". Individual might be killed.")
+        return false
+    end
+    true
+end
+
+function traitsexist(ind::Individual, traitname::String)
+    if !haskey(ind.traits, traitname)
+        warn("Individual is missing trait \"", trait, "\". Might be killed.")
+        return false
+    end
+    true
+end
+
 function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
     if c != 0 && a != 1.0
         a = 1 / (c * sqrt(2 * pi))
