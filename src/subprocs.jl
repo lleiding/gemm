@@ -53,7 +53,7 @@ end
 
 function traitsexist(traits::Dict{String, Float64}, traitname::String)
     if !haskey(traits, traitname)
-        warn("Missing trait \"", trait, "\". Individual might be killed.")
+        warn("Missing trait \"", traitname, "\". Individual might be killed.")
         return false
     end
     true
@@ -61,7 +61,7 @@ end
 
 function traitsexist(ind::Individual, traitname::String)
     if !haskey(ind.traits, traitname)
-        warn("Individual is missing trait \"", trait, "\". Might be killed.")
+        warn("Individual is missing trait \"", traitname, "\". Might be killed.")
         return false
     end
     true
