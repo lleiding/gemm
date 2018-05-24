@@ -14,16 +14,16 @@
 # Every line describes one patch in the following format:
 # <ID> <X-COORDINATE> <Y-COORDINATE> [<TYPE>]
 
-thisDir = pwd() * "/src"
+thisDir = joinpath(pwd(), "src")
 any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 
 using GeMM
 
 function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, timesteps::Int=1000)
-    seed = settings["seed"]
     info("Starting simulation")
     for t in 1:timesteps
-        (t == 1 || mod(t, 1000) == 0) && writedata(world, mapfile, settings, seed, t)
+        info("UPDATE $t, population size $(sum(x -> length(x.community), world))")
+        (t == 1 || mod(t, settings["outfreq"]) == 0) && writedata(world, settings, mapfile, t)
         establish!(world, settings["nniches"], settings["static"])
         checkviability!(world, settings["static"])
         compete!(world, settings["static"])
@@ -32,14 +32,18 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
         compete!(world, settings["static"])
         reproduce!(world, settings["static"])
         settings["mutate"] && mutate!(world, settings)
+        #TODO invaders = invade!(world, settings["propagule-pressure"])
+        #TODO length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, settings, t)
         colonizers = disperse!(world, settings["static"])
-        length(colonizers) >= 1 && info("t=$t: colonization by $colonizers")
+        length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, settings, t)
     end
 end
 
 function runit(settings::Dict{String,Any})
-    seed = settings["seed"]
-    seed != 0 && srand(seed)
+    if settings["seed"] == 0
+        settings["seed"] = abs(rand(Int32))
+    end
+    srand(settings["seed"])
     settings["maps"] = map(x->String(x),split(settings["maps"],","))
     settings["cellsize"] *= 1e6 #convert tonnes to grams
     setupdatadir(settings)
@@ -48,15 +52,15 @@ function runit(settings::Dict{String,Any})
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
         simulation!(world, settings, settings["maps"][i], timesteps)
-        println("Memory usage:\n\nWorld - $(Base.summarysize(world))")
-        println("Individual - $(mean(map(x -> Base.summarysize(x), world[1].community)))")
-        writedata(world, settings["maps"][i], settings, seed, -1)
+        writedata(world, settings, settings["maps"][i], -1)
+        println("WORLD POPULATION: $(sum(x -> length(x.community), world))") #DEBUG
+        println("WORLD MEMORY: $(round(Base.summarysize(world)/1024^2, 2)) MB") #DEBUG
     end
 end
 
 ## Settings
 const allargs = parsecommandline()
-if haskey(allargs, "config") && allargs["config"] != nothing
+if isfile(allargs["config"])
     allargs = parseconfig(allargs["config"], allargs)
 end
 

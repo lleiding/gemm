@@ -42,6 +42,7 @@ function traitsexist(traits::Dict{String, Float64}, traitnames::Array{String, 1}
 end
 
 function traitsexist(ind::Individual, traitnames::Array{String, 1})
+    # FIXME If a trait doesn't exist, we need an error
     for trait in traitnames
         if !haskey(ind.traits, trait)
             warn("Individual is missing trait \"", trait, "\". Might be killed.")
@@ -200,9 +201,9 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         shuffle!(communityidxs)
         for mateidx in communityidxs
             mate = targetpatch[1].community[mateidx]
-            mate.age == 0 && continue
-            mate.lineage != ind.lineage && continue
-            !traitsexist(mate.traits, ["repsize"]) && continue
+            mate.lineage != ind.lineage && continue #XXX Changed position for speed
+            mate.age == 0 && continue #XXX obsolete (new individuals only added after reproduction)
+            !traitsexist(mate, ["repsize"]) && continue #TODO should be an error!
             mate.size < mate.traits["repsize"] && continue
             mate.isnew && continue
             !iscompatible(mate, ind) && continue

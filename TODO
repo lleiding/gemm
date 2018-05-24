@@ -1,12 +1,16 @@
 # TODO Island invasion model
 
-** initialize island species pool! **
-
-* start with adult individuals
 * create global species pool
 * invade!() function
+* point-of-entry for invasion (on map)
+* rethink map file format
+* write log files and save to output dir
 * create settings for:
-	- propagule pressure
-	- initial island species pool
 	- global species pool size
 	- constants (from constants.jl)
+
+
+# Notes
+
+* We need to agree on an area for a patch in order to find literature values
+	for cellsize
