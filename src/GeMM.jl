@@ -17,8 +17,7 @@ export
     # types:
     Patch,
     # functions:
-    parseconfig,
-    parsecommandline,
+    getsettings,
     setupdatadir,
     recordcolonizers,
     readmapfile,
