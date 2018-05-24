@@ -1,5 +1,13 @@
 # IO functions for GeMM
 
+function getsettings()
+    defaults = defaultSettings()
+    commandline = parsecommandline()
+    configs = parseconfig(commandline["config"])
+    merge(defaults, configs, commandline)
+end
+
+
 function parsecommandline()
     defaults = defaultSettings()
     s = ArgParseSettings()
@@ -43,10 +51,10 @@ function parsecommandline()
             help = "static mainland. Turns off any dynamics on the continent"
             action = :store_true
         end
-    return merge(defaults, parse_args(s))
+    parse_args(s)
 end
 
-function parseconfig(configfilename::String, settings::Dict{String,Any})
+function parseconfig(configfilename::String)
     # Read in the config file
     params = keys(defaultSettings())
     open(configfilename) do configfile
@@ -57,13 +65,14 @@ function parseconfig(configfilename::String, settings::Dict{String,Any})
     config = map(s -> strip(split(s, '#')[1]), config)
     config = map(split, config)
     # Parse parameters
+    settings = Dict{String, Any}()
     for c in config
         if length(c) != 2
             warn("Bad config file syntax: $c")
         elseif c[1] in params
             settings[c[1]] = parse(c[2])
         else
-            warn(c[1]*" is not a recognized parameter!")
+            warn(c[1]*" is not a recognized parameter!") # XXX maybe parse anyway
         end
     end
     return settings
