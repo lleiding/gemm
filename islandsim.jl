@@ -40,9 +40,6 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
 end
 
 function runit(settings::Dict{String,Any})
-    if settings["seed"] == 0
-        settings["seed"] = abs(rand(Int32))
-    end
     srand(settings["seed"])
     settings["maps"] = map(x->String(x),split(settings["maps"],","))
     settings["cellsize"] *= 1e6 #convert tonnes to grams
@@ -59,9 +56,6 @@ function runit(settings::Dict{String,Any})
 end
 
 ## Settings
-const allargs = parsecommandline()
-if isfile(allargs["config"])
-    allargs = parseconfig(allargs["config"], allargs)
-end
+const settings = getsettings()
 
-@time runit(allargs)
+@time runit(settings)
