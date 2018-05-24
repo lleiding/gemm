@@ -12,6 +12,8 @@ function getsettings()
     if settings["seed"] == 0
         settings["seed"] = abs(rand(Int32))
     end
+    settings["maps"] = map(x->String(x),split(settings["maps"],","))
+    settings["cellsize"] *= 1e6 #convert tonnes to grams
     settings
 end
 
