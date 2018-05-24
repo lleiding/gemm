@@ -40,7 +40,10 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
 end
 
 function runit(settings::Dict{String,Any})
-    settings["seed"] == 0 ? srand() : srand(seed)
+    if settings["seed"] == 0
+        settings["seed"] = abs(rand(Int32))
+    end
+    srand(settings["seed"])
     settings["maps"] = map(x->String(x),split(settings["maps"],","))
     settings["cellsize"] *= 1e6 #convert tonnes to grams
     setupdatadir(settings)

@@ -217,9 +217,19 @@ end
 function writesettings(settings::Dict{String, Any})
     open(joinpath(settings["dest"], settings["config"]), "w") do f
         println(f, "#\n# Island speciation model settings")
-        println(f, "# Run on $(Dates.format(Dates.now(), "d u Y H:M:S"))\n#\n")
+        println(f, "# Run on $(Dates.format(Dates.now(), "d u Y HH:MM:SS"))\n#\n")
         for k in keys(settings)
-            println(f, "$k: $(settings[k])")
+            value = settings[k]
+            if isa(value, String)
+                value = '"'*value*'"'
+            elseif isa(value, Array)
+                vstr = '"'
+                for x in value
+                    vstr *= string(x)*","
+                end
+                value = vstr[1:end-1]*'"'
+            end
+            println(f, "$k $value")
         end
     end
 end
