@@ -35,9 +35,9 @@ function defaultSettings()
           ("mutate", true), # mutations occur
           ("cellsize", 100), # maximum biomass per patch in tonnes
     	  ("initadults", false), # individuals are initiated with adults size
-    	  # invasion specific settings
+          # invasion specific settings
           ("propagule-pressure", 0), # TODO
-          ("disturbance", 0)]) # percentage of individuals killed per update per patch
+          ("disturbance", 0)]) # percentage of individuals killed per update per cell
 end
 
 function parsecommandline()
