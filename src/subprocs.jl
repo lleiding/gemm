@@ -158,6 +158,7 @@ end
 function identifyAdults!(patch::Patch)
     adultspeciesidx = Dict{String, Array{Int64, 1}}
     for i in eachindex(patch.community)
+        !traitsexist(patch.community[i].traits, ["repsize"]) && continue
         patch.community[i].size < patch.community[i].traits["repsize"] && continue
         adultspeciesidx = merge(append!, adultspeciesidx, Dict(patch.community[i].lineage => [i]))
     end
@@ -206,14 +207,14 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     while length(posspartners) == 0
         idx > length(coordinates) && break
         targetpatch = filter(l -> l.location == coordinates[idx], world)
-        length(targetpatch) >= 1 ? communityidxs = collect(eachindex(targetpatch[1].community)) : communityidxs = [] # ...? communityidxs = targetpatch[1].whosiwho[]
+        if length(targetpatch) >= 1 && haskey(targetpatch[1].whoiswho, ind.lineage)
+            communityidxs = (targetpatch[1].whoiswho[ind.lineage])
+        else
+            communityidxs = []
+        end
         shuffle!(communityidxs)
         for mateidx in communityidxs
             mate = targetpatch[1].community[mateidx]
-            mate.lineage != ind.lineage && continue #XXX Changed position for speed
-            mate.age == 0 && continue #XXX obsolete (new individuals only added after reproduction)
-            !traitsexist(mate.traits, ["repsize"]) && continue
-            mate.size < mate.traits["repsize"] && continue
             mate.isnew && continue
             !iscompatible(mate, ind) && continue
             push!(posspartners, mate)
