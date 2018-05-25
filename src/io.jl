@@ -65,30 +65,55 @@ function parsecommandline()
     args
 end
 
-function parseconfig(configfilename::String)
-    # Read in the config file
-    params = keys(defaultSettings())
-    open(configfilename) do configfile
-        config = readlines(configfile)
+"""
+    basicparser(f)
+Do elementary parsing on a config or map file.
+
+Reads in the file, strips whole-line and inline comments
+and separates lines by whitespace.
+Returns a 2d array representing the tokens in each line.
+"""
+function basicparser(filename::String)
+    # Read in the file
+    println("Reading file \"$filename\"...")
+    lines = String[]
+    open(filename) do file
+        lines = readlines(file)
     end
     # Remove comments and tokenize
-    config = map(x -> strip(x), config)
-    filter!(x -> !isempty(x), config)
-    filter!(x -> (x[1] != '#'), config)
-    config = map(s -> strip(split(s, '#')[1]), config)
-    config = map(split, config)
-    # Parse parameters
+    lines = map(x -> strip(x), lines)
+    filter!(x -> !isempty(x), lines)
+    filter!(x -> (x[1] != '#'), lines)
+    lines = map(s -> strip(split(s, '#')[1]), lines)
+    lines = map(split, lines)
+    map(l -> map(s -> convert(String, s), l), lines)
+end
+
+function parseconfig(configfilename::String)
+    config = basicparser(configfilename)
     settings = Dict{String, Any}()
+    defaults = defaultSettings()
     for c in config
         if length(c) != 2
             warn("Bad config file syntax: $c")
-        elseif c[1] in params
-            settings[c[1]] = parse(c[2]) # XXX this is dangerous regarding type stability
+        elseif c[1] in keys(defaults)
+            value = parse(c[2])
+            if !isa(value, typeof(defaults[c[1]]))
+                warn("$(c[1]): expected $(typeof(settings[c[1]])), got $(typeof(value)).")
+            end
+            settings[c[1]] = value
         else
             warn(c[1]*" is not a recognized parameter!") # XXX maybe parse anyway
         end
     end
     return settings
+end
+
+function readmapfilenew(mapfilename::String)
+    mapfile = basicparser(mapfilename)
+    timesteps = parse(mapfile[1][1])
+    !isa(timesteps, Integer) && error("Invalid timestep argument in the mapfile: $timesteps")
+    #TODO
 end
 
 function readmapfile(filename::String)
