@@ -276,6 +276,7 @@ end
 Reproduction of individuals in a patch `p` whithin a world (array of patches) `w`
 """
 function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
+    identifyAdults!(patch)
     idx = 1
     temp = patch.altitude
     seedbank = Individual[]
