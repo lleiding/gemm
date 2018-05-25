@@ -3,3 +3,4 @@ paper/source.pdf
 *.aux
 *.log
 visualize.R
+poc/

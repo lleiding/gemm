@@ -17,7 +17,7 @@ function defaultSettings()
     Dict(# general software settings
           "seed" => 1, # for the RNG, seed = 0 -> random seed
           "maps" => "", # comma-separated list of map files
-          "config" => "", # configuration file name
+          "config" => "simulation.conf", # configuration file name
           "fasta" => true, # record fasta data?
           "dest" => string(Dates.today()), # output folder name
           "outfreq" => 1000, # output frequency

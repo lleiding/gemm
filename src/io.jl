@@ -34,6 +34,7 @@ function parsecommandline()
             help = "name of the config file"
             arg_type = String
             required = false
+            default = defaults["config"]
         "--linkage", "-l"
             help = "gene linkage (\"none\", \"random\" or \"full\")"
             arg_type = String
@@ -236,8 +237,9 @@ function setupdatadir(settings::Dict{String, Any})
 end
 
 function writesettings(settings::Dict{String, Any})
-    open(joinpath(settings["dest"], "settings.conf"), "w") do f
-        println(f, "#\n# Island speciation model settings")
+    open(joinpath(settings["dest"], settings["config"]), "w") do f
+        println(f, "#\n# --- Island speciation model settings ---")
+        println(f, "# This file was generated automatically.")
         println(f, "# Run on $(Dates.format(Dates.now(), "d u Y HH:MM:SS"))\n#\n")
         for k in keys(settings)
             value = settings[k]
