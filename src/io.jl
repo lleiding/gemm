@@ -12,7 +12,7 @@ function getsettings()
     if settings["seed"] == 0
         settings["seed"] = abs(rand(Int32))
     end
-    settings["maps"] = map(x->String(x),split(settings["maps"],","))
+    settings["maps"] = map(x -> String(x), split(settings["maps"], ","))
     settings["cellsize"] *= 1e6 #convert tonnes to grams
     settings
 end
@@ -71,7 +71,9 @@ function parseconfig(configfilename::String)
         config = readlines(configfile)
     end
     # Remove comments and tokenize
-    filter!(x -> isempty(strip(x)) || (x[1] != '#'), config)
+    config = map(x -> strip(x), config)
+    filter!(x -> !isempty(x), config)
+    filter!(x -> (x[1] != '#'), config)
     config = map(s -> strip(split(s, '#')[1]), config)
     config = map(split, config)
     # Parse parameters
@@ -80,7 +82,7 @@ function parseconfig(configfilename::String)
         if length(c) != 2
             warn("Bad config file syntax: $c")
         elseif c[1] in params
-            settings[c[1]] = parse(c[2])
+            settings[c[1]] = parse(c[2]) # XXX this is dangerous regarding type stability
         else
             warn(c[1]*" is not a recognized parameter!") # XXX maybe parse anyway
         end
