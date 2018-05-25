@@ -41,8 +41,6 @@ end
 
 function runit(settings::Dict{String,Any})
     srand(settings["seed"])
-    settings["maps"] = map(x->String(x),split(settings["maps"],","))
-    settings["cellsize"] *= 1e6 #convert tonnes to grams
     setupdatadir(settings)
     for i in 1:length(settings["maps"])
         timesteps,maptable = readmapfile(settings["maps"][i])
