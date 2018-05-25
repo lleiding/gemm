@@ -49,7 +49,7 @@ function runit(settings::Dict{String,Any})
         simulation!(world, settings, settings["maps"][i], timesteps)
         writedata(world, settings, settings["maps"][i], -1)
         println("WORLD POPULATION: $(sum(x -> length(x.community), world))") #DEBUG
-        println("WORLD MEMORY: $(round(Base.summarysize(world)/1024^2, 2)) MB") #DEBUG
+        #println("WORLD MEMORY: $(round(Base.summarysize(world)/1024^2, 2)) MB") #DEBUG
     end
 end
 
