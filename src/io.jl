@@ -109,32 +109,14 @@ function parseconfig(configfilename::String)
     return settings
 end
 
-function readmapfilenew(mapfilename::String)
+function readmapfile(mapfilename::String)
     mapfile = basicparser(mapfilename)
     timesteps = parse(mapfile[1][1])
-    !isa(timesteps, Integer) && error("Invalid timestep argument in the mapfile: $timesteps")
-    #TODO
-end
-
-function readmapfile(filename::String)
-    println("Reading file \"$filename\"...")
-    mapstrings = String[]
-    open(filename) do file
-        mapstrings = readlines(file)
-    end
-    mapstrings = filter(x->!all(isspace,x),mapstrings) # remove empty lines
-    mapstrings = filter(x->x[1]!='#',mapstrings) # remove comment lines
-    mapsubstrings = map(split,mapstrings)
-    mapentries = map(x->map(String,x),mapsubstrings)
-    timesteps = 0
-    try
-        timesteps = parse(Int,filter(x->size(x,1)==1,mapentries)[1][1])
-    catch
+    if length(mapfile[1]) != 1 || !isa(timesteps, Integer)
         timesteps = 1000
-        warn("your mapfile \"$filename\" does not include timestep information. Assuming $timesteps timesteps.")
+        warn("Invalid timestep information in the mapfile. Setting timesteps to 1000.")
     end
-    mapentries = filter(x->size(x,1)>1,mapentries)
-    return timesteps,mapentries
+    return timesteps,mapfile[2:end]
 end
 
 """
