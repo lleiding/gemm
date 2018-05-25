@@ -156,7 +156,7 @@ function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Floa
 end
 
 function identifyAdults!(patch::Patch)
-    adultspeciesidx = Dict{String, Array{Int64, 1}}
+    adultspeciesidx = Dict{String, Array{Int64, 1}}()
     for i in eachindex(patch.community)
         !traitsexist(patch.community[i].traits, ["repsize"]) && continue
         patch.community[i].size < patch.community[i].traits["repsize"] && continue
