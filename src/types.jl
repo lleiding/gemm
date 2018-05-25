@@ -35,15 +35,25 @@ mutable struct Patch
     nicheb::Float64 # e.g. precipitation
     community::Array{Individual, 1}
     isolated::Bool
+    whoiswho::Dict{String, Array{Int64, 1}}
 end
 
 # constructors:
-Patch(id,location,altitude,area,isisland,nichea,nicheb,community) = Patch(id,location,altitude,area,isisland,nichea,nicheb,community,false)
-Patch(id,location,altitude,area,isisland,nichea,nicheb) = Patch(id,location,altitude,area,isisland,nichea,nicheb,Individual[],false)
-Patch(id,location,altitude,area,isisland,nichea) = Patch(id,location,altitude,area,isisland,nichea,0,Individual[],false)
-Patch(id,location,altitude,area,isisland) = Patch(id,location,altitude,area,isisland,0,0,Individual[],false)
-Patch(id,location,altitude,area) = Patch(id,location,altitude,area,false,0,0,Individual[],false)
-Patch(id,location,altitude) = Patch(id,location,altitude,100,false,0,0,Individual[],false)
-Patch(id,location) = Patch(id,location,298,100,false,0,0,Individual[],false)
+Patch(id,location,altitude,area,isisland,nichea,nicheb,community, isolated) =
+    Patch(id,location,altitude,area,isisland,nichea,nicheb,community, isolated, Dict{String, Array{Int64, 1}}())
+Patch(id,location,altitude,area,isisland,nichea,nicheb,community) =
+    Patch(id,location,altitude,area,isisland,nichea,nicheb,community, false, Dict{String, Array{Int64, 1}}())
+Patch(id,location,altitude,area,isisland,nichea,nicheb) =
+    Patch(id,location,altitude,area,isisland,nichea,nicheb,Individual[], false, Dict{String, Array{Int64, 1}}())
+Patch(id,location,altitude,area,isisland,nichea) =
+    Patch(id,location,altitude,area,isisland,nichea,0,Individual[], false, Dict{String, Array{Int64, 1}}())
+Patch(id,location,altitude,area,isisland) =
+    Patch(id,location,altitude,area,isisland,0,0,Individual[], false, Dict{String, Array{Int64, 1}}())
+Patch(id,location,altitude,area) =
+    Patch(id,location,altitude,area,false,0,0,Individual[], false, Dict{String, Array{Int64, 1}}())
+Patch(id,location,altitude) =
+    Patch(id,location,altitude,100,false,0,0,Individual[], false, Dict{String, Array{Int64, 1}}())
+Patch(id,location) =
+    Patch(id,location,298,100,false,0,0,Individual[], false, Dict{String, Array{Int64, 1}}())
 
 
