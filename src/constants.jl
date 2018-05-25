@@ -17,7 +17,7 @@ function defaultSettings()
     Dict(# general software settings
           "seed" => 1, # for the RNG, seed = 0 -> random seed
           "maps" => "", # comma-separated list of map files
-          "config" => "", # configuration file name
+          "config" => "simulation.conf", # configuration file name
           "fasta" => true, # record fasta data?
           "dest" => string(Dates.today()), # output folder name
           "outfreq" => 1000, # output frequency
@@ -28,7 +28,7 @@ function defaultSettings()
           "static" => true, # mainland sites don't undergo eco-evolutionary processes
           "mutate" => true, # mutations occur
           "initadults" => false, # initialize organisms as adults
-          "cellsize" => 100, # maximum biomass per cell in tonnes
+          "cellsize" => 20, # maximum biomass per hectare in tonnes (based on Clark et al. 2001)
           # invasion specific settings
           "propagule-pressure" => 0, # TODO
           "disturbance" => 0) # percentage of individuals killed per update per cell

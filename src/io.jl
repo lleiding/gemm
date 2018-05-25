@@ -8,12 +8,14 @@ function getsettings()
     else
         configs = Dict{String, Any}()
     end
-    settings = merge(defaults, commandline, configs) # XXX commandline should have highest priority, but overwrites with defaults
+    settings = merge(defaults, configs, commandline)
     if settings["seed"] == 0
         settings["seed"] = abs(rand(Int32))
     end
     settings["maps"] = map(x -> String(x), split(settings["maps"], ","))
-    settings["cellsize"] *= 1e6 #convert tonnes to grams
+    if isa(settings["cellsize"], Integer)
+        settings["cellsize"] *= 1e6 #convert tonnes to grams
+    end
     settings
 end
 
@@ -25,7 +27,6 @@ function parsecommandline()
         "--seed", "-s"
             help = "inital random seed"
             arg_type = Int
-            default = defaults["seed"]
         "--maps", "-m"
             help = "list of map files, comma separated"
             arg_type = String
@@ -39,29 +40,29 @@ function parsecommandline()
             arg_type = String
             range_tester = x->in(x,["none", "random", "full"])
             required = false
-            default = defaults["linkage"]
         "--nniches", "-n"
             help = "number of environmental niche traits (1 -- 3)"
             arg_type = Int
             range_tester = x -> x > 0 && x <= 3
             required = false
-            default = defaults["nniches"]
         "--tolerance", "-t"
             help = "tolerance of sequence identity when reproducing (\"high\", \"evo\", \"low\" or \"none\")"
             arg_type = String
             range_tester = x->in(x,["high", "evo", "low", "none"])
             required = false
-            default = defaults["tolerance"]
         "--dest", "-d"
             help = "output directory. Defaults to current date"
             arg_type = String
             required = false
-            default = defaults["dest"]
         "--static"
             help = "static mainland. Turns off any dynamics on the continent"
             action = :store_true
-        end
-    parse_args(s)
+    end
+    args = parse_args(s)
+    for a in keys(args)
+        (args[a] == nothing) && delete!(args, a)
+    end
+    args
 end
 
 function parseconfig(configfilename::String)
@@ -236,9 +237,10 @@ function setupdatadir(settings::Dict{String, Any})
 end
 
 function writesettings(settings::Dict{String, Any})
-    open(joinpath(settings["dest"], "settings.conf"), "w") do f
-        println(f, "#\n# Island speciation model settings")
-        println(f, "# Run on $(Dates.format(Dates.now(), "d u Y HH:MM:SS"))\n#\n")
+    open(joinpath(settings["dest"], settings["config"]), "w") do f
+        println(f, "#\n# --- Island speciation model settings ---")
+        println(f, "# This file was generated automatically.")
+        println(f, "# Simulation run on $(Dates.format(Dates.now(), "d u Y HH:MM:SS"))\n#\n")
         for k in keys(settings)
             value = settings[k]
             if isa(value, String)
