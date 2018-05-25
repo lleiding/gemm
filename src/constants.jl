@@ -28,7 +28,7 @@ function defaultSettings()
           "static" => true, # mainland sites don't undergo eco-evolutionary processes
           "mutate" => true, # mutations occur
           "initadults" => false, # initialize organisms as adults
-          "cellsize" => 100, # maximum biomass per cell in tonnes
+          "cellsize" => 20, # maximum biomass per hectare in tonnes (based on Clark et al. 2001)
           # invasion specific settings
           "propagule-pressure" => 0, # TODO
           "disturbance" => 0) # percentage of individuals killed per update per cell
