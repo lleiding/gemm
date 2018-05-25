@@ -155,6 +155,15 @@ function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Floa
     xdest,ydest
 end
 
+function identifyAdults!(patch::Patch)
+    adultspeciesidx = Dict{String, Array{Int64, 1}}
+    for i in eachindex(patch.community)
+        patch.community[i].size < patch.community[i].traits["repsize"] && continue
+        adultspeciesidx = merge(append!, adultspeciesidx, Dict(patch.community[i].lineage => [i]))
+    end
+    patch.whoiswho = adultspeciesidx
+end
+
 function iscompatible(mate::Individual, ind::Individual)
     tolerance = ind.traits["reptol"]
     indgene = ""
@@ -197,7 +206,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     while length(posspartners) == 0
         idx > length(coordinates) && break
         targetpatch = filter(l -> l.location == coordinates[idx], world)
-        length(targetpatch) >= 1 ? communityidxs = collect(eachindex(targetpatch[1].community)) : communityidxs = []
+        length(targetpatch) >= 1 ? communityidxs = collect(eachindex(targetpatch[1].community)) : communityidxs = [] # ...? communityidxs = targetpatch[1].whosiwho[]
         shuffle!(communityidxs)
         for mateidx in communityidxs
             mate = targetpatch[1].community[mateidx]
