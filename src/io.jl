@@ -210,8 +210,8 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
                             traits *= trait.name * string(trait.value) * ","
                         end
                     end
-                    header = ">"*counter*" x"*string(patch.location[1])*" y"*string(patch.location[2])
-                    header *= " "*ind.lineage*" c"*str(chrmno)*" g"*string(geneno)*" "*string(traits)
+                    header = ">"*string(counter)*" x"*string(patch.location[1])*" y"*string(patch.location[2])
+                    header *= " "*ind.lineage*" c"*string(chrmno)*" g"*string(geneno)*" "*traits
                     println(io, header)
                     println(io, num2seq(gene.sequence))
                 end
