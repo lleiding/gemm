@@ -229,16 +229,23 @@ directory by appending a counter.
 """
 function setupdatadir(settings::Dict{String, Any})
     if isdir(settings["dest"]) && !isempty(readdir(settings["dest"]))
-        replicate = filter(c -> isnumber(c), settings["dest"])
-        isempty(replicate) ? replicate = 1 : replicate = parse(Int, replicate)+1
-        settings["dest"] = filter(c -> !isnumber(c), settings["dest"]) * string(replicate)
+        replicate = split(settings["dest"], "_")[end]
+        if all(isnumber, replicate)
+            replicate = parse(UInt8, replicate) + 1 # throw an error if replicate > 255
+            settings["dest"] = string(split(settings["dest"], "_")[1:(end-1)]...) * "_" * string(replicate)
+        else
+            replicate = 1
+            settings["dest"] = string(settings["dest"], "_", replicate)
+        end
         setupdatadir(settings)
     else
         info("Setting up output directory $(settings["dest"])")
         mkpath(settings["dest"])
         writesettings(settings)
-        for m in settings["maps"]
-            cp(m, joinpath(settings["dest"], m))
+        if haskey(settings, "maps")
+            for m in settings["maps"]
+                cp(m, joinpath(settings["dest"], m))
+            end
         end
     end
 end
