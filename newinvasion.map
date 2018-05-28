@@ -1,0 +1,18 @@
+# Invasion experiments map
+# Demonstrate the new mapfile syntax.
+	
+# timesteps:
+10
+
+# invasible region - a 3x3 square with constant temperature and precipitation
+# <id> <x> <y> [optional parameters]
+1 0 0 nichea=4.0
+2 0 1 nichea=4.0
+3 0 2 nichea=4.0
+4 1 0 nichea=4.0
+5 1 1 altitude=293 nichea=5.0
+6 1 2 nichea=4.0
+7 2 0 nichea=4.0
+8 2 1 nichea=4.0
+9 2 2 nichea=4.0
+

@@ -49,7 +49,6 @@ end
 function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,Any})
     info("Creating world...")
     world = Patch[]
-    length(maptable) > 1 ? area = settings["cellsize"] : area = 1 #XXX What is the `area = 1` for?
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
 Each line must contain patch information with at least \n
@@ -57,38 +56,50 @@ Each line must contain patch information with at least \n
 \t - an integer x coordinate, \n
 \t - an integer y coordinate, \n
 separated by a whitespace character (<ID> <x> <y>).")
+        # create the basic patch
         id = parse(Int64, entry[1])
         xcord = parse(Int64, entry[2])
         ycord = parse(Int64, entry[3])
-        size(entry,1) > 3 ? temperature = parse(Float64, entry[4]) : temperature = 298.0
-        isisland = false
-        if size(entry,1) > 4 && contains(lowercase(entry[5]),"island")
-            isisland = true # islands do not receive an initial community
-        end
-        newpatch = Patch(id,(xcord,ycord),temperature,area,isisland)
-        if size(entry,1) > 5 && contains(lowercase(entry[6]),"isolated")
-            newpatch.isolated = true
-        end
-        if size(entry,1) > 6 # || settings["heterogeneity"] == "high"
-            try
-                newpatch.nichea = parse(Float64, entry[7])
-            catch
-                newpatch.nichea = rand() * 10
+        area = settings["cellsize"]
+        # XXX the 'global' here is a hack so that I can use eval() later on
+        # (this always works on the global scope)
+        global newpatch = Patch(id, (xcord, ycord))
+        # parse other parameter options
+        for p in entry[4:end]
+            varval = split(p, '=')
+            var = varval[1]
+            if !(var in map(string, fieldnames(Patch)))
+                warn("Unrecognized patch parameter $var.")
+                continue
+            elseif length(varval) < 2
+                val = true # if no value is specified, assume 'true'
+            else
+                val = parse(varval[2])
             end
+            # check for correct type and modify the new patch
+            vartype = typeof(eval(parse("newpatch."*var)))
+            if !isa(val, vartype)
+                try
+                    val = convert(vartype, val)
+                catch
+                    warn("Invalid patch parameter type $var: $val")
+                    continue
+                end
+            end
+            eval(parse("newpatch."*string(var)*" = $val"))
         end
-        if size(entry,1) > 7
-            newpatch.nicheb = parse(Float64, entry[8])
-        end
-        !isisland && append!(newpatch.community,genesis(settings))
-        push!(world,newpatch)
+        !newpatch.isisland && append!(newpatch.community, genesis(settings))
+        push!(world, newpatch)
+        global newpatch = nothing #clear memory
     end
     world
 end
 
 function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},cellsize::Float64)
+    #FIXME Update to reflect createworld()
+    #FIXME quite possibly degraded due to disuse
     #TODO: add functionality to remove patches!
     info("Updating world...")
-    area = cellsize
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
                             Each line must contain patch information with at least \n
@@ -115,7 +126,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
             world[p].isisland = isisland
             world[p].isolated = isolated
         catch
-            newpatch = Patch(id,(xcord,ycord),temperature,area,isisland)
+            newpatch = Patch(id,(xcord,ycord),temperature,cellsize,isisland)
             newpatch.isolated = isolated
             push!(world,newpatch)
         end
