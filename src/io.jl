@@ -251,13 +251,13 @@ function writesettings(settings::Dict{String, Any})
         for k in keys(settings)
             value = settings[k]
             if isa(value, String)
-                value = '"'*value*'"'
+                value = "\"" * value * "\""
             elseif isa(value, Array)
-                vstr = '"'
+                vstr = "\""  #" this comment is for emacs' syntax highlighting ;)
                 for x in value
-                    vstr *= string(x)*","
+                    vstr *= string(x) * ","
                 end
-                value = vstr[1:end-1]*'"'
+                value = vstr[1:end-1] * "\"" #" and this one.
             end
             println(f, "$k $value")
         end
