@@ -15,18 +15,18 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     deepcopy(gamete)
 end
 
-function chrms2traits(chrms::Array{Chromosome,1})
+function chrms2traits(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
     genes = Gene[]
     for chrm in chrms
-        append!(genes,chrm.genes)
+        append!(genes, chrm.genes)
     end
     traits = Trait[]
     for gene in genes
-        append!(traits,gene.codes)
+        append!(traits, gene.codes)
     end
-    traitdict = Dict{String,Float64}()
-    for traitname in unique(map(x->x.name,traits))
-        traitdict[traitname] = mean(map(x->x.value,filter(x->x.name==traitname,traits)))
+    traitdict = Dict{String, Float64}()
+    for traitidx in unique(map(x -> x.nameindex, traits))
+        traitdict[traitnames[traitidx]] = mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
     end
     traitdict
 end
