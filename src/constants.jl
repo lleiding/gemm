@@ -32,6 +32,17 @@ function defaultSettings()
          # invasion specific settings
          "propagule-pressure" => 0, # TODO
          "disturbance" => 0, # percentage of individuals killed per update per cell
-         "traitnames" => []) # traitnames
+         "traitnames" => ["dispmean",
+                          "dispshape",
+                          "mutprob",
+                          "precopt",
+                          "prectol",
+                          "repradius",
+                          "repsize",
+                          "reptol",
+                          "seedsize",
+                          "tempopt",
+                          "temptol"] # minimal required traitnames
+         ) 
 end
 
