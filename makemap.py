@@ -21,7 +21,7 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol, precon):
     if landtype == "continent":
         landtype = ""
         prec = 0
-        tempstep = round((maxtemp - mintemp) / ylen)
+        tempstep = round((maxtemp - mintemp) / xlen)
         for x in range(xpos, xpos + xlen):
             prec = 0
             temp += tempstep
