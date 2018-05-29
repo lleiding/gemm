@@ -1,3 +1,4 @@
+
 #!/usr/bin/env julia
 
 # Island speciation model using GeMM
@@ -30,7 +31,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
         survive!(world, settings["static"])
         grow!(world, settings["static"])
         compete!(world, settings["static"])
-        reproduce!(world, settings["static"])
+        reproduce!(world, settings)
         settings["mutate"] && mutate!(world, settings)
         #TODO invaders = invade!(world, settings["propagule-pressure"])
         #TODO length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, settings, t)
