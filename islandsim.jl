@@ -42,7 +42,7 @@ end
 function runit(settings::Dict{String,Any})
     srand(settings["seed"])
     setupdatadir(settings)
-    world = Array{Patch,1}
+    world = Patch[]
     for i in 1:length(settings["maps"])
         timesteps,maptable = readmapfile(settings["maps"][i])
         i == 1 && (world = createworld(maptable, settings))
