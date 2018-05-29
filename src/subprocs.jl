@@ -166,7 +166,7 @@ function identifyAdults!(patch::Patch)
 end
 
 function iscompatible(mate::Individual, ind::Individual, settings::Dict{String, Any})
-    compatidx = findin(settings["traitnames"], "compat")[1]
+    compatidx = findin(settings["traitnames"], ["compat"])[1]
     tolerance = ind.traits["reptol"]
     indgene = ""
     for chrm in ind.genome
