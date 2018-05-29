@@ -52,7 +52,7 @@ Patch(id,location,area,altitude,isisland) =
     Patch(id,location,area,altitude,isisland,0,0,Individual[], false, Dict{String, Array{Int64, 1}}())
 Patch(id,location,area,altitude) =
     Patch(id,location,area,altitude,false,0,0,Individual[], false, Dict{String, Array{Int64, 1}}())
-Patch(id,location,altitude) =
+Patch(id,location,area) =
     Patch(id,location,area,298,false,0,0,Individual[], false, Dict{String, Array{Int64, 1}}())
 Patch(id,location) =
     Patch(id,location,2e7,298,false,0,0,Individual[], false, Dict{String, Array{Int64, 1}}())

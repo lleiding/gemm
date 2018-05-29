@@ -63,7 +63,7 @@ separated by a whitespace character (<ID> <x> <y>).")
         area = settings["cellsize"]
         # XXX the 'global' here is a hack so that I can use eval() later on
         # (this always works on the global scope)
-        global newpatch = Patch(id, (xcord, ycord))
+        global newpatch = Patch(id, (xcord, ycord), area)
         # parse other parameter options
         for p in entry[4:end]
             varval = split(p, '=')
@@ -96,8 +96,6 @@ separated by a whitespace character (<ID> <x> <y>).")
 end
 
 function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},cellsize::Float64)
-    #FIXME Update to reflect createworld()
-    #FIXME quite possibly degraded due to disuse
     #TODO: add functionality to remove patches!
     info("Updating world...")
     for entry in maptable
@@ -110,25 +108,43 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
         id = parse(Int64, entry[1])
         xcord = parse(Int64, entry[2])
         ycord = parse(Int64, entry[3])
-        size(entry,1) > 3 ? temperature = parse(Float64, entry[4]) : temperature = 298.0
-        isisland = false
-        if size(entry,1) > 4 && contains(lowercase(entry[5]),"island")
-            isisland = true # islands do not receive an initial community
+        # XXX the 'global' here is a hack so that I can use eval() later on
+        # (this always works on the global scope)
+        idx = find(x->x.id == id, world)
+        if length(idx) == 0
+            isnew = true
+            global newpatch = Patch(id, (xcord, ycord), cellsize)
+        else
+            isnew = false
+            global newpatch = world[idx[1]]
         end
-        isolated = false
-        if size(entry,1) > 5 && contains(lowercase(entry[6]),"isolated")
-            isolated = true
+        # parse other parameter options
+        for p in entry[4:end]
+            varval = split(p, '=')
+            var = varval[1]
+            if !(var in map(string, fieldnames(Patch)))
+                warn("Unrecognized patch parameter $var.")
+                continue
+            elseif length(varval) < 2
+                val = true # if no value is specified, assume 'true'
+            else
+                val = parse(varval[2])
+            end
+            # check for correct type and modify the new patch
+            vartype = typeof(eval(parse("newpatch."*var)))
+            if !isa(val, vartype)
+                try
+                    val = convert(vartype, val)
+                catch
+                    warn("Invalid patch parameter type $var: $val")
+                    continue
+                end
+            end
+            eval(parse("newpatch."*string(var)*" = $val"))
         end
-        try
-            p = find(x->x.id==id,world)
-            world[p].location = (xcord,ycord)
-            world[p].altitude = temperature
-            world[p].isisland = isisland
-            world[p].isolated = isolated
-        catch
-            newpatch = Patch(id,(xcord,ycord),temperature,cellsize,isisland)
-            newpatch.isolated = isolated
-            push!(world,newpatch)
+        if isnew
+            push!(world, newpatch)
+            global newpatch = nothing #clear memory
         end
     end
     world
