@@ -15,18 +15,18 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     deepcopy(gamete)
 end
 
-function chrms2traits(chrms::Array{Chromosome,1})
+function chrms2traits(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
     genes = Gene[]
     for chrm in chrms
-        append!(genes,chrm.genes)
+        append!(genes, chrm.genes)
     end
     traits = Trait[]
     for gene in genes
-        append!(traits,gene.codes)
+        append!(traits, gene.codes)
     end
-    traitdict = Dict{String,Float64}()
-    for traitname in unique(map(x->x.name,traits))
-        traitdict[traitname] = mean(map(x->x.value,filter(x->x.name==traitname,traits)))
+    traitdict = Dict{String, Float64}()
+    for traitidx in unique(map(x -> x.nameindex, traits))
+        traitdict[traitnames[traitidx]] = mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
     end
     traitdict
 end
@@ -165,18 +165,19 @@ function identifyAdults!(patch::Patch)
     patch.whoiswho = adultspeciesidx
 end
 
-function iscompatible(mate::Individual, ind::Individual)
+function iscompatible(mate::Individual, ind::Individual, settings::Dict{String, Any})
+    compatidx = findin(settings["traitnames"], ["compat"])[1]
     tolerance = ind.traits["reptol"]
     indgene = ""
     for chrm in ind.genome
         for gene in chrm.genes
-            any(x -> x.name == "compat", gene.codes) && (indgene = num2seq(gene.sequence)) # use one compatibility gene randomly
+            any(x -> x.nameindex == compatidx, gene.codes) && (indgene = num2seq(gene.sequence)) # use one compatibility gene randomly
         end
     end
     mategene = ""
     for chrm in mate.genome
         for gene in chrm.genes
-            any(x -> x.name == "compat", gene.codes) && (mategene = num2seq(gene.sequence)) # use one compatibility gene randomly
+            any(x -> x.nameindex == compatidx, gene.codes) && (mategene = num2seq(gene.sequence)) # use one compatibility gene randomly
         end
     end
     basediffs = 0
@@ -188,11 +189,11 @@ function iscompatible(mate::Individual, ind::Individual)
         end
     end
     seqidentity = 1 - (basediffs / length(indgene))
-    seqidentity < tolerance && return false # CAVE: maybe compare w/ indgenome?
+    seqidentity < tolerance && return false
     true
 end
 
-function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int, Int})
+function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int, Int}, settings::Dict{String, Any})
     ind.isnew = true
     radius = floor(ind.traits["repradius"] + 0.5) # CAVE: to account for cell width ... or not??
     coordinates = Tuple[]
@@ -216,7 +217,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         for mateidx in communityidxs
             mate = targetpatch[1].community[mateidx]
             mate.isnew && continue
-            !iscompatible(mate, ind) && continue
+            !iscompatible(mate, ind, settings) && continue
             push!(posspartners, mate)
             length(posspartners) >= 1 && break
         end
@@ -226,7 +227,8 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     posspartners
 end
 
-function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+function createtraits(settings::Dict{String,Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+    traitnames = settings["traitnames"]
     traits = Trait[]
     seedsize = exp(-7 + 17 * rand()) # corresponds to 1mg to 22kg
     repsize = exp(0 + 17 * rand()) # 1g to 24t
@@ -234,37 +236,37 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
         seedsize = exp(-7 + 17 * rand())
         repsize = exp(0 + 17 * rand())
     end
-    for name in traitnames
-        if contains(name,"rate")
-            push!(traits,Trait(name,rand()*100))
-        elseif contains(name,"dispshape")
-            push!(traits, Trait(name, rand() * maxdispmean))
-        elseif contains(name, "tempopt")
-            push!(traits,Trait(name, rand() * 40 + 273)) #CAVE: code values elsewhere?
-        elseif contains(name, "temptol")
-            push!(traits,Trait(name,rand()*5)) #CAVE: code values elsewhere?
-        elseif contains(name, "mut")
-            mutationrate == 0 ? push!(traits,Trait(name,rand())) : push!(traits,Trait(name,mutationrate)) #CAVE: code values elsewhere?
-        elseif contains(name, "repsize")
-            push!(traits,Trait(name,repsize)) #CAVE: code values elsewhere?
-        elseif contains(name, "seedsize")
-            push!(traits,Trait(name,seedsize)) #CAVE: code values elsewhere?
-        elseif contains(name, "precopt")
-            push!(traits, Trait(name, rand() * 10))
-        elseif contains(name, "prectol")
-            push!(traits, Trait(name, rand()))
-        elseif contains(name, "reptol")
+    for idx in eachindex(traitnames)
+        if contains(traitnames[idx], "rate")
+            push!(traits, Trait(idx, rand() * 100))
+        elseif contains(traitnames[idx], "dispshape")
+            push!(traits, Trait(idx, rand() * maxdispmean))
+        elseif contains(traitnames[idx], "tempopt")
+            push!(traits, Trait(idx, rand() * 40 + 273)) #CAVE: code values elsewhere?
+        elseif contains(traitnames[idx], "temptol")
+            push!(traits, Trait(idx, rand() * 5)) #CAVE: code values elsewhere?
+        elseif contains(traitnames[idx], "mut")
+            mutationrate == 0 ? push!(traits, Trait(idx, rand())) : push!(traits, Trait(idx, mutationrate)) #CAVE: code values elsewhere?
+        elseif contains(traitnames[idx], "repsize")
+            push!(traits, Trait(idx, repsize)) #CAVE: code values elsewhere?
+        elseif contains(traitnames[idx], "seedsize")
+            push!(traits, Trait(idx, seedsize)) #CAVE: code values elsewhere?
+        elseif contains(traitnames[idx], "precopt")
+            push!(traits, Trait(idx, rand() * 10))
+        elseif contains(traitnames[idx], "prectol")
+            push!(traits, Trait(idx, rand()))
+        elseif contains(traitnames[idx], "reptol")
             if settings["tolerance"] == "high"
-                push!(traits,Trait(name, 0.75))
+                push!(traits, Trait(idx, 0.75))
             elseif settings["tolerance"] == "low"
-                push!(traits,Trait(name, 0.9)) #CAVE: code values elsewhere?
+                push!(traits, Trait(idx, 0.9)) #CAVE: code values elsewhere?
             elseif settings["tolerance"] == "none"
-                push!(traits,Trait(name, 0.01)) #CAVE: code values elsewhere?
+                push!(traits, Trait(idx, 0.01)) #CAVE: code values elsewhere?
             else
-                push!(traits,Trait(name, 0.5 + rand() * 0.5))
+                push!(traits, Trait(idx, 0.5 + rand() * 0.5))
             end
         else
-            push!(traits,Trait(name,rand()))
+            push!(traits, Trait(idx, rand()))
         end
     end
     traits
@@ -279,9 +281,9 @@ function seq2num(sequence::String)
     bases = "atcg"
     binary = ""
     for base in sequence
-        binary *= bin(search(bases, base)-1, 2)
+        binary *= bin(search(bases, base), 2)
     end
-    parse(Int, binary, 2)
+    parse(Int64, binary, 2) # Int64 = max sequence length ~31
 end
 
 """
@@ -319,7 +321,6 @@ function creategenes(ngenes::Int,traits::Array{Trait,1})
     if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
         push!(genes, Gene(seq2num(String(rand(collect("acgt"), genelength))), Trait[]))
     end
-    push!(genes, Gene(seq2num(String(rand(collect("acgt"), genelength))), [Trait("compat", 1.0)])) # create extra compatibility gene
     genes
 end
 

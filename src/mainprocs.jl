@@ -34,7 +34,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
             chrm.genes[idx].sequence = seq2num(String(charseq))
         end
     end
-    ind.traits = chrms2traits(ind.genome)
+    ind.traits = chrms2traits(ind.genome, settings)
 end
 
 function mutate!(patch::Patch, settings::Dict{String,Any})
@@ -215,7 +215,7 @@ end
     disperse!(w)
 Dispersal of individuals within world (array of patches) `w`
 """
-function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additional border conditions, refoctorize
+function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additional border conditions, refactorize
     colonizers = ""
     for patch in world
         idx = 1
@@ -275,7 +275,7 @@ end
     reproduce!(w, p)
 Reproduction of individuals in a patch `p` whithin a world (array of patches) `w`
 """
-function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
+function reproduce!(world::Array{Patch,1}, patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
     identifyAdults!(patch)
     idx = 1
     temp = patch.altitude
@@ -295,7 +295,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                     idx += 1
                     continue
                 end
-                posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
+                posspartners = findposspartners(world, patch.community[idx], patch.location, settings) # this effectively controls frequency of reproduction
                 # length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners # CAVE!
                 if length(posspartners) > 0
                     partner = rand(posspartners)
@@ -311,7 +311,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         mothergenome = meiosis(patch.community[idx].genome, true)
                         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
                         genome = vcat(partnergenome,mothergenome)
-                        traits = chrms2traits(genome)
+                        traits = chrms2traits(genome, settings["traitnames"])
                         age = 0
                         isnew = false
                         fitness = 0.0
@@ -327,8 +327,8 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     append!(patch.community, seedbank)
 end
 
-function reproduce!(world::Array{Patch,1}, static::Bool = true)
+function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
-        (patch.isisland || !static) && reproduce!(world, patch) # pmap(!,patch) ???
+        (patch.isisland || !settings["static"]) && reproduce!(world, patch, settings) # pmap(!,patch) ???
     end
 end
