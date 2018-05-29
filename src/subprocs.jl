@@ -320,7 +320,6 @@ function creategenes(ngenes::Int,traits::Array{Trait,1})
     if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
         push!(genes, Gene(seq2num(String(rand(collect("acgt"), genelength))), Trait[]))
     end
-    push!(genes, Gene(seq2num(String(rand(collect("acgt"), genelength))), [Trait("compat", 1.0)])) # create extra compatibility gene
     genes
 end
 
