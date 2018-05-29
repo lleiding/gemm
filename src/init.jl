@@ -18,7 +18,7 @@ function genesis(settings::Dict{String,Any})
             nchrms = rand(1:length(genes))
         end
         chromosomes = createchrs(nchrms,genes)
-        traitdict = chrms2traits(chromosomes) ### !!!
+        traitdict = chrms2traits(chromosomes, settings["traitnames"]) ### !!!
         popsize = round(fertility * traitdict["repsize"]^(-1/4) * exp(-act/(boltz*traitdict["tempopt"]))) # population size determined by adult size and temperature niche optimum
         settings["initadults"]? indsize = traitdict["repsize"] : indsize = traitdict["seedsize"]
         popmass = popsize * indsize
