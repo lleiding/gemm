@@ -15,22 +15,23 @@ const genelength = 20 # sequence length of genes
 # Return the default settings. All parameters must be registered here.
 function defaultSettings()
     Dict(# general software settings
-          "seed" => 1, # for the RNG, seed = 0 -> random seed
-          "maps" => "", # comma-separated list of map files
-          "config" => "simulation.conf", # configuration file name
-          "fasta" => true, # record fasta data?
-          "dest" => string(Dates.today()), # output folder name
-          "outfreq" => 1000, # output frequency
-          # main model settings
-          "linkage" => "random", # gene linkage type
-          "nniches" => 2, # number of environmental niches (max. 3)
-          "tolerance" => "low", # sequence similarity threshold for reproduction
-          "static" => true, # mainland sites don't undergo eco-evolutionary processes
-          "mutate" => true, # mutations occur
-          "initadults" => false, # initialize organisms as adults
-          "cellsize" => 20, # maximum biomass per hectare in tonnes (based on Clark et al. 2001)
-          # invasion specific settings
-          "propagule-pressure" => 0, # TODO
-          "disturbance" => 0) # percentage of individuals killed per update per cell
+         "seed" => 1, # for the RNG, seed = 0 -> random seed
+         "maps" => "", # comma-separated list of map files
+         "config" => "simulation.conf", # configuration file name
+         "fasta" => true, # record fasta data?
+         "dest" => string(Dates.today()), # output folder name
+         "outfreq" => 1000, # output frequency
+         # main model settings
+         "linkage" => "random", # gene linkage type
+         "nniches" => 2, # number of environmental niches (max. 3)
+         "tolerance" => "low", # sequence similarity threshold for reproduction
+         "static" => true, # mainland sites don't undergo eco-evolutionary processes
+         "mutate" => true, # mutations occur
+         "initadults" => false, # initialize organisms as adults
+         "cellsize" => 20, # maximum biomass per hectare in tonnes (based on Clark et al. 2001)
+         # invasion specific settings
+         "propagule-pressure" => 0, # TODO
+         "disturbance" => 0, # percentage of individuals killed per update per cell
+         "traitnames" => []) # traitnames
 end
 
