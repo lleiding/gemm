@@ -1,17 +1,7 @@
 # initialisation functions for GeMM
 
-function genesis(settings::Dict{String,Any},
-                 traitnames::Array{String,1} = ["dispmean",
-                                                "dispshape",
-                                                "mutprob",
-                                                "precopt",
-                                                "prectol",
-                                                "repradius",
-                                                "repsize",
-                                                "reptol",
-                                                "seedsize",
-                                                "tempopt",
-                                                "temptol"]) # minimal required traitnames
+function genesis(settings::Dict{String,Any})
+    traitnames = settings["traitnames"]
     community = Individual[]
     totalmass = 0.0
     while true 
