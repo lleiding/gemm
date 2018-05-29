@@ -1,7 +1,7 @@
 # Types for GeMM
 
 mutable struct Trait
-    name::String
+    nameindex::UInt8
     value::Float64
 end
 
