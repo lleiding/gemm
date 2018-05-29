@@ -156,7 +156,7 @@ function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Floa
 end
 
 function identifyAdults!(patch::Patch)
-    adultspeciesidx = Dict{String, Array{Int64, 1}}()
+    adultspeciesidx = Dict{String, Array{Int, 1}}()
     for i in eachindex(patch.community)
         !traitsexist(patch.community[i].traits, ["repsize"]) && continue
         patch.community[i].size < patch.community[i].traits["repsize"] && continue
@@ -192,7 +192,7 @@ function iscompatible(mate::Individual, ind::Individual)
     true
 end
 
-function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int64, Int64})
+function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int, Int})
     ind.isnew = true
     radius = floor(ind.traits["repradius"] + 0.5) # CAVE: to account for cell width ... or not??
     coordinates = Tuple[]
@@ -281,14 +281,14 @@ function seq2num(sequence::String)
     for base in sequence
         binary *= bin(search(bases, base)-1, 2)
     end
-    parse(Int64, binary, 2)
+    parse(Int, binary, 2)
 end
 
 """
     num2seq(n)
 Convert an integer into binary and then into a DNA base sequence string.
 """
-function num2seq(n::Int64)
+function num2seq(n::Int)
     bases = "atcg"
     binary = bin(n, genelength*2)
     sequence = ""
@@ -298,7 +298,7 @@ function num2seq(n::Int64)
     sequence
 end
 
-function creategenes(ngenes::Int64,traits::Array{Trait,1})
+function creategenes(ngenes::Int,traits::Array{Trait,1})
     genes = Gene[]
     for i in 1:ngenes
         sequence = String(rand(collect("acgt"), genelength)) # arbitrary start sequence
@@ -323,7 +323,7 @@ function creategenes(ngenes::Int64,traits::Array{Trait,1})
     genes
 end
 
-function createchrs(nchrs::Int64,genes::Array{Gene,1})
+function createchrs(nchrs::Int,genes::Array{Gene,1})
     ngenes=size(genes,1)
     if nchrs>1
         chrsplits = sort(rand(1:ngenes,nchrs-1))

@@ -57,9 +57,9 @@ Each line must contain patch information with at least \n
 \t - an integer y coordinate, \n
 separated by a whitespace character (<ID> <x> <y>).")
         # create the basic patch
-        id = parse(Int64, entry[1])
-        xcord = parse(Int64, entry[2])
-        ycord = parse(Int64, entry[3])
+        id = parse(Int, entry[1])
+        xcord = parse(Int, entry[2])
+        ycord = parse(Int, entry[3])
         area = settings["cellsize"]
         # XXX the 'global' here is a hack so that I can use eval() later on
         # (this always works on the global scope)
@@ -107,9 +107,9 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
                             \t - an integer x coordinate, \n
                             \t - an integer y coordinate, \n
                             separated by a whitespace character (<ID> <x> <y>).")
-        id = parse(Int64, entry[1])
-        xcord = parse(Int64, entry[2])
-        ycord = parse(Int64, entry[3])
+        id = parse(Int, entry[1])
+        xcord = parse(Int, entry[2])
+        ycord = parse(Int, entry[3])
         size(entry,1) > 3 ? temperature = parse(Float64, entry[4]) : temperature = 298.0
         isisland = false
         if size(entry,1) > 4 && contains(lowercase(entry[5]),"island")
