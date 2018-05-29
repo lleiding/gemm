@@ -292,7 +292,7 @@ function num2seq(n::Int)
     bases = "atcg"
     binary = bin(n, genelength*2)
     sequence = ""
-    for i in 1:2:length(binary)
+    for i in 1:2:(length(binary)-1)
         sequence *= string(bases[parse(Int, binary[i:(i+1)], 2)+1])
     end
     sequence
