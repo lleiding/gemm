@@ -165,18 +165,19 @@ function identifyAdults!(patch::Patch)
     patch.whoiswho = adultspeciesidx
 end
 
-function iscompatible(mate::Individual, ind::Individual)
+function iscompatible(mate::Individual, ind::Individual, settings::Dict{String, Any})
+    compatidx = findin(settings["traitnames"], "compat")[1]
     tolerance = ind.traits["reptol"]
     indgene = ""
     for chrm in ind.genome
         for gene in chrm.genes
-            any(x -> x.name == "compat", gene.codes) && (indgene = num2seq(gene.sequence)) # use one compatibility gene randomly
+            any(x -> x.nameindex == compatidx, gene.codes) && (indgene = num2seq(gene.sequence)) # use one compatibility gene randomly
         end
     end
     mategene = ""
     for chrm in mate.genome
         for gene in chrm.genes
-            any(x -> x.name == "compat", gene.codes) && (mategene = num2seq(gene.sequence)) # use one compatibility gene randomly
+            any(x -> x.nameindex == compatidx, gene.codes) && (mategene = num2seq(gene.sequence)) # use one compatibility gene randomly
         end
     end
     basediffs = 0
@@ -188,11 +189,11 @@ function iscompatible(mate::Individual, ind::Individual)
         end
     end
     seqidentity = 1 - (basediffs / length(indgene))
-    seqidentity < tolerance && return false # CAVE: maybe compare w/ indgenome?
+    seqidentity < tolerance && return false
     true
 end
 
-function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int, Int})
+function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int, Int}, settings::Dict{String, Any})
     ind.isnew = true
     radius = floor(ind.traits["repradius"] + 0.5) # CAVE: to account for cell width ... or not??
     coordinates = Tuple[]
@@ -216,7 +217,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         for mateidx in communityidxs
             mate = targetpatch[1].community[mateidx]
             mate.isnew && continue
-            !iscompatible(mate, ind) && continue
+            !iscompatible(mate, ind, settings) && continue
             push!(posspartners, mate)
             length(posspartners) >= 1 && break
         end
