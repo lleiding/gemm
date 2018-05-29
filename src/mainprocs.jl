@@ -76,7 +76,7 @@ end
 establishment of individuals in patch `p`. Sets fitness scaling parameter
 according to adaptation to number `n` niches of the surrounding environment.
 """
-function establish!(patch::Patch, nniches::Int64=1)
+function establish!(patch::Patch, nniches::Int=1)
     temp = patch.altitude
     idx = 1
     while idx <= size(patch.community,1)
@@ -117,7 +117,7 @@ function establish!(patch::Patch, nniches::Int64=1)
 end
 
 
-function establish!(world::Array{Patch,1}, nniches::Int64=1, static::Bool = true)
+function establish!(world::Array{Patch,1}, nniches::Int=1, static::Bool = true)
     for patch in world
         (patch.isisland || !static) && establish!(patch, nniches) # pmap(!,patch) ???
     end
@@ -156,7 +156,7 @@ end
     disturb!(p,i)
 species-independent mortality due to disturbance on patch `p`
 """
-function disturb!(patch::Patch, intensity::Int64)
+function disturb!(patch::Patch, intensity::Int)
     intensity == 0 && return
     length(patch.community) <= 0 && return
     intensity > 100 && error("intensity must be less than 100%")
@@ -170,7 +170,7 @@ function disturb!(patch::Patch, intensity::Int64)
     deleteat!(patch.community, dead)
 end
 
-function disturb!(world::Array{Patch,1}, intensity::Int64, static::Bool = true)
+function disturb!(world::Array{Patch,1}, intensity::Int, static::Bool = true)
     for patch in world
         (patch.isisland || !static) && disturb!(patch, intensity)
     end
