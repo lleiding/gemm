@@ -295,7 +295,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch, settings::Dict{String, 
                     idx += 1
                     continue
                 end
-                posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
+                posspartners = findposspartners(world, patch.community[idx], patch.location, settings) # this effectively controls frequency of reproduction
                 # length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners # CAVE!
                 if length(posspartners) > 0
                     partner = rand(posspartners)
