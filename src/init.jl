@@ -1,16 +1,15 @@
 # initialisation functions for GeMM
 
 function genesis(settings::Dict{String,Any})
-    traitnames = settings["traitnames"]
     community = Individual[]
     totalmass = 0.0
     while true 
         lineage = randstring(4)
-        meangenes = length(traitnames)
+        meangenes = length(settings["traitnames"])
         ngenes = rand(Poisson(meangenes))
         ngenes < 1 && (ngenes = 1)
-        traits = createtraits(traitnames, settings)
-        genes = creategenes(ngenes,traits)
+        traits = createtraits(settings) ### !!!
+        genes = creategenes(ngenes,traits) ### !!!
         if settings["linkage"] == "none"
             nchrms = length(genes)
         elseif settings["linkage"] == "full"
@@ -19,7 +18,7 @@ function genesis(settings::Dict{String,Any})
             nchrms = rand(1:length(genes))
         end
         chromosomes = createchrs(nchrms,genes)
-        traitdict = chrms2traits(chromosomes)
+        traitdict = chrms2traits(chromosomes) ### !!!
         popsize = round(fertility * traitdict["repsize"]^(-1/4) * exp(-act/(boltz*traitdict["tempopt"]))) # population size determined by adult size and temperature niche optimum
         settings["initadults"]? indsize = traitdict["repsize"] : indsize = traitdict["seedsize"]
         popmass = popsize * indsize
