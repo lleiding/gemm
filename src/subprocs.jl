@@ -283,7 +283,7 @@ function seq2num(sequence::String)
     for base in sequence
         binary *= bin(search(bases, base), 2)
     end
-    parse(Int, binary, 2)
+    parse(Int64, binary, 2) # Int64 = max sequence length ~31
 end
 
 """
@@ -294,7 +294,7 @@ function num2seq(n::Int)
     bases = "atcg"
     binary = bin(n, genelength*2)
     sequence = ""
-    for i in 1:2:length(binary)
+    for i in 1:2:(length(binary)-1)
         sequence *= string(bases[parse(Int, binary[i:(i+1)], 2)+1])
     end
     sequence
