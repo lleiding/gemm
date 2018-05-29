@@ -2,8 +2,6 @@
 
 * create global species pool
 * invade!() function
-* point-of-entry for invasion (on map)
-* rethink map file format
 * write log files and save to output dir
 * create settings for:
 	- global species pool size

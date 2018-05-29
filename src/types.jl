@@ -34,27 +34,16 @@ mutable struct Patch
     nichea::Float64 # additional niches,
     nicheb::Float64 # e.g. precipitation
     community::Array{Individual, 1}
+    invasible::Bool
     isolated::Bool
     whoiswho::Dict{String, Array{Int, 1}}
 end
 
 # constructors:
 # XXX These default values should be defined elsewhere (constants.jl, to be precise)
-Patch(id,location,area,altitude,isisland,nichea,nicheb,community, isolated) =
-    Patch(id,location,area,altitude,isisland,nichea,nicheb,community, isolated, Dict{String, Array{Int, 1}}())
-Patch(id,location,area,altitude,isisland,nichea,nicheb,community) =
-    Patch(id,location,area,altitude,isisland,nichea,nicheb,community, false, Dict{String, Array{Int, 1}}())
-Patch(id,location,area,altitude,isisland,nichea,nicheb) =
-    Patch(id,location,area,altitude,isisland,nichea,nicheb,Individual[], false, Dict{String, Array{Int, 1}}())
-Patch(id,location,area,altitude,isisland,nichea) =
-    Patch(id,location,area,altitude,isisland,nichea,0,Individual[], false, Dict{String, Array{Int, 1}}())
-Patch(id,location,area,altitude,isisland) =
-    Patch(id,location,area,altitude,isisland,0,0,Individual[], false, Dict{String, Array{Int, 1}}())
-Patch(id,location,area,altitude) =
-    Patch(id,location,area,altitude,false,0,0,Individual[], false, Dict{String, Array{Int, 1}}())
 Patch(id,location,area) =
-    Patch(id,location,area,298,false,0,0,Individual[], false, Dict{String, Array{Int, 1}}())
+    Patch(id,location,area,298,false,0,0,Individual[], false, false, Dict{String, Array{Int, 1}}())
 Patch(id,location) =
-    Patch(id,location,2e7,298,false,0,0,Individual[], false, Dict{String, Array{Int, 1}}())
+    Patch(id,location,2e7,298,false,0,0,Individual[], false, false, Dict{String, Array{Int, 1}}())
 
 
