@@ -244,7 +244,7 @@ function setupdatadir(settings::Dict{String, Any})
         writesettings(settings)
         if haskey(settings, "maps")
             for m in settings["maps"]
-                cp(m, joinpath(settings["dest"], m))
+                cp(m, joinpath(settings["dest"], m), remove_destination = true) # most likely replicates with same parameters
             end
         end
     end
