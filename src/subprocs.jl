@@ -226,7 +226,8 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     posspartners
 end
 
-function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+function createtraits(settings::Dict{String,Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+    traitnames = settings["traitnames"]
     traits = Trait[]
     seedsize = exp(-7 + 17 * rand()) # corresponds to 1mg to 22kg
     repsize = exp(0 + 17 * rand()) # 1g to 24t
@@ -234,37 +235,37 @@ function createtraits(traitnames::Array{String,1}, settings::Dict{String,Any}) #
         seedsize = exp(-7 + 17 * rand())
         repsize = exp(0 + 17 * rand())
     end
-    for name in traitnames
-        if contains(name,"rate")
-            push!(traits,Trait(name,rand()*100))
-        elseif contains(name,"dispshape")
-            push!(traits, Trait(name, rand() * maxdispmean))
-        elseif contains(name, "tempopt")
-            push!(traits,Trait(name, rand() * 40 + 273)) #CAVE: code values elsewhere?
-        elseif contains(name, "temptol")
-            push!(traits,Trait(name,rand()*5)) #CAVE: code values elsewhere?
-        elseif contains(name, "mut")
-            mutationrate == 0 ? push!(traits,Trait(name,rand())) : push!(traits,Trait(name,mutationrate)) #CAVE: code values elsewhere?
-        elseif contains(name, "repsize")
-            push!(traits,Trait(name,repsize)) #CAVE: code values elsewhere?
-        elseif contains(name, "seedsize")
-            push!(traits,Trait(name,seedsize)) #CAVE: code values elsewhere?
-        elseif contains(name, "precopt")
-            push!(traits, Trait(name, rand() * 10))
-        elseif contains(name, "prectol")
-            push!(traits, Trait(name, rand()))
-        elseif contains(name, "reptol")
+    for idx in eachindex(traitnames)
+        if contains(traitnames[idx], "rate")
+            push!(traits, Trait(idx, rand() * 100))
+        elseif contains(traitnames[idx], "dispshape")
+            push!(traits, Trait(idx, rand() * maxdispmean))
+        elseif contains(traitnames[idx], "tempopt")
+            push!(traits, Trait(idx, rand() * 40 + 273)) #CAVE: code values elsewhere?
+        elseif contains(traitnames[idx], "temptol")
+            push!(traits, Trait(idx, rand() * 5)) #CAVE: code values elsewhere?
+        elseif contains(traitnames[idx], "mut")
+            mutationrate == 0 ? push!(traits, Trait(idx, rand())) : push!(traits, Trait(idx, mutationrate)) #CAVE: code values elsewhere?
+        elseif contains(traitnames[idx], "repsize")
+            push!(traits, Trait(idx, repsize)) #CAVE: code values elsewhere?
+        elseif contains(traitnames[idx], "seedsize")
+            push!(traits, Trait(idx, seedsize)) #CAVE: code values elsewhere?
+        elseif contains(traitnames[idx], "precopt")
+            push!(traits, Trait(idx, rand() * 10))
+        elseif contains(traitnames[idx], "prectol")
+            push!(traits, Trait(idx, rand()))
+        elseif contains(traitnames[idx], "reptol")
             if settings["tolerance"] == "high"
-                push!(traits,Trait(name, 0.75))
+                push!(traits, Trait(idx, 0.75))
             elseif settings["tolerance"] == "low"
-                push!(traits,Trait(name, 0.9)) #CAVE: code values elsewhere?
+                push!(traits, Trait(idx, 0.9)) #CAVE: code values elsewhere?
             elseif settings["tolerance"] == "none"
-                push!(traits,Trait(name, 0.01)) #CAVE: code values elsewhere?
+                push!(traits, Trait(idx, 0.01)) #CAVE: code values elsewhere?
             else
-                push!(traits,Trait(name, 0.5 + rand() * 0.5))
+                push!(traits, Trait(idx, 0.5 + rand() * 0.5))
             end
         else
-            push!(traits,Trait(name,rand()))
+            push!(traits, Trait(idx, rand()))
         end
     end
     traits
@@ -279,7 +280,7 @@ function seq2num(sequence::String)
     bases = "atcg"
     binary = ""
     for base in sequence
-        binary *= bin(search(bases, base)-1, 2)
+        binary *= bin(search(bases, base), 2)
     end
     parse(Int, binary, 2)
 end
