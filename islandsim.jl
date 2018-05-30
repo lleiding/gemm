@@ -39,7 +39,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
     end
 end
 
-function runit(settings::Dict{String,Any})
+function runit()
     srand(settings["seed"])
     setupdatadir(settings)
     world = Patch[]
@@ -54,6 +54,6 @@ function runit(settings::Dict{String,Any})
 end
 
 ## Settings
-const settings = getsettings()
+settings = getsettings()
 
-@time runit(settings)
+@time runit()
