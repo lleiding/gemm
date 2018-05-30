@@ -29,7 +29,7 @@ mutable struct Patch
     id::Int
     location::Tuple{Int, Int}
     area::Float64
-    altitude::Float64 # corresponds to T
+    temp::Float64 # corresponds to T
     isisland::Bool
     nichea::Float64 # additional niches,
     nicheb::Float64 # e.g. precipitation
