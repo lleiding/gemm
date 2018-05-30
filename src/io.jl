@@ -207,7 +207,7 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
                         traits *= "neutral"
                     else
                         for trait in gene.codes
-                            traits *= trait.name * string(trait.value) * ","
+                            traits *= string(trait.nameindex) * string(trait.value) * ","
                         end
                     end
                     header = ">"*string(counter)*" x"*string(patch.location[1])*" y"*string(patch.location[2])
