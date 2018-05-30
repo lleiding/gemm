@@ -39,7 +39,7 @@ end
 
 function mutate!(patch::Patch, settings::Dict{String,Any})
     for ind in patch.community
-        ind.age == 0 && mutate!(ind, patch.altitude, settings)
+        ind.age == 0 && mutate!(ind, patch.temp, settings)
     end
 end
 
@@ -77,7 +77,7 @@ establishment of individuals in patch `p`. Sets fitness scaling parameter
 according to adaptation to number `n` niches of the surrounding environment.
 """
 function establish!(patch::Patch, nniches::Int=1)
-    temp = patch.altitude
+    temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
         if patch.community[idx].isnew || patch.community[idx].age == 0
@@ -128,7 +128,7 @@ end
 density independent survival of individuals in patch `p`
 """
 function survive!(patch::Patch)
-    temp = patch.altitude
+    temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
         if !patch.community[idx].isnew
@@ -181,7 +181,7 @@ end
 Growth of individuals in patch `p`
 """
 function grow!(patch::Patch)
-    temp = patch.altitude
+    temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
         if !traitsexist(patch.community[idx].traits, ["repsize"])
@@ -278,7 +278,7 @@ Reproduction of individuals in a patch `p` whithin a world (array of patches) `w
 function reproduce!(world::Array{Patch,1}, patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
     identifyAdults!(patch)
     idx = 1
-    temp = patch.altitude
+    temp = patch.temp
     seedbank = Individual[]
     while idx <= size(patch.community,1)
         if !traitsexist(patch.community[idx].traits, ["repradius", "repsize", "reptol", "seedsize", "mutprob"])

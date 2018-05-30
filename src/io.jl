@@ -161,7 +161,7 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
             print(io, patch.id, sep)
             print(io, patch.location[1], sep)
             print(io, patch.location[2], sep)
-            print(io, patch.altitude, sep)
+            print(io, patch.temp, sep)
             print(io, patch.area, sep)
             print(io, patch.nichea, sep)
             ## print(io, patch.nicheb, sep)
