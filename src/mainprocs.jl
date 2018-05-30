@@ -176,24 +176,28 @@ function disturb!(world::Array{Patch,1}, intensity::Int, static::Bool = true)
     end
 end
 
+"""
+    invade!(patch, pressure)
+select `pressure` individuals from the global species pool and add them to the patch.
+"""
 let speciespool = Array{Individual,1}()
-    function initspeciespool(settings::Dict{String,Any})
+    function initspeciespool!(settings::Dict{String,Any})
         for i in 1:settings["global-species-pool"]
-            #TODO
-            newind = createind(settings)
+            push!(speciespool, createind(settings))
         end
     end
     
     function invade!(patch::Patch, pressure::Int)
-        #TODO
+        invaders = deepcopy(rand(speciespool, pressure))
+        patch.community = vcat(patch.community, invaders)
     end
 
     global function invade!(world::Array{Patch,1}, settings::Dict{String,Any})
-        return #DEVELOPMENT
         (settings["propagule-pressure"] == 0 || settings["global-species-pool"] == 0) && return
-        (length(speciespool) == 0) && initspeciespool(settings)
-        
-        #TODO
+        (length(speciespool) == 0) && initspeciespool!(settings)
+        for patch in world
+            patch.invasible && invade!(patch, settings["propagule-pressure"])
+        end
     end
 end
 
