@@ -2,7 +2,7 @@
 	
 # timesteps:
 #1000
-10
+20
 
 # invasible region - a 3x3 square with constant temperature and precipitation
 # XXX change to 5x5?

@@ -176,7 +176,7 @@ function disturb!(world::Array{Patch,1}, intensity::Int, static::Bool = true)
     end
 end
 
-let speciespool = Array{Individual,1}()
+let speciespool = Individual[]
     function initspeciespool!(settings::Dict{String,Any})
         for i in 1:settings["global-species-pool"]
             push!(speciespool, createind(settings))
@@ -189,7 +189,7 @@ let speciespool = Array{Individual,1}()
     """
     function invade!(patch::Patch, pressure::Int)
         invaders = deepcopy(rand(speciespool, pressure))
-        patch.community = vcat(patch.community, invaders)
+        append!(patch.community, invaders)
     end
 
     global function invade!(world::Array{Patch,1}, settings::Dict{String,Any})
