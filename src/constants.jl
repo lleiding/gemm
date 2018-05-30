@@ -30,8 +30,10 @@ function defaultSettings()
          "initadults" => false, # initialize organisms as adults
          "cellsize" => 20, # maximum biomass per hectare in tonnes (based on Clark et al. 2001)
          # invasion specific settings
-         "propagule-pressure" => 0, # TODO
+         "propagule-pressure" => 0, # number of non-native individuals introduced per invasion event
+         "global-species-pool" => 0, # size of the global species pool (invasion source)
          "disturbance" => 0, # percentage of individuals killed per update per cell
+         # species trait names
          "traitnames" => ["compat",
                           "dispmean",
                           "dispshape",

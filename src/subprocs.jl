@@ -349,3 +349,23 @@ function createchrs(nchrs::Int,genes::Array{Gene,1})
     chromosomes
 end
 
+function createind(settings::Dict{String,Any})
+    lineage = randstring(4)
+    meangenes = length(settings["traitnames"])
+    ngenes = rand(Poisson(meangenes))
+    ngenes < 1 && (ngenes = 1)
+    traits = createtraits(settings)
+    genes = creategenes(ngenes,traits)
+    if settings["linkage"] == "none"
+        nchrms = length(genes)
+    elseif settings["linkage"] == "full"
+        nchrms = 1
+    else
+        nchrms = rand(1:length(genes))
+    end
+    chromosomes = createchrs(nchrms,genes)
+    traitdict = chrms2traits(chromosomes, settings["traitnames"])
+    settings["initadults"]? indsize = traitdict["repsize"] : indsize = traitdict["seedsize"]
+    Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize)
+end
+

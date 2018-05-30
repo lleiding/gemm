@@ -157,7 +157,6 @@ end
 species-independent mortality due to disturbance on patch `p`
 """
 function disturb!(patch::Patch, intensity::Int)
-    intensity == 0 && return
     length(patch.community) <= 0 && return
     intensity > 100 && error("intensity must be less than 100%")
     deaths = Integer(round(length(patch.community) * (intensity/100)))
@@ -171,8 +170,30 @@ function disturb!(patch::Patch, intensity::Int)
 end
 
 function disturb!(world::Array{Patch,1}, intensity::Int, static::Bool = true)
+    (intensity == 0) && return
     for patch in world
         (patch.isisland || !static) && disturb!(patch, intensity)
+    end
+end
+
+let speciespool = Array{Individual,1}()
+    function initspeciespool(settings::Dict{String,Any})
+        for i in 1:settings["global-species-pool"]
+            #TODO
+            newind = createind(settings)
+        end
+    end
+    
+    function invade!(patch::Patch, pressure::Int)
+        #TODO
+    end
+
+    global function invade!(world::Array{Patch,1}, settings::Dict{String,Any})
+        return #DEVELOPMENT
+        (settings["propagule-pressure"] == 0 || settings["global-species-pool"] == 0) && return
+        (length(speciespool) == 0) && initspeciespool(settings)
+        
+        #TODO
     end
 end
 

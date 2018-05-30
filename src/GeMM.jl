@@ -27,6 +27,7 @@ export
     establish!,
     survive!,
     disturb!,
+    invade!,
     grow!,
     disperse!,
     compete!,

@@ -3,30 +3,15 @@
 function genesis(settings::Dict{String,Any})
     community = Individual[]
     totalmass = 0.0
-    while true 
-        lineage = randstring(4)
-        meangenes = length(settings["traitnames"])
-        ngenes = rand(Poisson(meangenes))
-        ngenes < 1 && (ngenes = 1)
-        traits = createtraits(settings)
-        genes = creategenes(ngenes,traits)
-        if settings["linkage"] == "none"
-            nchrms = length(genes)
-        elseif settings["linkage"] == "full"
-            nchrms = 1
-        else
-            nchrms = rand(1:length(genes))
-        end
-        chromosomes = createchrs(nchrms,genes)
-        traitdict = chrms2traits(chromosomes, settings["traitnames"])
-        popsize = round(fertility * traitdict["repsize"]^(-1/4) * exp(-act/(boltz*traitdict["tempopt"]))) # population size determined by adult size and temperature niche optimum
-        settings["initadults"]? indsize = traitdict["repsize"] : indsize = traitdict["seedsize"]
-        popmass = popsize * indsize
+    while true
+        newind = createind(settings)
+        # population size determined by adult size and temperature niche optimum
+        popsize = round(fertility * newind.traits["repsize"]^(-1/4) * exp(-act/(boltz*newind.traits["tempopt"]))) 
+        popmass = popsize * newind.size
         if totalmass + popmass > settings["cellsize"] # stop loop if cell is full
             break
         end
         totalmass += popmass
-        newind = Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize)
         for i in 1:popsize
             !settings["static"] && (newind = deepcopy(newind))
             push!(community, newind)
