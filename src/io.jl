@@ -161,7 +161,7 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
             print(io, patch.id, sep)
             print(io, patch.location[1], sep)
             print(io, patch.location[2], sep)
-            print(io, patch.altitude, sep)
+            print(io, patch.temp, sep)
             print(io, patch.area, sep)
             print(io, patch.nichea, sep)
             ## print(io, patch.nicheb, sep)
@@ -207,7 +207,7 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
                         traits *= "neutral"
                     else
                         for trait in gene.codes
-                            traits *= trait.name * string(trait.value) * ","
+                            traits *= string(trait.nameindex) * string(trait.value) * ","
                         end
                     end
                     header = ">"*string(counter)*" x"*string(patch.location[1])*" y"*string(patch.location[2])
