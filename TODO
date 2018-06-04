@@ -6,6 +6,6 @@
 * create settings for:
 	- global species pool size
 	- constants (from constants.jl)
-
+* check parsing of `settings`
 
 # Notes

@@ -14,6 +14,8 @@ using
 
 
 export
+    #constants:
+    settings,
     # types:
     Patch,
     # functions:
