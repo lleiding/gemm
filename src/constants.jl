@@ -22,6 +22,8 @@ function defaultSettings()
          "fasta" => true, # record fasta data?
          "dest" => string(Dates.today()), # output folder name
          "outfreq" => 1000, # output frequency
+         "logging" => true, # write output to logfile
+         "debug" => true, # write out debug statements
          # main model settings
          "linkage" => "random", # gene linkage type
          "nniches" => 2, # number of environmental niches (max. 3)

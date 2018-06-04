@@ -333,3 +333,34 @@ function recordcolonizers(colonizers::Array{Individual, 1}, mapfile::String, tim
         println(file, record)
     end
 end
+
+"""
+    log(msg, logfile, category)
+Write a log message to STDOUT/STDERR and the specified logfile 
+(if logging is turned on in the settings).
+Categories: d (debug), i (information), w (warn), e (error)
+"""
+function simlog(msg, category='i', logfile="simulation.log")
+    (isa(category, String) && length(category) == 1) && (category = category[1])
+    function logprint(msg, stderr=false)
+        stderr ? iostr = STDERR : iostr = STDOUT
+        println(iostr, msg)
+        if settings["logging"]
+            open(joinpath(settings["dest"], logfile), "a") do f
+                println(f, msg)
+            end
+        end
+    end
+    if category == 'i'
+        logprint(msg)
+    elseif category == 'd'
+        settings["debug"] && logprint("DEBUG: "*msg)
+    elseif category == 'w'
+        logprint("WARNING: "*msg, true)
+    elseif category == 'e'
+        logprint("ERROR: "*msg, true)
+        exit(1)
+    else
+        log("Invalid log category $category.", category='w')
+    end
+end

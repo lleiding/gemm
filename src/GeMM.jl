@@ -19,6 +19,7 @@ export
     # types:
     Patch,
     # functions:
+    simlog,
     getsettings,
     setupdatadir,
     recordcolonizers,
