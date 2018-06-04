@@ -1,7 +1,5 @@
 # Constants and settings for GeMM
 
-const settings = Dict{String, Any}()
-
 ### below variables should become settings elements at some point
 const boltz = 1.38064852e-23 # J/K = m2⋅kg/(s2⋅K)
 const act = 1e-19 # activation energy /J, ca. 0.63eV - Brown et al. 2004
@@ -51,4 +49,6 @@ function defaultSettings()
                           "temptol"] # minimal required traitnames
          ) 
 end
+
+const settings = getsettings()
 

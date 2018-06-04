@@ -19,11 +19,11 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 
 using GeMM
 
-function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile::String, timesteps::Int=1000)
+function simulation!(world::Array{Patch,1}, mapfile::String, timesteps::Int=1000)
     info("Starting simulation")
     for t in 1:timesteps
         info("UPDATE $t, population size $(sum(x -> length(x.community), world))")
-        (t == 1 || mod(t, settings["outfreq"]) == 0) && writedata(world, settings, mapfile, t)
+        (t == 1 || mod(t, settings["outfreq"]) == 0) && writedata(world, mapfile, t)
         establish!(world, settings["nniches"], settings["static"])
         checkviability!(world, settings["static"])
         compete!(world, settings["static"])
@@ -31,9 +31,9 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String,Any}, mapfile:
         disturb!(world, settings["disturbance"], settings["static"])
         grow!(world, settings["static"])
         compete!(world, settings["static"])
-        reproduce!(world, settings)
-        settings["mutate"] && mutate!(world, settings)
-        invade!(world, settings)
+        reproduce!(world)
+        settings["mutate"] && mutate!(world)
+        invade!(world)
         colonizers = disperse!(world, settings["static"])
         length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, settings, t)
     end
@@ -45,15 +45,12 @@ function runit()
     world = Patch[]
     for i in 1:length(settings["maps"])
         timesteps,maptable = readmapfile(settings["maps"][i])
-        i == 1 && (world = createworld(maptable, settings))
+        i == 1 && (world = createworld(maptable))
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
-        simulation!(world, settings, settings["maps"][i], timesteps)
-        writedata(world, settings, settings["maps"][i], -1)
+        simulation!(world, settings["maps"][i], timesteps)
+        writedata(world, settings["maps"][i], -1)
         println("WORLD POPULATION: $(sum(x -> length(x.community), world))") #DEBUG
     end
 end
-
-## Settings
-settings = getsettings()
 
 @time runit()

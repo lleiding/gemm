@@ -277,7 +277,7 @@ end
 writes simulation output from `world` to separate table and fasta files.
 `timestep` and `setting` information is used for file name creation.
 """
-function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile::String, timestep::Int)
+function writedata(world::Array{Patch,1}, mapfile::String, timestep::Int)
     basename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"])
     basename = joinpath(settings["dest"], basename)
     filename = basename * ".tsv"
@@ -300,7 +300,7 @@ end
 writes raw julia data of the complete simulation state from `world` to file in the output directory.
 `setting` and `t` (timestep) information is used for file name creation.
 """
-function writerawdata(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile::String, timestep::Int)
+function writerawdata(world::Array{Patch,1}, mapfile::String, timestep::Int)
     filename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"]) * ".jl"
     filename = joinpath(settings["dest"], filename)
     touch(filename)
@@ -323,7 +323,7 @@ end
 writes raw julia data of the colonizing individuals `colos` at timestep `t` to file.
 `seed` and `setting` information is used for file name creation.
 """
-function recordcolonizers(colonizers::Array{Individual, 1}, settings::Dict{String, Any}, mapfile::String, timestep::Int)
+function recordcolonizers(colonizers::Array{Individual, 1}, mapfile::String, timestep::Int)
     record = (timestep, colonizers)
     filename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"] * "_colonizers.jl")
     filename = joinpath(settings["dest"], filename)
@@ -333,4 +333,3 @@ function recordcolonizers(colonizers::Array{Individual, 1}, settings::Dict{Strin
         println(file, record)
     end
 end
-

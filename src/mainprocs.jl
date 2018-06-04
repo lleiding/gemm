@@ -1,6 +1,6 @@
 # Main processes for GeMM
 
-function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
+function mutate!(ind::Individual, temp::Float64)
     prob = ind.traits["mutprob"]
     for chrm in ind.genome
         for idx in eachindex(chrm.genes)
@@ -37,15 +37,15 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String,Any})
     ind.traits = chrms2traits(ind.genome, settings["traitnames"])
 end
 
-function mutate!(patch::Patch, settings::Dict{String,Any})
+function mutate!(patch::Patch)
     for ind in patch.community
-        ind.age == 0 && mutate!(ind, patch.temp, settings)
+        ind.age == 0 && mutate!(ind, patch.temp)
     end
 end
 
-function mutate!(world::Array{Patch, 1}, settings::Dict{String,Any})
+function mutate!(world::Array{Patch, 1})
     for patch in world
-        (patch.isisland || !settings["static"]) && mutate!(patch, settings)
+        (patch.isisland || !settings["static"]) && mutate!(patch)
     end
 end
 
@@ -177,9 +177,9 @@ function disturb!(world::Array{Patch,1}, intensity::Int, static::Bool = true)
 end
 
 let speciespool = Individual[]
-    function initspeciespool!(settings::Dict{String,Any})
+    function initspeciespool!()
         for i in 1:settings["global-species-pool"]
-            push!(speciespool, createind(settings))
+            push!(speciespool, createind())
         end
     end
     
@@ -192,9 +192,9 @@ let speciespool = Individual[]
         append!(patch.community, invaders)
     end
 
-    global function invade!(world::Array{Patch,1}, settings::Dict{String,Any})
+    global function invade!(world::Array{Patch,1})
         (settings["propagule-pressure"] == 0 || settings["global-species-pool"] == 0) && return
-        (length(speciespool) == 0) && initspeciespool!(settings)
+        (length(speciespool) == 0) && initspeciespool!()
         for patch in world
             patch.invasible && invade!(patch, settings["propagule-pressure"])
         end
@@ -300,7 +300,7 @@ end
     reproduce!(w, p)
 Reproduction of individuals in a patch `p` whithin a world (array of patches) `w`
 """
-function reproduce!(world::Array{Patch,1}, patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
+function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     identifyAdults!(patch)
     idx = 1
     temp = patch.temp
@@ -320,7 +320,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch, settings::Dict{String, 
                     idx += 1
                     continue
                 end
-                posspartners = findposspartners(world, patch.community[idx], patch.location, settings) # this effectively controls frequency of reproduction
+                posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
                 # length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners # CAVE!
                 if length(posspartners) > 0
                     partner = rand(posspartners)
@@ -352,8 +352,8 @@ function reproduce!(world::Array{Patch,1}, patch::Patch, settings::Dict{String, 
     append!(patch.community, seedbank)
 end
 
-function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
+function reproduce!(world::Array{Patch,1})
     for patch in world
-        (patch.isisland || !settings["static"]) && reproduce!(world, patch, settings) # pmap(!,patch) ???
+        (patch.isisland || !settings["static"]) && reproduce!(world, patch) # pmap(!,patch) ???
     end
 end

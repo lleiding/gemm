@@ -1,10 +1,10 @@
 # initialisation functions for GeMM
 
-function genesis(settings::Dict{String,Any})
+function genesis()
     community = Individual[]
     totalmass = 0.0
     while true
-        newind = createind(settings)
+        newind = createind()
         # population size determined by adult size and temperature niche optimum
         popsize = round(fertility * newind.traits["repsize"]^(-1/4) * exp(-act/(boltz*newind.traits["tempopt"]))) 
         popmass = popsize * newind.size
@@ -20,7 +20,7 @@ function genesis(settings::Dict{String,Any})
     community
 end
 
-function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String,Any})
+function createworld(maptable::Array{Array{String,1},1})
     info("Creating world...")
     world = Patch[]
     for entry in maptable
@@ -62,7 +62,7 @@ separated by a whitespace character (<ID> <x> <y>).")
             end
             eval(parse("newpatch."*string(var)*" = $val"))
         end
-        !newpatch.isisland && append!(newpatch.community, genesis(settings))
+        !newpatch.isisland && append!(newpatch.community, genesis())
         push!(world, newpatch)
         global newpatch = nothing #clear memory
     end

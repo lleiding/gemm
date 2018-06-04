@@ -165,7 +165,7 @@ function identifyAdults!(patch::Patch)
     patch.whoiswho = adultspeciesidx
 end
 
-function iscompatible(mate::Individual, ind::Individual, settings::Dict{String, Any})
+function iscompatible(mate::Individual, ind::Individual)
     compatidx = findin(settings["traitnames"], ["compat"])[1]
     tolerance = ind.traits["reptol"]
     indgene = ""
@@ -193,7 +193,7 @@ function iscompatible(mate::Individual, ind::Individual, settings::Dict{String, 
     true
 end
 
-function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int, Int}, settings::Dict{String, Any})
+function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int, Int})
     ind.isnew = true
     radius = floor(ind.traits["repradius"] + 0.5) # CAVE: to account for cell width ... or not??
     coordinates = Tuple[]
@@ -217,7 +217,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         for mateidx in communityidxs
             mate = targetpatch[1].community[mateidx]
             mate.isnew && continue
-            !iscompatible(mate, ind, settings) && continue
+            !iscompatible(mate, ind) && continue
             push!(posspartners, mate)
             length(posspartners) >= 1 && break
         end
@@ -227,7 +227,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     posspartners
 end
 
-function createtraits(settings::Dict{String,Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+function createtraits() #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     traitnames = settings["traitnames"]
     traits = Trait[]
     seedsize = exp(-7 + 17 * rand()) # corresponds to 1mg to 22kg
@@ -349,12 +349,12 @@ function createchrs(nchrs::Int,genes::Array{Gene,1})
     chromosomes
 end
 
-function createind(settings::Dict{String,Any})
+function createind()
     lineage = randstring(4)
     meangenes = length(settings["traitnames"])
     ngenes = rand(Poisson(meangenes))
     ngenes < 1 && (ngenes = 1)
-    traits = createtraits(settings)
+    traits = createtraits()
     genes = creategenes(ngenes,traits)
     if settings["linkage"] == "none"
         nchrms = length(genes)

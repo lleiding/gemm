@@ -1,10 +1,8 @@
 # TODO Island invasion model
 
-* create global species pool
-* invade!() function
+* UNIT TESTS!
 * write log files and save to output dir
 * create settings for:
-	- global species pool size
 	- constants (from constants.jl)
 * check parsing of `settings`
 

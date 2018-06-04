@@ -40,9 +40,9 @@ export
 
 include("types.jl")
 
-include("constants.jl")
-
 include("io.jl")
+
+include("constants.jl")
 
 include("subprocs.jl")
 
