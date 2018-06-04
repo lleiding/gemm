@@ -54,6 +54,9 @@ function parsecommandline()
             help = "output directory. Defaults to current date"
             arg_type = String
             required = false
+        "--debug"
+            help = "debug mode. Turns on output of debug statements."
+            action = :store_true
         "--static"
             help = "static mainland. Turns off any dynamics on the continent"
             action = :store_true
@@ -75,7 +78,6 @@ Returns a 2d array representing the tokens in each line.
 """
 function basicparser(filename::String)
     # Read in the file
-    println("Reading file \"$filename\"...")
     lines = String[]
     open(filename) do file
         lines = readlines(file)
@@ -95,26 +97,27 @@ function parseconfig(configfilename::String)
     defaults = defaultSettings()
     for c in config
         if length(c) != 2
-            warn("Bad config file syntax: $c")
+            simlog("Bad config file syntax: $c", 'w')
         elseif c[1] in keys(defaults)
             value = parse(c[2])
             if !isa(value, typeof(defaults[c[1]]))
-                warn("$(c[1]): expected $(typeof(settings[c[1]])), got $(typeof(value)).")
+                simlog("$(c[1]): expected $(typeof(settings[c[1]])), got $(typeof(value)).", 'w')
             end
             settings[c[1]] = value
         else
-            warn(c[1]*" is not a recognized parameter!") # XXX maybe parse anyway
+            simlog(c[1]*" is not a recognized parameter!", 'w') # XXX maybe parse anyway
         end
     end
     return settings
 end
 
 function readmapfile(mapfilename::String)
+    simlog("Reading map file $mapfilename.")
     mapfile = basicparser(mapfilename)
     timesteps = parse(mapfile[1][1])
     if length(mapfile[1]) != 1 || !isa(timesteps, Integer)
         timesteps = 1000
-        warn("Invalid timestep information in the mapfile. Setting timesteps to 1000.")
+        simlog("Invalid timestep information in the mapfile. Setting timesteps to 1000.", 'w')
     end
     return timesteps,mapfile[2:end]
 end
@@ -239,8 +242,8 @@ function setupdatadir(settings::Dict{String, Any})
         end
         setupdatadir(settings)
     else
-        info("Setting up output directory $(settings["dest"])")
         mkpath(settings["dest"])
+        simlog("Setting up output directory $(settings["dest"])")
         writesettings(settings)
         if haskey(settings, "maps")
             for m in settings["maps"]
@@ -338,7 +341,7 @@ end
     log(msg, logfile, category)
 Write a log message to STDOUT/STDERR and the specified logfile 
 (if logging is turned on in the settings).
-Categories: d (debug), i (information), w (warn), e (error)
+Categories: d (debug), i (information, default), w (warn), e (error)
 """
 function simlog(msg, category='i', logfile="simulation.log")
     (isa(category, String) && length(category) == 1) && (category = category[1])

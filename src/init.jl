@@ -21,7 +21,7 @@ function genesis()
 end
 
 function createworld(maptable::Array{Array{String,1},1})
-    info("Creating world...")
+    simlog("Creating world...")
     world = Patch[]
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
@@ -43,7 +43,7 @@ separated by a whitespace character (<ID> <x> <y>).")
             varval = split(p, '=')
             var = varval[1]
             if !(var in map(string, fieldnames(Patch)))
-                warn("Unrecognized patch parameter $var.")
+                simlog("Unrecognized patch parameter $var.", 'w')
                 continue
             elseif length(varval) < 2
                 val = true # if no value is specified, assume 'true'
@@ -56,7 +56,7 @@ separated by a whitespace character (<ID> <x> <y>).")
                 try
                     val = convert(vartype, val)
                 catch
-                    warn("Invalid patch parameter type $var: $val")
+                    simlog("Invalid patch parameter type $var: $val", 'w')
                     continue
                 end
             end
@@ -71,7 +71,7 @@ end
 
 function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},cellsize::Float64)
     #TODO: add functionality to remove patches!
-    info("Updating world...")
+    simlog("Updating world...")
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
                             Each line must contain patch information with at least \n
@@ -97,7 +97,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
             varval = split(p, '=')
             var = varval[1]
             if !(var in map(string, fieldnames(Patch)))
-                warn("Unrecognized patch parameter $var.")
+                simlog("Unrecognized patch parameter $var.", 'w')
                 continue
             elseif length(varval) < 2
                 val = true # if no value is specified, assume 'true'
@@ -110,7 +110,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
                 try
                     val = convert(vartype, val)
                 catch
-                    warn("Invalid patch parameter type $var: $val")
+                    simlog("Invalid patch parameter type $var: $val", 'w')
                     continue
                 end
             end

@@ -20,9 +20,9 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 using GeMM
 
 function simulation!(world::Array{Patch,1}, mapfile::String, timesteps::Int=1000)
-    info("Starting simulation")
+    simlog("Starting simulation.")
     for t in 1:timesteps
-        info("UPDATE $t, population size $(sum(x -> length(x.community), world))")
+        simlog("UPDATE $t, population size $(sum(x -> length(x.community), world))")
         (t == 1 || mod(t, settings["outfreq"]) == 0) && writedata(world, mapfile, t)
         establish!(world, settings["nniches"], settings["static"])
         checkviability!(world, settings["static"])
@@ -35,7 +35,7 @@ function simulation!(world::Array{Patch,1}, mapfile::String, timesteps::Int=1000
         settings["mutate"] && mutate!(world)
         invade!(world)
         colonizers = disperse!(world, settings["static"])
-        length(colonizers) >= 1 && println("t=$t: colonization by $colonizers")#recordcolonizers(colonizers, settings, t)
+        length(colonizers) >= 1 && simlog("t=$t: colonization by $colonizers", 'd')#recordcolonizers(colonizers, settings, t)
     end
 end
 
@@ -49,7 +49,7 @@ function runit()
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
         simulation!(world, settings["maps"][i], timesteps)
         writedata(world, settings["maps"][i], -1)
-        println("WORLD POPULATION: $(sum(x -> length(x.community), world))") #DEBUG
+        simlog("WORLD POPULATION: $(sum(x -> length(x.community), world))")
     end
 end
 
