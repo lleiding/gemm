@@ -16,13 +16,14 @@ const genelength = 20 # sequence length of genes
 # Return the default settings. All parameters must be registered here.
 function defaultSettings()
     Dict(# general software settings
-         "seed" => 1, # for the RNG, seed = 0 -> random seed
+         "seed" => 0, # for the RNG, seed = 0 -> random seed
          "maps" => "", # comma-separated list of map files
          "config" => "simulation.conf", # configuration file name
          "fasta" => true, # record fasta data?
          "dest" => string(Dates.today()), # output folder name
          "outfreq" => 1000, # output frequency
          "logging" => true, # write output to logfile
+         "quiet" => false, # don't write output to screen
          "debug" => false, # write out debug statements
          # main model settings
          "linkage" => "random", # gene linkage type

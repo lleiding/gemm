@@ -13,6 +13,9 @@ function getsettings()
         settings["seed"] = abs(rand(Int32))
     end
     settings["maps"] = map(x -> String(x), split(settings["maps"], ","))
+    if isa(settings["traitnames"], String)
+        settings["traitnames"] = map(x -> String(x), split(settings["traitnames"], ","))
+    end
     if isa(settings["cellsize"], Integer)
         settings["cellsize"] *= 1e6 #convert tonnes to grams
     end
@@ -56,6 +59,9 @@ function parsecommandline()
             required = false
         "--debug"
             help = "debug mode. Turns on output of debug statements."
+            action = :store_true
+        "--quiet"
+            help = "quiet mode. Don't print output to screen."
             action = :store_true
         "--static"
             help = "static mainland. Turns off any dynamics on the continent"
@@ -346,8 +352,10 @@ Categories: d (debug), i (information, default), w (warn), e (error)
 function simlog(msg, category='i', logfile="simulation.log")
     (isa(category, String) && length(category) == 1) && (category = category[1])
     function logprint(msg, stderr=false)
-        stderr ? iostr = STDERR : iostr = STDOUT
-        println(iostr, msg)
+        if !settings["quiet"]
+            stderr ? iostr = STDERR : iostr = STDOUT
+            println(iostr, msg)
+        end
         if settings["logging"]
             open(joinpath(settings["dest"], logfile), "a") do f
                 println(f, msg)
