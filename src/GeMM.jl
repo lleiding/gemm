@@ -23,6 +23,7 @@ export
     getsettings,
     setupdatadir,
     recordcolonizers,
+    recordstatistics,
     readmapfile,
     writerawdata,
     writedata,

@@ -22,8 +22,7 @@ using GeMM
 function simulation!(world::Array{Patch,1}, mapfile::String, timesteps::Int=1000)
     simlog("Starting simulation.")
     for t in 1:timesteps
-        simlog("UPDATE $t, population size $(sum(x -> length(x.community), world))")
-        (t == 1 || mod(t, settings["outfreq"]) == 0) && writedata(world, mapfile, t)
+        simlog("UPDATE $t")
         establish!(world, settings["nniches"], settings["static"])
         checkviability!(world, settings["static"])
         compete!(world, settings["static"])
@@ -36,6 +35,8 @@ function simulation!(world::Array{Patch,1}, mapfile::String, timesteps::Int=1000
         invade!(world)
         colonizers = disperse!(world, settings["static"])
         length(colonizers) >= 1 && simlog("t=$t: colonization by $colonizers", 'd')#recordcolonizers(colonizers, settings, t)
+        recordstatistics(world)
+        (t == 1 || mod(t, settings["outfreq"]) == 0) && writedata(world, mapfile, t)
     end
 end
 
@@ -49,7 +50,6 @@ function runit()
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
         simulation!(world, settings["maps"][i], timesteps)
         writedata(world, settings["maps"][i], -1)
-        simlog("WORLD POPULATION: $(sum(x -> length(x.community), world))")
     end
 end
 

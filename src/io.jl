@@ -344,15 +344,28 @@ function recordcolonizers(colonizers::Array{Individual, 1}, mapfile::String, tim
 end
 
 """
-    log(msg, logfile, category)
+    recordstatistics(w, t)
+Write out world properties to the log file for later analysis.
+"""
+function recordstatistics(world::Array{Patch,1})
+    popsize = sum(x -> length(x.community), world)
+    lineages = length(unique(reduce(vcat, map(p -> keys(p.whoiswho), world))))
+    div = round.(diversity(world),3)
+    simlog("Population size: $popsize")
+    simlog("population=$popsize lineages=$lineages alpha=$(div[1]) beta=$(div[2]) gamma=$(div[3])",
+           'i', "diversity.log", true)
+end
+
+"""
+    simlog(msg, logfile, category)
 Write a log message to STDOUT/STDERR and the specified logfile 
 (if logging is turned on in the settings).
 Categories: d (debug), i (information, default), w (warn), e (error)
 """
-function simlog(msg, category='i', logfile="simulation.log")
+function simlog(msg, category='i', logfile="simulation.log", onlylog=false)
     (isa(category, String) && length(category) == 1) && (category = category[1])
     function logprint(msg, stderr=false)
-        if !settings["quiet"]
+        if !(settings["quiet"] || onlylog)
             stderr ? iostr = STDERR : iostr = STDOUT
             println(iostr, msg)
         end
