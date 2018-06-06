@@ -80,6 +80,35 @@ function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
 end
 
 """
+    diversity(w)
+Calculate (average) alpha, beta and gamma diversity of the world.
+Returns a tuple with the three values (a,b,g).
+cf. Veech et al. 2002
+"""
+function diversity(world::Array{Patch,1})
+    # calculate diversity with the Shannon-Wiener index
+    function shannon(index::Dict{String,Int})
+        isempty(index) && return 0
+        total = sum(x -> index[x], keys(index))
+        -1 * sum(s -> (index[s]/total)*log(index[s]/total), keys(index))
+    end
+    alphas = Float64[]
+    globalindex = Dict{String, Int}()
+    for p in world
+        localindex = Dict{String, Int}()
+        for s in keys(p.whoiswho)
+            localindex[s] = length(p.whoiswho[s])
+        end
+        merge!(+, globalindex, localindex)
+        append!(alphas, shannon(localindex))
+    end
+    alpha = mean(alphas)
+    gamma = shannon(globalindex)
+    beta = gamma - alpha
+    (alpha, beta, gamma)
+end
+
+"""
     findisland(w)
 within world `w`, find out in which direction from the continent the island(s) lie(s).
 """
