@@ -348,12 +348,14 @@ end
 Write out world properties to the log file for later analysis.
 """
 function recordstatistics(world::Array{Patch,1})
+    if !isfile(joinpath(settings["dest"], "diversity.log"))
+        simlog("population,lineages,alpha,beta,gamma", 'i', "diversity.log", true)
+    end
     popsize = sum(x -> length(x.community), world)
     lineages = length(unique(reduce(vcat, map(p -> keys(p.whoiswho), world))))
     div = round.(diversity(world),3)
     simlog("Population size: $popsize")
-    simlog("population=$popsize lineages=$lineages alpha=$(div[1]) beta=$(div[2]) gamma=$(div[3])",
-           'i', "diversity.log", true)
+    simlog("$popsize,$lineages,$(div[1]),$(div[2]),$(div[3])", 'i', "diversity.log", true)
 end
 
 """

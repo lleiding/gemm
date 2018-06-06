@@ -1,9 +1,7 @@
 # TODO Island invasion model
 
 * UNIT TESTS!
-* write log files and save to output dir
 * create settings for:
 	- constants (from constants.jl)
-* check parsing of `settings`
 
 # Notes
