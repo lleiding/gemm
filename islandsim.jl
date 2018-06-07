@@ -48,6 +48,7 @@ function runit()
         timesteps,maptable = readmapfile(settings["maps"][i])
         i == 1 && (world = createworld(maptable))
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
+        recordstatistics(world)
         simulation!(world, settings["maps"][i], timesteps)
         writedata(world, settings["maps"][i], -1)
     end

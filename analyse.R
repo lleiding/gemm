@@ -16,8 +16,7 @@ visualize = function(logfile="diversity.log", toFile=TRUE) {
     data = read.csv(logfile)
     # Plot population sizes
     if (toFile) {
-        jpeg(paste(outdir, "population.jpg", sep="/"), height=max(data$population)*0.25,
-             width=length(data$population)*20)
+        jpeg(paste(outdir, "population.jpg", sep="/"), height=720, width=length(data$population)*20)
     }
     plot(data$population, xlab="Time", ylab="Population size", ylim=c(0, max(data$population)),
          col="red", type='l')
@@ -28,13 +27,15 @@ visualize = function(logfile="diversity.log", toFile=TRUE) {
         jpeg(paste(outdir, "diversity.jpg", sep="/"), height=ymax*60,
              width=length(data$population)*20)
     }
-    plot(data$lineages, col="orange", type='l', lty=2, ylim=c(0,ymax*1.2),
+    plot(data$lineages, col="orange", type='l', lty=2, ylim=c(0,ymax*1.5),
          xlab="Time", ylab="Diversity")
+    lines(data$freespace, col="cyan", type='l', lty=2)
     lines(data$alpha, col="blue", type='l')
     lines(data$beta, col="green", type='l')
     lines(data$gamma, col="red", type='l')
-    legend("topright", c("Lineages", "Alpha diversity", "Beta diversity", "Gamma diversity"),
-           col=c("orange", "blue", "green", "red"), lwd=2)
+    legend("topright", c("Lineages", "Free space per tile", "Alpha diversity",
+                         "Beta diversity", "Gamma diversity"),
+           col=c("orange", "cyan", "blue", "green", "red"), lwd=2)
     if (toFile) dev.off()
 }
 

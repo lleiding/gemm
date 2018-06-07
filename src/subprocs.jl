@@ -108,6 +108,17 @@ function diversity(world::Array{Patch,1})
     (alpha, beta, gamma)
 end
 
+# Calculate the average amount of free space on each patch
+function freespace(world::Array{Patch,1})
+    space = 0
+    for p in world
+        if length(p.community) != 0
+            space += (p.area - sum(x -> x.size, p.community))
+        end
+    end
+    round((space/length(world))/1e6, 3)
+end
+
 """
     findisland(w)
 within world `w`, find out in which direction from the continent the island(s) lie(s).
