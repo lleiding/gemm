@@ -290,15 +290,15 @@ function writedata(world::Array{Patch,1}, mapfile::String, timestep::Int)
     basename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"])
     basename = joinpath(settings["dest"], basename)
     filename = basename * ".tsv"
-    println("Writing data \"$filename\"")
+    simlog("Writing data \"$filename\"")
     open(filename, "w") do file
-        dumpinds(world, file, "\t", settings["static"] || timestep > 1)
+        dumpinds(world, file, "\t", settings["static"] && timestep > 1)
     end
     if settings["fasta"]
         filename = basename * ".fa"
-        println("Writing fasta \"$filename\"")
+        simlog("Writing fasta \"$filename\"")
         open(filename, "w") do file
-            makefasta(world, file, "", settings["static"] || timestep > 1)
+            makefasta(world, file, "", settings["static"] && timestep > 1)
         end
     end
 end
@@ -313,7 +313,7 @@ function writerawdata(world::Array{Patch,1}, mapfile::String, timestep::Int)
     filename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"]) * ".jl"
     filename = joinpath(settings["dest"], filename)
     touch(filename)
-    println("Writing raw data to \"$filename\"...")
+    simlog("Writing raw data to \"$filename\"...")
     if timestep == 1
         open(filename, "w") do file
             println(file, world)
@@ -337,7 +337,7 @@ function recordcolonizers(colonizers::Array{Individual, 1}, mapfile::String, tim
     filename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"] * "_colonizers.jl")
     filename = joinpath(settings["dest"], filename)
     touch(filename)
-    println("Colonisation. Writing data to ", filename, "...")
+    simlog("Colonisation. Writing data to ", filename, "...")
     open(filename, "a") do file
         println(file, record)
     end

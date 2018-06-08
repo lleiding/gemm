@@ -103,6 +103,7 @@ function establish!(patch::Patch, nniches::Int=1)
                 fitness < 0 && (fitness = 0) # should be obsolete
             end
             if nniches == 3
+                # XXX 'nicheopt' and 'nichetol' don't exist currently!
                 opt = patch.community[idx].traits["nicheopt"]
                 tol = patch.community[idx].traits["nichetol"]
                 fitness *= gausscurve(opt, tol, patch.nicheb, 0.0)
