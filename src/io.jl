@@ -19,9 +19,9 @@ function getsettings()
     if isa(settings["cellsize"], Integer)
         settings["cellsize"] *= 1e6 #convert tonnes to grams
     end
+    # Flags are automatically set to false by ArgParse if they are not given -
+    # this should not override a given config file value
     for s in ["debug", "quiet", "static"]
-        # Flags are automatically set to false by ArgParse if they are not given -
-        # this should not override a given config file value
         if !commandline[s] && s in keys(configs) && configs[s]
             settings[s] = true
         end
@@ -360,8 +360,7 @@ function recordstatistics(world::Array{Patch,1})
                'i', "diversity.log", true)
     end
     popsize = sum(x -> length(x.community), world)
-    lineages = unique(reduce(vcat, map(p -> keys(p.whoiswho), world)))
-    simlog("Lineages: $lineages", 'd')
+    lineages = unique(reduce(vcat, map(p -> collect(keys(p.whoiswho)), world)))
     div = round.(diversity(world),3)
     space = freespace(world)
     simlog("Population size: $popsize")
@@ -391,7 +390,7 @@ function simlog(msg, category='i', logfile="simulation.log", onlylog=false)
     if category == 'i'
         logprint(msg)
     elseif category == 'd'
-        settings["debug"] && logprint("DEBUG: "*msg)
+        settings["debug"] && logprint("DEBUG: "*string(msg))
     elseif category == 'w'
         logprint("WARNING: "*string(msg), true)
     elseif category == 'e'

@@ -1,7 +1,6 @@
 # TODO Island invasion model
 
 * UNIT TESTS!
-* Find output bugs
 * create settings for:
 	- constants (from constants.jl)
 
