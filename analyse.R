@@ -14,6 +14,7 @@ if (!(file.exists(outdir) && file.info(outdir)$isdir)) {
 visualize = function(logfile="diversity.log", toFile=TRUE) {
     logfile = paste(outdir, logfile, sep="/")
     data = read.csv(logfile)
+    data$lineages = data$lineages/10 #otherwise the Y axis is too big
     # Plot population sizes
     if (toFile) {
         jpeg(paste(outdir, "population.jpg", sep="/"), height=720, width=length(data$population)*20)
@@ -24,7 +25,7 @@ visualize = function(logfile="diversity.log", toFile=TRUE) {
     # Plot diversity development
     ymax = max(data$lineages, data$alpha, data$beta, data$gamma)
     if (toFile) {
-        jpeg(paste(outdir, "diversity.jpg", sep="/"), height=ymax*60,
+        jpeg(paste(outdir, "diversity.jpg", sep="/"), height=720,
              width=length(data$population)*20)
     }
     plot(data$lineages, col="orange", type='l', lty=2, ylim=c(0,ymax*1.5),
@@ -33,7 +34,7 @@ visualize = function(logfile="diversity.log", toFile=TRUE) {
     lines(data$alpha, col="blue", type='l')
     lines(data$beta, col="green", type='l')
     lines(data$gamma, col="red", type='l')
-    legend("topright", c("Lineages", "Free space per tile", "Alpha diversity",
+    legend("topright", c("Lineages (x 0.1)", "Free space per tile", "Alpha diversity",
                          "Beta diversity", "Gamma diversity"),
            col=c("orange", "cyan", "blue", "green", "red"), lwd=2)
     if (toFile) dev.off()
