@@ -351,7 +351,7 @@ function recordcolonizers(colonizers::Array{Individual, 1}, mapfile::String, tim
 end
 
 """
-    recordstatistics(w, t)
+    recordstatistics(w)
 Write out world properties to the log file for later analysis.
 """
 function recordstatistics(world::Array{Patch,1})
@@ -366,6 +366,22 @@ function recordstatistics(world::Array{Patch,1})
     simlog("Population size: $popsize")
     simlog("$popsize,$space,$(length(lineages)),$(div[1]),$(div[2]),$(div[3])",
            'i', "diversity.log", true)
+end
+
+"""
+    recordlineages(w)
+Save the abundance of each lineage per patch
+"""
+function recordlineages(world::Array{Patch,1},timestep::Int)
+    if !isfile(joinpath(settings["dest"], "lineages.log"))
+        simlog("t,X,Y,lineage,population", 'i', "lineages.log", true)
+    end
+    for p in world
+        for l in keys(p.whoiswho)
+            simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(p.whoiswho[l]))",
+                   'i', "lineages.log", true)
+        end
+    end    
 end
 
 """

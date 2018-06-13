@@ -24,6 +24,7 @@ export
     setupdatadir,
     recordcolonizers,
     recordstatistics,
+    recordlineages,
     readmapfile,
     writerawdata,
     writedata,
