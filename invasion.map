@@ -1,8 +1,7 @@
 # Invasion experiments map
 	
 # timesteps:
-#1000
-50
+1000
 
 # invasible region - a 3x3 square with constant temperature and precipitation
 # XXX change to 5x5?
