@@ -6,6 +6,8 @@
 
 import os, sys, time
 
+global simname, replicates
+
 simname = "experiment"
 replicates = 1
 
@@ -46,6 +48,7 @@ def slurm(config):
 
 def write_config(config, cellsize, prop_pressure, disturbance):
     "Write out a config file with the given values"
+    global simname
     cf = open(config, 'w')
     cf.write("# Island speciation model for invasion experiments\n")
     cf.write("# This config file was generated automatically.\n")
@@ -62,6 +65,7 @@ def write_config(config, cellsize, prop_pressure, disturbance):
     
 def run_defaults():
     "Create a series of runs with the default values (no invasion events)"
+    global simname, replicates
     print("Running default simulation with "+str(replicates)+" replicates.")
     write_config(simname+".conf",
                  varying_settings["cellsize"][0],
@@ -74,7 +78,21 @@ def run_defaults():
 
 def run_experiment():
     "Create a full experiment with all parameter combinations"
-    pass
+    global simname, replicates
+    for cs in varying_settings["cellsize"][1:]:
+        for pp in varying_settings["propagule-pressure"][1:]:
+            for db in varying_settings["disturbance"][1:]:
+                spec = str(cs)+"CS_"+str(pp)+"PP_"+str(db)+"DB"
+                print("Running simulation with specification "+spec+" for "
+                      +str(replicates)+" replicates.")
+                simname = simname+"_"+spec
+                write_config(simname+".conf", cs, pp, db)
+                i = 0
+                while i < replicates:
+                    slurm(simname+".conf")
+                    i = i + 1
+                os.system("rm "+simname+".conf") #cleanup
+    print("Done.")
 
 if __name__ == '__main__':
     if "default" in simname:
