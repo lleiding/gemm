@@ -4,9 +4,11 @@
 
 # The working directory may be specified via the commandline, otherwise it
 # defaults to results/tests
-outdir = paste("results/", commandArgs()[length(commandArgs())], sep="")
+simname = commandArgs()[length(commandArgs())]
+outdir = paste("results/", simname, sep="")
 if (!(file.exists(outdir) && file.info(outdir)$isdir)) {
-    outdir = "results/tests"
+    simname = "tests"
+    outdir = paste("results/", simname, sep="")
 }
 
 
@@ -17,16 +19,17 @@ visualize = function(logfile="diversity.log", toFile=TRUE) {
     data$lineages = data$lineages/10 #otherwise the Y axis is too big
     # Plot population sizes
     if (toFile) {
-        jpeg(paste(outdir, "population.jpg", sep="/"), height=720, width=length(data$population)*20)
+        jpeg(paste(outdir, "/", simname, "_population.jpg", sep=""), height=720,
+             width=length(data$population)*(2000/length(data$population)))
     }
     plot(data$population, xlab="Time", ylab="Population size", ylim=c(0, max(data$population)),
          col="red", type='l')
     if (toFile) dev.off()
     # Plot diversity development
-    ymax = max(data$lineages, data$alpha, data$beta, data$gamma)
+    ymax = max(data$lineages, data$alpha, data$beta, data$gamma, data$freespace)
     if (toFile) {
-        jpeg(paste(outdir, "diversity.jpg", sep="/"), height=720,
-             width=length(data$population)*20)
+        jpeg(paste(outdir, "/", simname, "_diversity.jpg", sep=""), height=720,
+             width=length(data$population)*(2000/length(data$population)))
     }
     plot(data$lineages, col="orange", type='l', lty=2, ylim=c(0,ymax*1.5),
          xlab="Time", ylab="Diversity")

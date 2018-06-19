@@ -4,3 +4,5 @@ paper/source.pdf
 *.log
 visualize.R
 poc/
+slurm*.out
+*.jpg
