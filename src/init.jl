@@ -9,7 +9,9 @@ function genesis()
         popsize = round(fertility * newind.traits["repsize"]^(-1/4) * exp(-act/(boltz*newind.traits["tempopt"]))) 
         popmass = popsize * newind.size
         if totalmass + popmass > settings["cellsize"] # stop loop if cell is full
-            break
+            if popmass >= settings["cellsize"]*0.9 #make sure the cell is full enough
+                break
+            end
         end
         totalmass += popmass
         for i in 1:popsize
@@ -62,7 +64,7 @@ separated by a whitespace character (<ID> <x> <y>).")
             end
             eval(parse("newpatch."*string(var)*" = $val"))
         end
-        !newpatch.isisland && append!(newpatch.community, genesis())
+        newpatch.initpop && append!(newpatch.community, genesis())
         push!(world, newpatch)
         global newpatch = nothing #clear memory
     end

@@ -113,7 +113,9 @@ function freespace(world::Array{Patch,1})
     space = 0
     for p in world
         if length(p.community) != 0
-            space += (p.area - sum(x -> x.size, p.community))
+            space += p.area - sum(x -> x.size, p.community)
+        else
+            space += p.area
         end
     end
     round((space/length(world))/1e6, 3)

@@ -36,14 +36,15 @@ mutable struct Patch
     community::Array{Individual, 1}
     invasible::Bool
     isolated::Bool
+    initpop::Bool # initialise with a population
     whoiswho::Dict{String, Array{Int, 1}}
 end
 
 # constructors:
 # XXX These default values should be defined elsewhere (constants.jl, to be precise)
 Patch(id,location,area) =
-    Patch(id,location,area,298,false,0,0,Individual[], false, false, Dict{String, Array{Int, 1}}())
+    Patch(id,location,area,298,false,0,0,Individual[], false, false, false, Dict{String, Array{Int, 1}}())
 Patch(id,location) =
-    Patch(id,location,2e7,298,false,0,0,Individual[], false, false, Dict{String, Array{Int, 1}}())
+    Patch(id,location,2e7,298,false,0,0,Individual[], false, false, false, Dict{String, Array{Int, 1}}())
 
 

@@ -121,7 +121,7 @@ function parseconfig(configfilename::String)
             simlog(c[1]*" is not a recognized parameter!", 'w') # XXX maybe parse anyway
         end
     end
-    return settings
+    settings
 end
 
 function readmapfile(mapfilename::String)
