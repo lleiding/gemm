@@ -144,12 +144,15 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
     traitkeys = []
     counter = 0
     for patch in world
-        (onlyisland && !patch.isisland) && continue # only one individual per species on mainland
+        #XXX Sometimes, this only dumps three or four individuals, with a population of >10⁴!
+        # (Should be fixed)
         lineage = ""
         for ind in patch.community
             counter += 1
-            (!patch.isisland && ind.lineage == lineage) && continue
+            # only one individual per species on a static mainland (should be the case anyway)
+            (!patch.isisland && onlyisland && ind.lineage == lineage) && continue
             if header
+                #XXX Transfer to a dynamic system? (As in createworld()?)
                 print(io, "id", sep)
                 print(io, "xloc", sep)
                 print(io, "yloc", sep)
@@ -159,6 +162,8 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
                 ## print(io, "nicheb", sep)
                 print(io, "island", sep)
                 print(io, "isolation", sep)
+                print(io, "invasible", sep)
+                print(io, "initpop", sep)
                 print(io, "counter", sep)
                 print(io, "lineage", sep)
                 print(io, "age", sep)
@@ -167,7 +172,7 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
                 print(io, "size", sep)
                 print(io, "lnkgunits", sep)
                 print(io, "ngenes", sep)
-                traitkeys = keys(ind.traits)
+                traitkeys = keys(ind.traits) #XXX This will give problems if we lose traits
                 for key in traitkeys
                     print(io, key, sep)
                 end
@@ -183,6 +188,8 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
             ## print(io, patch.nicheb, sep)
             patch.isisland ? print(io, 1, sep) : print(io, 0, sep)
             patch.isolated ? print(io, 1, sep) : print(io, 0, sep)
+            patch.invasible ? print(io, 1, sep) : print(io, 0, sep)
+            patch.initpop ? print(io, 1, sep) : print(io, 0, sep)
             print(io, counter, sep)
             print(io, ind.lineage, sep)
             print(io, ind.age, sep)

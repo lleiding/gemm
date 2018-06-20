@@ -45,7 +45,7 @@ plotDiversity = function(logfile="diversity.log") {
     ymax = max(data$lineages, data$alpha, data$beta, data$gamma, data$freespace)
     jpeg(paste(outdir, "/", simname, "_diversity.jpg", sep=""), height=720,
          width=length(data$population)*(2000/length(data$population)))
-    plot(data$lineages, col="orange", type='l', lty=2, ylim=c(0,ymax*1.2),
+    plot(data$lineages, col="orange", type='l', lty=2, ylim=c(0,ymax),
          xlab="Time", ylab="Diversity")
     lines(data$freespace, col="cyan", type='l', lty=2)
     lines(data$alpha, col="blue", type='l')
