@@ -5,8 +5,14 @@ function genesis()
     totalmass = 0.0
     while true
         newind = createind()
-        # population size determined by adult size and temperature niche optimum
-        popsize = round(fertility * newind.traits["repsize"]^(-1/4) * exp(-act/(boltz*newind.traits["tempopt"]))) 
+        if settings["metabolicpopsize"]
+            # population size determined by adult size and temperature niche optimum
+            popsize = round(fertility * newind.traits["repsize"]^(-1/4) *
+                            exp(-act/(boltz*newind.traits["tempopt"])))
+        else
+            halfmaxpopsize = Integer(floor((settings["cellsize"] / newind.traits["repsize"]) / 2))
+            popsize = rand(0:halfmaxpopsize)
+        end
         popmass = popsize * newind.size
         if totalmass + popmass > settings["cellsize"] # stop loop if cell is full
             if popmass >= settings["cellsize"]*0.9 #make sure the cell is full enough

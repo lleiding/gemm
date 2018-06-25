@@ -6,3 +6,4 @@ visualize.R
 poc/
 slurm*.out
 *.jpg
+default*.conf

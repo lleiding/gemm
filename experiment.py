@@ -32,6 +32,7 @@ constant_settings = {"seed":0,
                      "static":"false",
                      "mutate":"false",
                      "initadults":"true",
+                     "metabolicpopsize":"false",
                      "global-species-pool":100}
 
 # These settings are varied (the first value is the default,
