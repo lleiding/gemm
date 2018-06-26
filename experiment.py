@@ -11,7 +11,9 @@ global simname, replicates
 simname = "experiment"
 replicates = 1
 
-# First commandline arg gives the simulation name, the second the number of replicates
+# First commandline arg gives the simulation name, the second the number of replicates.
+# If the simname contains the string "default", or "default" is appended as a fourth
+# argument, the default simulation is run. Otherwise, an invasion experiment is set up.
 if len(sys.argv) >= 2:
     simname = sys.argv[1]
 if len(sys.argv) >= 3:
@@ -96,7 +98,7 @@ def run_experiment():
     print("Done.")
 
 if __name__ == '__main__':
-    if "default" in simname:
+    if "default" in simname or (len(sys.argv) >= 4 and sys.argv[3] == "default"):
         run_defaults()
     else:
         run_experiment()
