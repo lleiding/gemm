@@ -3,28 +3,48 @@
 function genesis()
     community = Individual[]
     totalmass = 0.0
+    ttl = 50
     while true
+        # Create a new species and calculate its population size
         newind = createind()
         if settings["metabolicpopsize"]
             # population size determined by adult size and temperature niche optimum
             popsize = round(fertility * newind.traits["repsize"]^(-1/4) *
                             exp(-act/(boltz*newind.traits["tempopt"])))
         else
-            halfmaxpopsize = Integer(floor((settings["cellsize"] / newind.traits["repsize"]) / 2))
-            popsize = rand(0:halfmaxpopsize)
+            # population size up to 25% of the maximum possible in this cell
+            quarterpopsize = Integer(floor((settings["cellsize"] / newind.traits["repsize"]) / 4))
+            popsize = rand(0:quarterpopsize)
         end
-        popmass = popsize * newind.size
-        if totalmass + popmass > settings["cellsize"] # stop loop if cell is full
-            if popmass >= settings["cellsize"]*0.9 #make sure the cell is full enough
+        # prevent an infinity loop when the cellsize is very small
+        if popsize == 0
+            if ttl == 0
+                simlog("This cell might be too small to hold a community.", 'w')
                 break
+            else
+                ttl -= 1
+                continue
             end
         end
+        # Check the cell capacity
+        popmass = popsize * newind.size
+        if totalmass + popmass > settings["cellsize"] # stop loop if cell is full
+            if totalmass >= settings["cellsize"]*0.75 #make sure the cell is full enough
+                simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", 'd') #DEBUG
+                break
+            else
+                continue
+            end
+        end
+        # Initialize the new population
         totalmass += popmass
+        simlog("Initializing lineage $(newind.lineage) with $popsize individuals.", 'd') #DEBUG
         for i in 1:popsize
             !settings["static"] && (newind = deepcopy(newind))
             push!(community, newind)
         end
     end
+    simlog("Patch initialized with $(length(community)) individuals.", 'd') #DEBUG
     community
 end
 
@@ -32,17 +52,18 @@ function createworld(maptable::Array{Array{String,1},1})
     simlog("Creating world...")
     world = Patch[]
     for entry in maptable
-        size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
+        size(entry,1) < 3 && simlog("please check your map file for incomplete or faulty entries. \n
 Each line must contain patch information with at least \n
 \t - a unique integer ID, \n
 \t - an integer x coordinate, \n
 \t - an integer y coordinate, \n
-separated by a whitespace character (<ID> <x> <y>).")
+separated by a whitespace character (<ID> <x> <y>).", 'e')
         # create the basic patch
         id = parse(Int, entry[1])
         xcord = parse(Int, entry[2])
         ycord = parse(Int, entry[3])
         area = settings["cellsize"]
+        simlog("Creating patch $id at $xcord/$ycord, size $area", 'd') #DEBUG
         # XXX the 'global' here is a hack so that I can use eval() later on
         # (this always works on the global scope)
         global newpatch = Patch(id, (xcord, ycord), area)

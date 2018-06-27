@@ -275,11 +275,12 @@ function createtraits() #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     #seedsize = exp(-7 + 17 * rand()) # corresponds to 1mg to 22kg
     #repsize = exp(0 + 17 * rand()) # 1g to 24t
     # Larger sizes to reduce community size
-    seedsize = rand(1:2.2*10.0^3)
-    repsize = rand(Integer(round(seedsize)):2.4*10^7)
+    seedsize = exp(-6 + 16 * rand()) # corresponds to 25mg to 22kg
+    repsize = exp(3 + 14 * rand()) # 20g to 24t
     while repsize <= seedsize
-        seedsize = exp(-7 + 17 * rand())
-        repsize = exp(0 + 17 * rand())
+        repsize = exp(3 + 14 * rand()) # 20g to 24t
+        #seedsize = exp(-7 + 17 * rand())
+        #repsize = exp(0 + 17 * rand())
     end
     for idx in eachindex(traitnames)
         if contains(traitnames[idx], "rate")
