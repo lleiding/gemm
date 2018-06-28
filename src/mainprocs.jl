@@ -302,12 +302,15 @@ end
 Reproduction of individuals in a patch `p` whithin a world (array of patches) `w`
 """
 function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
+    #XXX Somewhere between line 306 and 327, patch.whoiswho becomes out of sync... >>>
     identifyAdults!(patch)
     idx = 1
     temp = patch.temp
     seedbank = Individual[]
     while idx <= size(patch.community,1)
         if !traitsexist(patch.community[idx].traits, ["repradius", "repsize", "reptol", "seedsize", "mutprob"])
+            # XXX Is this the source of the bug? -> but that should give us a warning from traitsexist()...
+            simlog("Missing trait! Removing individual: $(patch.community[idx])", 'w') #XXX Should be redundant
             splice!(patch.community, idx)
             continue
         elseif !patch.community[idx].isnew && patch.community[idx].age > 0
@@ -322,6 +325,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                     continue
                 end
                 posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
+                # <<< XXX There's a bug in here somewhere - "come out, come out, where ever you are!"
                 # length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners # CAVE!
                 if length(posspartners) > 0
                     partner = rand(posspartners)

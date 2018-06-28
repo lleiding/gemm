@@ -14,6 +14,7 @@ if (!(file.exists(outdir) && file.info(outdir)$isdir)) {
 
 # Plot the distribution of traits in the population at the given timestep (-1 => END)
 plotTraits = function(timestep=-1, toFile=TRUE) {
+    print("Plotting traits...")
     traitfile = grep(paste("t", timestep, sep=""), list.files(outdir), value=T)
     traitfilepath = paste(outdir, traitfile, sep="/")
     ts = read.table(traitfilepath, header=T)
@@ -36,12 +37,14 @@ plotDiversity = function(logfile="diversity.log") {
     data = read.csv(logfile)
     data$lineages = data$lineages/10 #otherwise the Y axis is too big
     # Plot population sizes
+    print("Plotting population development...")
     jpeg(paste(outdir, "/", simname, "_population.jpg", sep=""), height=720,
          width=length(data$population)*(2000/length(data$population)))
     plot(data$population, xlab="Time", ylab="Population size", ylim=c(0, max(data$population)),
          col="red", type='l')
     dev.off()
     # Plot diversity development
+    print("Plotting diversity...")
     ymax = max(data$lineages, data$alpha, data$beta, data$gamma, data$freespace)
     jpeg(paste(outdir, "/", simname, "_diversity.jpg", sep=""), height=720,
          width=length(data$population)*(2000/length(data$population)))
@@ -60,6 +63,7 @@ plotDiversity = function(logfile="diversity.log") {
 visualize = function(toFile=TRUE) {
     plotDiversity()
     plotTraits()
+    print("Done.")
 }
 
 visualize()

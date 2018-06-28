@@ -236,6 +236,8 @@ function iscompatible(mate::Individual, ind::Individual)
 end
 
 function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int, Int})
+    # TODO This should be rewritten so that it only returns a single individual, not an array
+    # (which only ever contains a single organism anyway)
     ind.isnew = true
     radius = floor(ind.traits["repradius"] + 0.5) # CAVE: to account for cell width ... or not??
     coordinates = Tuple[]
@@ -257,7 +259,8 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         end
         shuffle!(communityidxs)
         for mateidx in communityidxs
-            mate = targetpatch[1].community[mateidx]
+            mateidx > length(targetpatch[1].community) && continue #XXX Not a real fix, but should work
+            mate = targetpatch[1].community[mateidx] #FIXME Occasionally, this throws a bounds error
             mate.isnew && continue
             !iscompatible(mate, ind) && continue
             push!(posspartners, mate)
