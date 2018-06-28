@@ -16,6 +16,11 @@ if (!(file.exists(outdir) && file.info(outdir)$isdir)) {
 plotTraits = function(timestep=-1, toFile=TRUE) {
     print("Plotting traits...")
     traitfile = grep(paste("t", timestep, sep=""), list.files(outdir), value=T)
+    if (length(traitfile) == 0) {
+        # If the desired timestep doesn't exist, take the newest timestep we have
+        timestep = (length(grep(".tsv", list.files(outdir), value=T))-1) * 10
+        traitfile = grep(paste("t", timestep, sep=""), list.files(outdir), value=T)
+    }
     traitfilepath = paste(outdir, traitfile, sep="/")
     ts = read.table(traitfilepath, header=T)
     jpeg(paste(outdir, "/", simname, "_traits.jpg", sep=""), height=720, width=1800)
