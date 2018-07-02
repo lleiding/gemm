@@ -293,7 +293,7 @@ function createtraits() #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
         elseif contains(traitnames[idx], "tempopt")
             push!(traits, Trait(idx, rand() * 40 + 273)) #CAVE: code values elsewhere?
         elseif contains(traitnames[idx], "temptol")
-            push!(traits, Trait(idx, rand() * 5)) #CAVE: code values elsewhere?
+            push!(traits, Trait(idx, (rand() + 0.39) * 5)) #CAVE: code values elsewhere?
         elseif contains(traitnames[idx], "mut")
             mutationrate == 0 ? push!(traits, Trait(idx, rand())) : push!(traits, Trait(idx, mutationrate)) #CAVE: code values elsewhere?
         elseif contains(traitnames[idx], "repsize")
@@ -303,7 +303,7 @@ function createtraits() #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
         elseif contains(traitnames[idx], "precopt")
             push!(traits, Trait(idx, rand() * 10))
         elseif contains(traitnames[idx], "prectol")
-            push!(traits, Trait(idx, rand()))
+            push!(traits, Trait(idx, rand() + 0.39))
         elseif contains(traitnames[idx], "reptol")
             if settings["tolerance"] == "high"
                 push!(traits, Trait(idx, 0.75))
