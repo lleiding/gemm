@@ -1,7 +1,19 @@
 # TODO Island invasion model
 
 * UNIT TESTS!
+	
+* move trait defaults to constants.jl
+
+* create map plots with ggplot
+
+* adjust tolerance parameters to give greater fitness
+
+* make island larger, with radial gradient and coastal invasion point
+	
 * create settings for:
-	- constants (from constants.jl)
+	- constants?
 
 # Notes
+
+* Invasion runs should include a duplicate run without invasion but
+	with the same seed

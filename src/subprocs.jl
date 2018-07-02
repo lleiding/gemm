@@ -273,6 +273,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
 end
 
 function createtraits() #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+    #TODO move traits to constants.jl
     traitnames = settings["traitnames"]
     traits = Trait[]
     #seedsize = exp(-7 + 17 * rand()) # corresponds to 1mg to 22kg

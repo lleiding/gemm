@@ -7,14 +7,18 @@ function genesis()
     while true
         # Create a new species and calculate its population size
         newind = createind()
-        if settings["metabolicpopsize"]
+        if contains(settings["initpopsize"], "metabolic")
             # population size determined by adult size and temperature niche optimum
             popsize = round(fertility * newind.traits["repsize"]^(-1/4) *
                             exp(-act/(boltz*newind.traits["tempopt"])))
-        else
+        elseif contains(settings["initpopsize"], "bodysize")
             # population size up to 25% of the maximum possible in this cell
             quarterpopsize = Integer(floor((settings["cellsize"] / newind.traits["repsize"]) / 4))
             popsize = rand(0:quarterpopsize)
+        elseif contains(settings["initpopsize"], "minimal")
+            popsize = 2 #Takes two to tangle ;-)
+        else
+            simlog("Invalid value for `initpopsize`: $(settings["initpopsize"])", 'e')
         end
         # prevent an infinity loop when the cellsize is very small
         if popsize == 0

@@ -32,7 +32,8 @@ plotTraits = function(timestep=-1, toFile=TRUE) {
                     "Temp. opt. (x0.01)", "Precip. tolerance",
                     "Precip. optimum", "Compatibility (x10)", "Rep. radius (x10)",
                     "Dispersal mean", "Dispersal shape"))
-    legend("top", c(paste("N = ", length(ts$counter))))
+    legend("top", c(paste("Individuals:", length(ts$counter)),
+                    paste("Lineages:", length(unique(ts$lineage)))))
     dev.off()
 }
 

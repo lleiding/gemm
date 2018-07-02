@@ -33,7 +33,7 @@ function defaultSettings()
          "static" => true, # mainland sites don't undergo eco-evolutionary processes
          "mutate" => true, # mutations occur
          "initadults" => false, # initialize organisms as adults
-         "metabolicpopsize" => true, # determine initial population size with MTE
+         "initpopsize" => "metabolic", # initialisation algorithm: metabolic/bodysize/minimal
          "cellsize" => 20, # maximum biomass per hectare in tonnes (based on Clark et al. 2001)
          # invasion specific settings
          "propagule-pressure" => 0, # number of non-native individuals introduced per invasion event
