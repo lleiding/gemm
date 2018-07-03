@@ -33,7 +33,7 @@ function simulation!(world::Array{Patch,1}, mapfile::String, timesteps::Int=1000
         compete!(world, settings["static"])
         reproduce!(world)
         settings["mutate"] && mutate!(world)
-        invade!(world)
+        settings["burn-in"] < t && invade!(world)
         colonizers = disperse!(world, settings["static"])
         # model output
         map(p -> simlog("Patch $(p.id): $(length(p.community)) individuals.", 'd'), world)

@@ -4,7 +4,7 @@
 1000 #better yet 2000
 
 # invasible region - a 5x5 square with radially increasing temperature
-# (as on a mountain, 30° - 20°) and a coastal invasion point ('port')
+# (as on a mountain, 30°C - 20°C) and a coastal invasion point ('port')
 # <id> <x> <y> [optional parameters]
 1 0 0 isisland initpop temp=203
 2 0 1 isisland initpop temp=203

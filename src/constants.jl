@@ -39,6 +39,7 @@ function defaultSettings()
          "propagule-pressure" => 0, # number of non-native individuals introduced per invasion event
          "global-species-pool" => 0, # size of the global species pool (invasion source)
          "disturbance" => 0, # percentage of individuals killed per update per cell
+         "burn-in" => 1000, # timesteps before invasion starts
          # species trait names
          "traitnames" => ["compat",
                           "dispmean",

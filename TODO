@@ -1,17 +1,18 @@
 # TODO Island invasion model
 
-* UNIT TESTS!
+Now:
 	
-* move trait defaults to constants.jl
-
 * create map plots with ggplot
 
 * adjust tolerance parameters to give greater fitness
 
-* make island larger, with radial gradient and coastal invasion point
+Later:
 	
-* create settings for:
-	- constants?
+* UNIT TESTS!
+	
+* move trait defaults to constants.jl
+		
+* create settings for constants?
 
 # Notes
 
