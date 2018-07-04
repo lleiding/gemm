@@ -24,10 +24,10 @@ plotTraits = function(timestep=-1, toFile=TRUE) {
     traitfilepath = paste(outdir, traitfile, sep="/")
     ts = read.table(traitfilepath, header=T)
     jpeg(paste(outdir, "/", simname, "_traits.jpg", sep=""), height=720, width=1800)
-    boxplot(ts$fitness*10, log(ts$size), log(ts$seedsize), log(ts$repsize), ts$lnkgunits/10,
+    boxplot(ts$fitness*100, log(ts$size), log(ts$seedsize), log(ts$repsize), ts$lnkgunits/10,
             ts$ngenes/10, ts$temptol, ts$tempopt/100, ts$prectol, ts$precopt, ts$compat*10,
             ts$repradius*10, ts$dispmean, ts$dispshape,
-            names=c("Fitness (x10)", "log(Size)", "log(Seed size)", "log(Reprod. size)",
+            names=c("Fitness (x100)", "log(Size)", "log(Seed size)", "log(Reprod. size)",
                     "Chromosome (x0.1)", "Genes (x0.1)", "Temp. tolerance",
                     "Temp. opt. (x0.01)", "Precip. tolerance",
                     "Precip. optimum", "Compatibility (x10)", "Rep. radius (x10)",

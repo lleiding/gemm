@@ -27,7 +27,7 @@ function defaultSettings()
          "quiet" => false, # don't write output to screen
          "debug" => false, # write out debug statements
          # main model settings
-         "linkage" => "random", # gene linkage type
+         "linkage" => "random", # gene linkage type (random/full/none)
          "nniches" => 2, # number of environmental niches (max. 3)
          "tolerance" => "low", # sequence similarity threshold for reproduction
          "static" => true, # mainland sites don't undergo eco-evolutionary processes

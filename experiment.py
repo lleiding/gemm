@@ -4,7 +4,7 @@
 # Daniel Vedder, 19/6/2018
 #
 
-import os, sys, time
+import os, sys, time, random
 
 global simname, replicates
 
@@ -20,9 +20,8 @@ if len(sys.argv) >= 3:
     replicates = int(sys.argv[2])
 
 # These settings stay constant throughout all simulation runs
-constant_settings = {"seed":0,
-                     "maps":'"invasion.map"',
-                     "outfreq":10,
+constant_settings = {"maps":'"invasion.map"',
+                     "outfreq":20,
                      "logging":"true",
                      "debug":"false",
                      "fasta":"false",
@@ -34,33 +33,38 @@ constant_settings = {"seed":0,
                      "static":"false",
                      "mutate":"false",
                      "initadults":"true",
-                     "metabolicpopsize":"false",
+                     "initpopsize":'"bodysize"',
+                     "burn-in": 1000,
                      "global-species-pool":100}
 
 # These settings are varied (the first value is the default,
 # every combination of the rest is tested)
-varying_settings = {"cellsize":[20, 10, 100],
+varying_settings = {"cellsize":[20, 10, 50],
                     "propagule-pressure":[0,1,10],
                     "disturbance":[0,1,10]}
 
 def slurm(config):
     "Send a job to slurm"
-    cmd = "sbatch -c 2 --mem 50GB ./islandsim.jl --config "+str(config)
-    os.system(cmd)
-    time.sleep(3) #prevent output folder merges
+    if "gaia" in os.uname().nodename:
+        cmd = "sbatch -c 2 --mem 50GB ./islandsim.jl --config "+str(config)
+        os.system(cmd)
+        os.system("rm "+config) #cleanup
+        time.sleep(3) #prevent output folder merges
+    else:
+        print("Not on gaia, slurm is probably not available. Retaining job "+config)
 
-def write_config(config, cellsize, prop_pressure, disturbance):
+def write_config(config, cellsize, prop_pressure, disturbance, seed):
     "Write out a config file with the given values"
-    global simname
     cf = open(config, 'w')
     cf.write("# Island speciation model for invasion experiments\n")
     cf.write("# This config file was generated automatically.\n")
     cf.write("# "+time.asctime()+"\n")
-    cf.write('\ndest "results/'+simname+'"\n')
+    cf.write('\ndest "results/'+config.replace(".conf", "")+'"\n')
     cf.write("\n# Constant settings:\n")
     for k in constant_settings.keys():
         cf.write(k + " " + str(constant_settings[k]) + "\n")
     cf.write("\n# Variable settings:\n")
+    cf.write("seed "+str(seed)+"\n")
     cf.write("cellsize "+str(cellsize)+"\n")
     cf.write("propagule-pressure "+str(prop_pressure)+"\n")
     cf.write("disturbance "+str(disturbance)+"\n")
@@ -73,7 +77,7 @@ def run_defaults():
     write_config(simname+".conf",
                  varying_settings["cellsize"][0],
                  varying_settings["propagule-pressure"][0],
-                 varying_settings["disturbance"][0])
+                 varying_settings["disturbance"][0], 0)
     i = 0
     while i < replicates:
         slurm(simname+".conf")
@@ -82,19 +86,21 @@ def run_defaults():
 def run_experiment():
     "Create a full experiment with all parameter combinations"
     global simname, replicates
-    for cs in varying_settings["cellsize"][1:]:
-        for pp in varying_settings["propagule-pressure"][1:]:
-            for db in varying_settings["disturbance"][1:]:
-                spec = str(cs)+"CS_"+str(pp)+"PP_"+str(db)+"DB"
-                print("Running simulation with specification "+spec+" for "
-                      +str(replicates)+" replicates.")
-                simname = simname+"_"+spec
-                write_config(simname+".conf", cs, pp, db)
-                i = 0
-                while i < replicates:
-                    slurm(simname+".conf")
-                    i = i + 1
-                os.system("rm "+simname+".conf") #cleanup
+    i = 0
+    while i < replicates:
+        for cs in varying_settings["cellsize"][1:]:
+            for pp in varying_settings["propagule-pressure"][1:]:
+                for db in varying_settings["disturbance"][1:]:
+                    spec = str(cs)+"CS_"+str(pp)+"PP_"+str(db)+"DB"
+                    print("Running simulation with specification "+spec+" for "
+                          +str(replicates)+" replicates.")
+                    seed = random.randint(0,10000)
+                    runname = simname+"_r"+str(i+1)+"_"+spec
+                    write_config(runname+".conf", cs, pp, db, seed)
+                    write_config(runname+"_control.conf", cs, 0, db, seed)
+                    slurm(runname+".conf")
+                    slurm(runname+"_control.conf")
+        i = i + 1
     print("Done.")
 
 if __name__ == '__main__':

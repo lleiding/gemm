@@ -16,7 +16,7 @@ function genesis()
             quarterpopsize = Integer(floor((settings["cellsize"] / newind.traits["repsize"]) / 4))
             popsize = rand(0:quarterpopsize)
         elseif contains(settings["initpopsize"], "minimal")
-            popsize = 2 #Takes two to tangle ;-)
+            popsize = 2 #Takes two to tangle ;-) #XXX No reproduction occurs!
         else
             simlog("Invalid value for `initpopsize`: $(settings["initpopsize"])", 'e')
         end
