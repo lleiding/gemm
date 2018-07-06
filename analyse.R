@@ -5,25 +5,25 @@
 # The working directory may be specified via the commandline, otherwise it
 # defaults to results/tests
 simname = commandArgs()[length(commandArgs())]
-outdir = paste("results/", simname, sep="")
-if (!(file.exists(outdir) && file.info(outdir)$isdir)) {
-    simname = "tests"
-    outdir = paste("results/", simname, sep="")
-}
+outdir = paste0("results/", simname)
 
 
 # Plot the distribution of traits in the population at the given timestep (-1 => END)
 plotTraits = function(timestep=-1, toFile=TRUE) {
     print("Plotting traits...")
-    traitfile = grep(paste("t", timestep, sep=""), list.files(outdir), value=T)
+    traitfile = grep(paste0("t", timestep), list.files(outdir), value=T)
     if (length(traitfile) == 0) {
         # If the desired timestep doesn't exist, take the newest timestep we have
         timestep = (length(grep(".tsv", list.files(outdir), value=T))-1) * 10
         traitfile = grep(paste("t", timestep, sep=""), list.files(outdir), value=T)
     }
     traitfilepath = paste(outdir, traitfile, sep="/")
+    if (!file.exists(traitfilepath)) {
+        print(paste("WARNING: traitfile not found", traitfilepath))
+        return()
+    }
     ts = read.table(traitfilepath, header=T)
-    jpeg(paste(outdir, "/", simname, "_traits.jpg", sep=""), height=720, width=1800)
+    jpeg(paste0(outdir, "/", simname, "_traits.jpg"), height=720, width=1800)
     boxplot(ts$fitness*100, log(ts$size), log(ts$seedsize), log(ts$repsize), ts$lnkgunits/10,
             ts$ngenes/10, ts$temptol, ts$tempopt/100, ts$prectol, ts$precopt, ts$compat*10,
             ts$repradius*10, ts$dispmean, ts$dispshape,
@@ -40,11 +40,15 @@ plotTraits = function(timestep=-1, toFile=TRUE) {
 # Plot population size and diversity indices over time
 plotDiversity = function(logfile="diversity.log") {
     logfile = paste(outdir, logfile, sep="/")
+    if (!file.exists(logfile)) {
+        print(paste("WARNING: logfile not found", logfile))
+        return()
+    }
     data = read.csv(logfile)
     data$lineages = data$lineages/10 #otherwise the Y axis is too big
     # Plot population sizes
     print("Plotting population development...")
-    jpeg(paste(outdir, "/", simname, "_population.jpg", sep=""), height=720,
+    jpeg(paste0(outdir, "/", simname, "_population.jpg"), height=720,
          width=length(data$population)*(2000/length(data$population)))
     plot(data$population, xlab="Time", ylab="Population size", ylim=c(0, max(data$population)),
          col="red", type='l')
@@ -52,7 +56,7 @@ plotDiversity = function(logfile="diversity.log") {
     # Plot diversity development
     print("Plotting diversity...")
     ymax = max(data$lineages, data$alpha, data$beta, data$gamma, data$freespace)
-    jpeg(paste(outdir, "/", simname, "_diversity.jpg", sep=""), height=720,
+    jpeg(paste0(outdir, "/", simname, "_diversity.jpg"), height=720,
          width=length(data$population)*(2000/length(data$population)))
     plot(data$lineages, col="orange", type='l', lty=2, ylim=c(0,ymax),
          xlab="Time", ylab="Diversity")
@@ -69,7 +73,26 @@ plotDiversity = function(logfile="diversity.log") {
 visualize = function(toFile=TRUE) {
     plotDiversity()
     plotTraits()
-    print("Done.")
 }
 
-visualize()
+
+# If the simname is given as 'all', process every folder in 'results'
+if (simname == "all") {
+    for (f in list.files("results")) {
+        print(paste("Processing", f))
+        simname = f
+        outdir = paste0("results/", simname)
+        if (file.info(outdir)$isdir) visualize()
+    }
+    print("Done.")
+}
+# Otherwise, just look at the specified directory (or the default, if
+# the specified doesn't exist)
+else {
+    if (!(file.exists(outdir) && file.info(outdir)$isdir)) {
+        simname = "tests"
+        outdir = paste0("results/", simname)
+    }
+    visualize()
+    print("Done.")
+}
