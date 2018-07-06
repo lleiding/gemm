@@ -1,7 +1,7 @@
 # Invasion experiments map
 	
 # timesteps:
-2000 #default: 2000
+3000 #default: 2000
 
 # invasible region - a 5x5 square with radially increasing temperature
 # (as on a mountain, 30°C - 20°C) and a coastal invasion point ('port')

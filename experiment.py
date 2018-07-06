@@ -21,7 +21,7 @@ if len(sys.argv) >= 3:
 
 # These settings stay constant throughout all simulation runs
 constant_settings = {"maps":'"invasion.map"',
-                     "outfreq":20,
+                     "outfreq":50,
                      "logging":"true",
                      "debug":"false",
                      "fasta":"false",
@@ -39,7 +39,7 @@ constant_settings = {"maps":'"invasion.map"',
 
 # These settings are varied (the first value is the default,
 # every combination of the rest is tested)
-varying_settings = {"cellsize":[20, 10, 50],
+varying_settings = {"cellsize":[20, 5, 20],
                     "propagule-pressure":[0,1,10],
                     "disturbance":[0,1,10]}
 
