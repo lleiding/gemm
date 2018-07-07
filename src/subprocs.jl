@@ -292,7 +292,8 @@ function createtraits() #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
         elseif contains(traitnames[idx], "dispshape")
             push!(traits, Trait(idx, rand() * maxdispmean))
         elseif contains(traitnames[idx], "tempopt")
-            push!(traits, Trait(idx, rand() * 40 + 273)) #CAVE: code values elsewhere?
+            #push!(traits, Trait(idx, rand() * 40 + 273)) #CAVE: code values elsewhere?
+            push!(traits, Trait(idx, rand() * 25 + 288)) # range 15-40°C
         elseif contains(traitnames[idx], "temptol")
             push!(traits, Trait(idx, (rand() + 0.39) * 5)) #CAVE: code values elsewhere?
         elseif contains(traitnames[idx], "mut")

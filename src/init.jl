@@ -21,7 +21,7 @@ function genesis()
             simlog("Invalid value for `initpopsize`: $(settings["initpopsize"])", 'e')
         end
         # prevent an infinity loop when the cellsize is very small
-        if popsize == 0
+        if popsize < 2
             if ttl == 0
                 simlog("This cell might be too small to hold a community.", 'w')
                 break

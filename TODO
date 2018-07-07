@@ -1,6 +1,8 @@
 # TODO Island invasion model
 
 Now:
+
+* island map: linear gradient for second niche
 	
 * create map plots with ggplot
 

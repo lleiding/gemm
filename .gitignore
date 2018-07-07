@@ -7,3 +7,4 @@ poc/
 slurm*.out
 *.jpg
 default*.conf
+old_results/

@@ -58,3 +58,5 @@ end
 
 const settings = getsettings()
 
+# XXX Trait value calculation happens in subprocs.jl -> createtraits()
+# XXX Default patch settings can be found in types.jl

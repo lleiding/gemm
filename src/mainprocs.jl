@@ -319,8 +319,9 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
             if currentmass >= patch.community[idx].traits["repsize"]
                 reptol = patch.community[idx].traits["reptol"]
                 metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*temp))
-                noffs = rand(Poisson(metaboffs * patch.community[idx].fitness)) # add some stochasticity
+                noffs = rand(Poisson(metaboffs))# * patch.community[idx].fitness)) # add some stochasticity
                 if noffs < 1
+                    simlog("0 offspring chosen", 'd')
                     idx += 1
                     continue
                 end
@@ -354,6 +355,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
         end
         idx += 1
     end
+    simlog("Patch $(patch.id): $(length(seedbank)) offspring", 'd')
     append!(patch.community, seedbank)
 end
 
