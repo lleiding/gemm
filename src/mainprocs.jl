@@ -98,7 +98,7 @@ function establish!(patch::Patch, nniches::Int=1)
                 end
                 opt = patch.community[idx].traits["precopt"]
                 tol = patch.community[idx].traits["prectol"]
-                fitness *= gausscurve(opt, tol, patch.nichea, 0.0)
+                fitness *= gausscurve(opt, tol, patch.prec, 0.0)
                 fitness > 1 && (fitness = 1) # should be obsolete
                 fitness < 0 && (fitness = 0) # should be obsolete
             end

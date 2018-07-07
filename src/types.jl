@@ -29,10 +29,10 @@ mutable struct Patch
     id::Int
     location::Tuple{Int, Int}
     area::Float64
-    temp::Float64 # corresponds to T
+    temp::Float64 # temperature (physiologically important)
     isisland::Bool
-    nichea::Float64 # additional niches,
-    nicheb::Float64 # e.g. precipitation
+    prec::Float64 # precipitation (no physiological effect, just a niche)
+    nicheb::Float64 # additional niche
     community::Array{Individual, 1}
     invasible::Bool
     isolated::Bool
