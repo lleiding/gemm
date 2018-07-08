@@ -80,7 +80,7 @@ function establish!(patch::Patch, nniches::Int=1)
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
-        if patch.community[idx].isnew || patch.community[idx].age == 0
+        if patch.community[idx].isnew
             fitness = 1
             if !traitsexist(patch.community[idx].traits, ["temptol", "tempopt"]) # CAVE: should check for more traits!
                 splice!(patch.community, idx) # kill it!
