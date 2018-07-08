@@ -407,12 +407,13 @@ function createind()
     ngenes < 1 && (ngenes = 1)
     traits = createtraits()
     genes = creategenes(ngenes,traits)
+    randchrms = rand(1:length(genes))
     if settings["linkage"] == "none"
         nchrms = length(genes)
     elseif settings["linkage"] == "full"
         nchrms = 1
     else
-        nchrms = rand(1:length(genes))
+        nchrms = randchrms
     end
     chromosomes = createchrs(nchrms,genes)
     traitdict = chrms2traits(chromosomes, settings["traitnames"])
