@@ -50,20 +50,25 @@ function mutate!(world::Array{Patch, 1})
     end
 end
 
-function checkviability!(patch::Patch) # may consider additional rules... # maybe obsolete anyhow...
+function checkviability!(community::Array{Individual, 1})
     idx=1
-    while idx <= size(patch.community,1)
+    while idx <= size(community,1)
         dead = false
-        patch.community[idx].size <= 0 && (dead = true)
-        any(collect(values(patch.community[idx].traits)) .<= 0) && (dead = true)
-        patch.community[idx].traits["repsize"] <= patch.community[idx].traits["seedsize"] && (dead = true)
-        patch.community[idx].fitness <= 0 && (dead = true)
+        community[idx].size <= 0 && (dead = true)
+        any(collect(values(community[idx].traits)) .<= 0) && (dead = true)
+        community[idx].traits["repsize"] <= community[idx].traits["seedsize"] && (dead = true)
+        community[idx].fitness <= 0 && (dead = true)
+        traitsexist(community[idx].traits, settings["traitnames"])
         if dead
-            splice!(patch.community,idx)
+            splice!(community,idx)
             continue
         end
         idx += 1
     end
+end
+
+function checkviability!(patch::Patch)
+    checkviability!(patch.community)
 end
 
 function checkviability!(world::Array{Patch,1}, static::Bool = true)
