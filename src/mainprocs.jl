@@ -13,20 +13,21 @@ function mutate!(ind::Individual, temp::Float64)
                     end
                     charseq[i] = newbase
                     for trait in chrm.genes[idx].codes
-                        (contains(trait.name, "mutprob") && mutationrate != 0) && continue
-                        contains(trait.name, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
+                        traitname = settings["traitnames"][trait.nameindex]
+                        (contains(traitname, "mutprob") && mutationrate != 0) && continue
+                        contains(traitname, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
                         oldvalue = trait.value
-                        contains(trait.name, "tempopt") && (oldvalue -= 273)
+                        contains(traitname, "tempopt") && (oldvalue -= 273)
                         while oldvalue <= 0 # make sure sd of Normal dist != 0
                             oldvalue = abs(rand(Normal(0,0.01)))
                         end
                         newvalue = oldvalue + rand(Normal(0, oldvalue/phylconstr)) # CAVE: maybe handle temp + prec separately
                         newvalue < 0 && (newvalue=abs(newvalue))
-                        (newvalue > 1 && contains(trait.name,"prob")) && (newvalue=1)
+                        (newvalue > 1 && contains(traitname,"prob")) && (newvalue=1)
                         while newvalue <= 0 #&& contains(trait.name,"mut")
                             newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
                         end
-                        contains(trait.name, "tempopt") && (newvalue += 273)
+                        contains(traitname, "tempopt") && (newvalue += 273)
                         trait.value = newvalue
                     end
                 end
