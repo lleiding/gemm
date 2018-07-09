@@ -200,7 +200,6 @@ end
 function identifyAdults!(patch::Patch)
     adultspeciesidx = Dict{String, Array{Int, 1}}()
     for i in eachindex(patch.community)
-        !traitsexist(patch.community[i].traits, ["repsize"]) && continue
         patch.community[i].size < patch.community[i].traits["repsize"] && continue
         adultspeciesidx = merge(append!, adultspeciesidx, Dict(patch.community[i].lineage => [i]))
     end
