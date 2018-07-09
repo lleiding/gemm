@@ -88,20 +88,12 @@ function establish!(patch::Patch, nniches::Int=1)
     while idx <= size(patch.community,1)
         if patch.community[idx].isnew
             fitness = 1
-            if !traitsexist(patch.community[idx].traits, ["temptol", "tempopt"]) # CAVE: should check for more traits!
-                splice!(patch.community, idx) # kill it!
-                continue
-            end
             opt = patch.community[idx].traits["tempopt"]
             tol = patch.community[idx].traits["temptol"]
             fitness *= gausscurve(opt, tol, temp, 0.0)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
             if nniches >= 2
-                if !traitsexist(patch.community[idx].traits, ["prectol", "precopt"]) # CAVE: should check for more traits!
-                    splice!(patch.community, idx) # kill it!
-                    continue
-                end
                 opt = patch.community[idx].traits["precopt"]
                 tol = patch.community[idx].traits["prectol"]
                 fitness *= gausscurve(opt, tol, patch.prec, 0.0)
@@ -216,10 +208,7 @@ function grow!(patch::Patch)
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
-        if !traitsexist(patch.community[idx].traits, ["repsize"])
-            splice!(patch.community, idx)
-            continue
-        elseif !patch.community[idx].isnew
+        if !patch.community[idx].isnew
             repsize = patch.community[idx].traits["repsize"]
             mass = patch.community[idx].size
             if mass <= repsize # stop growth if reached repsize 
@@ -252,10 +241,7 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
     for patch in world
         idx = 1
         while idx <= size(patch.community,1)
-            if !traitsexist(patch.community[idx].traits, ["dispmean", "dispshape"])
-                splice!(patch.community,idx)
-                continue
-            elseif !patch.community[idx].isnew && patch.community[idx].age == 0
+            if !patch.community[idx].isnew && patch.community[idx].age == 0
                 dispmean = patch.community[idx].traits["dispmean"]
                 dispshape = patch.community[idx].traits["dispshape"]
                 xdir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # scaling so that geometric mean...
@@ -314,12 +300,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     temp = patch.temp
     seedbank = Individual[]
     while idx <= size(patch.community,1)
-        if !traitsexist(patch.community[idx].traits, ["repradius", "repsize", "reptol", "seedsize", "mutprob"])
-            # XXX Is this the source of the bug? -> but that should give us a warning from traitsexist()...
-            simlog("Missing trait! Removing individual: $(patch.community[idx])", 'w') #XXX Should be redundant
-            splice!(patch.community, idx)
-            continue
-        elseif !patch.community[idx].isnew && patch.community[idx].age > 0
+        if !patch.community[idx].isnew && patch.community[idx].age > 0
             currentmass = patch.community[idx].size
             seedsize = patch.community[idx].traits["seedsize"]
             if currentmass >= patch.community[idx].traits["repsize"]
