@@ -21,11 +21,11 @@ using GeMM
 
 function simulation!(world::Array{Patch,1}, mapfile::String, timesteps::Int=1000)
     simlog("Starting simulation.")
+    checkviability!(world, settings["static"])
     for t in 1:timesteps
         simlog("UPDATE $t")
         # ecological processes
         establish!(world, settings["nniches"], settings["static"])
-        checkviability!(world, settings["static"])
         compete!(world, settings["static"])
         survive!(world, settings["static"])
         disturb!(world, settings["disturbance"], settings["static"])
