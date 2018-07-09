@@ -86,7 +86,7 @@ function establish!(patch::Patch, nniches::Int=1)
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
-        if patch.community[idx].isnew
+        if patch.community[idx].age == 0
             fitness = 1
             opt = patch.community[idx].traits["tempopt"]
             tol = patch.community[idx].traits["temptol"]

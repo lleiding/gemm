@@ -418,6 +418,6 @@ function createind()
     chromosomes = createchrs(nchrms,genes)
     traitdict = chrms2traits(chromosomes, settings["traitnames"])
     settings["initadults"] ? indsize = traitdict["repsize"] : indsize = traitdict["seedsize"]
-    Individual(lineage, chromosomes, traitdict, 0, true, 1.0, indsize)
+    Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize)
 end
 
