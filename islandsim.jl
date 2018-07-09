@@ -33,6 +33,7 @@ function simulation!(world::Array{Patch,1}, mapfile::String, timesteps::Int=1000
         compete!(world, settings["static"])
         reproduce!(world)
         settings["mutate"] && mutate!(world)
+        checkviability!(world, settings["static"])
         settings["burn-in"] < t && invade!(world)
         colonizers = disperse!(world, settings["static"])
         # model output
