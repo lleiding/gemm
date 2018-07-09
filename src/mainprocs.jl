@@ -55,9 +55,9 @@ function checkviability!(community::Array{Individual, 1})
     while idx <= size(community,1)
         dead = false
         community[idx].size <= 0 && (dead = true)
-        any(collect(values(community[idx].traits)) .<= 0) && (dead = true)
+        any(collect(values(community[idx].traits)) .< 0) && (dead = true)
         community[idx].traits["repsize"] <= community[idx].traits["seedsize"] && (dead = true)
-        community[idx].fitness <= 0 && (dead = true)
+        community[idx].fitness < 0 && (dead = true)
         traitsexist(community[idx].traits, settings["traitnames"])
         if dead
             splice!(community,idx)
