@@ -361,6 +361,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
         end
         idx += 1
     end
+    checkviability!(seedbank)
     simlog("Patch $(patch.id): $(length(seedbank)) offspring", 'd')
     append!(patch.community, seedbank)
 end
