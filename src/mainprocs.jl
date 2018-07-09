@@ -60,6 +60,7 @@ function checkviability!(community::Array{Individual, 1})
         community[idx].fitness < 0 && (dead = true)
         traitsexist(community[idx].traits, settings["traitnames"])
         if dead
+            simlog("Individual not viable. Being killed.", 'w')
             splice!(community,idx)
             continue
         end
