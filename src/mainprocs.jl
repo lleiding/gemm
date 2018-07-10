@@ -252,7 +252,7 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
                 # !patch.isisland && checkborderconditions!(world,xdest,ydest)
                 targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
                 possdests = find(x->in(x.location,targets),world)
-                filter!(x -> world[x].isisland, possdests) # disperse only to islands
+                static && filter!(x -> world[x].isisland, possdests) # disperse only to islands
                 if !static || patch.isisland
                     indleft = splice!(patch.community,idx) # only remove individuals from islands!
                 end
