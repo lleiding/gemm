@@ -278,10 +278,12 @@ function createtraits() #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     #seedsize = exp(-7 + 17 * rand()) # corresponds to 1mg to 22kg
     #repsize = exp(0 + 17 * rand()) # 1g to 24t
     # Larger sizes to reduce community size
-    seedsize = exp(-6 + 16 * rand()) # corresponds to 25mg to 22kg
-    repsize = exp(3 + 14 * rand()) # 20g to 24t
+    #seedsize = exp(-6 + 16 * rand()) # corresponds to 25mg to 22kg
+    #repsize = exp(3 + 14 * rand()) # 20g to 24t
+    seedsize = exp(-4 + 14 * rand()) # corresponds to 180mg to 22kg
+    repsize = exp(5 + 12 * rand()) # 150g to 24t
     while repsize <= seedsize
-        repsize = exp(3 + 14 * rand()) # 20g to 24t
+        repsize = exp(5 + 12 * rand()) # 20g to 24t
         #seedsize = exp(-7 + 17 * rand())
         #repsize = exp(0 + 17 * rand())
     end
