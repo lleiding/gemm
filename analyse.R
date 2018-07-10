@@ -85,10 +85,9 @@ if (simname == "all") {
         if (file.info(outdir)$isdir) visualize()
     }
     print("Done.")
-}
-# Otherwise, just look at the specified directory (or the default, if
-# the specified doesn't exist)
-else {
+} else {
+    # Otherwise, just look at the specified directory (or the default, if
+    # the specified doesn't exist)
     if (!(file.exists(outdir) && file.info(outdir)$isdir)) {
         simname = "tests"
         outdir = paste0("results/", simname)
