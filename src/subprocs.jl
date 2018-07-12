@@ -281,7 +281,7 @@ function createtraits() #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     seedsize = exp(settings["minseedsize"] + seedoffset * rand()) 
     repsize = exp(settings["minrepsize"] + repoffset * rand())
     while repsize <= seedsize
-        repsize = exp(settings["minrepsize"] + settings["maxrepsize"] * rand())
+        repsize = exp(settings["minrepsize"] + repoffset * rand())
     end
     for idx in eachindex(traitnames)
         if contains(traitnames[idx], "rate")
