@@ -2,6 +2,8 @@
 # This is an analysis script for the island invasion model that creates
 # graphs of the total and per species populations over time.
 
+library(ggplot2)
+
 # The working directory may be specified via the commandline, otherwise it
 # defaults to results/tests
 simname = commandArgs()[length(commandArgs())]
@@ -70,11 +72,44 @@ plotDiversity = function(logfile="diversity.log") {
     dev.off()
 }
 
+plotMap = function(timestep=-1, compensate=TRUE) {
+    print(paste0("Plotting map at timestep ", timestep, "..."))
+    tsvfile = grep(paste0("t", timestep), list.files(outdir), value=T)
+    if (length(tsvfile) == 0 && compensate) {
+        # If the desired timestep doesn't exist, take the newest timestep we have
+        timestep = (length(grep(".tsv", list.files(outdir), value=T))-1) * 10
+        tsvfile = grep(paste("t", timestep, sep=""), list.files(outdir), value=T)
+    }
+    tsvfilepath = paste(outdir, tsvfile, sep="/")
+    if (!file.exists(tsvfilepath)) {
+        print(paste("WARNING: tsvfile not found", tsvfilepath))
+        return()
+    }
+    ts = read.table(tsvfilepath, header=T)
+    jpeg(paste0(outdir, "/", simname, "_map_", timestep, ".jpg"), height=720, width=720)
+    m = ggplot(ts, aes(xloc, yloc))
+    m + geom <- tile(aes(fill = temp.C, width = 0.95, height = 0.95)) +
+        scale <- fill <- continuous(low="white", high="black") +
+            scale <- color <- gradientn(colours = rainbow(5)) +
+                geom <- jitter(data = allspecies, aes(size = abundance, color = lineage))
+    #FIXME What is `allspecies?`
+    dev.off()
+}
+
+plotTimeSeries = function(step=1) {
+    files = grep("_t", list.files(outdir), value=T)
+    for (f in files) {
+        timestep = as.numeric(substring(strsplit(f, "_")[[1]][2], 2))
+        if (timestep %% step == 0)
+            plotMap(timestep, FALSE)
+    }
+}
+
 visualize = function(toFile=TRUE) {
     plotDiversity()
     plotTraits()
+    plotTimeSeries(500)
 }
-
 
 # If the simname is given as 'all', process every folder in 'results'
 if (simname == "all") {
