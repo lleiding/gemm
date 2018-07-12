@@ -234,41 +234,21 @@ function iscompatible(mate::Individual, ind::Individual)
     true
 end
 
-function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int, Int})
+function findposspartner(patch::Patch, ind::Individual)
     # TODO This should be rewritten so that it only returns a single individual, not an array
     # (which only ever contains a single organism anyway)
     ind.isnew = true
-    radius = floor(ind.traits["repradius"] + 0.5) # CAVE: to account for cell width ... or not??
-    coordinates = Tuple[]
-    for x = -radius:radius, y = -radius:radius
-        sqrt(x^2 + y^2) <= radius && push!(coordinates, (x + location[1], y + location[2]))
-    end
-    coordinates = map(k -> checkborderconditions!(world, k[1], k[2]), coordinates)
-    order = map(x -> x.^2, coordinates) |> x -> map(sum, x) |> x -> map(sqrt, x) |> sortperm
-    coordinates = coordinates[order]
-    posspartners = Individual[]
-    idx = 1 # check patches in order of increasing distance
-    while length(posspartners) == 0
-        idx > length(coordinates) && break
-        targetpatch = filter(l -> l.location == coordinates[idx], world)
-        if length(targetpatch) >= 1 && haskey(targetpatch[1].whoiswho, ind.lineage)
-            communityidxs = (targetpatch[1].whoiswho[ind.lineage])
-        else
-            communityidxs = []
-        end
-        shuffle!(communityidxs)
-        for mateidx in communityidxs
-            mateidx > length(targetpatch[1].community) && continue #XXX Not a real fix, but should work
-            mate = targetpatch[1].community[mateidx] #FIXME Occasionally, this throws a bounds error
-            mate.isnew && continue
-            !iscompatible(mate, ind) && continue
-            push!(posspartners, mate)
-            length(posspartners) >= 1 && break
-        end
-        idx += 1
+    communityidxs = (patch.whoiswho[ind.lineage])
+    shuffle!(communityidxs)
+    for mateidx in communityidxs
+        mate = patch.community[mateidx] #FIXME Occasionally, this throws a bounds error
+        mate.isnew && continue
+        !iscompatible(mate, ind) && continue
+        posspartner = mate
+        break
     end
     ind.isnew = false
-    posspartners
+    isdefined(Symbol("posspartner")) ? posspartner : return
 end
 
 function createtraits() #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
