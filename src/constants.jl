@@ -41,9 +41,9 @@ function defaultSettings()
          "disturbance" => 0, # percentage of individuals killed per update per cell
          "burn-in" => 1000, # timesteps before invasion starts
          "minseedsize" => -2, # minimal seedsize in grams calculated as exp(minseedsize) -> 0.14 g
-         "maxseedsize" => 12, # maximal seedsize in grams calculated as exp(minseedsize + maxseedsize) -> 22 kg
+         "maxseedsize" => 10, # maximal seedsize in grams calculated as exp(maxseedsize) -> 22 kg
          "minrepsize" => 3, # minimal repsize in grams calculated as exp(minrepsize) -> 20 g
-         "maxrepsize" => 11, # maximal repsize in grams calculated as exp(minrepsize + maxrepsize) -> 1.2 t
+         "maxrepsize" => 14, # maximal repsize in grams calculated as exp(maxrepsize) -> 1.2 t
          # species trait names
          "traitnames" => ["compat",
                           "dispmean",

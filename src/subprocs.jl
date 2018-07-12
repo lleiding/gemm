@@ -276,8 +276,10 @@ function createtraits() #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     traitnames = settings["traitnames"]
     traits = Trait[]
     # exponential distributions of body sizes:
-    seedsize = exp(settings["minseedsize"] + settings["maxseedsize"] * rand()) 
-    repsize = exp(settings["minrepsize"] + settings["maxrepsize"] * rand())
+    seedoffset = settings["maxseedsize"] - settings["minseedsize"]
+    repoffset = settings["maxrepsize"] - settings["minrepsize"]
+    seedsize = exp(settings["minseedsize"] + seedoffset * rand()) 
+    repsize = exp(settings["minrepsize"] + repoffset * rand())
     while repsize <= seedsize
         repsize = exp(settings["minrepsize"] + settings["maxrepsize"] * rand())
     end
