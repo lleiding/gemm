@@ -39,15 +39,14 @@ function mutate!(ind::Individual, temp::Float64)
 end
 
 function mutate!(patch::Patch)
+    (!patch.isisland && settings["static"]) && return
     for ind in patch.community
         ind.age == 0 && mutate!(ind, patch.temp)
     end
 end
 
 function mutate!(world::Array{Patch, 1})
-    for patch in world
-        (patch.isisland || !settings["static"]) && mutate!(patch)
-    end
+    pmap(mutate!, world)
 end
 
 function checkviability!(community::Array{Individual, 1})
@@ -70,13 +69,12 @@ function checkviability!(community::Array{Individual, 1})
 end
 
 function checkviability!(patch::Patch)
+    (!patch.isisland && settings["static"]) && return
     checkviability!(patch.community)
 end
 
-function checkviability!(world::Array{Patch,1}, static::Bool = true)
-    for patch in world
-        (patch.isisland || !static) && checkviability!(patch) # pmap(checkviability!,patch) ???
-    end
+function checkviability!(world::Array{Patch,1})
+    pmap(checkviability!, world)
 end
 
 """
@@ -84,7 +82,9 @@ end
 establishment of individuals in patch `p`. Sets fitness scaling parameter
 according to adaptation to number `n` niches of the surrounding environment.
 """
-function establish!(patch::Patch, nniches::Int=1)
+function establish!(patch::Patch)
+    (!patch.isisland && settings["static"]) && return
+    nniches = settings["nniches"]
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
@@ -118,10 +118,8 @@ function establish!(patch::Patch, nniches::Int=1)
 end
 
 
-function establish!(world::Array{Patch,1}, nniches::Int=1, static::Bool = true)
-    for patch in world
-        (patch.isisland || !static) && establish!(patch, nniches) # pmap(!,patch) ???
-    end
+function establish!(world::Array{Patch,1})
+    pmap(establish!, world)
 end
 
 """
@@ -129,6 +127,7 @@ end
 density independent survival of individuals in patch `p`
 """
 function survive!(patch::Patch)
+    (!patch.isisland && settings["static"]) && return
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
@@ -147,10 +146,8 @@ function survive!(patch::Patch)
     end
 end
 
-function survive!(world::Array{Patch,1}, static::Bool = true)
-    for patch in world
-        (patch.isisland || !static) && survive!(patch) # pmap(!,patch) ???
-    end
+function survive!(world::Array{Patch,1})
+    pmap(survive!, world)
 end
 
 """
@@ -207,6 +204,7 @@ end
 Growth of individuals in patch `p`
 """
 function grow!(patch::Patch)
+    (!patch.isisland && settings["static"]) && return
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
@@ -228,10 +226,8 @@ function grow!(patch::Patch)
     end
 end
 
-function grow!(world::Array{Patch,1}, static::Bool = true)
-    for patch in world
-        (patch.isisland || !static) && grow!(patch) # pmap(!,patch) ???
-    end
+function grow!(world::Array{Patch,1})
+    pmap(grow!, world)
 end
 
 """
@@ -277,6 +273,7 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
 end
 
 function compete!(patch::Patch)
+    (!patch.isisland && settings["static"]) && return
     sort!(patch.community, by = x -> x.fitness)
     while sum(map(x -> x.size, patch.community)) >= patch.area # occupied area larger than available
         victim = rand(Geometric()) + 1 # fitness sorted?
@@ -285,18 +282,17 @@ function compete!(patch::Patch)
     end
 end
 
-function compete!(world::Array{Patch,1}, static::Bool = true)
-    for patch in world
-        (patch.isisland || !static) && compete!(patch) # pmap(!,patch) ???
-    end
+function compete!(world::Array{Patch,1})
+    pmap(compete!, world)
 end
 
 """
     reproduce!(w, p)
 Reproduction of individuals in a patch `p` whithin a world (array of patches) `w`
 """
-function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
-    #XXX Somewhere between line 306 and 327, patch.whoiswho becomes out of sync... >>>
+function reproduce!(patch::Patch) #TODO: refactorize!
+    (!patch.isisland && settings["static"]) && return
+     #XXX Somewhere between line 306 and 327, patch.whoiswho becomes out of sync... >>>
     identifyAdults!(patch)
     idx = 1
     temp = patch.temp
@@ -314,11 +310,10 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                     idx += 1
                     continue
                 end
-                posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
+                partner = findposspartner(patch, patch.community[idx])
                 # <<< XXX There's a bug in here somewhere - "come out, come out, where ever you are!"
                 # length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners # CAVE!
-                if length(posspartners) > 0
-                    partner = rand(posspartners)
+                if typeof(partner) !== Void
                     parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
                     if parentmass <= 0
                         idx += 1 #splice!(patch.community, idx)
@@ -350,7 +345,5 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
 end
 
 function reproduce!(world::Array{Patch,1})
-    for patch in world
-        (patch.isisland || !settings["static"]) && reproduce!(world, patch) # pmap(!,patch) ???
-    end
+    pmap(reproduce!, world)
 end
