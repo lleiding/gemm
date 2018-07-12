@@ -21,19 +21,19 @@ using GeMM
 
 function simulation!(world::Array{Patch,1}, mapfile::String, timesteps::Int=1000)
     simlog("Starting simulation.")
-    checkviability!(world, settings["static"])
+    checkviability!(world)
     for t in 1:timesteps
         simlog("UPDATE $t")
         # ecological processes
-        establish!(world, settings["nniches"], settings["static"])
-        compete!(world, settings["static"])
-        survive!(world, settings["static"])
+        establish!(world)
+        compete!(world)
+        survive!(world)
         disturb!(world, settings["disturbance"], settings["static"])
-        grow!(world, settings["static"])
-        compete!(world, settings["static"])
+        grow!(world)
+        compete!(world)
         reproduce!(world)
         settings["mutate"] && mutate!(world)
-        checkviability!(world, settings["static"])
+        checkviability!(world)
         settings["burn-in"] < t && invade!(world)
         colonizers = disperse!(world, settings["static"])
         # model output
