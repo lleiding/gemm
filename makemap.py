@@ -12,20 +12,25 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol, precon):
     mintemp = 273
     maxtemp = 303
     minprec = 0
-    maxprec = 1000 if precon else minprec
-    precstep = (maxprec - minprec) / (ylen - 1)
+    maxprec = 10 if precon else minprec
+    if ylen > 1:
+        precstep = (maxprec - minprec) / (ylen - 1)
+    else:
+        precstep = 1.0
     temp = mintemp
     if landtype == "continent":
+        landtype = ""
         prec = 0
-        tempstep = round((maxtemp - mintemp) / ylen)
+        tempstep = round((maxtemp - mintemp) / xlen)
         for x in range(xpos, xpos + xlen):
             prec = 0
             temp += tempstep
             for y in range(ypos, ypos + ylen):
                 ident += 1
-                print(ident, x, y, temp, landtype, "no", prec)
+                print(ident, " ", x, " ", y, " ", "temp=", temp, " ", landtype, " ", "nichea=", prec, sep = '')
                 prec += precstep
     else:
+        landtype = "isisland"
         temp = 298
         tempstep = 3 # CAVE!
         for x in range(xpos, xpos + xlen):
@@ -34,8 +39,8 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol, precon):
                 ident += 1
                 mindist = min([abs(x - xpos), abs(y - ypos), abs(xpos + xlen - x - 1), abs(ypos + ylen - y - 1)])
                 localtemp = temp - mindist * tempstep
-                isolated = "isolated" if random.random() < isol else "no"
-                print(ident, x, y, localtemp, landtype, isolated, prec)
+                isolated = "isolated" if random.random() < isol else ""
+                print(ident, " ", x, " ", y, " ", "temp=", localtemp, " ", landtype, " ", isolated, " ", "nichea=", prec, sep ='')
                 prec += precstep
     print()
 
@@ -57,7 +62,7 @@ def print_all():
     parser.add_argument("-l", "--land", type = str, default = "continent",
                         choices = ["continent", "island"], help = "type of landmass")
     parser.add_argument("-t", "--time", type = int, default = 1000,
-                        help = "number of timesteps for which definition is valid")
+                        help = "number of timesteps for which definition is valid. A value of zero turns off output")
     parser.add_argument("-x", "--longitute", type = int, default = 0,
                         help = "x position")
     parser.add_argument("-y", "--latitude", type = int, default = 0,
@@ -68,11 +73,14 @@ def print_all():
                         help = "proportion of randomly distributed, isolated patches on island")
     parser.add_argument("-p", "--precipitation", action = "store_true", default = False,
                         help = "turns on additional environment niche")
+    parser.add_argument("--nodummy", action = "store_true", default = False,
+                        help = "turns off creation of dummy island")
     args = parser.parse_args()
-    print("# timesteps:")
-    print(args.time)
-    print()
+    if args.time > 0:
+        print("# timesteps:")
+        print(args.time)
+        print()
     print_map(args.width, args.height, args.land, args.longitute, args.latitude, args.identifier, args.isolation, args.precipitation)
-    args.land == "continent" and add_ocean()
+    args.land == "continent" and not args.nodummy and add_ocean()
 
 print_all()
