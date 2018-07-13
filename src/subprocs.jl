@@ -234,6 +234,22 @@ function iscompatible(mate::Individual, ind::Individual)
     true
 end
 
+function findposspartner(patch::Patch, ind::Individual)
+    ind.isnew = true
+    posspartner = nothing
+    communityidxs = patch.whoiswho[ind.lineage]
+    shuffle!(communityidxs)
+    for mateidx in communityidxs
+        mate = patch.community[mateidx]
+        mate.isnew && continue
+        !iscompatible(mate, ind) && continue
+        posspartner = mate
+        break
+    end
+    ind.isnew = false
+    posspartner 
+end
+
 function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int, Int})
     # TODO This should be rewritten so that it only returns a single individual, not an array
     # (which only ever contains a single organism anyway)
