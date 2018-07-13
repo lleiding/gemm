@@ -256,14 +256,34 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
         else
             communityidxs = []
         end
-        shuffle!(communityidxs)
-        for mateidx in communityidxs
-            mateidx > length(targetpatch[1].community) && continue #XXX Not a real fix, but should work
-            mate = targetpatch[1].community[mateidx] #FIXME Occasionally, this throws a bounds error
-            mate.isnew && continue
-            !iscompatible(mate, ind) && continue
-            push!(posspartners, mate)
-            length(posspartners) >= 1 && break
+        if length(communityidxs) == 0
+            idx += 1
+            continue
+        end
+        shuffle = false
+        if shuffle
+            shuffle!(communityidxs)
+            for mateidx in communityidxs
+                mateidx > length(targetpatch[1].community) && continue #XXX Not a real fix, but should work
+                mate = targetpatch[1].community[mateidx] #FIXME Occasionally, this throws a bounds error
+                mate.isnew && continue
+                !iscompatible(mate, ind) && continue
+                push!(posspartners, mate)
+                length(posspartners) >= 1 && break
+            end
+        else
+            startidx = rand(1:length(communityidxs))
+            mateidx = startidx
+            while true
+                mate = targetpatch[1].community[communityidxs[mateidx]]
+                if !mate.isnew && iscompatible(mate, ind)
+                    push!(posspartners, mate)
+                    break
+                end
+                mateidx += 1
+                mateidx > length(communityidxs) && (mateidx = 1)
+                mateidx == startidx && break
+            end
         end
         idx += 1
     end
