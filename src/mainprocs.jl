@@ -315,11 +315,9 @@ function reproduce!(world::Array{Patch,1}, patch::Patch, settings::Dict{String, 
                     idx += 1
                     continue
                 end
-                posspartners = findposspartners(world, patch.community[idx], patch.location, traitnames) # this effectively controls frequency of reproduction
+                partner = findposspartner(patch, patch.community[idx], traitnames)
                 # <<< XXX There's a bug in here somewhere - "come out, come out, where ever you are!"
-                # length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners # CAVE!
-                if length(posspartners) > 0
-                    partner = rand(posspartners)
+                if partner != nothing
                     parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
                     if parentmass <= 0
                         idx += 1 #splice!(patch.community, idx)
