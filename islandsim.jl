@@ -19,11 +19,11 @@ any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 
 using GeMM
 
-function simulation!(world::Array{Patch,1}, mapfile::String, timesteps::Int=1000)
-    simlog("Starting simulation.")
-    checkviability!(world, settings["static"])
+function simulation!(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile::String, timesteps::Int=1000)
+    simlog("Starting simulation.", settings)
+    checkviability!(world, settings)
     for t in 1:timesteps
-        simlog("UPDATE $t")
+        simlog("UPDATE $t", settings)
         # ecological processes
         establish!(world, settings["nniches"], settings["static"])
         compete!(world, settings["static"])
@@ -31,33 +31,35 @@ function simulation!(world::Array{Patch,1}, mapfile::String, timesteps::Int=1000
         disturb!(world, settings["disturbance"], settings["static"])
         grow!(world, settings["static"])
         compete!(world, settings["static"])
-        reproduce!(world)
-        settings["mutate"] && mutate!(world)
-        checkviability!(world, settings["static"])
+        reproduce!(world, settings)
+        settings["mutate"] && mutate!(world, settings)
+        checkviability!(world, settings)
         settings["burn-in"] < t && invade!(world)
         colonizers = disperse!(world, settings["static"])
         # model output
-        map(p -> simlog("Patch $(p.id): $(length(p.community)) individuals.", 'd'), world)
-        length(colonizers) >= 1 && simlog("t=$t: colonization by $colonizers", 'd')#recordcolonizers(colonizers, settings, t)
+        map(p -> simlog("Patch $(p.id): $(length(p.community)) individuals.", settings, 'd'), world)
+        length(colonizers) >= 1 && simlog("t=$t: colonization by $colonizers", settings, 'd')#recordcolonizers(colonizers, settings, t)
         if settings["lineages"]
-            recordstatistics(world)
-            recordlineages(world, t)
+            recordstatistics(world, settings)
+            recordlineages(world, settings, t)
         end
-        (t == 1 || mod(t, settings["outfreq"]) == 0) && writedata(world, mapfile, t)
+        (t == 1 || mod(t, settings["outfreq"]) == 0) && writedata(world, settings, mapfile, t)
     end
 end
 
 function runit()
+    settings = getsettings()
     srand(settings["seed"])
     setupdatadir(settings)
     world = Patch[]
     for i in 1:length(settings["maps"])
-        timesteps,maptable = readmapfile(settings["maps"][i])
-        i == 1 && (world = createworld(maptable))
+        timesteps,maptable = readmapfile(settings["maps"][i], settings)
+        i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
-        simulation!(world, settings["maps"][i], timesteps)
-        writedata(world, settings["maps"][i], -1)
+        simulation!(world, settings, settings["maps"][i], timesteps)
+        writedata(world, settings, settings["maps"][i], -1)
     end
 end
 
+@time runit()
 @time runit()

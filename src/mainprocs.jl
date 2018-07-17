@@ -1,6 +1,6 @@
 # Main processes for GeMM
 
-function mutate!(ind::Individual, temp::Float64)
+function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
     prob = ind.traits["mutprob"]
     for chrm in ind.genome
         for idx in eachindex(chrm.genes)
@@ -38,19 +38,19 @@ function mutate!(ind::Individual, temp::Float64)
     ind.traits = chrms2traits(ind.genome, settings["traitnames"])
 end
 
-function mutate!(patch::Patch)
+function mutate!(patch::Patch, settings::Dict{String, Any})
     for ind in patch.community
-        ind.age == 0 && mutate!(ind, patch.temp)
+        ind.age == 0 && mutate!(ind, patch.temp, settings)
     end
 end
 
-function mutate!(world::Array{Patch, 1})
+function mutate!(world::Array{Patch, 1}, settings::Dict{String, Any})
     for patch in world
-        (patch.isisland || !settings["static"]) && mutate!(patch)
+        (patch.isisland || !settings["static"]) && mutate!(patch, settings)
     end
 end
 
-function checkviability!(community::Array{Individual, 1})
+function checkviability!(community::Array{Individual, 1}, settings::Dict{String, Any})
     idx=1
     while idx <= size(community,1)
         reason = ""
@@ -61,7 +61,7 @@ function checkviability!(community::Array{Individual, 1})
         community[idx].fitness < 0 && (dead = true) && (reason *= "fitness ")
         !traitsexist(community[idx].traits, settings["traitnames"]) && (dead = true) && (reason *= "missingtrait ")
         if dead
-            simlog("Individual not viable: $reason. Being killed.", 'w')
+            simlog("Individual not viable: $reason. Being killed.", settings, 'w')
             splice!(community,idx)
             continue
         end
@@ -69,13 +69,13 @@ function checkviability!(community::Array{Individual, 1})
     end
 end
 
-function checkviability!(patch::Patch)
-    checkviability!(patch.community)
+function checkviability!(patch::Patch, settings::Dict{String, Any})
+    checkviability!(patch.community, settings)
 end
 
-function checkviability!(world::Array{Patch,1}, static::Bool = true)
+function checkviability!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
-        (patch.isisland || !static) && checkviability!(patch) # pmap(checkviability!,patch) ???
+        (patch.isisland || !settings["static"]) && checkviability!(patch, settings) # pmap(checkviability!,patch) ???
     end
 end
 
@@ -178,7 +178,7 @@ function disturb!(world::Array{Patch,1}, intensity::Int, static::Bool = true)
 end
 
 let speciespool = Individual[]
-    function initspeciespool!()
+    function initspeciespool!(settings::Dict{String, Any})
         for i in 1:settings["global-species-pool"]
             push!(speciespool, createind())
         end
@@ -193,9 +193,9 @@ let speciespool = Individual[]
         append!(patch.community, invaders)
     end
 
-    global function invade!(world::Array{Patch,1})
+    global function invade!(world::Array{Patch,1}, settings::Dict{String, Any})
         (settings["propagule-pressure"] == 0 || settings["global-species-pool"] == 0) && return
-        (length(speciespool) == 0) && initspeciespool!()
+        (length(speciespool) == 0) && initspeciespool!(settings)
         for patch in world
             patch.invasible && invade!(patch, settings["propagule-pressure"])
         end
@@ -295,8 +295,9 @@ end
     reproduce!(w, p)
 Reproduction of individuals in a patch `p` whithin a world (array of patches) `w`
 """
-function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
+function reproduce!(world::Array{Patch,1}, patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
     #XXX Somewhere between line 306 and 327, patch.whoiswho becomes out of sync... >>>
+    traitnames = settings["traitnames"]
     identifyAdults!(patch)
     idx = 1
     temp = patch.temp
@@ -310,11 +311,11 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                 metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*temp))
                 noffs = rand(Poisson(metaboffs))# * patch.community[idx].fitness)) # add some stochasticity
                 if noffs < 1
-                    simlog("0 offspring chosen", 'd')
+                    simlog("0 offspring chosen", settings, 'd')
                     idx += 1
                     continue
                 end
-                posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
+                posspartners = findposspartners(world, patch.community[idx], patch.location, traitnames) # this effectively controls frequency of reproduction
                 # <<< XXX There's a bug in here somewhere - "come out, come out, where ever you are!"
                 # length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners # CAVE!
                 if length(posspartners) > 0
@@ -344,13 +345,13 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
         end
         idx += 1
     end
-    checkviability!(seedbank)
-    simlog("Patch $(patch.id): $(length(seedbank)) offspring", 'd')
+    checkviability!(seedbank, settings)
+    simlog("Patch $(patch.id): $(length(seedbank)) offspring", settings, 'd')
     append!(patch.community, seedbank)
 end
 
-function reproduce!(world::Array{Patch,1})
+function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
-        (patch.isisland || !settings["static"]) && reproduce!(world, patch) # pmap(!,patch) ???
+        (patch.isisland || !settings["static"]) && reproduce!(world, patch, settings) # pmap(!,patch) ???
     end
 end

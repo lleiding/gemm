@@ -206,8 +206,8 @@ function identifyAdults!(patch::Patch)
     patch.whoiswho = adultspeciesidx
 end
 
-function iscompatible(mate::Individual, ind::Individual)
-    compatidx = findin(settings["traitnames"], ["compat"])[1]
+function iscompatible(mate::Individual, ind::Individual, traitnames::Array{String, 1})
+    compatidx = findin(traitnames, ["compat"])[1]
     tolerance = ind.traits["reptol"]
     indgene = ""
     for chrm in ind.genome
@@ -234,7 +234,7 @@ function iscompatible(mate::Individual, ind::Individual)
     true
 end
 
-function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int, Int})
+function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tuple{Int, Int}, traitnames::Array{String, 1})
     # TODO This should be rewritten so that it only returns a single individual, not an array
     # (which only ever contains a single organism anyway)
     ind.isnew = true
@@ -261,7 +261,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
             mateidx > length(targetpatch[1].community) && continue #XXX Not a real fix, but should work
             mate = targetpatch[1].community[mateidx] #FIXME Occasionally, this throws a bounds error
             mate.isnew && continue
-            !iscompatible(mate, ind) && continue
+            !iscompatible(mate, ind, traitnames) && continue
             push!(posspartners, mate)
             length(posspartners) >= 1 && break
         end
@@ -271,7 +271,7 @@ function findposspartners(world::Array{Patch,1}, ind::Individual, location::Tupl
     posspartners
 end
 
-function createtraits() #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     #TODO move traits to constants.jl
     traitnames = settings["traitnames"]
     traits = Trait[]
@@ -397,12 +397,12 @@ function createchrs(nchrs::Int,genes::Array{Gene,1})
     chromosomes
 end
 
-function createind()
+function createind(settings::Dict{String, Any})
     lineage = randstring(4)
     meangenes = length(settings["traitnames"])
     ngenes = rand(Poisson(meangenes))
     ngenes < 1 && (ngenes = 1)
-    traits = createtraits()
+    traits = createtraits(settings)
     genes = creategenes(ngenes,traits)
     randchrms = rand(1:length(genes))
     if settings["linkage"] == "none"
