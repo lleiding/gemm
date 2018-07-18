@@ -20,7 +20,7 @@ mutable struct Individual
     genome::Array{Chromosome, 1}
     traits::Dict{String, Float64}
     age::Int
-    isnew::Bool # indicator whether individual is new to a patch (after dispersal or birth)
+    marked::Bool # indicator whether individual is new to a patch (after dispersal or birth)
     fitness::Float64 # rate scaling factor
     size::Float64 # body mass
 end
