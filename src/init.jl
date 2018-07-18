@@ -95,7 +95,7 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
             end
             eval(parse("newpatch."*string(var)*" = $val"))
         end
-        newpatch.initpop && append!(newpatch.community, genesis(settings))
+        newpatch.initpop && append!(newpatch.seedbank, genesis(settings))
         push!(world, newpatch)
         global newpatch = nothing #clear memory
     end
@@ -119,10 +119,10 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
         # (this always works on the global scope)
         idx = find(x->x.id == id, world)
         if length(idx) == 0
-            isnew = true
+            marked = true
             global newpatch = Patch(id, (xcord, ycord), cellsize)
         else
-            isnew = false
+            marked = false
             global newpatch = world[idx[1]]
         end
         # parse other parameter options
@@ -149,7 +149,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
             end
             eval(parse("newpatch."*string(var)*" = $val"))
         end
-        if isnew
+        if marked
             push!(world, newpatch)
             global newpatch = nothing #clear memory
         end

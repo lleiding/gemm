@@ -235,14 +235,14 @@ function iscompatible(mate::Individual, ind::Individual, traitnames::Array{Strin
 end
 
 function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String, 1})
-    ind.isnew = true
+    ind.marked = true
     posspartner = nothing
     communityidxs = patch.whoiswho[ind.lineage]
     startidx = rand(1:length(communityidxs))
     mateidx = startidx
     while true
         mate = patch.community[communityidxs[mateidx]]
-        if !mate.isnew && iscompatible(mate, ind, traitnames)
+        if !mate.marked && iscompatible(mate, ind, traitnames)
             posspartner = mate
             break
         end
@@ -250,7 +250,7 @@ function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String
         mateidx > length(communityidxs) && (mateidx = 1)
         mateidx == startidx && break
     end
-    ind.isnew = false
+    ind.marked = false
     posspartner 
 end
 

@@ -193,7 +193,7 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
             print(io, counter, sep)
             print(io, ind.lineage, sep)
             print(io, ind.age, sep)
-            ind.isnew ? print(io, 1, sep) : print(io, 0, sep)
+            ind.marked ? print(io, 1, sep) : print(io, 0, sep)
             print(io, ind.fitness, sep)
             print(io, ind.size, sep)
             print(io, length(ind.genome), sep)

@@ -111,7 +111,7 @@ function establish!(patch::Patch, nniches::Int=1)
                 fitness < 0 && (fitness = 0) # should be obsolete
             end  
             patch.community[idx].fitness = fitness
-            patch.community[idx].isnew = false
+            patch.community[idx].marked = false
         end
         idx += 1
     end
@@ -132,7 +132,7 @@ function survive!(patch::Patch)
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
-        if !patch.community[idx].isnew
+        if !patch.community[idx].marked
             mass = patch.community[idx].size
             deathrate = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
             dieprob = 1 - exp(-deathrate)
@@ -210,7 +210,7 @@ function grow!(patch::Patch)
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
-        if !patch.community[idx].isnew
+        if !patch.community[idx].marked
             repsize = patch.community[idx].traits["repsize"]
             mass = patch.community[idx].size
             if mass <= repsize # stop growth if reached repsize 
@@ -241,33 +241,30 @@ Dispersal of individuals within world (array of patches) `w`
 function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additional border conditions, refactorize
     for patch in world
         idx = 1
-        while idx <= size(patch.community,1)
-            if !patch.community[idx].isnew && patch.community[idx].age == 0
-                dispmean = patch.community[idx].traits["dispmean"]
-                dispshape = patch.community[idx].traits["dispshape"]
-                xdir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # scaling so that geometric mean...
-                ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # ...follows original distribution
-                xdest = patch.location[1]+xdir
-                ydest = patch.location[2]+ydir
-                # !patch.isisland && checkborderconditions!(world,xdest,ydest)
-                targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
-                possdests = find(x->in(x.location,targets),world)
-                static && filter!(x -> world[x].isisland, possdests) # disperse only to islands
-                if !static || patch.isisland
-                    indleft = splice!(patch.community,idx) # only remove individuals from islands!
-                end
-                if size(possdests,1) > 0 # if no viable target patch, individual dies
-                    if static && !patch.isisland
-                        indleft = deepcopy(patch.community[idx])
-                    end
-                    indleft.isnew = true
-                    destination = rand(possdests)
-                    originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated origin patch
-                    targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated target patch
-                    (!originisolated && !targetisolated) && push!(world[destination].community, indleft) # new independent individual
-                end
-                patch.isisland && (idx -= 1)
+        while idx <= size(patch.seedbank,1)
+            dispmean = patch.seedbank[idx].traits["dispmean"]
+            dispshape = patch.seedbank[idx].traits["dispshape"]
+            xdir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # scaling so that geometric mean...
+            ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # ...follows original distribution
+            xdest = patch.location[1]+xdir
+            ydest = patch.location[2]+ydir
+            # !patch.isisland && checkborderconditions!(world,xdest,ydest)
+            targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
+            possdests = find(x->in(x.location,targets),world)
+            static && filter!(x -> world[x].isisland, possdests) # disperse only to islands
+            if !static || patch.isisland
+                indleft = splice!(patch.seedbank,idx) # only remove individuals from islands!
             end
+            if size(possdests,1) > 0 # if no viable target patch, individual dies
+                if static && !patch.isisland
+                    indleft = deepcopy(patch.seedbank[idx])
+                end
+                destination = rand(possdests)
+                originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated origin patch
+                targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated target patch
+                (!originisolated && !targetisolated) && push!(world[destination].community, indleft) # new independent individual
+            end
+            patch.isisland && (idx -= 1)
             idx += 1
         end
     end
@@ -298,9 +295,8 @@ function reproduce!(world::Array{Patch,1}, patch::Patch, settings::Dict{String, 
     identifyAdults!(patch)
     idx = 1
     temp = patch.temp
-    seedbank = Individual[]
-    while idx <= size(patch.community,1)
-        if !patch.community[idx].isnew && patch.community[idx].age > 0
+        while idx <= size(patch.community,1)
+        if !patch.community[idx].marked && patch.community[idx].age > 0
             currentmass = patch.community[idx].size
             seedsize = patch.community[idx].traits["seedsize"]
             if currentmass >= patch.community[idx].traits["repsize"]
@@ -329,20 +325,19 @@ function reproduce!(world::Array{Patch,1}, patch::Patch, settings::Dict{String, 
                         genome = vcat(partnergenome,mothergenome)
                         traits = chrms2traits(genome, settings["traitnames"])
                         age = 0
-                        isnew = false
+                        marked = true
                         fitness = 0.0
                         newsize = seedsize
-                        ind = Individual(patch.community[idx].lineage, genome,traits,age,isnew,fitness,newsize)
-                        push!(seedbank ,ind) # maybe actually deepcopy!?
+                        ind = Individual(patch.community[idx].lineage, genome,traits,age,marked,fitness,newsize)
+                        push!(patch.seedbank, ind) # maybe actually deepcopy!?
                     end
                 end
             end
         end
         idx += 1
     end
-    checkviability!(seedbank, settings)
-    simlog("Patch $(patch.id): $(length(seedbank)) offspring", settings, 'd')
-    append!(patch.community, seedbank)
+    checkviability!(patch.seedbank, settings)
+    simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
 end
 
 function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
