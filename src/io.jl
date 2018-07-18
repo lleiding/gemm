@@ -420,6 +420,6 @@ function simlog(msg, category='i', logfile="simulation.log", onlylog=false)
         logprint("ERROR: "*string(msg), true)
         exit(1)
     else
-        log("Invalid log category $category.", category='w')
+        simlog("Invalid log category $category.", 'w')
     end
 end
