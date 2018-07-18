@@ -297,8 +297,7 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
     identifyAdults!(patch)
     idx = 1
     temp = patch.temp
-    seedbank = Individual[]
-    while idx <= size(patch.community,1)
+        while idx <= size(patch.community,1)
         if !patch.community[idx].isnew && patch.community[idx].age > 0
             currentmass = patch.community[idx].size
             seedsize = patch.community[idx].traits["seedsize"]
@@ -332,16 +331,16 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                         fitness = 0.0
                         newsize = seedsize
                         ind = Individual(patch.community[idx].lineage, genome,traits,age,isnew,fitness,newsize)
-                        push!(seedbank ,ind) # maybe actually deepcopy!?
+                        push!(patch.seedbank, ind) # maybe actually deepcopy!?
                     end
                 end
             end
         end
         idx += 1
     end
-    checkviability!(seedbank)
-    simlog("Patch $(patch.id): $(length(seedbank)) offspring", 'd')
-    append!(patch.community, seedbank)
+    checkviability!(patch.seedbank)
+    simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", 'd')
+    append!(patch.community, splice!(patch.seedbank, 1:length(patch.seedbank)))
 end
 
 function reproduce!(world::Array{Patch,1})
