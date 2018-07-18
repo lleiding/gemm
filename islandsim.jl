@@ -35,10 +35,9 @@ function simulation!(world::Array{Patch,1}, mapfile::String, timesteps::Int=1000
         settings["mutate"] && mutate!(world)
         checkviability!(world, settings["static"])
         settings["burn-in"] < t && invade!(world)
-        colonizers = disperse!(world, settings["static"])
+        disperse!(world, settings["static"])
         # model output
         map(p -> simlog("Patch $(p.id): $(length(p.community)) individuals.", 'd'), world)
-        length(colonizers) >= 1 && simlog("t=$t: colonization by $colonizers", 'd')#recordcolonizers(colonizers, settings, t)
         if settings["lineages"]
             recordstatistics(world)
             recordlineages(world, t)
