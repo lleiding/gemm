@@ -34,6 +34,7 @@ mutable struct Patch
     prec::Float64 # precipitation (no physiological effect, just a niche)
     nicheb::Float64 # additional niche
     community::Array{Individual, 1}
+    seedbank::Array{Individual, 1}
     invasible::Bool
     isolated::Bool
     initpop::Bool # initialise with a population
