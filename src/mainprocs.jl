@@ -239,7 +239,6 @@ end
 Dispersal of individuals within world (array of patches) `w`
 """
 function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additional border conditions, refactorize
-    colonizers = ""
     for patch in world
         idx = 1
         while idx <= size(patch.community,1)
@@ -266,14 +265,12 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
                     originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated origin patch
                     targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated target patch
                     (!originisolated && !targetisolated) && push!(world[destination].community, indleft) # new independent individual
-                    !patch.isisland && world[destination].isisland && (colonizers *= indleft.lineage * ",")
                 end
                 patch.isisland && (idx -= 1)
             end
             idx += 1
         end
     end
-    colonizers
 end
 
 function compete!(patch::Patch)
