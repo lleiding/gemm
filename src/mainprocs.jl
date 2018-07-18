@@ -53,14 +53,15 @@ end
 function checkviability!(community::Array{Individual, 1})
     idx=1
     while idx <= size(community,1)
+        reason = ""
         dead = false
-        community[idx].size <= 0 && (dead = true)
-        any(collect(values(community[idx].traits)) .< 0) && (dead = true)
-        community[idx].traits["repsize"] <= community[idx].traits["seedsize"] && (dead = true)
-        community[idx].fitness < 0 && (dead = true)
-        traitsexist(community[idx].traits, settings["traitnames"])
+        community[idx].size <= 0 && (dead = true) && (reason *= "size ")
+        any(collect(values(community[idx].traits)) .< 0) && (dead = true) && (reason *= "traitvalues ")
+        community[idx].traits["repsize"] <= community[idx].traits["seedsize"] && (dead = true) && (reason *= "seed/rep ")
+        community[idx].fitness < 0 && (dead = true) && (reason *= "fitness ")
+        !traitsexist(community[idx].traits, settings["traitnames"]) && (dead = true) && (reason *= "missingtrait ")
         if dead
-            simlog("Individual not viable. Being killed.", 'w')
+            simlog("Individual not viable: $reason. Being killed.", 'w')
             splice!(community,idx)
             continue
         end
@@ -313,11 +314,9 @@ function reproduce!(world::Array{Patch,1}, patch::Patch) #TODO: refactorize!
                     idx += 1
                     continue
                 end
-                posspartners = findposspartners(world, patch.community[idx], patch.location) # this effectively controls frequency of reproduction
+                partner = findposspartner(patch, patch.community[idx])
                 # <<< XXX There's a bug in here somewhere - "come out, come out, where ever you are!"
-                # length(posspartners) == 0 && push!(posspartners, patch.community[idx]) # selfing if no partners # CAVE!
-                if length(posspartners) > 0
-                    partner = rand(posspartners)
+                if partner != nothing
                     parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
                     if parentmass <= 0
                         idx += 1 #splice!(patch.community, idx)
