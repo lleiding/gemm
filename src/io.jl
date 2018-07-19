@@ -114,7 +114,7 @@ function parseconfig(configfilename::String)
         elseif c[1] in keys(defaults)
             value = parse(c[2])
             if !isa(value, typeof(defaults[c[1]]))
-                simlog("$(c[1]): expected $(typeof(settings[c[1]])), got $(typeof(value)).", settings, 'w')
+                simlog("$(c[1]): expected $(typeof(defaults[c[1]])), got $(typeof(value)).", settings, 'w')
             end
             settings[c[1]] = value
         else
@@ -397,9 +397,9 @@ Write a log message to STDOUT/STDERR and the specified logfile
 (if logging is turned on in the settings).
 Categories: d (debug), i (information, default), w (warn), e (error)
 """
-function simlog(msg, settings::Dict{String, Any}, category='i', logfile="simulation.log", onlylog=false)
+function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile="simulation.log", onlylog=false)
     (isa(category, String) && length(category) == 1) && (category = category[1])
-    function logprint(msg, stderr=false)
+    function logprint(msg::String, settings::Dict{String, Any}, stderr=false)
         if !(settings["quiet"] || onlylog)
             stderr ? iostr = STDERR : iostr = STDOUT
             println(iostr, msg)
@@ -413,11 +413,11 @@ function simlog(msg, settings::Dict{String, Any}, category='i', logfile="simulat
     if category == 'i'
         logprint(msg)
     elseif category == 'd'
-        settings["debug"] && logprint("DEBUG: "*string(msg))
+        settings["debug"] && logprint("DEBUG: "*string(msg), settings)
     elseif category == 'w'
-        logprint("WARNING: "*string(msg), true)
+        logprint("WARNING: "*string(msg), settings, true)
     elseif category == 'e'
-        logprint("ERROR: "*string(msg), true)
+        logprint("ERROR: "*string(msg), settings, true)
         exit(1)
     else
         log("Invalid log category $category.", category='w')
