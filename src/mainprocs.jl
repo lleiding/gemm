@@ -1,35 +1,38 @@
 # Main processes for GeMM
 
+function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any})
+    for trait in traits
+        traitname = settings["traitnames"][trait.nameindex]
+        (contains(traitname, "mutprob") && mutationrate != 0) && continue
+        contains(traitname, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
+        oldvalue = trait.value
+        contains(traitname, "tempopt") && (oldvalue -= 273)
+        while oldvalue <= 0 # make sure sd of Normal dist != 0
+            oldvalue = abs(rand(Normal(0,0.01)))
+        end
+        newvalue = oldvalue + rand(Normal(0, oldvalue/phylconstr)) # CAVE: maybe handle temp + prec separately
+        newvalue < 0 && (newvalue=abs(newvalue))
+        (newvalue > 1 && contains(traitname,"prob")) && (newvalue=1)
+        while newvalue <= 0 #&& contains(trait.name,"mut")
+            newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
+        end
+        contains(traitname, "tempopt") && (newvalue += 273)
+        trait.value = newvalue
+    end
+end
+
 function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
-    prob = ind.traits["mutprob"]
     for chrm in ind.genome
         for idx in eachindex(chrm.genes)
             charseq = collect(num2seq(chrm.genes[idx].sequence))
             for i in eachindex(charseq)
-                if rand() <= prob * exp(-act/(boltz*temp))
+                if rand() <= ind.traits["mutprob"] * exp(-act/(boltz*temp))
                     newbase = rand(collect("acgt"),1)[1]
                     while newbase == charseq[i]
                         newbase = rand(collect("acgt"),1)[1]
                     end
                     charseq[i] = newbase
-                    for trait in chrm.genes[idx].codes
-                        traitname = settings["traitnames"][trait.nameindex]
-                        (contains(traitname, "mutprob") && mutationrate != 0) && continue
-                        contains(traitname, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
-                        oldvalue = trait.value
-                        contains(traitname, "tempopt") && (oldvalue -= 273)
-                        while oldvalue <= 0 # make sure sd of Normal dist != 0
-                            oldvalue = abs(rand(Normal(0,0.01)))
-                        end
-                        newvalue = oldvalue + rand(Normal(0, oldvalue/phylconstr)) # CAVE: maybe handle temp + prec separately
-                        newvalue < 0 && (newvalue=abs(newvalue))
-                        (newvalue > 1 && contains(traitname,"prob")) && (newvalue=1)
-                        while newvalue <= 0 #&& contains(trait.name,"mut")
-                            newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
-                        end
-                        contains(traitname, "tempopt") && (newvalue += 273)
-                        trait.value = newvalue
-                    end
+                    mutate!(chrm.genes[idx].codes, settings)
                 end
             end
             chrm.genes[idx].sequence = seq2num(String(charseq))
