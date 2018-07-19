@@ -293,35 +293,30 @@ end
 Reproduction of individuals in a patch `p`
 """
 function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
-    traitnames = settings["traitnames"]
     identifyAdults!(patch)
-    idx = 1
-    temp = patch.temp
-        while idx <= size(patch.community,1)
-        if !patch.community[idx].marked && patch.community[idx].age > 0
-            currentmass = patch.community[idx].size
-            seedsize = patch.community[idx].traits["seedsize"]
-            if currentmass >= patch.community[idx].traits["repsize"]
-                reptol = patch.community[idx].traits["reptol"]
-                metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*temp))
-                noffs = rand(Poisson(metaboffs))# * patch.community[idx].fitness)) # add some stochasticity
+    for ind in patch.community
+        if !ind.marked && ind.age > 0
+            currentmass = ind.size
+            seedsize = ind.traits["seedsize"]
+            if currentmass >= ind.traits["repsize"]
+                reptol = ind.traits["reptol"]
+                metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*patch.temp))
+                noffs = rand(Poisson(metaboffs))# * ind.fitness)) # add some stochasticity
                 if noffs < 1
                     simlog("0 offspring chosen", settings, 'd')
-                    idx += 1
                     continue
                 end
-                partner = findposspartner(patch, patch.community[idx], traitnames)
+                partner = findposspartner(patch, ind, settings["traitnames"])
                 if partner != nothing
                     parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
                     if parentmass <= 0
-                        idx += 1 #splice!(patch.community, idx)
                         continue
                     else
-                        patch.community[idx].size = parentmass
+                        ind.size = parentmass
                     end
                     for i in 1:noffs # pmap? this loop could be factorized!
                         partnergenome = meiosis(partner.genome, false) # offspring have different genome!
-                        mothergenome = meiosis(patch.community[idx].genome, true)
+                        mothergenome = meiosis(ind.genome, true)
                         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
                         genome = vcat(partnergenome,mothergenome)
                         traits = chrms2traits(genome, settings["traitnames"])
@@ -329,13 +324,12 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                         marked = true
                         fitness = 0.0
                         newsize = seedsize
-                        ind = Individual(patch.community[idx].lineage, genome,traits,age,marked,fitness,newsize)
+                        ind = Individual(ind.lineage, genome,traits,age,marked,fitness,newsize)
                         push!(patch.seedbank, ind) # maybe actually deepcopy!?
                     end
                 end
             end
         end
-        idx += 1
     end
     checkviability!(patch.seedbank, settings)
     simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
