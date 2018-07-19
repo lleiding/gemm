@@ -19,6 +19,8 @@ export
     # types:
     Patch,
     # functions:
+    defaultSettings,
+    parseconfig,
     simlog,
     getsettings,
     setupdatadir,
