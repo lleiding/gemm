@@ -206,8 +206,8 @@ function identifyAdults!(patch::Patch)
     patch.whoiswho = adultspeciesidx
 end
 
-function iscompatible(mate::Individual, ind::Individual)
-    compatidx = findin(settings["traitnames"], ["compat"])[1]
+function iscompatible(mate::Individual, ind::Individual, traitnames::Array{String, 1})
+    compatidx = findin(traitnames, ["compat"])[1]
     tolerance = ind.traits["reptol"]
     indgene = ""
     for chrm in ind.genome
@@ -234,15 +234,15 @@ function iscompatible(mate::Individual, ind::Individual)
     true
 end
 
-function findposspartner(patch::Patch, ind::Individual)
-    ind.isnew = true
+function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String, 1})
+    ind.marked = true
     posspartner = nothing
     communityidxs = patch.whoiswho[ind.lineage]
     startidx = rand(1:length(communityidxs))
     mateidx = startidx
     while true
         mate = patch.community[communityidxs[mateidx]]
-        if !mate.isnew && iscompatible(mate, ind)
+        if !mate.marked && iscompatible(mate, ind, traitnames)
             posspartner = mate
             break
         end
@@ -250,11 +250,11 @@ function findposspartner(patch::Patch, ind::Individual)
         mateidx > length(communityidxs) && (mateidx = 1)
         mateidx == startidx && break
     end
-    ind.isnew = false
+    ind.marked = false
     posspartner 
 end
 
-function createtraits() #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     #TODO move traits to constants.jl
     traitnames = settings["traitnames"]
     traits = Trait[]
@@ -380,12 +380,12 @@ function createchrs(nchrs::Int,genes::Array{Gene,1})
     chromosomes
 end
 
-function createind()
+function createind(settings::Dict{String, Any})
     lineage = randstring(4)
     meangenes = length(settings["traitnames"])
     ngenes = rand(Poisson(meangenes))
     ngenes < 1 && (ngenes = 1)
-    traits = createtraits()
+    traits = createtraits(settings)
     genes = creategenes(ngenes,traits)
     randchrms = rand(1:length(genes))
     if settings["linkage"] == "none"

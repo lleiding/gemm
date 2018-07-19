@@ -1,12 +1,12 @@
 # initialisation functions for GeMM
 
-function genesis()
+function genesis(settings::Dict{String, Any})
     community = Individual[]
     totalmass = 0.0
     ttl = 50
     while true
         # Create a new species and calculate its population size
-        newind = createind()
+        newind = createind(settings)
         if contains(settings["initpopsize"], "metabolic")
             # population size determined by adult size and temperature niche optimum
             popsize = round(fertility * newind.traits["repsize"]^(-1/4) *
@@ -18,12 +18,12 @@ function genesis()
         elseif contains(settings["initpopsize"], "minimal")
             popsize = 2 #Takes two to tangle ;-) #XXX No reproduction occurs!
         else
-            simlog("Invalid value for `initpopsize`: $(settings["initpopsize"])", 'e')
+            simlog("Invalid value for `initpopsize`: $(settings["initpopsize"])", settings, 'e')
         end
         # prevent an infinity loop when the cellsize is very small
         if popsize < 2
             if ttl == 0
-                simlog("This cell might be too small to hold a community.", 'w')
+                simlog("This cell might be too small to hold a community.", settings, 'w')
                 break
             else
                 ttl -= 1
@@ -34,7 +34,7 @@ function genesis()
         popmass = popsize * newind.size
         if totalmass + popmass > settings["cellsize"] # stop loop if cell is full
             if totalmass >= settings["cellsize"]*0.75 #make sure the cell is full enough
-                simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", 'd') #DEBUG
+                simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", settings, 'd') #DEBUG
                 break
             else
                 continue
@@ -42,18 +42,18 @@ function genesis()
         end
         # Initialize the new population
         totalmass += popmass
-        simlog("Initializing lineage $(newind.lineage) with $popsize individuals.", 'd') #DEBUG
+        simlog("Initializing lineage $(newind.lineage) with $popsize individuals.", settings, 'd') #DEBUG
         for i in 1:popsize
             !settings["static"] && (newind = deepcopy(newind))
             push!(community, newind)
         end
     end
-    simlog("Patch initialized with $(length(community)) individuals.", 'd') #DEBUG
+    simlog("Patch initialized with $(length(community)) individuals.", settings, 'd') #DEBUG
     community
 end
 
-function createworld(maptable::Array{Array{String,1},1})
-    simlog("Creating world...")
+function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String, Any})
+    simlog("Creating world...", settings)
     world = Patch[]
     for entry in maptable
         size(entry,1) < 3 && simlog("please check your map file for incomplete or faulty entries. \n
@@ -61,13 +61,13 @@ Each line must contain patch information with at least \n
 \t - a unique integer ID, \n
 \t - an integer x coordinate, \n
 \t - an integer y coordinate, \n
-separated by a whitespace character (<ID> <x> <y>).", 'e')
+separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
         # create the basic patch
         id = parse(Int, entry[1])
         xcord = parse(Int, entry[2])
         ycord = parse(Int, entry[3])
         area = settings["cellsize"]
-        simlog("Creating patch $id at $xcord/$ycord, size $area", 'd') #DEBUG
+        simlog("Creating patch $id at $xcord/$ycord, size $area", settings, 'd') #DEBUG
         # XXX the 'global' here is a hack so that I can use eval() later on
         # (this always works on the global scope)
         global newpatch = Patch(id, (xcord, ycord), area)
@@ -76,7 +76,7 @@ separated by a whitespace character (<ID> <x> <y>).", 'e')
             varval = split(p, '=')
             var = varval[1]
             if !(var in map(string, fieldnames(Patch)))
-                simlog("Unrecognized patch parameter $var.", 'w')
+                simlog("Unrecognized patch parameter $var.", settings, 'w')
                 continue
             elseif length(varval) < 2
                 val = true # if no value is specified, assume 'true'
@@ -89,13 +89,14 @@ separated by a whitespace character (<ID> <x> <y>).", 'e')
                 try
                     val = convert(vartype, val)
                 catch
-                    simlog("Invalid patch parameter type $var: $val", 'w')
+                    simlog("Invalid patch parameter type $var: $val", settings, 'w')
                     continue
                 end
             end
             eval(parse("newpatch."*string(var)*" = $val"))
         end
-        newpatch.initpop && append!(newpatch.community, genesis())
+        (newpatch.initpop && settings["initadults"]) && append!(newpatch.community, genesis(settings))
+        (newpatch.initpop && !settings["initadults"]) && append!(newpatch.seedbank, genesis(settings))
         push!(world, newpatch)
         global newpatch = nothing #clear memory
     end
@@ -104,7 +105,7 @@ end
 
 function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},cellsize::Float64)
     #TODO: add functionality to remove patches!
-    simlog("Updating world...")
+    simlog("Updating world...", settings)
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
                             Each line must contain patch information with at least \n
@@ -119,10 +120,10 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
         # (this always works on the global scope)
         idx = find(x->x.id == id, world)
         if length(idx) == 0
-            isnew = true
+            marked = true
             global newpatch = Patch(id, (xcord, ycord), cellsize)
         else
-            isnew = false
+            marked = false
             global newpatch = world[idx[1]]
         end
         # parse other parameter options
@@ -130,7 +131,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
             varval = split(p, '=')
             var = varval[1]
             if !(var in map(string, fieldnames(Patch)))
-                simlog("Unrecognized patch parameter $var.", 'w')
+                simlog("Unrecognized patch parameter $var.", settings, 'w')
                 continue
             elseif length(varval) < 2
                 val = true # if no value is specified, assume 'true'
@@ -143,13 +144,13 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
                 try
                     val = convert(vartype, val)
                 catch
-                    simlog("Invalid patch parameter type $var: $val", 'w')
+                    simlog("Invalid patch parameter type $var: $val", settings, 'w')
                     continue
                 end
             end
             eval(parse("newpatch."*string(var)*" = $val"))
         end
-        if isnew
+        if marked
             push!(world, newpatch)
             global newpatch = nothing #clear memory
         end

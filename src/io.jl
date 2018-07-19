@@ -31,7 +31,6 @@ end
 
 
 function parsecommandline()
-    defaults = defaultSettings()
     s = ArgParseSettings()
     @add_arg_table s begin
         "--seed", "-s"
@@ -110,27 +109,27 @@ function parseconfig(configfilename::String)
     defaults = defaultSettings()
     for c in config
         if length(c) != 2
-            simlog("Bad config file syntax: $c", 'w')
+            simlog("Bad config file syntax: $c", settings, 'w')
         elseif c[1] in keys(defaults)
             value = parse(c[2])
             if !isa(value, typeof(defaults[c[1]]))
-                simlog("$(c[1]): expected $(typeof(settings[c[1]])), got $(typeof(value)).", 'w')
+                simlog("$(c[1]): expected $(typeof(defaults[c[1]])), got $(typeof(value)).", settings, 'w')
             end
             settings[c[1]] = value
         else
-            simlog(c[1]*" is not a recognized parameter!", 'w') # XXX maybe parse anyway
+            simlog(c[1]*" is not a recognized parameter!", settings, 'w') # XXX maybe parse anyway
         end
     end
     settings
 end
 
-function readmapfile(mapfilename::String)
-    simlog("Reading map file $mapfilename.")
+function readmapfile(mapfilename::String, settings::Dict{String, Any})
+    simlog("Reading map file $mapfilename.", settings)
     mapfile = basicparser(mapfilename)
     timesteps = parse(mapfile[1][1])
     if length(mapfile[1]) != 1 || !isa(timesteps, Integer)
         timesteps = 1000
-        simlog("Invalid timestep information in the mapfile. Setting timesteps to 1000.", 'w')
+        simlog("Invalid timestep information in the mapfile. Setting timesteps to 1000.", settings, 'w')
     end
     return timesteps,mapfile[2:end]
 end
@@ -193,7 +192,7 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
             print(io, counter, sep)
             print(io, ind.lineage, sep)
             print(io, ind.age, sep)
-            ind.isnew ? print(io, 1, sep) : print(io, 0, sep)
+            ind.marked ? print(io, 1, sep) : print(io, 0, sep)
             print(io, ind.fitness, sep)
             print(io, ind.size, sep)
             print(io, length(ind.genome), sep)
@@ -263,7 +262,7 @@ function setupdatadir(settings::Dict{String, Any})
         setupdatadir(settings)
     else
         mkpath(settings["dest"])
-        simlog("Setting up output directory $(settings["dest"])")
+        simlog("Setting up output directory $(settings["dest"])", settings)
         writesettings(settings)
         if haskey(settings, "maps")
             for m in settings["maps"]
@@ -300,17 +299,17 @@ end
 writes simulation output from `world` to separate table and fasta files.
 `timestep` and `setting` information is used for file name creation.
 """
-function writedata(world::Array{Patch,1}, mapfile::String, timestep::Int)
+function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile::String, timestep::Int)
     basename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"])
     basename = joinpath(settings["dest"], basename)
     filename = basename * ".tsv"
-    simlog("Writing data \"$filename\"")
+    simlog("Writing data \"$filename\"", settings)
     open(filename, "w") do file
         dumpinds(world, file, "\t", settings["static"] && timestep > 1)
     end
     if settings["fasta"]
         filename = basename * ".fa"
-        simlog("Writing fasta \"$filename\"")
+        simlog("Writing fasta \"$filename\"", settings)
         open(filename, "w") do file
             makefasta(world, file, "", settings["static"] && timestep > 1)
         end
@@ -323,11 +322,11 @@ end
 writes raw julia data of the complete simulation state from `world` to file in the output directory.
 `setting` and `t` (timestep) information is used for file name creation.
 """
-function writerawdata(world::Array{Patch,1}, mapfile::String, timestep::Int)
+function writerawdata(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile::String, timestep::Int)
     filename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"]) * ".jl"
     filename = joinpath(settings["dest"], filename)
     touch(filename)
-    simlog("Writing raw data to \"$filename\"...")
+    simlog("Writing raw data to \"$filename\".", settings)
     if timestep == 1
         open(filename, "w") do file
             println(file, world)
@@ -346,12 +345,12 @@ end
 writes raw julia data of the colonizing individuals `colos` at timestep `t` to file.
 `seed` and `setting` information is used for file name creation.
 """
-function recordcolonizers(colonizers::Array{Individual, 1}, mapfile::String, timestep::Int)
+function recordcolonizers(colonizers::Array{Individual, 1}, settings::Dict{String, Any}, mapfile::String, timestep::Int)
     record = (timestep, colonizers)
     filename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"] * "_colonizers.jl")
     filename = joinpath(settings["dest"], filename)
     touch(filename)
-    simlog("Colonisation. Writing data to ", filename, "...")
+    simlog("Colonisation. Writing data to \"$filename\".", settings)
     open(filename, "a") do file
         println(file, record)
     end
@@ -361,17 +360,17 @@ end
     recordstatistics(w)
 Write out world properties to the log file for later analysis.
 """
-function recordstatistics(world::Array{Patch,1})
+function recordstatistics(world::Array{Patch,1}, settings::Dict{String, Any})
     if !isfile(joinpath(settings["dest"], "diversity.log"))
-        simlog("population,freespace,lineages,alpha,beta,gamma",
+        simlog("population,freespace,lineages,alpha,beta,gamma", settings,
                'i', "diversity.log", true)
     end
     popsize = sum(x -> length(x.community), world)
     lineages = unique(reduce(vcat, map(p -> collect(keys(p.whoiswho)), world)))
     div = round.(diversity(world),3)
     space = freespace(world)
-    simlog("Population size: $popsize, lineages: $(length(lineages))")
-    simlog("$popsize,$space,$(length(lineages)),$(div[1]),$(div[2]),$(div[3])",
+    simlog("Population size: $popsize, lineages: $(length(lineages))", settings)
+    simlog("$popsize,$space,$(length(lineages)),$(div[1]),$(div[2]),$(div[3])", settings,
            'i', "diversity.log", true)
 end
 
@@ -379,13 +378,13 @@ end
     recordlineages(w)
 Save the abundance of each lineage per patch
 """
-function recordlineages(world::Array{Patch,1},timestep::Int)
+function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
     if !isfile(joinpath(settings["dest"], "lineages.log"))
-        simlog("t,X,Y,lineage,population", 'i', "lineages.log", true)
+        simlog("t,X,Y,lineage,population", settings, 'i', "lineages.log", true)
     end
     for p in world
         for l in keys(p.whoiswho)
-            simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(p.whoiswho[l]))",
+            simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(p.whoiswho[l]))", settings,
                    'i', "lineages.log", true)
         end
     end    
@@ -397,9 +396,9 @@ Write a log message to STDOUT/STDERR and the specified logfile
 (if logging is turned on in the settings).
 Categories: d (debug), i (information, default), w (warn), e (error)
 """
-function simlog(msg, category='i', logfile="simulation.log", onlylog=false)
+function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile="simulation.log", onlylog=false)
     (isa(category, String) && length(category) == 1) && (category = category[1])
-    function logprint(msg, stderr=false)
+    function logprint(msg::String, settings::Dict{String, Any}, stderr=false)
         if stderr || !(settings["quiet"] || onlylog)
             stderr ? iostr = STDERR : iostr = STDOUT
             println(iostr, msg)
@@ -411,13 +410,13 @@ function simlog(msg, category='i', logfile="simulation.log", onlylog=false)
         end
     end
     if category == 'i'
-        logprint(msg)
+        logprint(msg, settings)
     elseif category == 'd'
-        settings["debug"] && logprint("DEBUG: "*string(msg))
+        settings["debug"] && logprint("DEBUG: "*string(msg), settings)
     elseif category == 'w'
-        logprint("WARNING: "*string(msg), true)
+        logprint("WARNING: "*string(msg), settings, true)
     elseif category == 'e'
-        logprint("ERROR: "*string(msg), true)
+        logprint("ERROR: "*string(msg), settings, true)
         exit(1)
     else
         simlog("Invalid log category $category.", 'w')

@@ -5,6 +5,8 @@
 #
 # contains all custom types and functions necessary for eco-evo-env speciation island model
 
+__precompile__()
+
 module GeMM
 
 
@@ -14,11 +16,11 @@ using
 
 
 export
-    #constants:
-    settings,
     # types:
     Patch,
     # functions:
+    defaultSettings,
+    parseconfig,
     simlog,
     getsettings,
     setupdatadir,
@@ -40,6 +42,8 @@ export
     mutate!,
     createworld,
     updateworld!
+
+include("defaults.jl")
 
 include("types.jl")
 
