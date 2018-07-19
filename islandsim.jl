@@ -46,19 +46,28 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile
     end
 end
 
-function runit()
+function runit(prerun::Bool = false)
     settings = getsettings()
+    if prerun
+        settings = defaultSettings()
+        settings["maps"] = [settings["maps"][1]]
+        println(settings["maps"])
+    end
     srand(settings["seed"])
-    setupdatadir(settings)
+    !prerun && setupdatadir(settings)
     world = Patch[]
     for i in 1:length(settings["maps"])
         timesteps,maptable = readmapfile(settings["maps"][i], settings)
+        if prerun
+            timesteps = 10
+            maptable = [["0", "0", "0", "initpop"], ["1", "9", "0", "isisland"]]
+        end
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
         simulation!(world, settings, settings["maps"][i], timesteps)
-        writedata(world, settings, settings["maps"][i], -1)
+        !prerun && writedata(world, settings, settings["maps"][i], -1)
     end
 end
 
-@time runit()
+@time runit(true)
 @time runit()
