@@ -400,7 +400,7 @@ Categories: d (debug), i (information, default), w (warn), e (error)
 function simlog(msg, category='i', logfile="simulation.log", onlylog=false)
     (isa(category, String) && length(category) == 1) && (category = category[1])
     function logprint(msg, stderr=false)
-        if !(settings["quiet"] || onlylog)
+        if stderr || !(settings["quiet"] || onlylog)
             stderr ? iostr = STDERR : iostr = STDOUT
             println(iostr, msg)
         end
