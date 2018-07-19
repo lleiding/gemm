@@ -411,7 +411,7 @@ function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile=
         end
     end
     if category == 'i'
-        logprint(msg)
+        logprint(msg, settings)
     elseif category == 'd'
         settings["debug"] && logprint("DEBUG: "*string(msg), settings)
     elseif category == 'w'
