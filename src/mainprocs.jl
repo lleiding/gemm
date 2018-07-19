@@ -289,11 +289,10 @@ function compete!(world::Array{Patch,1}, static::Bool = true)
 end
 
 """
-    reproduce!(w, p)
-Reproduction of individuals in a patch `p` whithin a world (array of patches) `w`
+    reproduce!(p, settings)
+Reproduction of individuals in a patch `p`
 """
-function reproduce!(world::Array{Patch,1}, patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
-    #XXX Somewhere between line 306 and 327, patch.whoiswho becomes out of sync... >>>
+function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
     traitnames = settings["traitnames"]
     identifyAdults!(patch)
     idx = 1
@@ -312,7 +311,6 @@ function reproduce!(world::Array{Patch,1}, patch::Patch, settings::Dict{String, 
                     continue
                 end
                 partner = findposspartner(patch, patch.community[idx], traitnames)
-                # <<< XXX There's a bug in here somewhere - "come out, come out, where ever you are!"
                 if partner != nothing
                     parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
                     if parentmass <= 0
@@ -345,6 +343,6 @@ end
 
 function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
-        (patch.isisland || !settings["static"]) && reproduce!(world, patch, settings) # pmap(!,patch) ???
+        (patch.isisland || !settings["static"]) && reproduce!(patch, settings) # pmap(!,patch) ???
     end
 end
