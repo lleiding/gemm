@@ -28,7 +28,7 @@ export
     recordstatistics,
     recordlineages,
     readmapfile,
-    writerawdata,
+    writephylo,
     writedata,
     checkviability!,
     establish!,

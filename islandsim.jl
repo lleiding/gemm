@@ -43,6 +43,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile
             recordlineages(world, settings, t)
         end
         mod(t, settings["outfreq"]) == 0 && writedata(world, settings, mapfile, t)
+        settings["phylo"] && writephylo(world, settings, t)
     end
 end
 

@@ -339,23 +339,6 @@ function writerawdata(world::Array{Patch,1}, settings::Dict{String, Any}, mapfil
     end
 end
 
-#TODO: complete docstring!
-"""
-    recordcolonizers(colos, settings, t)
-writes raw julia data of the colonizing individuals `colos` at timestep `t` to file.
-`seed` and `setting` information is used for file name creation.
-"""
-function recordcolonizers(colonizers::Array{Individual, 1}, settings::Dict{String, Any}, mapfile::String, timestep::Int)
-    record = (timestep, colonizers)
-    filename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"] * "_colonizers.jl")
-    filename = joinpath(settings["dest"], filename)
-    touch(filename)
-    simlog("Colonisation. Writing data to \"$filename\".", settings)
-    open(filename, "a") do file
-        println(file, record)
-    end
-end
-
 """
     recordstatistics(w)
 Write out world properties to the log file for later analysis.
@@ -389,6 +372,28 @@ function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, time
         end
     end    
 end
+
+"""
+    writephylo(w, settings, t)
+Save the phylogeny of individuals currently in world `w`.
+"""
+function writephylo(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
+    if !isfile(joinpath(settings["dest"], "phylo.tsv"))
+        open(joinpath(settings["dest"], "phylo.tsv"), "w") do f
+            println(f, "t\tid\tfirstparent\tsecondparent")
+        end
+    end
+    open(joinpath(settings["dest"], "phylo.tsv"), "a") do f
+        for p in world
+            for i in 1:size(p.phylo, 1)
+                print(f, timestep, "\t")
+                print(f, p.phylo[i, 1], "\t")
+                print(f, p.phylo[i, 2], "\t")
+                println(f, p.phylo[i, 3])
+            end
+        end
+    end
+end    
 
 """
     simlog(msg, logfile, category)

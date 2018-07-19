@@ -328,7 +328,8 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                         marked = true
                         fitness = 0.0
                         newsize = seedsize
-                        ind = Individual(ind.lineage, genome,traits,age,marked,fitness,newsize)
+                        ind = Individual(ind.lineage, genome,traits,age,marked,fitness,
+                                         newsize, rand(Int), (ind.id, partner.id))
                         push!(patch.seedbank, ind) # maybe actually deepcopy!?
                     end
                 end

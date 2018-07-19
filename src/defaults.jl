@@ -7,6 +7,7 @@ function defaultSettings()
          "dest" => string(Dates.today()), # output folder name
          "outfreq" => 100, # output frequency
          "fasta" => false, # record fasta data?
+         "phylo" => false, # record phylogeny?
          "lineages" => false, # record lineage and diversity data?
          "logging" => false, # write output to logfile
          "quiet" => false, # don't write output to screen
