@@ -34,7 +34,7 @@ end
 function traitsexist(traits::Dict{String, Float64}, traitnames::Array{String, 1})
     for trait in traitnames
         if !haskey(traits, trait)
-            simlog("Missing trait \"", trait, "\". Individual might be killed.", 'w')
+            simlog("Missing trait $trait. Individual might be killed.", 'w')
             return false
         end
     end
@@ -45,7 +45,7 @@ function traitsexist(ind::Individual, traitnames::Array{String, 1})
     # FIXME If a trait doesn't exist, we need an error
     for trait in traitnames
         if !haskey(ind.traits, trait)
-            simlog("Individual is missing trait \"", trait, "\". Might be killed.", 'w')
+            simlog("Individual is missing trait $trait. Might be killed.", 'w')
             return false
         end
     end
@@ -54,7 +54,7 @@ end
 
 function traitsexist(traits::Dict{String, Float64}, traitname::String)
     if !haskey(traits, traitname)
-        simlog("Missing trait \"", traitname, "\". Individual might be killed.", 'w')
+        simlog("Missing trait $traitname. Individual might be killed.", 'w')
         return false
     end
     true
@@ -62,7 +62,7 @@ end
 
 function traitsexist(ind::Individual, traitname::String)
     if !haskey(ind.traits, traitname)
-        simlog("Individual is missing trait \"", traitname, "\". Might be killed.", 'w')
+        simlog("Individual is missing trait $traitname. Might be killed.", 'w')
         return false
     end
     true
