@@ -36,7 +36,6 @@ function defaultSettings()
                           "mutprob",
                           "precopt",
                           "prectol",
-                          "repradius",
                           "repsize",
                           "reptol",
                           "seedsize",
