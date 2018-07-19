@@ -5,10 +5,10 @@ function defaultSettings()
          "maps" => "", # comma-separated list of map files
          "config" => "simulation.conf", # configuration file name
          "dest" => string(Dates.today()), # output folder name
-         "outfreq" => 1000, # output frequency
-         "fasta" => true, # record fasta data?
+         "outfreq" => 100, # output frequency
+         "fasta" => false, # record fasta data?
          "lineages" => false, # record lineage and diversity data?
-         "logging" => true, # write output to logfile
+         "logging" => false, # write output to logfile
          "quiet" => false, # don't write output to screen
          "debug" => false, # write out debug statements
          # main model settings
@@ -19,7 +19,7 @@ function defaultSettings()
          "mutate" => true, # mutations occur
          "initadults" => false, # initialize organisms as adults
          "initpopsize" => "metabolic", # initialisation algorithm: metabolic/bodysize/minimal
-         "cellsize" => 20.0, # maximum biomass per hectare in tonnes (based on Clark et al. 2001)
+         "cellsize" => 20, # maximum biomass per hectare in tonnes (based on Clark et al. 2001) indicate gramm value as Float
          # invasion specific settings
          "propagule-pressure" => 0, # number of non-native individuals introduced per invasion event
          "global-species-pool" => 0, # size of the global species pool (invasion source)
