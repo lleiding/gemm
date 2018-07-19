@@ -42,7 +42,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile
             recordstatistics(world, settings)
             recordlineages(world, settings, t)
         end
-        (t == 1 || mod(t, settings["outfreq"]) == 0) && writedata(world, settings, mapfile, t)
+        mod(t, settings["outfreq"]) == 0 && writedata(world, settings, mapfile, t)
     end
 end
 
@@ -50,8 +50,9 @@ function runit(prerun::Bool = false)
     settings = getsettings()
     if prerun
         settings = defaultSettings()
-        settings["maps"] = [settings["maps"][1]]
-        println(settings["maps"])
+        settings["quiet"] = true
+        settings["maps"] = [getsettings()["maps"][1]]
+        settings["cellsize"] = 1.0e6
     end
     srand(settings["seed"])
     !prerun && setupdatadir(settings)
@@ -64,10 +65,11 @@ function runit(prerun::Bool = false)
         end
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
+        !prerun && writedata(world, settings, settings["maps"][i], 0)
         simulation!(world, settings, settings["maps"][i], timesteps)
         !prerun && writedata(world, settings, settings["maps"][i], -1)
     end
 end
 
-@time runit(true)
+runit(true)
 @time runit()
