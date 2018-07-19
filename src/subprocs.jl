@@ -381,6 +381,7 @@ function createchrs(nchrs::Int,genes::Array{Gene,1})
 end
 
 function createind(settings::Dict{String, Any})
+    id = rand(Int)
     lineage = randstring(4)
     meangenes = length(settings["traitnames"])
     ngenes = rand(Poisson(meangenes))
@@ -398,6 +399,6 @@ function createind(settings::Dict{String, Any})
     chromosomes = createchrs(nchrms,genes)
     traitdict = chrms2traits(chromosomes, settings["traitnames"])
     settings["initadults"] ? indsize = traitdict["repsize"] : indsize = traitdict["seedsize"]
-    Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize)
+    Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize, id)
 end
 
