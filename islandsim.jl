@@ -34,7 +34,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile
         reproduce!(world, settings)
         settings["mutate"] && mutate!(world, settings)
         checkviability!(world, settings)
-        0 < settings["burn-in"] < t && invade!(world)
+        0 < settings["burn-in"] < t && invade!(world, settings)
         disperse!(world, settings["static"])
         # model output
         map(p -> simlog("Patch $(p.id): $(length(p.community)) individuals.", settings, 'd'), world)
