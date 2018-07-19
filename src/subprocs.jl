@@ -382,6 +382,7 @@ end
 
 function createind(settings::Dict{String, Any})
     id = rand(Int)
+    parentid = (0, 0)
     lineage = randstring(4)
     meangenes = length(settings["traitnames"])
     ngenes = rand(Poisson(meangenes))
@@ -399,6 +400,6 @@ function createind(settings::Dict{String, Any})
     chromosomes = createchrs(nchrms,genes)
     traitdict = chrms2traits(chromosomes, settings["traitnames"])
     settings["initadults"] ? indsize = traitdict["repsize"] : indsize = traitdict["seedsize"]
-    Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize, id)
+    Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize, id, parentid)
 end
 
