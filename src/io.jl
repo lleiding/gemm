@@ -31,7 +31,6 @@ end
 
 
 function parsecommandline()
-    defaults = defaultSettings()
     s = ArgParseSettings()
     @add_arg_table s begin
         "--seed", "-s"
