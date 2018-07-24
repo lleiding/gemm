@@ -381,7 +381,8 @@ function createchrs(nchrs::Int,genes::Array{Gene,1})
 end
 
 function createind(settings::Dict{String, Any})
-    id = rand(Int)
+    id = rand(Int32)
+    rand(Int64)
     parentid = (0, 0)
     lineage = randstring(4)
     meangenes = length(settings["traitnames"])

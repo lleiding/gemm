@@ -141,18 +141,16 @@ Output all data of individuals in `world` as table to `io`. Columns are separate
 function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", onlyisland::Bool = false)
     header = true
     traitkeys = []
-    counter = 0
     for patch in world
         #XXX Sometimes, this only dumps three or four individuals, with a population of >10⁴!
         # (Should be fixed)
         lineage = ""
         for ind in patch.community
-            counter += 1
             # only one individual per species on a static mainland (should be the case anyway)
             (!patch.isisland && onlyisland && ind.lineage == lineage) && continue
             if header
                 #XXX Transfer to a dynamic system? (As in createworld()?)
-                print(io, "id", sep)
+                print(io, "patch_no", sep)
                 print(io, "xloc", sep)
                 print(io, "yloc", sep)
                 print(io, "temp", sep)
@@ -163,7 +161,7 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
                 print(io, "isolation", sep)
                 print(io, "invasible", sep)
                 print(io, "initpop", sep)
-                print(io, "counter", sep)
+                print(io, "id", sep)
                 print(io, "lineage", sep)
                 print(io, "age", sep)
                 print(io, "new", sep)
@@ -189,7 +187,7 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
             patch.isolated ? print(io, 1, sep) : print(io, 0, sep)
             patch.invasible ? print(io, 1, sep) : print(io, 0, sep)
             patch.initpop ? print(io, 1, sep) : print(io, 0, sep)
-            print(io, counter, sep)
+            print(io, ind.id, sep)
             print(io, ind.lineage, sep)
             print(io, ind.age, sep)
             ind.marked ? print(io, 1, sep) : print(io, 0, sep)
