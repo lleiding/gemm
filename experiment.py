@@ -39,9 +39,9 @@ constant_settings = {"cellsize":1,
 
 # These settings are varied (the first value is the default,
 # every combination of the rest is tested)
-varying_settings = {"maps":["invasion.map",
-                            "invasion_hot.map",
-                            "invasion_cold.map"],
+varying_settings = {"maps":['"invasion.map"',
+                            '"invasion_hot.map"',
+                            '"invasion_cold.map"'],
                     "propagule-pressure":[0,1,10],
                     "disturbance":[0,1,10]}
 
