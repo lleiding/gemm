@@ -173,10 +173,10 @@ function disturb!(patch::Patch, intensity::Int)
     deleteat!(patch.community, dead)
 end
 
-function disturb!(world::Array{Patch,1}, intensity::Int, static::Bool = true)
-    (intensity == 0) && return
+function disturb!(world::Array{Patch,1}, settings::Dict{String, Any})
+    (settings["disturbance"] == 0) && return
     for patch in world
-        (patch.isisland || !static) && disturb!(patch, intensity)
+        (patch.isisland || !settings["static"]) && disturb!(patch, settings["disturbance"])
     end
 end
 
