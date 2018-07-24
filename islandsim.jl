@@ -28,7 +28,7 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile
         establish!(world, settings["nniches"], settings["static"])
         compete!(world, settings["static"])
         survive!(world, settings["static"])
-        disturb!(world, settings["disturbance"], settings["static"])
+        disturb!(world, settings)
         grow!(world, settings["static"])
         compete!(world, settings["static"])
         reproduce!(world, settings)

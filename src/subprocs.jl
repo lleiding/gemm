@@ -152,7 +152,7 @@ end
 check if coordinates `x` and `y` lie within world `w` and correct if not,
 considering defined border conditions.
 """
-function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Float64)
+function checkborderconditions(world::Array{Patch,1}, xdest::Int, ydest::Int)
     xmin = minimum(map(x->x.location[1],world))
     xmax = maximum(map(x->x.location[1],world))
     ymin = minimum(map(x->x.location[2],world))
@@ -194,7 +194,7 @@ function checkborderconditions!(world::Array{Patch,1},xdest::Float64,ydest::Floa
         ydest < ymin && (ydest = ymax - outofy) # south: periodic
         xdest < xmin && (xdest = xmax - outofx) # west: periodic
     end
-    xdest,ydest
+    xdest, ydest
 end
 
 function identifyAdults!(patch::Patch)

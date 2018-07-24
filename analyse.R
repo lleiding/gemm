@@ -2,7 +2,7 @@
 # This is an analysis script for the island invasion model that creates
 # graphs of the total and per species populations over time.
 
-library(ggplot2)
+#library(ggplot2)
 
 # The working directory may be specified via the commandline, otherwise it
 # defaults to results/tests
@@ -13,7 +13,7 @@ outdir = paste0("results/", simname)
 # Plot the distribution of traits in the population at the given timestep (-1 => END)
 plotTraits = function(timestep=-1, toFile=TRUE) {
     print("Plotting traits...")
-    traitfile = grep(paste0("t", timestep), list.files(outdir), value=T)
+    traitfile = grep(paste0("t", timestep, "_"), list.files(outdir), value=T)
     if (length(traitfile) == 0) {
         # If the desired timestep doesn't exist, take the newest timestep we have
         timestep = (length(grep(".tsv", list.files(outdir), value=T))-1) * 10
@@ -25,13 +25,13 @@ plotTraits = function(timestep=-1, toFile=TRUE) {
         return()
     }
     ts = read.table(traitfilepath, header=T)
-    jpeg(paste0(outdir, "/", simname, "_traits.jpg"), height=720, width=1800)
+    jpeg(paste0(outdir, "/", simname, "_traits_t", timestep, ".jpg"), height=720, width=1800)
     boxplot(ts$fitness*100, log(ts$size), log(ts$seedsize), log(ts$repsize), ts$lnkgunits/10,
-            ts$ngenes/10, ts$temptol, ts$tempopt/100, ts$prectol, ts$precopt, ts$compat*10,
+            ts$ngenes/10, ts$temptol, ts$tempopt-293, ts$prectol, ts$precopt, ts$compat*10,
             ts$repradius*10, ts$dispmean, ts$dispshape,
             names=c("Fitness (x100)", "log(Size)", "log(Seed size)", "log(Reprod. size)",
                     "Chromosome (x0.1)", "Genes (x0.1)", "Temp. tolerance",
-                    "Temp. opt. (x0.01)", "Precip. tolerance",
+                    "Temp. opt. (-293)", "Precip. tolerance",
                     "Precip. optimum", "Compatibility (x10)", "Rep. radius (x10)",
                     "Dispersal mean", "Dispersal shape"))
     legend("top", c(paste("Individuals:", length(ts$counter)),
@@ -108,7 +108,7 @@ plotTimeSeries = function(step=1) {
 visualize = function(toFile=TRUE) {
     plotDiversity()
     plotTraits()
-    plotTimeSeries(500)
+    #plotTimeSeries(500)
 }
 
 # If the simname is given as 'all', process every folder in 'results'
