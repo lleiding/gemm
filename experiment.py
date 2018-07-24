@@ -20,10 +20,10 @@ if len(sys.argv) >= 3:
     replicates = int(sys.argv[2])
 
 # These settings stay constant throughout all simulation runs
-constant_settings = {"maps":'"invasion.map"',
+constant_settings = {"cellsize":1,
                      "outfreq":50,
                      "logging":"true",
-                     "debug":"false",
+                     "debug":"true", #default: false
                      "fasta":"false",
                      "lineages":"true",
                      "linkage":'"none"',
@@ -33,13 +33,15 @@ constant_settings = {"maps":'"invasion.map"',
                      "static":"false",
                      "mutate":"false",
                      "initadults":"true",
-                     "initpopsize":'"bodysize"',
+                     "initpopsize":'"metabolic"',
                      "burn-in": 1000,
                      "global-species-pool":100}
 
 # These settings are varied (the first value is the default,
 # every combination of the rest is tested)
-varying_settings = {"cellsize":[20, 5, 20],
+varying_settings = {"maps":["invasion.map",
+                            "invasion_hot.map",
+                            "invasion_cold.map"],
                     "propagule-pressure":[0,1,10],
                     "disturbance":[0,1,10]}
 
@@ -53,7 +55,7 @@ def slurm(config):
     else:
         print("Not on gaia, slurm is probably not available. Retaining job "+config)
 
-def write_config(config, cellsize, prop_pressure, disturbance, seed):
+def write_config(config, maps, prop_pressure, disturbance, seed):
     "Write out a config file with the given values"
     cf = open(config, 'w')
     cf.write("# Island speciation model for invasion experiments\n")
@@ -65,7 +67,7 @@ def write_config(config, cellsize, prop_pressure, disturbance, seed):
         cf.write(k + " " + str(constant_settings[k]) + "\n")
     cf.write("\n# Variable settings:\n")
     cf.write("seed "+str(seed)+"\n")
-    cf.write("cellsize "+str(cellsize)+"\n")
+    cf.write("maps "+str(maps)+"\n")
     cf.write("propagule-pressure "+str(prop_pressure)+"\n")
     cf.write("disturbance "+str(disturbance)+"\n")
     cf.close()
@@ -75,7 +77,7 @@ def run_defaults():
     global simname, replicates
     print("Running default simulation with "+str(replicates)+" replicates.")
     write_config(simname+".conf",
-                 varying_settings["cellsize"][0],
+                 varying_settings["maps"][0],
                  varying_settings["propagule-pressure"][0],
                  varying_settings["disturbance"][0], 0)
     i = 0
@@ -88,16 +90,18 @@ def run_experiment():
     global simname, replicates
     i = 0
     while i < replicates:
-        for cs in varying_settings["cellsize"][1:]:
+        for tm in varying_settings["maps"]:
             for pp in varying_settings["propagule-pressure"][1:]:
                 for db in varying_settings["disturbance"][1:]:
-                    spec = str(cs)+"CS_"+str(pp)+"PP_"+str(db)+"DB"
+                    if '_' in tm: temp = tm.split("_")[1].split(".")[0]
+                    else: temp = "default"
+                    spec = temp+"_"+str(pp)+"PP_"+str(db)+"DB"
                     print("Running simulation with specification "+spec+" for "
                           +str(replicates)+" replicates.")
                     seed = random.randint(0,10000)
                     runname = simname+"_r"+str(i+1)+"_"+spec
-                    write_config(runname+".conf", cs, pp, db, seed)
-                    write_config(runname+"_control.conf", cs, 0, db, seed)
+                    write_config(runname+".conf", tm, pp, db, seed)
+                    write_config(runname+"_control.conf", tm, 0, db, seed)
                     slurm(runname+".conf")
                     slurm(runname+"_control.conf")
         i = i + 1
