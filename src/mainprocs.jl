@@ -251,11 +251,11 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
             ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # ...follows original distribution
             xdest = patch.location[1]+xdir
             ydest = patch.location[2]+ydir
-            # !patch.isisland && checkborderconditions!(world,xdest,ydest)
+            !patch.isisland && checkborderconditions!(world,xdest,ydest)
             targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
             possdests = find(x->in(x.location,targets),world)
             static && filter!(x -> world[x].isisland, possdests) # disperse only to islands
-            if !static || patch.isisland
+            if !static
                 indleft = splice!(patch.seedbank,idx) # only remove individuals from islands!
             end
             if size(possdests,1) > 0 # if no viable target patch, individual dies
