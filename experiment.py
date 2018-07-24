@@ -45,6 +45,13 @@ varying_settings = {"maps":["invasion.map",
                     "propagule-pressure":[0,1,10],
                     "disturbance":[0,1,10]}
 
+def archive_code():
+    "Save the current codebase in a tar archive."
+    tarname = time.strftime("codebase_%d%b%y.tar.gz")
+    print("Archiving codebase in "+tarname)
+    cmd = "tar czf "+tarname+" README.md islandsim.jl experiment.py analyse.R src/*"
+    os.system(cmd)    
+
 def slurm(config):
     "Send a job to slurm"
     if "gaia" in os.uname().nodename:
@@ -108,6 +115,7 @@ def run_experiment():
     print("Done.")
 
 if __name__ == '__main__':
+    archive_code()
     if "default" in simname or (len(sys.argv) >= 4 and sys.argv[3] == "default"):
         run_defaults()
     else:
