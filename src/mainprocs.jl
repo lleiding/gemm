@@ -249,20 +249,19 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
             dispshape = patch.seedbank[idx].traits["dispshape"]
             xdir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # scaling so that geometric mean...
             ydir = rand([-1,1]) * rand(Logistic(dispmean,dispshape))/sqrt(2) # ...follows original distribution
-            xdest = patch.location[1]+xdir
-            ydest = patch.location[2]+ydir
-            # !patch.isisland && checkborderconditions!(world,xdest,ydest)
-            targets = unique([(floor(xdest),floor(ydest)),(ceil(xdest),floor(ydest)),(ceil(xdest),ceil(ydest)),(floor(xdest),ceil(ydest))])
-            possdests = find(x->in(x.location,targets),world)
-            static && filter!(x -> world[x].isisland, possdests) # disperse only to islands
+            xdest = patch.location[1] + Int(round(xdir))
+            ydest = patch.location[2] + Int(round(ydir))
+            !patch.isisland ? target = checkborderconditions(world, xdest, ydest) : target = (xdest, ydest)
+            possdest = find(x -> in(x.location, [target]), world)
+            static && filter!(x -> world[x].isisland, possdest) # disperse only to islands
             if !static || patch.isisland
                 indleft = splice!(patch.seedbank,idx) # only remove individuals from islands!
             end
-            if size(possdests,1) > 0 # if no viable target patch, individual dies
+            if length(possdest) > 0 # if no viable target patch, individual dies
                 if static && !patch.isisland
                     indleft = deepcopy(patch.seedbank[idx])
                 end
-                destination = rand(possdests)
+                destination = rand(possdest) # currently there is only one possible destination
                 originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated origin patch
                 targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated target patch
                 (!originisolated && !targetisolated) && push!(world[destination].community, indleft) # new independent individual
