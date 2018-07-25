@@ -302,7 +302,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                 metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*patch.temp))
                 noffs = rand(Poisson(metaboffs))# * ind.fitness)) # add some stochasticity
                 if noffs < 1
-                    simlog("0 offspring chosen", settings, 'd')
+                    #simlog("0 offspring chosen", settings, 'd')
                     continue
                 end
                 partner = findposspartner(patch, ind, settings["traitnames"])

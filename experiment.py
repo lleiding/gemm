@@ -32,8 +32,10 @@ constant_settings = {"cellsize":1,
                      "tolerance":'"none"',
                      "static":"false",
                      "mutate":"false",
-                     "initadults":"true",
+                     "initadults":"false",
                      "initpopsize":'"metabolic"',
+                     "minseedsize":0,
+                     "minrepsize":5,
                      "burn-in": 1000,
                      "global-species-pool":100}
 
