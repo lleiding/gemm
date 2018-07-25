@@ -312,26 +312,26 @@ function seq2num(sequence::String)
     bases = "acgt"
     binary = ""
     for base in sequence
-        binary *= bin(search(bases, base) - 1, 2)
+        binary *= bin(search(bases, base) + 3)
     end
-    parse(Int64, binary, 2) # Int64 = max sequence length ~31
+    parse(BigInt, binary, 2)
 end
 
 """
     num2seq(n)
 Convert an integer into binary and then into a DNA base sequence string.
 """
-function num2seq(n::Int)
+function num2seq(n::BigInt)
     bases = "acgt"
-    binary = bin(n, genelength*2)
+    binary = bin(n)
     sequence = ""
-    for i in 1:2:(length(binary)-1)
-        sequence *= string(bases[parse(Int64, binary[i:(i+1)], 2)+1])
+    for i in 1:3:(length(binary) - 2)
+        sequence *= string(bases[parse(Int, binary[i:(i + 2)], 2) - 3])
     end
     sequence
 end
 
-function creategenes(ngenes::Int,traits::Array{Trait,1})
+function creategenes(ngenes::Int, traits::Array{Trait,1}, genelength)
     genes = Gene[]
     for i in 1:ngenes
         sequence = String(rand(collect("acgt"), genelength)) # arbitrary start sequence
@@ -388,7 +388,7 @@ function createind(settings::Dict{String, Any})
     ngenes = rand(Poisson(meangenes))
     ngenes < 1 && (ngenes = 1)
     traits = createtraits(settings)
-    genes = creategenes(ngenes,traits)
+    genes = creategenes(ngenes, traits, settings["genelength"])
     randchrms = rand(1:length(genes))
     if settings["linkage"] == "none"
         nchrms = length(genes)

@@ -6,7 +6,7 @@ mutable struct Trait
 end
 
 mutable struct Gene
-    sequence::Int
+    sequence::BigInt
     codes::Array{Trait, 1}
 end
 

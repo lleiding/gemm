@@ -21,6 +21,7 @@ function defaultSettings()
          "initadults" => false, # initialize organisms as adults
          "initpopsize" => "metabolic", # initialisation algorithm: metabolic/bodysize/minimal
          "cellsize" => 20, # maximum biomass per hectare in tonnes (based on Clark et al. 2001) indicate gramm value as Float
+         "genelength" => 200,
          # invasion specific settings
          "propagule-pressure" => 0, # number of non-native individuals introduced per invasion event
          "global-species-pool" => 0, # size of the global species pool (invasion source)

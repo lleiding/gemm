@@ -11,7 +11,6 @@ const phylconstr = 10 #parse(ARGS[2])
 const mutationrate = 1e7 # one mutation per generation with 200bp genes, corrected for metabolic function
 const isolationweight = 3 # additional distance to be crossed when dispersing from or to isolated patches
 const maxdispmean = 10 # maximum mean dispersal distance
-const genelength = 20 # sequence length of genes
 
 # XXX Trait value calculation happens in subprocs.jl -> createtraits()
 # XXX Default patch settings can be found in types.jl
