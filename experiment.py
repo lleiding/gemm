@@ -118,7 +118,9 @@ def run_experiment():
 
 if __name__ == '__main__':
     archive_code()
-    if "default" in simname or (len(sys.argv) >= 4 and sys.argv[3] == "default"):
+    if simname == "archive":
+        pass #only archive the code
+    elif "default" in simname or (len(sys.argv) >= 4 and sys.argv[3] == "default"):
         run_defaults()
     else:
         run_experiment()

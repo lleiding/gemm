@@ -183,7 +183,7 @@ end
 let speciespool = Individual[]
     function initspeciespool!(settings::Dict{String, Any})
         for i in 1:settings["global-species-pool"]
-            push!(speciespool, createind())
+            push!(speciespool, createind(settings))
         end
     end
     
