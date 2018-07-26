@@ -20,7 +20,7 @@ if len(sys.argv) >= 3:
     replicates = int(sys.argv[2])
 
 # These settings stay constant throughout all simulation runs
-constant_settings = {"cellsize":1,
+constant_settings = {"cellsize":2,
                      "outfreq":50,
                      "logging":"true",
                      "debug":"true", #default: false
@@ -32,18 +32,29 @@ constant_settings = {"cellsize":1,
                      "tolerance":'"none"',
                      "static":"false",
                      "mutate":"false",
-                     "initadults":"true",
+                     "initadults":"false",
                      "initpopsize":'"metabolic"',
+                     "minseedsize":0,
+                     "minrepsize":5,
                      "burn-in": 1000,
                      "global-species-pool":100}
 
 # These settings are varied (the first value is the default,
 # every combination of the rest is tested)
-varying_settings = {"maps":["invasion.map",
-                            "invasion_hot.map",
-                            "invasion_cold.map"],
+varying_settings = {"maps":['"invasion.map"',
+                            '"invasion_hot.map"',
+                            '"invasion_cold.map"'],
                     "propagule-pressure":[0,1,10],
                     "disturbance":[0,1,10]}
+
+def archive_code():
+    "Save the current codebase in a tar archive."
+    tarname = time.strftime("codebase_%d%b%y.tar.gz")
+    print("Archiving codebase in "+tarname)
+    os.system("git log -1 > commit.txt")
+    cmd = "tar czf "+tarname+" README.md commit.txt islandsim.jl experiment.py analyse.R src/*"
+    os.system(cmd)
+    os.remove("commit.txt")
 
 def slurm(config):
     "Send a job to slurm"
@@ -108,7 +119,10 @@ def run_experiment():
     print("Done.")
 
 if __name__ == '__main__':
-    if "default" in simname or (len(sys.argv) >= 4 and sys.argv[3] == "default"):
+    archive_code()
+    if simname == "archive":
+        pass #only archive the code
+    elif "default" in simname or (len(sys.argv) >= 4 and sys.argv[3] == "default"):
         run_defaults()
     else:
         run_experiment()
