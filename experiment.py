@@ -51,8 +51,10 @@ def archive_code():
     "Save the current codebase in a tar archive."
     tarname = time.strftime("codebase_%d%b%y.tar.gz")
     print("Archiving codebase in "+tarname)
-    cmd = "tar czf "+tarname+" README.md islandsim.jl experiment.py analyse.R src/*"
-    os.system(cmd)    
+    os.system("git log -1 > commit.txt")
+    cmd = "tar czf "+tarname+" README.md commit.txt islandsim.jl experiment.py analyse.R src/*"
+    os.system(cmd)
+    os.remove("commit.txt")
 
 def slurm(config):
     "Send a job to slurm"
