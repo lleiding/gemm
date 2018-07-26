@@ -20,7 +20,7 @@ if len(sys.argv) >= 3:
     replicates = int(sys.argv[2])
 
 # These settings stay constant throughout all simulation runs
-constant_settings = {"cellsize":1,
+constant_settings = {"cellsize":2,
                      "outfreq":50,
                      "logging":"true",
                      "debug":"true", #default: false
