@@ -72,7 +72,7 @@ plotDiversity = function(logfile="diversity.log") {
     dev.off()
 }
 
-plotMap = function(timestep=-1, compensate=TRUE) {
+plotMap = function(timestep=-1, compensate=TRUE, showinvaders=TRUE) {
     print(paste0("Plotting map at timestep ", timestep, "..."))
     ## load raw data
     tsvfile = grep(".tsv", grep(paste0("t", timestep), list.files(outdir), value=T), value=T)
@@ -88,6 +88,14 @@ plotMap = function(timestep=-1, compensate=TRUE) {
     }
     ts = read.table(tsvfilepath, header=T)
     ts$temp.C = ts$temp - 273
+    ## load comparison data (to show invasive species)
+    if (showinvaders && timestep < 1000 && timestep != -1) showinvaders = FALSE
+    if (showinvaders) {
+        tsvfile2 = grep(".tsv", grep("t1000_", list.files(outdir), value=T), value=T)
+        tsvfilepath2 = paste(outdir, tsvfile2, sep="/")
+        ts2 = read.table(tsvfilepath2, header=T)
+        nativespecs = unique(ts2$lineage)
+    }
     ## create an index of species abundance
     allspecies = c()
     specidx = sort(unique(ts$lineage))
@@ -98,18 +106,20 @@ plotMap = function(timestep=-1, compensate=TRUE) {
         for (spec in unique(patch$lineage)) {
             n = sum(which(patch$lineage == spec))
             s = which(specidx == spec)
-            #TODO Add category non-native
-            allspecies = rbind(allspecies, c(x,y,s,n))
+            if (showinvaders && !(spec %in% nativespecs)) i = FALSE
+            else i = TRUE
+            allspecies = rbind(allspecies, c(x,y,s,n,i))
         }
     }
-    colnames(allspecies) = c("xloc", "yloc", "lineage", "abundance")
+    colnames(allspecies) = c("xloc", "yloc", "lineage", "abundance", "native")
     allspecies = as.data.frame(allspecies)
+    allspecies$native = as.factor(allspecies$native)
     ## plot the map
     m = ggplot(ts, aes(xloc, yloc))
     m + geom_tile(aes(fill = temp.C, width = 0.95, height = 0.95)) +
         scale_fill_continuous(low="white", high="black") +
         scale_color_gradientn(colours = rainbow(5)) +
-        geom_jitter(data = allspecies, aes(size = abundance, color = lineage))
+        geom_jitter(data = allspecies, aes(size = abundance, color = lineage, shape = native))
     ggsave(file=paste0(outdir, "/", simname, "_map_t", timestep, ".jpg"), height=8, width=10)
 }
 
