@@ -2,7 +2,7 @@
 # This is an analysis script for the island invasion model that creates
 # graphs of the total and per species populations over time.
 
-#library(ggplot2)
+library(ggplot2)
 
 # The working directory may be specified via the commandline, otherwise it
 # defaults to results/tests
@@ -74,7 +74,8 @@ plotDiversity = function(logfile="diversity.log") {
 
 plotMap = function(timestep=-1, compensate=TRUE) {
     print(paste0("Plotting map at timestep ", timestep, "..."))
-    tsvfile = grep(paste0("t", timestep), list.files(outdir), value=T)
+    ## load raw data
+    tsvfile = grep(".tsv", grep(paste0("t", timestep), list.files(outdir), value=T), value=T)
     if (length(tsvfile) == 0 && compensate) {
         # If the desired timestep doesn't exist, take the newest timestep we have
         timestep = (length(grep(".tsv", list.files(outdir), value=T))-1) * 10
@@ -86,21 +87,37 @@ plotMap = function(timestep=-1, compensate=TRUE) {
         return()
     }
     ts = read.table(tsvfilepath, header=T)
-    jpeg(paste0(outdir, "/", simname, "_map_", timestep, ".jpg"), height=720, width=720)
+    ts$temp.C = ts$temp - 273
+    ## create an index of species abundance
+    allspecies = c()
+    specidx = sort(unique(ts$lineage))
+    for (p in unique(ts$id)) {
+        patch = ts[which(ts$id == p),]
+        x = patch$xloc[1]
+        y = patch$yloc[1]
+        for (spec in unique(patch$lineage)) {
+            n = sum(which(patch$lineage == spec))
+            s = which(specidx == spec)
+            #TODO Add category non-native
+            allspecies = rbind(allspecies, c(x,y,s,n))
+        }
+    }
+    colnames(allspecies) = c("xloc", "yloc", "lineage", "abundance")
+    allspecies = as.data.frame(allspecies)
+    ## plot the map
     m = ggplot(ts, aes(xloc, yloc))
-    m + geom <- tile(aes(fill = temp.C, width = 0.95, height = 0.95)) +
-        scale <- fill <- continuous(low="white", high="black") +
-            scale <- color <- gradientn(colours = rainbow(5)) +
-                geom <- jitter(data = allspecies, aes(size = abundance, color = lineage))
-    #FIXME What is `allspecies?`
-    dev.off()
+    m + geom_tile(aes(fill = temp.C, width = 0.95, height = 0.95)) +
+        scale_fill_continuous(low="white", high="black") +
+        scale_color_gradientn(colours = rainbow(5)) +
+        geom_jitter(data = allspecies, aes(size = abundance, color = lineage))
+    ggsave(file=paste0(outdir, "/", simname, "_map_t", timestep, ".jpg"), height=8, width=10)
 }
 
 plotTimeSeries = function(step=1) {
     files = grep("_t", list.files(outdir), value=T)
     for (f in files) {
         timestep = as.numeric(substring(strsplit(f, "_")[[1]][2], 2))
-        if (timestep %% step == 0)
+        if (timestep %% step == 0 || abs(timestep) == 1)
             plotMap(timestep, FALSE)
     }
 }
@@ -108,7 +125,8 @@ plotTimeSeries = function(step=1) {
 visualize = function(toFile=TRUE) {
     plotDiversity()
     plotTraits()
-    #plotTimeSeries(500)
+    plotMap()
+    ##plotTimeSeries(500)
 }
 
 # If the simname is given as 'all', process every folder in 'results'
