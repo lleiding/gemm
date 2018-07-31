@@ -16,7 +16,7 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
 end
 
 function chrms2traits(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
-    genes = Gene[]
+    genes = AbstractGene[]
     for chrm in chrms
         append!(genes, chrm.genes)
     end
@@ -314,6 +314,15 @@ function seq2num(sequence::String)
     for base in sequence
         binary *= bin(search(bases, base) + 3)
     end
+    parse(Int, binary, 2) # Int64 allows for max length of 21bp
+end
+
+function seq2bignum(sequence::String)
+    bases = "acgt"
+    binary = ""
+    for base in sequence
+        binary *= bin(search(bases, base) + 3)
+    end
     parse(BigInt, binary, 2)
 end
 
@@ -321,7 +330,7 @@ end
     num2seq(n)
 Convert an integer into binary and then into a DNA base sequence string.
 """
-function num2seq(n::BigInt)
+function num2seq(n::Integer)
     bases = "acgt"
     binary = bin(n)
     sequence = ""
@@ -332,9 +341,9 @@ function num2seq(n::BigInt)
 end
 
 function creategenes(ngenes::Int, traits::Array{Trait,1}, genelength)
-    genes = Gene[]
+    genes = AbstractGene[]
     for i in 1:ngenes
-        sequence = String(rand(collect("acgt"), genelength)) # arbitrary start sequence
+        sequence = String(rand(collect("acgt"), 20)) # arbitrary start sequence
         seqint = seq2num(sequence)
         codesfor = Trait[]
         push!(genes,Gene(seqint, codesfor))
@@ -350,12 +359,12 @@ function creategenes(ngenes::Int, traits::Array{Trait,1}, genelength)
         end
     end
     if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
-        push!(genes, Gene(seq2num(String(rand(collect("acgt"), genelength))), Trait[]))
+        push!(genes, BigGene(seq2bignum(String(rand(collect("acgt"), genelength))), Trait[]))
     end
     genes
 end
 
-function createchrs(nchrs::Int,genes::Array{Gene,1})
+function createchrs(nchrs::Int,genes::Array{AbstractGene,1})
     ngenes=size(genes,1)
     if nchrs>1
         chrsplits = sort(rand(1:ngenes,nchrs-1))
@@ -382,7 +391,7 @@ end
 
 function createind(settings::Dict{String, Any})
     id = rand(Int32)
-    parentid = (0, 0)
+    parentid = rand(Int32)
     lineage = randstring(4)
     meangenes = length(settings["traitnames"])
     ngenes = rand(Poisson(meangenes))
