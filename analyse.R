@@ -75,7 +75,7 @@ plotDiversity = function(logfile="diversity.log") {
 plotMap = function(timestep=-1, compensate=TRUE, showinvaders=TRUE) {
     print(paste0("Plotting map at timestep ", timestep, "..."))
     ## load raw data
-    tsvfile = grep(".tsv", grep(paste0("t", timestep), list.files(outdir), value=T), value=T)
+    tsvfile = grep(".tsv", grep(paste0("t", timestep, "_"), list.files(outdir), value=T), value=T)
     if (length(tsvfile) == 0 && compensate) {
         # If the desired timestep doesn't exist, take the newest timestep we have
         timestep = (length(grep(".tsv", list.files(outdir), value=T))-1) * 10
@@ -106,25 +106,26 @@ plotMap = function(timestep=-1, compensate=TRUE, showinvaders=TRUE) {
         for (spec in unique(patch$lineage)) {
             n = sum(which(patch$lineage == spec))
             s = which(specidx == spec)
-            if (showinvaders && !(spec %in% nativespecs)) i = FALSE
-            else i = TRUE
+            if (showinvaders && !(spec %in% nativespecs)) i = TRUE
+            else i = FALSE
             allspecies = rbind(allspecies, c(x,y,s,n,i))
         }
     }
-    colnames(allspecies) = c("xloc", "yloc", "lineage", "abundance", "native")
+    colnames(allspecies) = c("xloc", "yloc", "lineage", "abundance", "alien")
     allspecies = as.data.frame(allspecies)
-    allspecies$native = as.factor(allspecies$native)
+    allspecies$alien = as.factor(allspecies$alien)
     ## plot the map
+    #TODO Make sure `alien` status is displayed the same each time, adjust legend
     m = ggplot(ts, aes(xloc, yloc))
-    m + geom_tile(aes(fill = temp.C, width = 0.95, height = 0.95)) +
-        scale_fill_continuous(low="white", high="black") +
+    m + geom_tile(aes(fill = temp.C)) + labs(x="Longitude", y="Latitude") +
+        scale_fill_continuous(low="lightgrey", high="darkgrey") +
         scale_color_gradientn(colours = rainbow(5)) +
-        geom_jitter(data = allspecies, aes(size = abundance, color = lineage, shape = native))
+        geom_jitter(data = allspecies, aes(size = abundance, color = lineage, shape = alien))
     ggsave(file=paste0(outdir, "/", simname, "_map_t", timestep, ".jpg"), height=8, width=10)
 }
 
 plotTimeSeries = function(step=1) {
-    files = grep("_t", list.files(outdir), value=T)
+    files = grep(".tsv", grep("_t", list.files(outdir), value=T), value=T)
     for (f in files) {
         timestep = as.numeric(substring(strsplit(f, "_")[[1]][2], 2))
         if (timestep %% step == 0 || abs(timestep) == 1)
@@ -135,8 +136,7 @@ plotTimeSeries = function(step=1) {
 visualize = function(toFile=TRUE) {
     plotDiversity()
     plotTraits()
-    plotMap()
-    ##plotTimeSeries(500)
+    plotTimeSeries(500)
 }
 
 # If the simname is given as 'all', process every folder in 'results'
