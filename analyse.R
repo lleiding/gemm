@@ -82,7 +82,7 @@ plotMap = function(timestep=-1, compensate=TRUE, showinvaders=TRUE) {
         tsvfile = grep(paste("t", timestep, sep=""), list.files(outdir), value=T)
     }
     tsvfilepath = paste(outdir, tsvfile, sep="/")
-    if (!file.exists(tsvfilepath)) {
+    if (!file.exists(tsvfilepath) || file.info(tsvfilepath)$size == 0) {
         print(paste("WARNING: tsvfile not found", tsvfilepath))
         return()
     }
