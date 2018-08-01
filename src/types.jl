@@ -5,8 +5,7 @@ mutable struct Trait
     value::Float64
 end
 
-abstract type AbstractGene
-end
+abstract type AbstractGene end
 
 mutable struct Gene <: AbstractGene
     sequence::Int
