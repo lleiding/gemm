@@ -6,8 +6,9 @@ library(ggplot2)
 
 # The working directory may be specified via the commandline, otherwise it
 # defaults to results/tests
+resultdir = "results"
 simname = commandArgs()[length(commandArgs())]
-outdir = paste0("results/", simname)
+outdir = paste0(resultdir, "/", simname)
 
 
 # Plot the distribution of traits in the population at the given timestep (-1 => END)
@@ -20,7 +21,7 @@ plotTraits = function(timestep=-1, toFile=TRUE) {
         traitfile = grep(paste("t", timestep, sep=""), list.files(outdir), value=T)
     }
     traitfilepath = paste(outdir, traitfile, sep="/")
-    if (!file.exists(traitfilepath)) {
+    if (!file.exists(traitfilepath) || file.info(traitfilepath)$size == 0) {
         print(paste("WARNING: traitfile not found", traitfilepath))
         return()
     }
@@ -42,7 +43,7 @@ plotTraits = function(timestep=-1, toFile=TRUE) {
 # Plot population size and diversity indices over time
 plotDiversity = function(logfile="diversity.log") {
     logfile = paste(outdir, logfile, sep="/")
-    if (!file.exists(logfile)) {
+    if (!file.exists(logfile) || file.info(logfile)$size == 0) {
         print(paste("WARNING: logfile not found", logfile))
         return()
     }
@@ -141,10 +142,10 @@ visualize = function(toFile=TRUE) {
 
 # If the simname is given as 'all', process every folder in 'results'
 if (simname == "all") {
-    for (f in list.files("results")) {
+    for (f in list.files(resultdir)) {
         print(paste("Processing", f))
         simname = f
-        outdir = paste0("results/", simname)
+        outdir = paste0(resultdir, "/", simname)
         if (file.info(outdir)$isdir) visualize()
     }
     print("Done.")
@@ -153,7 +154,7 @@ if (simname == "all") {
     # the specified doesn't exist)
     if (!(file.exists(outdir) && file.info(outdir)$isdir)) {
         simname = "tests"
-        outdir = paste0("results/", simname)
+        outdir = paste0(resultdir, "/", simname)
     }
     visualize()
     print("Done.")
