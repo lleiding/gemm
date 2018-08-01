@@ -26,7 +26,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
         for idx in eachindex(chrm.genes)
             charseq = collect(num2seq(chrm.genes[idx].sequence))
             for i in eachindex(charseq)
-                if rand() <= ind.traits["mutprob"] * exp(-act/(boltz*temp))
+                if rand() <= 1 - exp(-ind.traits["mutprob"] * exp(-act/(boltz*temp)))
                     newbase = rand(collect("acgt"),1)[1]
                     while newbase == charseq[i]
                         newbase = rand(collect("acgt"),1)[1]
