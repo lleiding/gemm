@@ -214,7 +214,6 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
         (onlyisland && !patch.isisland) && continue
         lineage = ""
         for ind in patch.community
-            counter += 1
             (!patch.isisland && ind.lineage == lineage) && continue # only one individual per species on mainland
             chrmno = 0
             for chrm in ind.genome
@@ -230,7 +229,7 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", on
                             traits *= string(trait.nameindex) * string(trait.value) * ","
                         end
                     end
-                    header = ">"*string(counter)*" x"*string(patch.location[1])*" y"*string(patch.location[2])
+                    header = ">"*string(ind.id)*" x"*string(patch.location[1])*" y"*string(patch.location[2])
                     header *= " "*ind.lineage*" c"*string(chrmno)*" g"*string(geneno)*" "*traits
                     println(io, header)
                     println(io, num2seq(gene.sequence))
