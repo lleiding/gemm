@@ -22,10 +22,11 @@ collateSpeciesTable = function(rundir, timestep, compensate=TRUE, showinvaders=T
         tsvfile = grep(paste("t", timestep, sep=""), list.files(rundir), value=T)
     }
     tsvfilepath = paste(rundir, tsvfile, sep="/")
-    if (!file.exists(tsvfilepath) || file.info(tsvfilepath)$size == 0) {
+    if (!file.exists(tsvfilepath) || file.info(tsvfilepath)$isdir || file.info(tsvfilepath)$size == 0) {
         print(paste("WARNING: tsvfile not found", tsvfilepath))
         return()
     }
+    print(paste("Collating data from", tsvfilepath)) #DEBUG
     ts = read.table(tsvfilepath, header=T)
     ts$temp.C = ts$temp - 273
     ## load comparison data (to show invasive species)
@@ -38,50 +39,77 @@ collateSpeciesTable = function(rundir, timestep, compensate=TRUE, showinvaders=T
     }
     ## create an index of species abundance
     allspecies = c()
-    specidx = sort(unique(ts$lineage))
     for (p in unique(ts$id)) {
-        patch = ts[which(ts$id == p),]
+        patch = subset(ts, id == p)
         x = patch$xloc[1]
         y = patch$yloc[1]
-        for (spec in unique(patch$lineage)) {
-            n = sum(which(patch$lineage == spec))
-            s = which(specidx == spec)
-            if (showinvaders && !(spec %in% nativespecs)) i = TRUE
+        for (s in unique(patch$lineage)) {
+            n = length(subset(patch, lineage == s)$lineage)
+            if (showinvaders && !(s %in% nativespecs)) i = TRUE
             else i = FALSE
             allspecies = rbind(allspecies, c(x,y,s,n,i))
         }
     }
     colnames(allspecies) = c("xloc", "yloc", "lineage", "abundance", "alien")
     allspecies = as.data.frame(allspecies)
-    allspecies$alien = as.factor(allspecies$alien)
+    allspecies$abundance = as.numeric(as.character(allspecies$abundance))
     return(allspecies)
 }
 
-plotEstablishment = function() {
-    ##TODO
+analyseEstablishment = function() {
     print("Analysing invasion success")
-    results = array(dim=c(2,2,2,6), dimnames=list(temperature=c("T35", "T25"),
-                                                  disturbance=c("1DB", "10DB"),
-                                                  propagules=c("1PP", "10PP"),
-                                                  replicates=c("r1", "r2", "r3", "r4",
-                                                               "r5", "avg"),
-                                                  diversity=c("natives", "invasives", "ratio")))
-    for (d in list.files(resultdir) {
+    ## create the results table
+    results = array(dim=c(2,2,2,6,4), dimnames=list(temperature=c("T35", "T25"),
+                                                    disturbance=c("1DB", "10DB"),
+                                                    propagules=c("1PP", "10PP"),
+                                                    replicates=c("r1", "r2", "r3", "r4",
+                                                                 "r5", "avg"),
+                                                    diversity=c("natives", "aliens",
+                                                                "invasives", "ratio")))
+    for (d in list.files(resultdir)) {
         dir = paste0(resultdir, "/", d)
-        if (file.info(dir)$isdir) {
-            species = collateSpeciesTable(dir, 3000, FALSE, TRUE)
-            repl = strsplit(d)[[1]][2]
-            dist = strsplit(d)[[1]][5]
-            prop = strsplit(d)[[1]][4]
+        if (file.info(dir)$isdir && !grepl("control",d)) {
+            ## figure out the scenario
+            specs = collateSpeciesTable(dir, -1, FALSE, TRUE)
+            if (is.null(specs)) next
+            repl = strsplit(d, "_")[[1]][2]
+            dist = strsplit(d, "_")[[1]][5]
+            prop = strsplit(d, "_")[[1]][4]
             if (grepl("default", d)) temp = "T25"
             else temp = "T35"
-            ##TODO find diversity
-            results[temp, dist, prop, repl] = c(natives, invasives, ratio)
-            ##TODO take average
+            ## calculate diversity
+            natives = length(unique(subset(specs, alien==FALSE)$lineage))
+            aliens = length(unique(subset(specs, alien==TRUE)$lineage))
+            invasives = 0
+            for (a in unique(subset(specs, alien==TRUE)$lineage)) {
+                if (length(subset(specs, lineage==a)$lineage) > 6) invasives = invasives+1
+            }
+            nnative = sum(subset(specs, alien==FALSE)$abundance)
+            nalien = sum(subset(specs, alien==TRUE)$abundance)
+            ratio = nalien / nnative # ratio of total abundances
+            results[temp, dist, prop, repl,] = c(natives, aliens, invasives, ratio)
         }
     }
+    ##take the averages
+    for (s in c("natives", "aliens", "invasives", "ratio")) {
+        results["T35","1DB","1PP","avg",s] = mean(results["T35","1DB","1PP",1:5,s], na.rm=TRUE)
+        results["T35","1DB","10PP","avg",s] = mean(results["T35","1DB","10PP",1:5,s], na.rm=TRUE)
+        results["T35","10DB","1PP","avg",s] = mean(results["T35","10DB","1PP",1:5,s], na.rm=TRUE)
+        results["T35","10DB","10PP","avg",s] = mean(results["T35","10DB","10PP",1:5,s], na.rm=TRUE)
+        results["T25","1DB","1PP","avg",s] = mean(results["T25","1DB","1PP",1:5,s], na.rm=TRUE)
+        results["T25","1DB","10PP","avg",s] = mean(results["T25","1DB","10PP",1:5,s], na.rm=TRUE)
+        results["T25","10DB","1PP","avg",s] = mean(results["T25","10DB","1PP",1:5,s], na.rm=TRUE)
+        results["T25","10DB","10PP","avg",s] = mean(results["T25","10DB","10PP",1:5,s], na.rm=TRUE)
+    }
+    return(results)
 }
 
+plotEstablishment = function() {
+    results = analyseEstablishment()
+    ##TODO save to file
+    ##TODO create graphics - one per category in 'diversity'
+}
+        
 
 ### ANALYSE AN INDIVIDUAL RUN
 
@@ -148,7 +176,7 @@ plotDiversity = function(logfile="diversity.log") {
 }
 
 plotMap = function(timestep=-1, compensate=TRUE, showinvaders=TRUE) {
-    #TODO Make sure `alien` status is displayed the same each time, adjust legend, create custom mapping
+    #FIXME Make sure `alien` status is displayed the same each time, adjust legend, create custom mapping
     print(paste0("Plotting map at timestep ", timestep, "..."))
     allspecies = collateSpeciesTable(outdir, timestep, compensate, showinvaders)
     m = ggplot(ts, aes(xloc, yloc))
@@ -180,7 +208,7 @@ visualizeRun = function() {
     
 # If the simname is given as 'all', process every folder in 'results'
 if (simname == "all") {
-    #plotEstablishment()
+    plotEstablishment()
     for (f in list.files(resultdir)) {
         print(paste("Processing", f))
         simname = f
