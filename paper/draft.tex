@@ -180,18 +180,27 @@ levels leads to dissolving phenotype populations, whereas high levels hinder rap
 %% scheduling (order of processes)
 %% justify each decision with reference
 %% Experimental design
-We use an individual-based metacommunity model written in julia %\cite{JULIALANG}.
-Each individual is characterized by a set of genetically controlled (i.e. genomically-coded) traits,
-which influence ecological processes of
-establishment, competition, growth, (density independent) mortality, reproduction and dispersal.
-The simulation arena consists of a larger landmass (the mainland) holding an initial random species pool and a smaller,
-initially unpopulated island some distance apart (user-defined in the experimental design).
-% it would be nice to hav a table with all model configurations that can be defined by the user upon designing the experiment.
-% This might help readers see that the model is general enough to be applied to any ecological arena (mainland-island being one).
-During the course of the simulation, individuals may disperse from the mainland to the island, thus colonizing it. 
-The complete state of the simulation is recorded every 1000 time steps for analysis.
 
-Building on the model of Cabral et al. (2017a, b), most of the biological rates follow the metabolic theory
+\begin{figure}
+  %\includegraphics{}
+  \caption{Schematic of the model's individuals genetic architecture.
+    Individuals are composed of a diploid set of linkage units which combine the genes coding for functional traits.}
+  \label{schematic}
+\end{figure}
+
+We use an individual-based spatially and temporally explicit metacommunity model written in julia %\cite{JULIALANG}.
+The model considers competition between individuals, environmental niche adaptation, density independent mortality,
+dispersal, sexual reproduction and mutation.
+Individuals are characterized by a lineage identifier,
+body mass, age and fitness.
+Each individual's life history traits (table) are coded by mutable genes \cref{fig:schematic}.
+The genes, in turn, may be combined to linkage units (``chromosomes'').
+Genes in a linkage unit are considered a heredetary unit.
+This means that they will always be inherited in junction.
+Thus, only complete linkage units will be subject to recombination.
+
+Building on the model of Cabral et al. (2017a, b), reproduction rates (as number of offspring),
+growth rates and mortality probabilities follow the metabolic theory
 of ecology (MTE, Brown et al.\ 2004). % instead of saying 'most', say which follow and which don't
 In MTE, a biological rate $b$ depends on the temperature $T$ and individual mass $M$, scaling a base rate $b_0$ as:
 \begin{equation}
@@ -200,32 +209,51 @@ In MTE, a biological rate $b$ depends on the temperature $T$ and individual mass
 \end{equation}
 with $E_A$ the activation energy and $k_B$ the Boltzman constant.
 
+Dispersal is controlled by a logistic dispersal kernel \cite{bullockjamesm.SynthesisEmpiricalPlant2016}
+with parameters PAR1 and PAR2
+for mean dispersal kernel and kernel shape (tail fatness), respectively.
+
 A detailed protocol can be found in the appendix (\cite{grimm2010odd}, XXX).
+
+
+
+The simulation arena consists of a larger landmass (the mainland) holding an initial random species pool and a smaller,
+initially unpopulated island some distance apart (user-defined in the experimental design).
+% it would be nice to hav a table with all model configurations that can be defined by the user upon designing the experiment.
+% This might help readers see that the model is general enough to be applied to any ecological arena (mainland-island being one).
+During the course of the simulation, individuals may disperse from the mainland to the island, thus colonizing it. 
+The complete state of the simulation is recorded every 1000 time steps for analysis.
 
 \subsection{scenarios}
 In the simulations, we modify the value and extent of
-(a) gene linkage,
-(b) reproductive isolation (or reproduction compatibility),
-(c) habitat diversity, and
-(d) topographical complexity
+%(a)
+gene linkage
+%(b) reproductive isolation (or reproduction compatibility),
+%(c) habitat diversity, and
+%(d) topographical complexity
 to asses their relative contribution on community composition.
+Additionally, we simulate lineages in isolation with varying degrees of genetic linkage
+and analyize emerging species numbers.
 \cref{tab:scenarios} summarizes the parameters which were varied for the scenarios, their meaning and their values. %TODO: make table.
 Each parameter combination was replicated %TODO: how much?
-times, setting a different random seed for each replicate.
+times.%, setting a different random seed for each replicate.
 
 \subsection{Data recording}
-We record the complete state of our simulation world at the start and end of a simulation run and each time the arena changes (geomorphological dynamics).
-Additionally, we store the state of the simulation arena each 1000 %TODO: how much exactly?
-time steps and record every individual that colonizes the island to track changes.
-
-Using the thus simulated data, we calculate phylogenies of the colonizing lineages, species numbers, trait spaces etc. [WHAT ELSE?]
+We record individual data (properties and genome) at the start and end of a simulation run
+and at intervals of 1000 time steps.% and each time the arena changes (geomorphological dynamics).
+Additionally, we keep track of the genealogy of our individuals through time,
+allowing us to validate inferred phylogenies.
+Using the thus simulated data, we calculate phylogenies of the colonizing lineages, emerging species numbers and
+trait space. % etc. [WHAT ELSE?]
 
 \section{Results}
 
 \begin{figure}
   %\includegraphics{}
-  \caption{Number of linkage units and number of species per lineage XXX timesteps after colonization.
-    [Histogram (with threshold category: strongly diversified lineages) or scatter plot. ]}%Two panels/color codes: high and low degree of environmental heterogeneity]}
+  \caption{[2 x 2]
+    Extinctions and numbers of species per lineage after XXXX timesteps against degree of genetic linkage.
+    Top row: lineages simulated in isolation.
+    Bottom row: simulated communities.}
   \label{specieslinkage}
 \end{figure}
 
@@ -241,11 +269,13 @@ Using the thus simulated data, we calculate phylogenies of the colonizing lineag
 
 \begin{figure}
   %\includegraphics{}
-  \caption{Exemplary phylogenies of lineages without co-occurring competing lineages calculated from neutral sequences of
+  \caption{[2 x 3]
+    Exemplary genealogies of lineages in isolation for different degrees of genetic linkage.
     extant individuals.
-    (A) Lineage with low gene linkage,
-    (B) lineage with intermediate gene linkage,
-    (C) lineage with high gene linkage.}
+    Columns: phylogeny and genealogy
+    Rows: Lineage with low gene linkage,
+    lineage with intermediate gene linkage,
+    lineage with high gene linkage.}
   \label{phylogenies}
 \end{figure}
 
