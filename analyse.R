@@ -1,11 +1,11 @@
 #!/usr/bin/Rscript
-# This is an analysis script for the island invasion model that creates
-# graphs of the total and per species populations over time.
+### This is an analysis script for the island invasion model that creates
+### graphs of the total and per species populations over time.
 
 library(ggplot2)
 
-# The working directory may be specified via the commandline, otherwise it
-# defaults to results/tests
+## The working directory may be specified via the commandline, otherwise it
+## defaults to results/tests
 resultdir = "results"
 simname = commandArgs()[length(commandArgs())]
 outdir = paste0(resultdir, "/", simname)
@@ -59,7 +59,7 @@ collateSpeciesTable = function(rundir, timestep, compensate=TRUE, showinvaders=T
 analyseEstablishment = function() {
     print("Analysing invasion success")
     ## create the results table
-    results = array(dim=c(2,2,2,6,4), dimnames=list(temperature=c("T35", "T25"),
+    results = array(dim=c(2,2,2,6,4), dimnames=list(temperature=c("T25", "T35"),
                                                     disturbance=c("1DB", "10DB"),
                                                     propagules=c("1PP", "10PP"),
                                                     replicates=c("r1", "r2", "r3", "r4",
@@ -85,6 +85,7 @@ analyseEstablishment = function() {
                 if (length(subset(specs, lineage==a)$lineage) > 6) invasives = invasives+1
             }
             nnative = sum(subset(specs, alien==FALSE)$abundance)
+            if (nnative == 0) nnative = 1 #XXX is this acceptable?
             nalien = sum(subset(specs, alien==TRUE)$abundance)
             ratio = nalien / nnative # ratio of total abundances
             results[temp, dist, prop, repl,] = c(natives, aliens, invasives, ratio)
@@ -106,14 +107,54 @@ analyseEstablishment = function() {
 
 plotEstablishment = function() {
     results = analyseEstablishment()
-    ##save to file - XXX does this actually work?
+    print("Plotting establishment")
+    ##save the data structure to a binary file for future use
     save(results, file="experiment_results.dat")
-    ##TODO create matrix graphics - one per category in 'diversity'
+    ##create matrix graphics - one per category in 'diversity'
     for (d in dimnames(results)$diversity) {
-        
+        jpeg(paste0(d,".jpg"), width=960)
+        mppl = t(results[,,"1PP","avg",d])
+        mpph = t(results[,,"10PP","avg",d])
+        par(mfrow=c(1,2), cex=1.2)
+        maxv = max(mppl,mpph,na.rm=TRUE)
+        cols = grey(rev((1:maxv)/maxv))
+        image(c(25,35),c(1,10),mppl, col=cols,xaxp=c(25,35,1),yaxp=c(1,10,1),
+              xlab="Temperature (°C)",ylab="Disturbance (%)", main="Propagule pressure: 1")
+        text(25,1,round(mppl[1,1],2),col="blue",cex=3)
+        text(25,10,round(mppl[1,2],2),col="blue",cex=3)
+        text(35,1,round(mppl[2,1],2),col="blue",cex=3)
+        text(35,10,round(mppl[2,2],2),col="blue",cex=3)
+        image(c(25,35),c(1,10),mpph, col=cols,xaxp=c(25,35,1),yaxp=c(1,10,1),
+              xlab="Temperature (°C)",ylab="Disturbance (%)",
+              main="Propagule pressure: 10")
+        text(25,1,round(mpph[1,1],2),col="blue",cex=3)
+        text(25,10,round(mpph[1,2],2),col="blue",cex=3)
+        text(35,1,round(mpph[2,1],2),col="blue",cex=3)
+        text(35,10,round(mpph[2,2],2),col="blue",cex=3)
+        dev.off()
     }
-    ##TODO create boxplots (prod/prop/dist vs. aliens)
-    
+    ##create boxplots (prod/prop/dist vs. aliens)
+    jpeg("factors.jpg",height=400, width=1200)
+    par(mfrow=c(1,3),cex=1.3)
+    templ = as.vector(results["T25",,,1:5,"aliens"])
+    temph = as.vector(results["T35",,,1:5,"aliens"])
+    boxplot(templ, temph, names=c("25°C","35°C"), col="lightblue",
+            main="Temperature", ylab="Number of alien species")
+    if (t.test(templ,temph)$p.value < 0.05)
+        text(1.5, max(temph,templ,na.rm=TRUE), "*", cex=4)
+    distl = as.vector(results[,"1DB",,1:5,"aliens"])
+    disth = as.vector(results[,"10DB",,1:5,"aliens"])
+    boxplot(distl, disth, names=c("1% mortality", "10% mortality"), col="lightblue",
+            main="Disturbance")
+    if (t.test(distl,disth)$p.value < 0.05)
+        text(1.5, max(disth, distl,na.rm=TRUE), "*", cex=4)
+    propl = as.vector(results[,,"1PP",1:5,"aliens"])
+    proph = as.vector(results[,,"10PP",1:5,"aliens"])
+    boxplot(propl, proph, names=c("1 propagule","10 propagules"), col="lightblue",
+            main="Propagule pressure")
+    if (t.test(propl,proph)$p.value < 0.05)
+        text(1.5, max(proph,propl,na.rm=TRUE), "*", cex=4)
+    dev.off()
 }
         
 
@@ -182,7 +223,8 @@ plotDiversity = function(logfile="diversity.log") {
 }
 
 plotMap = function(timestep=-1, compensate=TRUE, showinvaders=TRUE) {
-    #FIXME Make sure `alien` status is displayed the same each time, adjust legend, create custom mapping
+    ##FIXME Make sure `alien` status is displayed the same each time, adjust legend, create custom mapping
+    ##TODO Add a star to the entry point
     print(paste0("Plotting map at timestep ", timestep, "..."))
     allspecies = collateSpeciesTable(outdir, timestep, compensate, showinvaders)
     m = ggplot(ts, aes(xloc, yloc))
