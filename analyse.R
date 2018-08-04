@@ -91,7 +91,7 @@ analyseEstablishment = function() {
         }
     }
     ##take the averages
-    for (s in c("natives", "aliens", "invasives", "ratio")) {
+    for (s in dimnames(results)$diversity) {
         results["T35","1DB","1PP","avg",s] = mean(results["T35","1DB","1PP",1:5,s], na.rm=TRUE)
         results["T35","1DB","10PP","avg",s] = mean(results["T35","1DB","10PP",1:5,s], na.rm=TRUE)
         results["T35","10DB","1PP","avg",s] = mean(results["T35","10DB","1PP",1:5,s], na.rm=TRUE)
@@ -106,8 +106,14 @@ analyseEstablishment = function() {
 
 plotEstablishment = function() {
     results = analyseEstablishment()
-    ##TODO save to file
-    ##TODO create graphics - one per category in 'diversity'
+    ##save to file - XXX does this actually work?
+    save(results, file="experiment_results.dat")
+    ##TODO create matrix graphics - one per category in 'diversity'
+    for (d in dimnames(results)$diversity) {
+        
+    }
+    ##TODO create boxplots (prod/prop/dist vs. aliens)
+    
 }
         
 
