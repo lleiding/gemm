@@ -168,8 +168,26 @@ plotFactors = function(results, invasives=FALSE) {
 }
 
 factorAnalysis = function(results) {
-    ##TODO ANOVA
-    
+    tab = c()
+    for (r in dimnames(results)$replicates[1:5]) {
+        tab = rbind(tab,c(35,10,10,results["T35","10DB","10PP",r,"aliens"]))
+        tab = rbind(tab,c(35,10,1,results["T35","10DB","1PP",r,"aliens"]))
+        tab = rbind(tab,c(35,1,10,results["T35","1DB","10PP",r,"aliens"]))
+        tab = rbind(tab,c(35,1,1,results["T35","1DB","1PP",r,"aliens"]))
+        tab = rbind(tab,c(25,10,10,results["T25","10DB","10PP",r,"aliens"]))
+        tab = rbind(tab,c(25,10,1,results["T25","10DB","1PP",r,"aliens"]))
+        tab = rbind(tab,c(25,1,10,results["T25","1DB","10PP",r,"aliens"]))
+        tab = rbind(tab,c(25,1,1,results["T25","1DB","1PP",r,"aliens"]))
+    }
+    colnames(tab) = c("temperature", "disturbance", "propagules", "aliens")
+    tab = as.data.frame(tab)
+    anovaModel = aov(tab$aliens~tab$disturbance*tab$propagules*tab$temperature)
+    sink("anova.txt",append=TRUE,split=TRUE)
+    print("summary.aov:")
+    summary.aov(anovaModel)
+    print("summary.lm:")
+    summary.lm(anovaModel)
+    sink()
 }
 
 analyseAll = function(plotAll=TRUE,plotRuns=FALSE) {
