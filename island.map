@@ -1,7 +1,7 @@
 # Invasion experiments map
 	
 # timesteps:
-1000000
+10000
 
 # experiment island - a 5x5 square with radially increasing temperature
 # (as on a mountain, 25°C - 21°C), a linear precipitation gradient,
