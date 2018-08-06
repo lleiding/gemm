@@ -140,14 +140,16 @@ plotEstablishment = function(results) {
     }
 }
 
-plotFactors = function(results) {
+plotFactors = function(results, invasives=FALSE) {
     print("Plotting factor boxplots")
     jpeg("factors.jpg",height=400, width=1200)
     par(mfrow=c(1,3),cex=1.3)
-    templ = as.vector(results["T25",,,1:5,"aliens"])
-    temph = as.vector(results["T35",,,1:5,"aliens"])
+    if (invasives) var = "invasives"
+    else var = "aliens"
+    templ = as.vector(results["T25",,,1:5,var])
+    temph = as.vector(results["T35",,,1:5,var])
     boxplot(templ, temph, names=c("25°C","35°C"), col="lightblue",
-            main="Temperature", ylab="Number of alien species")
+            main="Temperature", ylab=paste("Number of", substr(var,1,nchar(var)-1), "species")
     if (t.test(templ,temph)$p.value < 0.05)
         text(1.5, max(temph,templ,na.rm=TRUE), "*", cex=4)
     distl = as.vector(results[,"1DB",,1:5,"aliens"])
