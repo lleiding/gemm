@@ -13,7 +13,7 @@ outdir = paste0(resultdir, "/", simname)
 
 ### ANALYSE THE WHOLE EXPERIMENT
 
-collateSpeciesTable = function(rundir, timestep, compensate=TRUE, showinvaders=TRUE) {
+collateSpeciesTable = function(rundir, timestep, compensate=TRUE, showinvaders=TRUE, includeTS=FALSE) {
     ## load raw data
     tsvfile = grep(".tsv", grep(paste0("t", timestep, "_"), list.files(rundir), value=T), value=T)
     if (length(tsvfile) == 0 && compensate) {
@@ -53,8 +53,16 @@ collateSpeciesTable = function(rundir, timestep, compensate=TRUE, showinvaders=T
     colnames(allspecies) = c("xloc", "yloc", "lineage", "abundance", "alien")
     allspecies = as.data.frame(allspecies)
     allspecies$abundance = as.numeric(as.character(allspecies$abundance))
-    write.csv2(allspecies, file=paste0(rundir, "/species.csv"))
-    return(allspecies)
+    allspecies$xloc = as.numeric(allspecies$xloc)
+    allspecies$yloc = as.numeric(allspecies$yloc)
+    allspecies$alien = as.logical(allspecies$alien)
+    write.csv2(allspecies, file=paste0(rundir,"/species_",sub(paste0(resultdir,"/"), "", rundir)
+                                      ,"_t",timestep,".csv"))
+    if (includeTS) {
+        return(list("allspecies"=allspecies, "ts"=ts))
+    } else {
+        return(allspecies)
+    }
 }
 
 analyseEstablishment = function() {
@@ -157,17 +165,25 @@ plotFactors = function(results) {
     dev.off()
 }
 
-analyseAll() = function(plotRuns=FALSE) {
-    results = analyseEstablishment()
-    save(results, file="experiment_results.dat")
-    plotEstablishment(results)
-    plotFactors(results)
+factorAnalysis = function(results) {
+    ##TODO ANOVA
+    
+}
+
+analyseAll = function(plotAll=TRUE,plotRuns=FALSE) {
+    if (plotAll) {
+        results = analyseEstablishment()
+        save(results, file="experiment_results.dat")
+        plotEstablishment(results)
+        plotFactors(results)
+        factorAnalysis(results)
+    }
     if (plotRuns) {
         for (f in list.files(resultdir)) {
             print(paste("Processing", f))
             simname = f
             outdir = paste0(resultdir, "/", simname)
-            if (file.info(outdir)$isdir) visualizeRun()
+            if (file.info(outdir)$isdir) visualizeRun(outdir)
         }
     }
 }
@@ -175,8 +191,8 @@ analyseAll() = function(plotRuns=FALSE) {
 ### ANALYSE AN INDIVIDUAL RUN
 
 ## Plot the distribution of traits in the population at the given timestep (-1 => END)
-plotTraits = function(timestep=-1, toFile=TRUE) {
-    print("Plotting traits...")
+plotTraits = function(outdir, timestep=-1, toFile=TRUE) {
+    print(paste("Plotting traits at timestep", timestep))
     traitfile = grep(paste0("t", timestep, "_"), list.files(outdir), value=T)
     if (length(traitfile) == 0) {
         # If the desired timestep doesn't exist, take the newest timestep we have
@@ -192,11 +208,11 @@ plotTraits = function(timestep=-1, toFile=TRUE) {
     jpeg(paste0(outdir, "/", simname, "_traits_t", timestep, ".jpg"), height=720, width=1800)
     boxplot(ts$fitness*100, log(ts$size), log(ts$seedsize), log(ts$repsize), ts$lnkgunits/10,
             ts$ngenes/10, ts$temptol, ts$tempopt-293, ts$prectol, ts$precopt, ts$compat*10,
-            ts$repradius*10, ts$dispmean, ts$dispshape,
+            ts$dispmean, ts$dispshape,
             names=c("Fitness (x100)", "log(Size)", "log(Seed size)", "log(Reprod. size)",
                     "Chromosome (x0.1)", "Genes (x0.1)", "Temp. tolerance",
                     "Temp. opt. (-293)", "Precip. tolerance",
-                    "Precip. optimum", "Compatibility (x10)", "Rep. radius (x10)",
+                    "Precip. optimum", "Compatibility (x10)",
                     "Dispersal mean", "Dispersal shape"))
     legend("top", c(paste("Individuals:", length(ts$counter)),
                     paste("Lineages:", length(unique(ts$lineage)))))
@@ -204,7 +220,7 @@ plotTraits = function(timestep=-1, toFile=TRUE) {
 }
 
 # Plot population size and diversity indices over time
-plotDiversity = function(logfile="diversity.log") {
+plotDiversity = function(outdir, logfile="diversity.log") {
     logfile = paste(outdir, logfile, sep="/")
     if (!file.exists(logfile) || file.info(logfile)$size == 0) {
         print(paste("WARNING: logfile not found", logfile))
@@ -236,33 +252,40 @@ plotDiversity = function(logfile="diversity.log") {
     dev.off()
 }
 
-plotMap = function(timestep=-1, compensate=TRUE, showinvaders=TRUE) {
+plotMap = function(outdir, timestep=-1, compensate=TRUE, showinvaders=TRUE) {
     ##FIXME Make sure `alien` status is displayed the same each time, adjust legend, create custom mapping
-    ##TODO Add a star to the entry point
     print(paste0("Plotting map at timestep ", timestep, "..."))
-    allspecies = collateSpeciesTable(outdir, timestep, compensate, showinvaders)
+    st = collateSpeciesTable(outdir, timestep, compensate, showinvaders,TRUE)
+    ts = st$ts
+    allspecies = st$allspecies
+    ts$xloc = ts$xloc + 1
+    ts$yloc = ts$yloc + 1
+    if (is.null(allspecies)) return()
     m = ggplot(ts, aes(xloc, yloc))
     m + geom_tile(aes(fill = temp.C)) + labs(x="Longitude", y="Latitude") +
         scale_fill_continuous(low="lightgrey", high="darkgrey") +
-        scale_color_gradientn(colours = rainbow(5)) +
-        geom_jitter(data = allspecies, aes(size = abundance, color = lineage, shape = alien))
+        annotate("rect", xmin=2.5, xmax=3.5, ymin=4.5, ymax=5.5, fill="green", alpha=0.3) +
+        #scale_color_gradient(colours = rainbow(5)) +
+        #scale_color_discrete(allspecies$lineage,name="Lineages",labels=as.character(allspecies$lineage)) +
+        geom_jitter(data = allspecies, aes(size = abundance, color = lineage, shape = alien)) +
+        guides(colour=FALSE)
     ggsave(file=paste0(outdir, "/", simname, "_map_t", timestep, ".jpg"), height=8, width=10)
 }
 
-plotTimeSeries = function(step=1) {
+plotTimeSeries = function(outdir, step=1) {
     files = grep(".tsv", grep("_t", list.files(outdir), value=T), value=T)
     for (f in files) {
         timestep = as.numeric(substring(strsplit(f, "_")[[1]][2], 2))
         if (timestep %% step == 0 || abs(timestep) == 1)
-            plotMap(timestep, FALSE)
+            plotMap(outdir, timestep, FALSE)
     }
 }
 
-visualizeRun = function() {
-    plotDiversity()
-    plotTraits()
-    plotTraits(1000)
-    plotTimeSeries(250)
+visualizeRun = function(outdir) {
+    plotDiversity(outdir)
+    plotTraits(outdir)
+    plotTraits(outdir, 1000)
+    plotTimeSeries(outdir, 250)
 }
 
 
@@ -270,7 +293,8 @@ visualizeRun = function() {
     
 # If the simname is given as 'all', do a whole-experiment analysis
 if (simname == "all") {
-    analyseAll(TRUE)
+    outdir = sub("/all", "", outdir)
+    analyseAll(FALSE,TRUE)
     print("Done.")
 } else {
     # Otherwise, just look at the specified directory (or the default, if
@@ -279,6 +303,6 @@ if (simname == "all") {
         simname = "tests"
         outdir = paste0(resultdir, "/", simname)
     }
-    visualizeRun()
+    visualizeRun(outdir)
     print("Done.")
 }
