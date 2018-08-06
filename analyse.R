@@ -53,6 +53,7 @@ collateSpeciesTable = function(rundir, timestep, compensate=TRUE, showinvaders=T
     colnames(allspecies) = c("xloc", "yloc", "lineage", "abundance", "alien")
     allspecies = as.data.frame(allspecies)
     allspecies$abundance = as.numeric(as.character(allspecies$abundance))
+    write.csv2(allspecies, file=paste0(rundir, "/species.csv"))
     return(allspecies)
 }
 
@@ -105,12 +106,8 @@ analyseEstablishment = function() {
     return(results)
 }
 
-plotEstablishment = function() {
-    results = analyseEstablishment()
-    print("Plotting establishment")
-    ##save the data structure to a binary file for future use
-    save(results, file="experiment_results.dat")
-    ##create matrix graphics - one per category in 'diversity'
+plotEstablishment = function(results) {
+    print("Plotting establishment matrices")
     for (d in dimnames(results)$diversity) {
         jpeg(paste0(d,".jpg"), width=960)
         mppl = t(results[,,"1PP","avg",d])
@@ -133,7 +130,10 @@ plotEstablishment = function() {
         text(35,10,round(mpph[2,2],2),col="blue",cex=3)
         dev.off()
     }
-    ##create boxplots (prod/prop/dist vs. aliens)
+}
+
+plotFactors = function(results) {
+    print("Plotting factor boxplots")
     jpeg("factors.jpg",height=400, width=1200)
     par(mfrow=c(1,3),cex=1.3)
     templ = as.vector(results["T25",,,1:5,"aliens"])
@@ -156,7 +156,21 @@ plotEstablishment = function() {
         text(1.5, max(proph,propl,na.rm=TRUE), "*", cex=4)
     dev.off()
 }
-        
+
+analyseAll() = function(plotRuns=FALSE) {
+    results = analyseEstablishment()
+    save(results, file="experiment_results.dat")
+    plotEstablishment(results)
+    plotFactors(results)
+    if (plotRuns) {
+        for (f in list.files(resultdir)) {
+            print(paste("Processing", f))
+            simname = f
+            outdir = paste0(resultdir, "/", simname)
+            if (file.info(outdir)$isdir) visualizeRun()
+        }
+    }
+}
 
 ### ANALYSE AN INDIVIDUAL RUN
 
@@ -248,21 +262,15 @@ visualizeRun = function() {
     plotDiversity()
     plotTraits()
     plotTraits(1000)
-    plotTimeSeries(500)
+    plotTimeSeries(250)
 }
 
 
 ### CALL THE APPROPRIATE FUNCTIONS
     
-# If the simname is given as 'all', process every folder in 'results'
+# If the simname is given as 'all', do a whole-experiment analysis
 if (simname == "all") {
-    plotEstablishment()
-    for (f in list.files(resultdir)) {
-        print(paste("Processing", f))
-        simname = f
-        outdir = paste0(resultdir, "/", simname)
-        if (file.info(outdir)$isdir) visualizeRun()
-    }
+    analyseAll(TRUE)
     print("Done.")
 } else {
     # Otherwise, just look at the specified directory (or the default, if
