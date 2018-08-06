@@ -340,15 +340,19 @@ function num2seq(n::Integer)
     sequence
 end
 
-function creategenes(ngenes::Int, traits::Array{Trait,1}, genelength)
+function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String, Any})
     genes = AbstractGene[]
+    compatidx = findin(settings["traitnames"], ["compat"])[1]
     for i in 1:ngenes
-        sequence = String(rand(collect("acgt"), 20)) # arbitrary start sequence
+        sequence = String(rand(collect("acgt"), settings["smallgenelength"])) # arbitrary start sequence
         seqint = seq2num(sequence)
         codesfor = Trait[]
         push!(genes,Gene(seqint, codesfor))
     end
     for trait in traits
+        if trait.nameindex == compatidx
+            continue
+        end
         ncodinggenes = rand(Poisson(1))
         while ncodinggenes < 1  # make sure every trait is coded by at least 1 gene
             ncodinggenes = rand(Poisson(1))
@@ -358,9 +362,9 @@ function creategenes(ngenes::Int, traits::Array{Trait,1}, genelength)
             push!(gene.codes,trait)
         end
     end
-    if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
-        push!(genes, BigGene(seq2bignum(String(rand(collect("acgt"), genelength))), Trait[]))
-    end
+    # if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
+    push!(genes, BigGene(seq2bignum(String(rand(collect("acgt"), settings["biggenelength"]))), [Trait(compatidx, 0.5)]))
+    # end
     genes
 end
 
@@ -397,7 +401,7 @@ function createind(settings::Dict{String, Any})
     ngenes = rand(Poisson(meangenes))
     ngenes < 1 && (ngenes = 1)
     traits = createtraits(settings)
-    genes = creategenes(ngenes, traits, settings["genelength"])
+    genes = creategenes(ngenes, traits, settings)
     randchrms = rand(1:length(genes))
     if settings["linkage"] == "none"
         nchrms = length(genes)

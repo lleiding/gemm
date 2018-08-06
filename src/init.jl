@@ -7,7 +7,7 @@ function genesis(settings::Dict{String, Any})
     while true
         # Create a new species and calculate its population size
         newind = createind(settings)
-        if contains(settings["initpopsize"], "metabolic")
+        if contains(settings["initpopsize"], "metabolic") || contains(settings["initpopsize"], "single") 
             # population size determined by adult size and temperature niche optimum
             popsize = round(fertility * newind.traits["repsize"]^(-1/4) *
                             exp(-act/(boltz*newind.traits["tempopt"])))
@@ -33,7 +33,7 @@ function genesis(settings::Dict{String, Any})
         # Check the cell capacity
         popmass = popsize * newind.size
         if totalmass + popmass > settings["cellsize"] # stop loop if cell is full
-            if totalmass >= settings["cellsize"]*0.75 #make sure the cell is full enough
+            if totalmass >= settings["cellsize"]*0.75 || contains(settings["initpopsize"], "single") #make sure the cell is full enough
                 simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", settings, 'd') #DEBUG
                 break
             else
@@ -47,6 +47,7 @@ function genesis(settings::Dict{String, Any})
             !settings["static"] && (newind = deepcopy(newind))
             push!(community, newind)
         end
+        contains(settings["initpopsize"], "single") && break
     end
     simlog("Patch initialized with $(length(community)) individuals.", settings, 'd') #DEBUG
     community
