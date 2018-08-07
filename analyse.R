@@ -7,8 +7,7 @@ library(ggplot2)
 ## The working directory may be specified via the commandline, otherwise it
 ## defaults to results/tests
 resultdir = "results"
-simname = commandArgs()[length(commandArgs())]
-outdir = paste0(resultdir, "/", simname)
+outdir = paste0(resultdir, "/", commandArgs()[length(commandArgs())])
 
 
 ### ANALYSE THE WHOLE EXPERIMENT
@@ -94,7 +93,7 @@ analyseEstablishment = function() {
                 if (length(subset(specs, lineage==a)$lineage) > 6) invasives = invasives+1
             }
             nnative = sum(subset(specs, alien==FALSE)$abundance)
-            if (nnative == 0) nnative = 1 #XXX is this acceptable?
+            if (nnative == 0) nnative = 1 #prevent division by 0 problems
             nalien = sum(subset(specs, alien==TRUE)$abundance)
             ratio = nalien / nnative # ratio of total abundances
             results[temp, dist, prop, repl,] = c(natives, aliens, invasives, ratio)
@@ -117,7 +116,7 @@ analyseEstablishment = function() {
 plotEstablishment = function(results) {
     print("Plotting establishment matrices")
     for (d in dimnames(results)$diversity) {
-        jpeg(paste0(d,".jpg"), width=960)
+        jpeg(paste0(d,".jpg"), height=240, width=480, quality=100)
         mppl = t(results[,,"1PP","avg",d])
         mpph = t(results[,,"10PP","avg",d])
         par(mfrow=c(1,2), cex=1.2)
@@ -142,7 +141,7 @@ plotEstablishment = function(results) {
 
 plotFactors = function(results, var="aliens") {
     print("Plotting factor boxplots")
-    jpeg("factors.jpg",height=400, width=1200)
+    jpeg("factors.jpg",height=200, width=600, quality=100)
     par(mfrow=c(1,3),cex=1.3)
     templ = as.vector(results["T25",,,1:5,var])
     temph = as.vector(results["T35",,,1:5,var])
@@ -211,21 +210,22 @@ analyseAll = function(plotAll=TRUE,plotRuns=FALSE,var="aliens") {
 ### ANALYSE AN INDIVIDUAL RUN
 
 ## Plot the distribution of traits in the population at the given timestep (-1 => END)
-plotTraits = function(outdir, timestep=-1, toFile=TRUE) {
+plotTraits = function(outdir, timestep=-1, compensate=FALSE) {
+    simname = strsplit(outdir, "/")[[1]][2]
     print(paste("Plotting traits at timestep", timestep))
     traitfile = grep(paste0("t", timestep, "_"), list.files(outdir), value=T)
-    if (length(traitfile) == 0) {
+    if (compensate && length(traitfile) == 0) {
         # If the desired timestep doesn't exist, take the newest timestep we have
         timestep = (length(grep(".tsv", list.files(outdir), value=T))-1) * 10
         traitfile = grep(paste("t", timestep, sep=""), list.files(outdir), value=T)
     }
     traitfilepath = paste(outdir, traitfile, sep="/")
-    if (!file.exists(traitfilepath) || file.info(traitfilepath)$size == 0) {
+    if (!file.exists(traitfilepath) || file.info(traitfilepath)$isdir || file.info(traitfilepath)$size == 0) {
         print(paste("WARNING: traitfile not found", traitfilepath))
         return()
     }
     ts = read.table(traitfilepath, header=T)
-    jpeg(paste0(outdir, "/", simname, "_traits_t", timestep, ".jpg"), height=720, width=1800)
+    jpeg(paste0(outdir,"/",simname,"_traits_t",timestep,".jpg"), height=360, width=900, quality=100)
     boxplot(ts$fitness*100, log(ts$size), log(ts$seedsize), log(ts$repsize), ts$lnkgunits/10,
             ts$ngenes/10, ts$temptol, ts$tempopt-293, ts$prectol, ts$precopt, ts$compat*10,
             ts$dispmean, ts$dispshape,
@@ -241,6 +241,7 @@ plotTraits = function(outdir, timestep=-1, toFile=TRUE) {
 
 # Plot population size and diversity indices over time
 plotDiversity = function(outdir, logfile="diversity.log") {
+    simname = strsplit(outdir, "/")[[1]][2]
     logfile = paste(outdir, logfile, sep="/")
     if (!file.exists(logfile) || file.info(logfile)$size == 0) {
         print(paste("WARNING: logfile not found", logfile))
@@ -250,16 +251,16 @@ plotDiversity = function(outdir, logfile="diversity.log") {
     data$lineages = data$lineages/10 #otherwise the Y axis is too big
     # Plot population sizes
     print("Plotting population development...")
-    jpeg(paste0(outdir, "/", simname, "_population.jpg"), height=720,
-         width=length(data$population)*(2000/length(data$population)))
+    jpeg(paste0(outdir, "/", simname, "_population.jpg"), quality=100, height=360,
+         width=length(data$population)*(1000/length(data$population)))
     plot(data$population, xlab="Time", ylab="Population size", ylim=c(0, max(data$population)),
          col="red", type='l')
     dev.off()
     # Plot diversity development
     print("Plotting diversity...")
     ymax = max(data$lineages, data$alpha, data$beta, data$gamma, data$freespace)
-    jpeg(paste0(outdir, "/", simname, "_diversity.jpg"), height=720,
-         width=length(data$population)*(2000/length(data$population)))
+    jpeg(paste0(outdir, "/", simname, "_diversity.jpg"), quality=100, height=360,
+         width=length(data$population)*(1000/length(data$population)))
     plot(data$lineages, col="orange", type='l', lty=2, ylim=c(0,ymax),
          xlab="Time", ylab="Diversity")
     lines(data$freespace, col="cyan", type='l', lty=2)
@@ -274,6 +275,7 @@ plotDiversity = function(outdir, logfile="diversity.log") {
 
 plotMap = function(outdir, timestep=-1, compensate=TRUE, showinvaders=TRUE) {
     ##FIXME Make sure `alien` status is displayed the same each time, adjust legend, create custom mapping
+    simname = strsplit(outdir, "/")[[1]][2]
     print(paste0("Plotting map at timestep ", timestep, "..."))
     st = collateSpeciesTable(outdir, timestep, compensate, showinvaders,TRUE)
     ts = st$ts
@@ -285,12 +287,10 @@ plotMap = function(outdir, timestep=-1, compensate=TRUE, showinvaders=TRUE) {
     m + geom_tile(aes(fill = temp.C)) + labs(x="Longitude", y="Latitude") +
         scale_fill_continuous(low="lightgrey", high="darkgrey") +
         annotate("rect", xmin=2.5, xmax=3.5, ymin=4.5, ymax=5.5, fill="green", alpha=0.3) +
-        #scale_color_gradient(colours = rainbow(5)) +
-        #scale_color_discrete(allspecies$lineage,name="Lineages",labels=as.character(allspecies$lineage)) +
         geom_jitter(data = allspecies, aes(size = abundance, color = lineage, shape = alien)) +
-        guides(colour=FALSE)
+        guides(colour=FALSE, shape=FALSE)
     ggsave(file=paste0(outdir, "/", simname, "_map_t", timestep, ".jpg"),
-           height=8, width=10, dpi="print")
+           height=4, width=5, dpi="print")
 }
 
 plotTimeSeries = function(outdir, step=1) {
@@ -307,14 +307,14 @@ visualizeRun = function(outdir) {
     plotDiversity(outdir)
     plotTraits(outdir)
     plotTraits(outdir, 1000)
-    plotTimeSeries(outdir, 250)
+    plotTimeSeries(outdir, 500)
 }
 
 
 ### CALL THE APPROPRIATE FUNCTIONS
     
 # If the simname is given as 'all', do a whole-experiment analysis
-if (simname == "all") {
+if (commandArgs()[length(commandArgs())] == "all") {
     outdir = sub("/all", "", outdir)
     analyseAll(TRUE,TRUE,"invasives")
     print("Done.")
