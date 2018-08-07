@@ -140,16 +140,14 @@ plotEstablishment = function(results) {
     }
 }
 
-plotFactors = function(results, invasives=FALSE) {
+plotFactors = function(results, var="aliens") {
     print("Plotting factor boxplots")
     jpeg("factors.jpg",height=400, width=1200)
     par(mfrow=c(1,3),cex=1.3)
-    if (invasives) var = "invasives"
-    else var = "aliens"
     templ = as.vector(results["T25",,,1:5,var])
     temph = as.vector(results["T35",,,1:5,var])
     boxplot(templ, temph, names=c("25°C","35°C"), col="lightblue",
-            main="Temperature", ylab=paste("Number of", substr(var,1,nchar(var)-1), "species")
+            main="Temperature", ylab=paste("Number of", substr(var,1,nchar(var)-1), "species"))
     if (t.test(templ,temph)$p.value < 0.05)
         text(1.5, max(temph,templ,na.rm=TRUE), "*", cex=4)
     distl = as.vector(results[,"1DB",,1:5,"aliens"])
@@ -167,36 +165,38 @@ plotFactors = function(results, invasives=FALSE) {
     dev.off()
 }
 
-factorAnalysis = function(results) {
+factorAnalysis = function(results,var="aliens") {
     tab = c()
     for (r in dimnames(results)$replicates[1:5]) {
-        tab = rbind(tab,c(35,10,10,results["T35","10DB","10PP",r,"aliens"]))
-        tab = rbind(tab,c(35,10,1,results["T35","10DB","1PP",r,"aliens"]))
-        tab = rbind(tab,c(35,1,10,results["T35","1DB","10PP",r,"aliens"]))
-        tab = rbind(tab,c(35,1,1,results["T35","1DB","1PP",r,"aliens"]))
-        tab = rbind(tab,c(25,10,10,results["T25","10DB","10PP",r,"aliens"]))
-        tab = rbind(tab,c(25,10,1,results["T25","10DB","1PP",r,"aliens"]))
-        tab = rbind(tab,c(25,1,10,results["T25","1DB","10PP",r,"aliens"]))
-        tab = rbind(tab,c(25,1,1,results["T25","1DB","1PP",r,"aliens"]))
+        tab = rbind(tab,c(35,10,10,results["T35","10DB","10PP",r,var]))
+        tab = rbind(tab,c(35,10,1,results["T35","10DB","1PP",r,var]))
+        tab = rbind(tab,c(35,1,10,results["T35","1DB","10PP",r,var]))
+        tab = rbind(tab,c(35,1,1,results["T35","1DB","1PP",r,var]))
+        tab = rbind(tab,c(25,10,10,results["T25","10DB","10PP",r,var]))
+        tab = rbind(tab,c(25,10,1,results["T25","10DB","1PP",r,var]))
+        tab = rbind(tab,c(25,1,10,results["T25","1DB","10PP",r,var]))
+        tab = rbind(tab,c(25,1,1,results["T25","1DB","1PP",r,var]))
     }
-    colnames(tab) = c("temperature", "disturbance", "propagules", "aliens")
+    colnames(tab) = c("temperature", "disturbance", "propagules", var)
     tab = as.data.frame(tab)
-    anovaModel = aov(tab$aliens~tab$disturbance*tab$propagules*tab$temperature)
+    modelFormula = formula(paste0("tab$",var,"~tab$disturbance*tab$propagules*tab$temperature"))
+    anovaModel = aov(modelFormula)
     sink("anova.txt",append=TRUE,split=TRUE)
+    print(paste0("call: aov(",modelFormula,")"))
     print("summary.aov:")
-    summary.aov(anovaModel)
+    print(summary.aov(anovaModel))
     print("summary.lm:")
-    summary.lm(anovaModel)
+    print(summary.lm(anovaModel))
     sink()
 }
 
-analyseAll = function(plotAll=TRUE,plotRuns=FALSE) {
+analyseAll = function(plotAll=TRUE,plotRuns=FALSE,var="aliens") {
     if (plotAll) {
         results = analyseEstablishment()
         save(results, file="experiment_results.dat")
         plotEstablishment(results)
-        plotFactors(results)
-        factorAnalysis(results)
+        plotFactors(results,var)
+        factorAnalysis(results,var)
     }
     if (plotRuns) {
         for (f in list.files(resultdir)) {
@@ -289,12 +289,14 @@ plotMap = function(outdir, timestep=-1, compensate=TRUE, showinvaders=TRUE) {
         #scale_color_discrete(allspecies$lineage,name="Lineages",labels=as.character(allspecies$lineage)) +
         geom_jitter(data = allspecies, aes(size = abundance, color = lineage, shape = alien)) +
         guides(colour=FALSE)
-    ggsave(file=paste0(outdir, "/", simname, "_map_t", timestep, ".jpg"), height=8, width=10)
+    ggsave(file=paste0(outdir, "/", simname, "_map_t", timestep, ".jpg"),
+           height=8, width=10, dpi="print")
 }
 
 plotTimeSeries = function(outdir, step=1) {
     files = grep(".tsv", grep("_t", list.files(outdir), value=T), value=T)
     for (f in files) {
+        if (file.info(paste0(outdir,"/",f))$size == 0) next
         timestep = as.numeric(substring(strsplit(f, "_")[[1]][2], 2))
         if (timestep %% step == 0 || abs(timestep) == 1)
             plotMap(outdir, timestep, FALSE)
@@ -314,7 +316,7 @@ visualizeRun = function(outdir) {
 # If the simname is given as 'all', do a whole-experiment analysis
 if (simname == "all") {
     outdir = sub("/all", "", outdir)
-    analyseAll(FALSE,TRUE)
+    analyseAll(TRUE,TRUE,"invasives")
     print("Done.")
 } else {
     # Otherwise, just look at the specified directory (or the default, if
