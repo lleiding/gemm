@@ -19,7 +19,7 @@ allworld = read.table(paste0(basename, ".tsv"), header = T)
 
 ## read sequences (fasta format!):
 allseqs = read.dna(file=paste0(basename, ".fa"), format="fasta")
-headers = grep("compat", dimnames(allseqs)[[1]], value = T)[c(TRUE,FALSE)]
+headers = names(allseqs[sapply(allseqs, length) == 200][c(TRUE,FALSE)])
 
 #rownames(allworld) = headers
 allworld$tips = headers
@@ -29,33 +29,32 @@ names(allworld)[names(allworld) == "id"] = "ID"
 allworld$location = paste(allworld$xloc, allworld$yloc, sep = ".")
 allworld$temp.C = allworld$temp - 273
 maxtemp = max(allworld$temp.C)
-allworld$habitat = paste0(allworld$temp.C, "C.", allworld$nichea, "p")
+allworld$habitat = paste0(allworld$temp.C, "C.", allworld$p, "p")
 
 ## get ids of lineages with at least four individuals:
 lineages = names(table(allworld$lineage))[table(allworld$lineage) >= 5]
 
 allspecies = c()
-
 for(lineage in lineages){
     ## subset
     world = allworld[allworld$lineage == lineage, ]
     if(sum(world$size >= world$repsize) >= 2){ # build trees only for lineages with at least two adult individuals on island
-        seqs = allseqs[grep(lineage, dimnames(allseqs)[[1]]),]
+        seqs = allseqs[grep(lineage, names(allseqs))]
 
         ## filter sequences according to header:
-        seqs = seqs[grep("compat", dimnames(seqs)[[1]]),]
-
+        #seqs = seqs[grep("compat", names(seqs))]
+        seqs = seqs[sapply(seqs, length) == 200]
         ## one chromosome copy:
-        seqs = seqs[c(TRUE,FALSE),]
+        seqs = seqs[c(TRUE,FALSE)]
 
         adults = world$size >= world$repsize
         world = world[adults,]
-        seqs = seqs[adults,]
+        seqs = seqs[adults]
 
         if(nrow(world) > 40000){
            inds = sample(1:nrow(world), 40000)
            world = world[inds,]
-           seqs = seqs[inds,]
+           seqs = seqs[inds]
         }
         
         ## compute distances:
@@ -82,7 +81,7 @@ for(lineage in lineages){
         species$abundance = as.vector(table(world$population))
 
         p = ggtree(drop.tip(as.phylo(tre), setdiff(world$tips, species$tips)))
-        p = p %<+% species + scale_color_gradient(low="blue", high="red") + geom_tippoint(aes(color=nichea, size=abundance, alpha=temp.C)) + geom_tiplab(aes(subset=!duplicated(speciesID),label=speciesID), geom='text')
+        p = p %<+% species + scale_color_gradient(low="blue", high="red") + geom_tippoint(aes(color=prec, size=abundance, alpha=temp.C)) + geom_tiplab(aes(subset=!duplicated(speciesID),label=speciesID), geom='text')
         p + theme(legend.position="right")
 
         ## save phylo plots:
