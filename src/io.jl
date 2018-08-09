@@ -376,11 +376,11 @@ Save the phylogeny of individuals currently in world `w`.
 """
 function writephylo(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
     if !isfile(joinpath(settings["dest"], "phylo.tsv"))
-        open(joinpath(settings["dest"], "phylo.tsv"), "w") do f
+        open(joinpath(settings["dest"], "phylo$(settings["seed"]).tsv"), "w") do f
             println(f, "t\tpatch\tid\tparent")
         end
     end
-    open(joinpath(settings["dest"], "phylo.tsv"), "a") do f
+    open(joinpath(settings["dest"], "phylo$(settings["seed"]).tsv"), "a") do f
         for p in world
             for i in 1:size(p.phylo, 1)
                 print(f, timestep, "\t")
