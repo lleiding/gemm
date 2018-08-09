@@ -3,8 +3,8 @@
 # timesteps:
 10000
 
-# experiment island - a 5x5 square with radially increasing temperature
-# (as on a mountain, 25°C - 21°C), a linear precipitation gradient,
+# experiment island - a 7x7 square with radially increasing temperature
+# (as on a mountain, 25°C - 19°C), a linear precipitation gradient,
 # and a coastal invasion point ('port')
 	
 # <id> <x> <y> [optional parameters]
@@ -32,8 +32,8 @@
 22 3 0 isisland temp=298 prec=2
 23 3 1 isisland temp=296 prec=3
 24 3 2 isisland temp=294 prec=4
-25 3 3 isisland temp=292 prec=5
-26 3 4 isisland temp=294 prec=6 # island mountain peak
+25 3 3 isisland temp=292 prec=4 # island mountain peak
+26 3 4 isisland temp=294 prec=6
 27 3 5 isisland temp=296 prec=7
 28 3 6 isisland temp=298 prec=8
 29 4 0 isisland temp=298 prec=2
@@ -58,4 +58,4 @@
 48 6 5 isisland temp=298 prec=7
 49 6 6 isisland temp=298 prec=8
 
-100 -50 3 temp=303 prec=5 initpop # mainland source pool
+100 60 3 temp=303 prec=5 initpop # mainland source pool
