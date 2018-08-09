@@ -64,7 +64,19 @@ collateSpeciesTable = function(rundir, timestep, compensate=TRUE, showinvaders=T
     }
 }
 
-analyseEstablishment = function() {
+## Lazy-load the species table from file if it exists, instead of recalculating it
+loadSpeciesTable = function(rundir, timestep) {
+    specfile = grep(".csv", grep(paste0("t", timestep), list.files(rundir), value=T), value=T)[1]
+    specfilepath = paste0(rundir, "/", specfile)
+    if (is.na(specfile) || !file.exists(specfilepath) || file.info(specfilepath)$isdir) {
+        return(collateSpeciesTable(rundir, timestep, FALSE))
+    }
+    print(paste("Loading species table from", specfilepath))
+    allspecies = read.csv2(specfilepath)
+    return(allspecies)
+}
+
+analyseEstablishment = function(timestep=-1, reanalyze=TRUE) {
     print("Analysing invasion success")
     ## create the results table
     results = array(dim=c(2,2,2,6,4), dimnames=list(temperature=c("T25", "T35"),
@@ -78,7 +90,8 @@ analyseEstablishment = function() {
         dir = paste0(resultdir, "/", d)
         if (file.info(dir)$isdir && !grepl("control",d)) {
             ## figure out the scenario
-            specs = collateSpeciesTable(dir, -1, FALSE, TRUE)
+            if (reanalyze) specs = collateSpeciesTable(dir, timestep, FALSE, TRUE)
+            else specs = loadSpeciesTable(dir, timestep)
             if (is.null(specs)) next
             repl = strsplit(d, "_")[[1]][2]
             dist = strsplit(d, "_")[[1]][5]
@@ -117,8 +130,8 @@ plotEstablishment = function(results) {
     print("Plotting establishment matrices")
     for (d in dimnames(results)$diversity) {
         jpeg(paste0(d,".jpg"), height=480, width=960, quality=100)
-        mppl = t(results[,,"1PP","avg",d])
-        mpph = t(results[,,"10PP","avg",d])
+        mppl = results[,,"1PP","avg",d]
+        mpph = results[,,"10PP","avg",d]
         par(mfrow=c(1,2), cex=1.2)
         maxv = max(mppl,mpph,na.rm=TRUE)
         cols = grey(rev((1:maxv)/maxv))
@@ -156,23 +169,6 @@ plotFactors = function(results, var="aliens") {
     boxplot(propl, proph, names=c("1 propagule","10 propagules"), col="lightblue",
             main="Propagule pressure")
     dev.off()
-}
-
-analyseAll = function(plotAll=TRUE,plotRuns=FALSE,var="aliens") {
-    if (plotAll) {
-        results = analyseEstablishment()
-        save(results, file="experiment_results.dat")
-        plotEstablishment(results)
-        plotFactors(results,var)
-    }
-    if (plotRuns) {
-        for (f in list.files(resultdir)) {
-            print(paste("Processing", f))
-            simname = f
-            outdir = paste0(resultdir, "/", simname)
-            if (file.info(outdir)$isdir) visualizeRun(outdir)
-        }
-    }
 }
 
 ### ANALYSE AN INDIVIDUAL RUN
@@ -277,11 +273,32 @@ plotTimeSeries = function(outdir, step=1) {
     }
 }
 
-visualizeRun = function(outdir) {
-    plotDiversity(outdir,2000)
-    #plotTraits(outdir)
-    #plotTraits(outdir, 1000)
+
+### DISPATCH TO THE APPROPRIATE FUNCTIONS
+    
+visualizeRun = function(outdir, maxt=-1) {
+    plotDiversity(outdir,maxt)
+    plotTraits(outdir)
+    plotTraits(outdir, 1000)
     plotTimeSeries(outdir, 500)
+}
+    
+analyseAll = function(plotRuns=TRUE,plotAll=TRUE,maxt=-1,var="invasives",reanalyze=TRUE) {
+    if (plotRuns) {
+        for (f in list.files(resultdir)) {
+            print(paste("Processing", f))
+            simname = f
+            outdir = paste0(resultdir, "/", simname)
+            if (file.info(outdir)$isdir) visualizeRun(outdir)
+        }
+    }
+    if (plotAll) {
+        results = analyseEstablishment(maxt, reanalyze)
+        save(results, file="experiment_results.dat")
+        plotEstablishment(results)
+        plotFactors(results,var)
+    }
+
 }
 
 
@@ -290,7 +307,7 @@ visualizeRun = function(outdir) {
 # If the simname is given as 'all', do a whole-experiment analysis
 if (commandArgs()[length(commandArgs())] == "all") {
     outdir = sub("/all", "", outdir)
-    analyseAll(TRUE,TRUE,"invasives")
+    analyseAll(TRUE,TRUE,2000,"invasives",FALSE)
     print("Done.")
 } else {
     # Otherwise, just look at the specified directory (or the default, if
