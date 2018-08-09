@@ -116,7 +116,7 @@ analyseEstablishment = function() {
 plotEstablishment = function(results) {
     print("Plotting establishment matrices")
     for (d in dimnames(results)$diversity) {
-        jpeg(paste0(d,".jpg"), height=240, width=480, quality=100)
+        jpeg(paste0(d,".jpg"), height=480, width=960, quality=100)
         mppl = t(results[,,"1PP","avg",d])
         mpph = t(results[,,"10PP","avg",d])
         par(mfrow=c(1,2), cex=1.2)
@@ -141,52 +141,21 @@ plotEstablishment = function(results) {
 
 plotFactors = function(results, var="aliens") {
     print("Plotting factor boxplots")
-    jpeg("factors.jpg",height=200, width=600, quality=100)
+    jpeg("factors.jpg",height=400, width=1200, quality=100)
     par(mfrow=c(1,3),cex=1.3)
     templ = as.vector(results["T25",,,1:5,var])
     temph = as.vector(results["T35",,,1:5,var])
     boxplot(templ, temph, names=c("25°C","35°C"), col="lightblue",
             main="Temperature", ylab=paste("Number of", substr(var,1,nchar(var)-1), "species"))
-    if (t.test(templ,temph)$p.value < 0.05)
-        text(1.5, max(temph,templ,na.rm=TRUE), "*", cex=4)
     distl = as.vector(results[,"1DB",,1:5,"aliens"])
     disth = as.vector(results[,"10DB",,1:5,"aliens"])
     boxplot(distl, disth, names=c("1% mortality", "10% mortality"), col="lightblue",
             main="Disturbance")
-    if (t.test(distl,disth)$p.value < 0.05)
-        text(1.5, max(disth, distl,na.rm=TRUE), "*", cex=4)
     propl = as.vector(results[,,"1PP",1:5,"aliens"])
     proph = as.vector(results[,,"10PP",1:5,"aliens"])
     boxplot(propl, proph, names=c("1 propagule","10 propagules"), col="lightblue",
             main="Propagule pressure")
-    if (t.test(propl,proph)$p.value < 0.05)
-        text(1.5, max(proph,propl,na.rm=TRUE), "*", cex=4)
     dev.off()
-}
-
-factorAnalysis = function(results,var="aliens") {
-    tab = c()
-    for (r in dimnames(results)$replicates[1:5]) {
-        tab = rbind(tab,c(35,10,10,results["T35","10DB","10PP",r,var]))
-        tab = rbind(tab,c(35,10,1,results["T35","10DB","1PP",r,var]))
-        tab = rbind(tab,c(35,1,10,results["T35","1DB","10PP",r,var]))
-        tab = rbind(tab,c(35,1,1,results["T35","1DB","1PP",r,var]))
-        tab = rbind(tab,c(25,10,10,results["T25","10DB","10PP",r,var]))
-        tab = rbind(tab,c(25,10,1,results["T25","10DB","1PP",r,var]))
-        tab = rbind(tab,c(25,1,10,results["T25","1DB","10PP",r,var]))
-        tab = rbind(tab,c(25,1,1,results["T25","1DB","1PP",r,var]))
-    }
-    colnames(tab) = c("temperature", "disturbance", "propagules", var)
-    tab = as.data.frame(tab)
-    modelFormula = formula(paste0("tab$",var,"~tab$disturbance*tab$propagules*tab$temperature"))
-    anovaModel = aov(modelFormula)
-    sink("anova.txt",append=TRUE,split=TRUE)
-    print(paste0("call: aov(",modelFormula,")"))
-    print("summary.aov:")
-    print(summary.aov(anovaModel))
-    print("summary.lm:")
-    print(summary.lm(anovaModel))
-    sink()
 }
 
 analyseAll = function(plotAll=TRUE,plotRuns=FALSE,var="aliens") {
@@ -195,7 +164,6 @@ analyseAll = function(plotAll=TRUE,plotRuns=FALSE,var="aliens") {
         save(results, file="experiment_results.dat")
         plotEstablishment(results)
         plotFactors(results,var)
-        factorAnalysis(results,var)
     }
     if (plotRuns) {
         for (f in list.files(resultdir)) {
@@ -225,7 +193,7 @@ plotTraits = function(outdir, timestep=-1, compensate=FALSE) {
         return()
     }
     ts = read.table(traitfilepath, header=T)
-    jpeg(paste0(outdir,"/",simname,"_traits_t",timestep,".jpg"), height=360, width=900, quality=100)
+    jpeg(paste0(outdir,"/",simname,"_traits_t",timestep,".jpg"), height=360, width=1200, quality=100)
     boxplot(ts$fitness*100, log(ts$size), log(ts$seedsize), log(ts$repsize), ts$lnkgunits/10,
             ts$ngenes/10, ts$temptol, ts$tempopt-293, ts$prectol, ts$precopt, ts$compat*10,
             ts$dispmean, ts$dispshape,
@@ -240,7 +208,7 @@ plotTraits = function(outdir, timestep=-1, compensate=FALSE) {
 }
 
 # Plot population size and diversity indices over time
-plotDiversity = function(outdir, logfile="diversity.log") {
+plotDiversity = function(outdir, maxt=3000, logfile="diversity.log") {
     simname = strsplit(outdir, "/")[[1]][2]
     logfile = paste(outdir, logfile, sep="/")
     if (!file.exists(logfile) || file.info(logfile)$size == 0) {
@@ -248,25 +216,30 @@ plotDiversity = function(outdir, logfile="diversity.log") {
         return()
     }
     data = read.csv(logfile)
+    if (maxt > length(data$population)) maxt = length(data$population)
     data$lineages = data$lineages/10 #otherwise the Y axis is too big
     # Plot population sizes
     print("Plotting population development...")
-    jpeg(paste0(outdir, "/", simname, "_population.jpg"), quality=100, height=360,
-         width=length(data$population)*(1000/length(data$population)))
-    plot(data$population, xlab="Time", ylab="Population size", ylim=c(0, max(data$population)),
-         col="red", type='l')
+    jpeg(paste0(outdir, "/", simname, "_population.jpg"), quality=100, height=720,
+         width=maxt*(1300/maxt))
+    par(cex=1.6)
+    plot(data$population[1:maxt], xlab="Time", ylab="Population size",
+         ylim=c(0, max(data$population)), col="red", type='l')
+    abline(v=1000,lty=2,col="darkgreen")
     dev.off()
     # Plot diversity development
     print("Plotting diversity...")
-    ymax = max(data$lineages, data$alpha, data$beta, data$gamma, data$freespace)
-    jpeg(paste0(outdir, "/", simname, "_diversity.jpg"), quality=100, height=360,
-         width=length(data$population)*(1000/length(data$population)))
-    plot(data$lineages, col="orange", type='l', lty=2, ylim=c(0,ymax),
+    ymax = 3 #max(data$alpha, data$beta, data$gamma, data$freespace)
+    jpeg(paste0(outdir, "/", simname, "_diversity.jpg"), quality=100, height=720,
+         width=maxt*(1300/maxt))
+    par(cex=1.6)
+    plot(data$lineages[1:maxt], col="orange", type='l', lty=2, ylim=c(0,ymax),
          xlab="Time", ylab="Diversity")
-    lines(data$freespace, col="cyan", type='l', lty=2)
-    lines(data$alpha, col="blue", type='l')
-    lines(data$beta, col="green", type='l')
-    lines(data$gamma, col="red", type='l')
+    lines(data$freespace[1:maxt], col="cyan", type='l', lty=2)
+    lines(data$alpha[1:maxt], col="blue", type='l')
+    lines(data$beta[1:maxt], col="green", type='l')
+    lines(data$gamma[1:maxt], col="red", type='l')
+    abline(v=1000,lty=2,col="darkgreen")
     legend("topright", c("Lineages (x 0.1)", "Free space per tile", "Alpha diversity",
                          "Beta diversity", "Gamma diversity"),
            col=c("orange", "cyan", "blue", "green", "red"), lwd=2)
@@ -287,6 +260,7 @@ plotMap = function(outdir, timestep=-1, compensate=TRUE, showinvaders=TRUE) {
     m + geom_tile(aes(fill = temp.C)) + labs(x="Longitude", y="Latitude") +
         scale_fill_continuous(low="lightgrey", high="darkgrey") +
         annotate("rect", xmin=2.5, xmax=3.5, ymin=4.5, ymax=5.5, fill="green", alpha=0.3) +
+        annotate("text", x=3, y=5.5, label=paste("t =", timestep)) +
         geom_jitter(data = allspecies, aes(size = abundance, color = lineage, shape = alien)) +
         guides(colour=FALSE, shape=FALSE)
     ggsave(file=paste0(outdir, "/", simname, "_map_t", timestep, ".jpg"),
@@ -298,15 +272,15 @@ plotTimeSeries = function(outdir, step=1) {
     for (f in files) {
         if (file.info(paste0(outdir,"/",f))$size == 0) next
         timestep = as.numeric(substring(strsplit(f, "_")[[1]][2], 2))
-        if (timestep %% step == 0 || abs(timestep) == 1)
-            plotMap(outdir, timestep, FALSE)
+        if (!is.na(timestep) && (timestep %% step == 0 || abs(timestep) == 1))
+            plotMap(outdir, timestep, FALSE, TRUE)
     }
 }
 
 visualizeRun = function(outdir) {
-    plotDiversity(outdir)
-    plotTraits(outdir)
-    plotTraits(outdir, 1000)
+    plotDiversity(outdir,2000)
+    #plotTraits(outdir)
+    #plotTraits(outdir, 1000)
     plotTimeSeries(outdir, 500)
 }
 
