@@ -46,8 +46,8 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
 end
 
 function mutate!(patch::Patch, settings::Dict{String, Any})
-    for ind in patch.community
-        ind.age == 0 && mutate!(ind, patch.temp, settings)
+    for ind in patch.seedbank
+        mutate!(ind, patch.temp, settings)
     end
 end
 
