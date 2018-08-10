@@ -7,7 +7,7 @@ function genesis(settings::Dict{String, Any})
     while true
         # Create a new species and calculate its population size
         newind = createind(settings)
-        if contains(settings["initpopsize"], "metabolic")
+        if contains(settings["initpopsize"], "metabolic") || contains(settings["initpopsize"], "single")
             # population size determined by adult size and temperature niche optimum
             popsize = round(fertility * newind.traits["repsize"]^(-1/4) *
                             exp(-act/(boltz*newind.traits["tempopt"])))
@@ -17,8 +17,8 @@ function genesis(settings::Dict{String, Any})
             popsize = rand(0:quarterpopsize)
         elseif contains(settings["initpopsize"], "minimal")
             popsize = 2 #Takes two to tangle ;-) #XXX No reproduction occurs!
-        elseif contains(settings["initpopsize"], "single")
-            popsize = div(settings["cellsize"], newind.size)
+        # elseif contains(settings["initpopsize"], "single")
+        #     popsize = div(settings["cellsize"], newind.size)
         else
             simlog("Invalid value for `initpopsize`: $(settings["initpopsize"])", settings, 'e')
         end
