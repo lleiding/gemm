@@ -6,9 +6,11 @@
 
 library(stats) # what for?
 library(ape)
+library(ggplot2)
 library(ggtree)
 library(dplyr)
 library(vegan)
+library(viridis)
 #library(phyloseq)
 
 ## read main data:
@@ -19,14 +21,18 @@ allworld = read.table(paste0(basename, ".tsv"), header = T)
 
 ## read sequences (fasta format!):
 allseqs = read.dna(file=paste0(basename, ".fa"), format="fasta")
-headers = names(allseqs[sapply(allseqs, length) == 200][c(TRUE,FALSE)])
+headers = names(allseqs[sapply(allseqs, length) == 200])[c(TRUE,FALSE)]
 
-#rownames(allworld) = headers
+## make sure seqs and data have same length and elements:
+allworld = allworld %>% filter(island == 1)
+
+##rownames(allworld) = headers
+
 allworld$tips = headers
 cols = ncol(allworld)
 allworld = allworld[,c(cols,1:(cols-1))]
 names(allworld)[names(allworld) == "id"] = "ID"
-allworld$location = paste(allworld$xloc, allworld$yloc, sep = ".")
+allworld$location = paste(allworld$xloc, allworld$yloc, sep = ",")
 allworld$temp.C = allworld$temp - 273
 maxtemp = max(allworld$temp.C)
 allworld$habitat = paste0(allworld$temp.C, "C.", allworld$p, "p")
@@ -58,34 +64,62 @@ for(lineage in lineages){
         }
         
         ## compute distances:
-        dists = dist.dna(seqs, model = "F81") # use JukesCantor distances JC69, alternatively Felsenstein "F81"
+        dists = dist.dna(seqs, model = "JC69") # use JukesCantor distances JC69, alternatively Felsenstein "F81"
 
         ## calculate the tree:
-        tre = hclust(dists, method = "ward.D2") # CAVE: which method? ward.D2 gives nicest results
+        tre = hclust(dists, method = "average") # CAVE: "average" = UPGMA. NJ?
 
         ## cluster tips to create species:
-        grps = cutree(tre, h = 0.2) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
-        world$grps = grps
-        world$speciesID = 0
+        grps = cutree(tre, h = 0.1) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
+
+        world$speciesID = NA
         maxgrps = max(grps)
         for(i in unique(grps[tre$order])){
-            world$speciesID[world$grps == i] = maxgrps
+            world$speciesID[grps == i] = maxgrps
             maxgrps = maxgrps - 1
         }
-        world$taxon = paste0(world$lineage, world$speciesID)
-        world$population = paste(world$location, world$speciesID, sep = ".")
+        world$taxon = paste(world$lineage, world$speciesID, sep = "_")
+        world$population = paste(world$taxon, world$location, sep = "_")
         locspecab = table(world$population)
 
         ## make species table with abundance
         species = world[!duplicated(world$population),]
         species$abundance = as.vector(table(world$population))
 
-        p = ggtree(drop.tip(as.phylo(tre), setdiff(world$tips, species$tips)))
-        p = p %<+% species + scale_color_gradient(low="blue", high="red") + geom_tippoint(aes(color=prec, size=abundance, alpha=temp.C)) + geom_tiplab(aes(subset=!duplicated(speciesID),label=speciesID), geom='text')
-        p + theme(legend.position="right")
+        phylo = as.phylo(tre)
+        phylo = drop.tip(phylo, setdiff(world$tips, species$tips))
 
+        cladegroups = list()
+        for(i in unique(species$speciesID)){
+            cladegroups[[i]] = species$tips[species$speciesID == i]
+            ##cladegroups[[paste0("c", as.character(i))]] = species$tips[species$speciesID == i]
+        }
+        nspecs = length(cladegroups)
+        phylo = groupOTU(phylo, cladegroups) #, group_name = "speciesID")
+  
+        p = ggtree(phylo, aes(color=group), size = 1)
+        p = p %<+% species + #aes(color=groups) +
+            geom_tippoint(colour="transparent", shape = 21, aes(fill=temp.C, size=abundance)) + #, alpha=prec)) +
+            scale_color_manual(values = c("black", viridis_pal()(nspecs)),
+                               labels=c("", as.character(1:nspecs)),
+                               name = "Species ID") +
+            scale_fill_viridis(option = "plasma", name = "Temp./°C", breaks = c(19,21,23,25)) +
+            scale_alpha(range = c(0.5, 1.0)) +
+            guides(color = guide_legend(order = 1),
+                   size = guide_legend(title = "Pop. size", order = 2, override.aes = list(fill = "black"))) +
+                   ##alpha = guide_legend(title = "Precipitation", override.aes = list(fill = "black"))) +
+            theme_tree2() +
+            scale_x_continuous(breaks=seq(0.0, max(dists)/3, 0.02)) +
+            theme(legend.position="right")
+        p
+        ## old version (worked):
+        ##p = ggtree(drop.tip(as.phylo(tre), setdiff(world$tips, species$tips)))                                                 
+        ##p = p %<+% species + scale_color_gradient(low="blue", high="red") +
+        ##    geom_tippoint(aes(color=prec, size=abundance, alpha=temp.C)) +
+        ##    geom_tiplab(aes(subset=!duplicated(speciesID),label=speciesID), geom='text')                                      
+        ##p + theme(legend.position="right")
         ## save phylo plots:
-        ggsave(file=paste0(basename, "_", lineage, ".pdf"), height = 10, width = 10)
+        ggsave(file=paste0(basename, "_", lineage, "_tre.pdf"), height = 8, width = 8 * max(dists)/0.3)
 
         ## store all species:
         allspecies = rbind(allspecies, species)
@@ -93,11 +127,16 @@ for(lineage in lineages){
 }
 
 if(length(allspecies) > 1){ # only continue if there were actually phylogenies made
+    allspecies$speciesID = as.factor(allspecies$speciesID)
     m = ggplot(allworld, aes(xloc, yloc))
-    m + geom_tile(aes(fill = temp.C, width = 0.95, height = 0.95)) +
-        scale_fill_continuous(low="white", high="black") +
-        scale_color_gradientn(colours = rainbow(5)) +
-        geom_jitter(data = allspecies, aes(size = abundance, color = speciesID, shape = lineage))
+    m + geom_tile(aes(fill = temp.C, width = 0.98, height = 0.98)) +
+        scale_fill_continuous(low="gray60", high="gray90", name = "Temp./°C", breaks = c(19,21,23,25)) +
+        scale_color_viridis(name = "Species ID", discrete = TRUE) + #gradientn(colours = rainbow(5)) +
+        geom_jitter(data = allspecies, aes(size = abundance, color = speciesID, shape = lineage))+
+        guides(color = guide_legend(order = 1),
+               size = guide_legend(order = 2, title = "Pop. size"),
+               shape = guide_legend(order = 3)) +
+        theme_bw()
     ggsave(file=paste0(basename, "_map", ".pdf"), height = 8, width = 10)
     allspecies$rank[order(allspecies$abundance, decreasing =T)] = 1:nrow(allspecies)
     allspecies$localrank = 0
@@ -129,6 +168,4 @@ corename = paste(corename, collapse = "_")
 #mainland = read.table(paste0(corename, ".tsv"), header = T)
 
 traitnames = c("lnkgunits", "ngenes", "temptol", "seedsize", "tempopt", "repsize", "repradius", "dispmean", "prectol", "precopt", "dispshape")
-
-save.image(paste0(basename, ".R"))
 
