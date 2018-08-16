@@ -103,7 +103,8 @@ for(lineage in lineages){
         species = world[!duplicated(world$population),]
         species$abundance = as.vector(table(world$population))
 
-        phylo = as.phylo(tre)
+        root_tre = root(tre, which(tre$tip.label == mlworld$tips[1]))
+        phylo = as.phylo(root_tre)
         phylo = drop.tip(phylo, setdiff(world$tips, species$tips))
 
         cladegroups = list()
@@ -144,6 +145,7 @@ for(lineage in lineages){
 }
 
 if(length(allspecies) > 1){ # only continue if there were actually phylogenies made
+    allspecies = allspecies %>% filter(island == 1)
     allspecies$speciesID = as.factor(allspecies$speciesID)
     m = ggplot(allworld, aes(xloc, yloc))
     m + geom_tile(aes(fill = temp.C, width = 0.98, height = 0.98)) +
