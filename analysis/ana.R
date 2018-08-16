@@ -62,6 +62,8 @@ for(lineage in lineages){
         ## filter sequences according to header:
         #seqs = seqs[grep("compat", names(seqs))]
         seqs = seqs[sapply(seqs, length) == 200]
+        mlseqs = mlseqs[sapply(mlseqs, length) == 200]
+        mlseqs = mlseqs[c(TRUE,FALSE)]
         ## one chromosome copy:
         seqs = seqs[c(TRUE,FALSE)]
 
