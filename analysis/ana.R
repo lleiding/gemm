@@ -13,9 +13,12 @@ library(vegan)
 library(viridis)
 #library(phyloseq)
 
-## read main data:
+
 args = commandArgs()
 basename = args[length(args)]
+rlyallsp = c()
+
+## read main data:
 allworld = read.table(paste0(basename, ".tsv"), header = T)
 
 nameparts = unlist(strsplit(basename, "_"))
@@ -40,6 +43,14 @@ names(allworld)[names(allworld) == "id"] = "ID"
 allworld$location = paste(allworld$xloc, allworld$yloc, sep = ",")
 allworld$temp.C = allworld$temp - 273
 allworld$habitat = paste0(allworld$temp.C, "C.", allworld$p, "p")
+allworld$linkage = "intermediate"
+allworld$linkage[allworld$lnkgunits == 2] = "full"
+allworld$linkage[allworld$lnkgunits >= 22] = "none"
+nameparts = unlist(strsplit(basename, "_"))
+time = nameparts[length(nameparts) - 1]
+time = strsplit(time, "t")
+time = as.numeric(rev(unlist(time))[1])
+allworld$time = time
 
 mlworld$tips = mlheaders
 cols = ncol(mlworld)
@@ -47,6 +58,10 @@ mlworld = mlworld[,c(cols,1:(cols-1))]
 names(mlworld)[names(mlworld) == "id"] = "ID"
 mlworld$location = paste(mlworld$xloc, mlworld$yloc, sep = ",")
 mlworld$temp.C = mlworld$temp - 273
+mlworld$linkage = "intermediate"
+mlworld$linkage[mlworld$lnkgunits == 2] = "full"
+mlworld$linkage[mlworld$lnkgunits >= 22] = "none"
+mlworld$time = time
 
 if(mlworld$temp.C > max(allworld$temp.C)){
     mlworld$temp.C = max(allworld$temp.C)
@@ -75,9 +90,9 @@ for(lineage in lineages){
         ## one chromosome copy:
         seqs = seqs[c(TRUE,FALSE)]
 
-        adults = world$size >= world$repsize
-        world = world[adults,]
-        seqs = seqs[adults]
+        established = world$size > world$seedsize
+        world = world[established,]
+        seqs = seqs[established]
 
         if(nrow(world) > 40000){
            inds = sample(1:nrow(world), 40000)
@@ -89,13 +104,13 @@ for(lineage in lineages){
         seqs = c(seqs, mlseqs[grep(lineage, names(mlseqs))][1])
         
         ## compute distances:
-        dists = dist.dna(seqs, model = "JC69") # use JukesCantor distances JC69, alternatively Felsenstein "F81"
+        dists = dist.dna(seqs, model = "JC69") # use JukesCantor distances JC69: gives most precise results
 
         ## calculate the tree:
         tre = hclust(dists, method = "average") # CAVE: "average" = UPGMA. NJ?
 
         ## cluster tips to create species:
-        grps = cutree(tre, h = 0.25) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
+        grps = cutree(tre, h = 0.1) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
 
         world$speciesID = NA
         maxgrps = max(grps)
@@ -152,6 +167,8 @@ for(lineage in lineages){
     }
 }
 
+rlyallsp = rbind(rlyallsp, allspecies)
+
 if(length(allspecies) > 1){ # only continue if there were actually phylogenies made
     allspecies = allspecies %>% filter(island == 1)
     allspecies$speciesID = as.factor(allspecies$speciesID)
@@ -180,6 +197,10 @@ if(length(allspecies) > 1){ # only continue if there were actually phylogenies m
     plot(sac, ci.type="polygon", ci.col="yellow")
     dev.off()
 }
+
+
+## TRAITS:
+ggplot(rlyallsp, aes(x = time, y = dispshape, fill = linkage)) + geom_violin(data = filter(rlyallsp, island == 1)) + geom_hline(data = filter(rlyallsp, island == 0), aes(yintercept = dispshape)) + theme_bw() + scale_fill_viridis_d()
 
 cat(c("lineage", "linkage", "n_species"), sep = "\t")
 cat("\n")
