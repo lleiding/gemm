@@ -21,17 +21,16 @@ allworld = read.table(paste0(basename, ".tsv"), header = T)
 nameparts = unlist(strsplit(basename, "_"))
 nameparts[length(nameparts) - 1] = "t0"
 mlname = paste(nameparts, collapse = "_")
-allworld = read.table(paste0(mlname, ".tsv"), header = T)
+mlworld = read.table(paste0(mlname, ".tsv"), header = T)
 
 ## read sequences (fasta format!):
 allseqs = read.dna(file=paste0(basename, ".fa"), format="fasta")
 headers = names(allseqs[sapply(allseqs, length) == 200])[c(TRUE,FALSE)]
 
-mlmainlandseqs = read.dna(file=mlname, format="fasta")
+mlseqs = read.dna(file=paste0(mlname, ".fa"), format="fasta")
 mlheaders = names(mlseqs[sapply(mlseqs, length) == 200])[c(TRUE,FALSE)]
 
 ## make sure seqs and data have same length and elements:
-mlworld = allworld %>% filter(island != 1)
 allworld = allworld %>% filter(island == 1)
 
 allworld$tips = headers
@@ -42,7 +41,7 @@ allworld$location = paste(allworld$xloc, allworld$yloc, sep = ",")
 allworld$temp.C = allworld$temp - 273
 allworld$habitat = paste0(allworld$temp.C, "C.", allworld$p, "p")
 
-mlworld$tips = headers
+mlworld$tips = mlheaders
 cols = ncol(mlworld)
 mlworld = mlworld[,c(cols,1:(cols-1))]
 names(mlworld)[names(mlworld) == "id"] = "ID"
