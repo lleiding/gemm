@@ -104,7 +104,7 @@ for(lineage in lineages){
         species$abundance = as.vector(table(world$population))
 
         phylo = as.phylo(tre)
-        tre = root(phylo, which(phylo$tip.label == mlworld$tips[1]))
+        phylo = root(phylo, which(phylo$tip.label == mlworld$tips[1]))
         phylo = drop.tip(phylo, setdiff(world$tips, species$tips))
 
         cladegroups = list()
