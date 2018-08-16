@@ -16,17 +16,23 @@ library(viridis)
 ## read main data:
 args = commandArgs()
 basename = args[length(args)]
-
 allworld = read.table(paste0(basename, ".tsv"), header = T)
+
+nameparts = unlist(strsplit(basename, "_"))
+nameparts[length(nameparts) - 1] = "t0"
+mlname = paste(nameparts, collapse = "_")
+allworld = read.table(paste0(mlname, ".tsv"), header = T)
 
 ## read sequences (fasta format!):
 allseqs = read.dna(file=paste0(basename, ".fa"), format="fasta")
 headers = names(allseqs[sapply(allseqs, length) == 200])[c(TRUE,FALSE)]
 
-## make sure seqs and data have same length and elements:
-allworld = allworld %>% filter(island == 1)
+mlmainlandseqs = read.dna(file=mlname, format="fasta")
+mlheaders = names(mlseqs[sapply(mlseqs, length) == 200])[c(TRUE,FALSE)]
 
-##rownames(allworld) = headers
+## make sure seqs and data have same length and elements:
+mlworld = allworld %>% filter(island != 1)
+allworld = allworld %>% filter(island == 1)
 
 allworld$tips = headers
 cols = ncol(allworld)
@@ -34,8 +40,15 @@ allworld = allworld[,c(cols,1:(cols-1))]
 names(allworld)[names(allworld) == "id"] = "ID"
 allworld$location = paste(allworld$xloc, allworld$yloc, sep = ",")
 allworld$temp.C = allworld$temp - 273
-maxtemp = max(allworld$temp.C)
 allworld$habitat = paste0(allworld$temp.C, "C.", allworld$p, "p")
+
+mlworld$tips = headers
+cols = ncol(mlworld)
+mlworld = mlworld[,c(cols,1:(cols-1))]
+names(mlworld)[names(mlworld) == "id"] = "ID"
+mlworld$location = paste(mlworld$xloc, mlworld$yloc, sep = ",")
+mlworld$temp.C = mlworld$temp - 273
+mlworld$habitat = paste0(mlworld$temp.C, "C.", mlworld$p, "p")
 
 ## get ids of lineages with at least four individuals:
 lineages = names(table(allworld$lineage))[table(allworld$lineage) >= 5]
@@ -62,6 +75,9 @@ for(lineage in lineages){
            world = world[inds,]
            seqs = seqs[inds]
         }
+        # also get mainland population infos:
+        world = rbind(world, mlworld[mlworld$lineage == lineage, ][1,])
+        seqs = c(seqs, mlseqs[grep(lineage, names(mlseqs))][1])
         
         ## compute distances:
         dists = dist.dna(seqs, model = "JC69") # use JukesCantor distances JC69, alternatively Felsenstein "F81"
@@ -70,7 +86,7 @@ for(lineage in lineages){
         tre = hclust(dists, method = "average") # CAVE: "average" = UPGMA. NJ?
 
         ## cluster tips to create species:
-        grps = cutree(tre, h = 0.1) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
+        grps = cutree(tre, h = 0.25) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
 
         world$speciesID = NA
         maxgrps = max(grps)
@@ -119,7 +135,7 @@ for(lineage in lineages){
         ##    geom_tiplab(aes(subset=!duplicated(speciesID),label=speciesID), geom='text')                                      
         ##p + theme(legend.position="right")
         ## save phylo plots:
-        ggsave(file=paste0(basename, "_", lineage, "_tre.pdf"), height = 8, width = 8 * max(dists)/0.3)
+        ggsave(file=paste0(basename, "_", lineage, "_tre.pdf"), height = 8, width = 8 * max(dists)/0.5)
 
         ## store all species:
         allspecies = rbind(allspecies, species)
