@@ -1,7 +1,7 @@
 # Invasion experiments map
 	
 # timesteps:
-10000
+100000
 
 # experiment island - a 7x7 square with radially increasing temperature
 # (as on a mountain, 25°C - 19°C), a linear precipitation gradient,
@@ -58,4 +58,4 @@
 48 6 5 isisland temp=298 prec=7
 49 6 6 isisland temp=298 prec=8
 
-100 60 3 temp=303 prec=5 initpop # mainland source pool
+100 20 3 temp=303 prec=5 initpop # mainland source pool
