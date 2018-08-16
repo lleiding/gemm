@@ -47,6 +47,14 @@ mlworld = mlworld[,c(cols,1:(cols-1))]
 names(mlworld)[names(mlworld) == "id"] = "ID"
 mlworld$location = paste(mlworld$xloc, mlworld$yloc, sep = ",")
 mlworld$temp.C = mlworld$temp - 273
+
+if(mlworld$temp.C > max(allworld$temp.C)){
+    mlworld$temp.C = max(allworld$temp.C)
+}
+if(mlworld$temp.C < max(allworld$temp.C)){
+    mlworld$temp.C = min(allworld$temp.C)
+}
+
 mlworld$habitat = paste0(mlworld$temp.C, "C.", mlworld$p, "p")
 
 ## get ids of lineages with at least four individuals:
@@ -126,8 +134,8 @@ for(lineage in lineages){
             guides(color = guide_legend(order = 1),
                    size = guide_legend(title = "Pop. size", order = 2, override.aes = list(fill = "black"))) +
                    ##alpha = guide_legend(title = "Precipitation", override.aes = list(fill = "black"))) +
-            theme_tree2() +
-            scale_x_continuous(breaks=seq(0.0, max(dists)/3, 0.02)) +
+            geom_treescale(width=0.1) +
+            ## scale_x_continuous(breaks=seq(0.0, max(dists)/3, 0.02)) +
             theme(legend.position="right")
         p
         ## old version (worked):
