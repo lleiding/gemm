@@ -57,6 +57,8 @@ for(basename in basenames){
     time = strsplit(time, "t")
     time = as.numeric(rev(unlist(time))[1])
     allworld$time = time
+    allworld$FAD = abs(max(allworld$time) - allworld$time) + allworld$age
+    allworld$LAD = abs(max(allworld$time) - allworld$time)
 
     mlworld$tips = mlheaders
     cols = ncol(mlworld)
@@ -64,10 +66,14 @@ for(basename in basenames){
     names(mlworld)[names(mlworld) == "id"] = "ID"
     mlworld$location = paste(mlworld$xloc, mlworld$yloc, sep = ",")
     mlworld$temp.C = mlworld$temp - 273
+    mlworld$tempopt = mlworld$tempopt - 273
+    mlworld$habitat = paste0(mlworld$temp.C, "C.", mlworld$p, "p")
     mlworld$linkage = "intermediate"
     mlworld$linkage[mlworld$lnkgunits == 2] = "full"
     mlworld$linkage[mlworld$lnkgunits >= 22] = "none"
     mlworld$time = time
+    mlworld$FAD = max(allworld$time)
+    mlworld$LAD = 0
 
     if(mlworld$temp.C > max(allworld$temp.C)){
         mlworld$temp.C = max(allworld$temp.C)
@@ -76,10 +82,8 @@ for(basename in basenames){
         mlworld$temp.C = min(allworld$temp.C)
     }
 
-    mlworld$habitat = paste0(mlworld$temp.C, "C.", mlworld$p, "p")
-
-    ## get ids of lineages with at least four individuals:
-    lineages = names(table(allworld$lineage))[table(allworld$lineage) >= 5]
+    ## get ids of lineages with at least two individuals:
+    lineages = names(table(allworld$lineage))[table(allworld$lineage) >= 2]
 
     allspecies = c()
     for(lineage in lineages){
@@ -125,7 +129,7 @@ for(basename in basenames){
                 maxgrps = maxgrps - 1
             }
             world$taxon = paste(world$lineage, world$speciesID, sep = "_")
-            world$population = paste(world$taxon, world$location, sep = "_")
+            world$population = paste(world$taxon, world$time, world$location, sep = "_")
             locspecab = table(world$population)
 
             ## make species table with abundance
@@ -164,6 +168,9 @@ for(basename in basenames){
                 ## scale_x_continuous(breaks=seq(0.0, max(dists)/3, 0.02)) +
                 theme(legend.position="right")
             p
+            ## timed phylogenies:
+            ## timephylo = timePaleoPhy(phylo, timeData, type = "equal", vartime = 100)
+            ## ggtree(timephylo, size = 1) + theme_tree2()
             ## old version (worked):
             ##p = ggtree(drop.tip(as.phylo(tre), setdiff(world$tips, species$tips)))                                                 
             ##p = p %<+% species + scale_color_gradient(low="blue", high="red") +
