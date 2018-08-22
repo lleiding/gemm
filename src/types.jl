@@ -5,13 +5,20 @@ mutable struct Trait
     value::Float64
 end
 
-mutable struct Gene
+abstract type AbstractGene end
+
+mutable struct Gene <: AbstractGene
     sequence::Int
     codes::Array{Trait, 1}
 end
 
+mutable struct BigGene <: AbstractGene
+    sequence::BigInt
+    codes::Array{Trait, 1}
+end
+
 mutable struct Chromosome
-    genes::Array{Gene, 1}
+    genes::Array{AbstractGene, 1}
     maternal::Bool # parental origin of chromosome
 end
 
