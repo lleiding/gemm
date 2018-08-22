@@ -36,7 +36,7 @@ constant_settings = {"cellsize":2,
                      "initpopsize":'"metabolic"',
                      "minseedsize":0,
                      "minrepsize":5,
-                     "burn-in": 1000,
+                     "burn-in": 500,
                      "global-species-pool":100}
 
 # These settings are varied (the first value is the default,
