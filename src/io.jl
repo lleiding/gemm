@@ -138,12 +138,13 @@ end
     dumpinds(world, io, sep)
 Output all data of individuals in `world` as table to `io`. Columns are separated by `sep`.
 """
-function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", onlyisland::Bool = false)
+function dumpinds(world::Array{Patch, 1}, timestep::Int, io::IO = STDOUT, onlyisland::Bool = false, sep::String = "\t")
     header = true
     traitkeys = []
     for patch in world
         #XXX Sometimes, this only dumps three or four individuals, with a population of >10⁴!
         # (Should be fixed)
+        (onlyisland && !patch.isisland) && continue
         lineage = ""
         for ind in patch.community
             # only one individual per species on a static mainland (should be the case anyway)
@@ -208,7 +209,7 @@ function dumpinds(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "\t", o
     end
 end
 
-function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, sep::String = "", onlyisland::Bool = false)
+function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, onlyisland::Bool = false, sep::String = "")
     counter = 0
     for patch in world
         (onlyisland && !patch.isisland) && continue
@@ -247,7 +248,7 @@ If the output directory already includes files, create a new
 directory by appending a counter.
 """
 function setupdatadir(settings::Dict{String, Any})
-    if isdir(settings["dest"]) && !isempty(readdir(settings["dest"]))
+    if isdir(settings["dest"]) # && !isempty(readdir(settings["dest"])) ## prevent mixing up of ouptut data from parallel sims
         replicate = split(settings["dest"], "_")[end]
         if all(isnumber, replicate)
             replicate = parse(UInt8, replicate) + 1 # throw an error if replicate > 255
@@ -297,41 +298,18 @@ writes simulation output from `world` to separate table and fasta files.
 `timestep` and `setting` information is used for file name creation.
 """
 function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile::String, timestep::Int)
-    basename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"])
+    basename = mapfile * "_s" * string(settings["seed"])
     basename = joinpath(settings["dest"], basename)
     filename = basename * ".tsv"
     simlog("Writing data \"$filename\"", settings)
-    open(filename, "w") do file
-        dumpinds(world, file, "\t", settings["static"] && timestep > 1)
+    open(filename, "a") do file
+        dumpinds(world, timestep, file, settings["static"] && timestep > 1)
     end
     if settings["fasta"]
         filename = basename * ".fa"
         simlog("Writing fasta \"$filename\"", settings)
-        open(filename, "w") do file
-            makefasta(world, file, "", settings["static"] && timestep > 1)
-        end
-    end
-end
-
-#TODO: complete docstring!
-"""
-    writerawdata(world, settings, t)
-writes raw julia data of the complete simulation state from `world` to file in the output directory.
-`setting` and `t` (timestep) information is used for file name creation.
-"""
-function writerawdata(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile::String, timestep::Int)
-    filename = mapfile * "_t" * string(timestep) * "_s" * string(settings["seed"]) * ".jl"
-    filename = joinpath(settings["dest"], filename)
-    touch(filename)
-    simlog("Writing raw data to \"$filename\".", settings)
-    if timestep == 1
-        open(filename, "w") do file
-            println(file, world)
-        end
-    else
-        island = filter(x -> x.isisland, world)
-        open(filename, "w") do file
-            println(file, island)
+        open(filename, "a") do file
+            makefasta(world, file, settings["static"] && timestep > 1)
         end
     end
 end
