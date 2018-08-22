@@ -28,13 +28,15 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile
         establish!(world, settings["nniches"], settings["static"])
         compete!(world, settings["static"])
         survive!(world, settings["static"])
-        disturb!(world, settings)
         grow!(world, settings["static"])
         compete!(world, settings["static"])
         reproduce!(world, settings)
         settings["mutate"] && mutate!(world, settings)
         checkviability!(world, settings)
-        0 < settings["burn-in"] < t && invade!(world, settings)
+        if 0 < settings["burn-in"] < t
+            disturb!(world, settings)
+            invade!(world, settings)
+        end
         disperse!(world, settings["static"])
         # model output
         map(p -> simlog("Patch $(p.id): $(length(p.community)) individuals.", settings, 'd'), world)
