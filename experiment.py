@@ -96,7 +96,7 @@ def run_defaults():
         slurm(simname+".conf")
         i = i+1
 
-def run_experiment():
+def run_experiment(control=True):
     "Create a full experiment with all parameter combinations"
     global simname, replicates
     i = 0
@@ -112,9 +112,10 @@ def run_experiment():
                     seed = random.randint(0,10000)
                     runname = simname+"_r"+str(i+1)+"_"+spec
                     write_config(runname+".conf", tm, pp, db, seed)
-                    write_config(runname+"_control.conf", tm, 0, db, seed)
                     slurm(runname+".conf")
-                    slurm(runname+"_control.conf")
+                    if control:
+                        write_config(runname+"_control.conf", tm, 0, db, seed)
+                        slurm(runname+"_control.conf")
         i = i + 1
     print("Done.")
 
@@ -125,4 +126,4 @@ if __name__ == '__main__':
     elif "default" in simname or (len(sys.argv) >= 4 and sys.argv[3] == "default"):
         run_defaults()
     else:
-        run_experiment()
+        run_experiment(False)
