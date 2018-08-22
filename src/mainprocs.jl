@@ -26,7 +26,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
         for idx in eachindex(chrm.genes)
             charseq = collect(num2seq(chrm.genes[idx].sequence))
             for i in eachindex(charseq)
-                if rand() <= ind.traits["mutprob"] * exp(-act/(boltz*temp))
+                if rand() <= 1 - exp(-ind.traits["mutprob"] * exp(-act/(boltz*temp)))
                     newbase = rand(collect("acgt"),1)[1]
                     while newbase == charseq[i]
                         newbase = rand(collect("acgt"),1)[1]
@@ -35,15 +35,19 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
                     mutate!(chrm.genes[idx].codes, settings)
                 end
             end
-            chrm.genes[idx].sequence = seq2num(String(charseq))
+            if length(charseq) > 21
+                chrm.genes[idx].sequence = seq2bignum(String(charseq))
+            else
+                chrm.genes[idx].sequence = seq2num(String(charseq))
+            end
         end
     end
     ind.traits = chrms2traits(ind.genome, settings["traitnames"])
 end
 
 function mutate!(patch::Patch, settings::Dict{String, Any})
-    for ind in patch.community
-        ind.age == 0 && mutate!(ind, patch.temp, settings)
+    for ind in patch.seedbank
+        mutate!(ind, patch.temp, settings)
     end
 end
 

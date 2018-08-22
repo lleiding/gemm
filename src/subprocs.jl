@@ -16,7 +16,7 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
 end
 
 function chrms2traits(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
-    genes = Gene[]
+    genes = AbstractGene[]
     for chrm in chrms
         append!(genes, chrm.genes)
     end
@@ -288,9 +288,9 @@ function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly.
             push!(traits, Trait(idx, rand() + 0.39))
         elseif contains(traitnames[idx], "reptol")
             if settings["tolerance"] == "high"
-                push!(traits, Trait(idx, 0.75))
+                push!(traits, Trait(idx, 0.8))
             elseif settings["tolerance"] == "low"
-                push!(traits, Trait(idx, 0.9)) #CAVE: code values elsewhere?
+                push!(traits, Trait(idx, 0.95)) #CAVE: code values elsewhere?
             elseif settings["tolerance"] == "none"
                 push!(traits, Trait(idx, 0.01)) #CAVE: code values elsewhere?
             else
@@ -312,34 +312,47 @@ function seq2num(sequence::String)
     bases = "acgt"
     binary = ""
     for base in sequence
-        binary *= bin(search(bases, base) - 1, 2)
+        binary *= bin(search(bases, base) + 3)
     end
-    parse(Int64, binary, 2) # Int64 = max sequence length ~31
+    parse(Int, binary, 2) # Int64 allows for max length of 21bp
+end
+
+function seq2bignum(sequence::String)
+    bases = "acgt"
+    binary = ""
+    for base in sequence
+        binary *= bin(search(bases, base) + 3)
+    end
+    parse(BigInt, binary, 2)
 end
 
 """
     num2seq(n)
 Convert an integer into binary and then into a DNA base sequence string.
 """
-function num2seq(n::Int)
+function num2seq(n::Integer)
     bases = "acgt"
-    binary = bin(n, genelength*2)
+    binary = bin(n)
     sequence = ""
-    for i in 1:2:(length(binary)-1)
-        sequence *= string(bases[parse(Int64, binary[i:(i+1)], 2)+1])
+    for i in 1:3:(length(binary) - 2)
+        sequence *= string(bases[parse(Int, binary[i:(i + 2)], 2) - 3])
     end
     sequence
 end
 
-function creategenes(ngenes::Int,traits::Array{Trait,1})
-    genes = Gene[]
+function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String, Any})
+    genes = AbstractGene[]
+    compatidx = findin(settings["traitnames"], ["compat"])[1]
     for i in 1:ngenes
-        sequence = String(rand(collect("acgt"), genelength)) # arbitrary start sequence
+        sequence = String(rand(collect("acgt"), settings["smallgenelength"])) # arbitrary start sequence
         seqint = seq2num(sequence)
         codesfor = Trait[]
         push!(genes,Gene(seqint, codesfor))
     end
     for trait in traits
+        if trait.nameindex == compatidx
+            continue
+        end
         ncodinggenes = rand(Poisson(1))
         while ncodinggenes < 1  # make sure every trait is coded by at least 1 gene
             ncodinggenes = rand(Poisson(1))
@@ -349,13 +362,13 @@ function creategenes(ngenes::Int,traits::Array{Trait,1})
             push!(gene.codes,trait)
         end
     end
-    if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
-        push!(genes, Gene(seq2num(String(rand(collect("acgt"), genelength))), Trait[]))
-    end
+    # if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
+    push!(genes, BigGene(seq2bignum(String(rand(collect("acgt"), settings["biggenelength"]))), [Trait(compatidx, 0.5)]))
+    # end
     genes
 end
 
-function createchrs(nchrs::Int,genes::Array{Gene,1})
+function createchrs(nchrs::Int,genes::Array{AbstractGene,1})
     ngenes=size(genes,1)
     if nchrs>1
         chrsplits = sort(rand(1:ngenes,nchrs-1))
@@ -381,12 +394,14 @@ function createchrs(nchrs::Int,genes::Array{Gene,1})
 end
 
 function createind(settings::Dict{String, Any})
+    id = rand(Int32)
+    parentid = rand(Int32)
     lineage = randstring(4)
     meangenes = length(settings["traitnames"])
     ngenes = rand(Poisson(meangenes))
     ngenes < 1 && (ngenes = 1)
     traits = createtraits(settings)
-    genes = creategenes(ngenes,traits)
+    genes = creategenes(ngenes, traits, settings)
     randchrms = rand(1:length(genes))
     if settings["linkage"] == "none"
         nchrms = length(genes)

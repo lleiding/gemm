@@ -95,8 +95,20 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
             end
             eval(parse("newpatch."*string(var)*" = $val"))
         end
-        (newpatch.initpop && settings["initadults"]) && append!(newpatch.community, genesis(settings))
-        (newpatch.initpop && !settings["initadults"]) && append!(newpatch.seedbank, genesis(settings))
+        if newpatch.initpop && settings["initadults"]
+            append!(newpatch.community, genesis(settings))
+        elseif newpatch.initpop && !newpatch.isisland && settings["static"]
+            append!(newpatch.seedbank, genesis(settings))
+            lineage = ""
+            for ind in newpatch.seedbank # store one sample individual for recording purposes
+                if ind.lineage != lineage
+                    push!(newpatch.community, ind)
+                    lineage = ind.lineage
+                end
+            end
+        elseif newpatch.initpop
+            append!(newpatch.seedbank, genesis(settings))
+        end
         push!(world, newpatch)
         global newpatch = nothing #clear memory
     end
