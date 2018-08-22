@@ -138,9 +138,10 @@ end
     dumpinds(world, io, sep)
 Output all data of individuals in `world` as table to `io`. Columns are separated by `sep`.
 """
-function dumpinds(world::Array{Patch, 1}, timestep::Int, io::IO = STDOUT, onlyisland::Bool = false, sep::String = "\t")
+function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep::Int, io::IO = STDOUT, sep::String = "\t")
     header = true
     traitkeys = []
+    onlyisland = settings["static"] && timestep > 1
     for patch in world
         #XXX Sometimes, this only dumps three or four individuals, with a population of >10⁴!
         # (Should be fixed)
@@ -148,7 +149,7 @@ function dumpinds(world::Array{Patch, 1}, timestep::Int, io::IO = STDOUT, onlyis
         lineage = ""
         for ind in patch.community
             # only one individual per species on a static mainland (should be the case anyway)
-            (!patch.isisland && onlyisland && ind.lineage == lineage) && continue
+            (!patch.isisland && settings["static"] && ind.lineage == lineage) && continue
             if header
                 #XXX Transfer to a dynamic system? (As in createworld()?)
                 print(io, "patch_no", sep)
@@ -209,8 +210,7 @@ function dumpinds(world::Array{Patch, 1}, timestep::Int, io::IO = STDOUT, onlyis
     end
 end
 
-function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, onlyisland::Bool = false, sep::String = "")
-    counter = 0
+function makefasta(world::Array{Patch, 1}, settings::Dict{String, Any}, io::IO = STDOUT, onlyisland::Bool = false, sep::String = "_")
     for patch in world
         (onlyisland && !patch.isisland) && continue
         lineage = ""
@@ -227,11 +227,11 @@ function makefasta(world::Array{Patch, 1}, io::IO = STDOUT, onlyisland::Bool = f
                         traits *= "neutral"
                     else
                         for trait in gene.codes
-                            traits *= string(trait.nameindex) * string(trait.value) * ","
+                            traits *= string(settings["traitnames"][trait.nameindex]) * ":" * string(trait.value) * ","
                         end
                     end
-                    header = ">"*string(ind.id)*" x"*string(patch.location[1])*" y"*string(patch.location[2])
-                    header *= " "*ind.lineage*" c"*string(chrmno)*" g"*string(geneno)*" "*traits
+                    header = ">"*string(ind.id)*sep*"x"*string(patch.location[1])*sep*"y"*string(patch.location[2])
+                    header *= sep*ind.lineage*sep*"c"*string(chrmno)*sep*"g"*string(geneno)*sep*traits
                     println(io, header)
                     println(io, num2seq(gene.sequence))
                 end
@@ -303,13 +303,13 @@ function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile::
     filename = basename * ".tsv"
     simlog("Writing data \"$filename\"", settings)
     open(filename, "a") do file
-        dumpinds(world, timestep, file, settings["static"] && timestep > 1)
+        dumpinds(world, settings, timestep, file)
     end
     if settings["fasta"]
         filename = basename * ".fa"
         simlog("Writing fasta \"$filename\"", settings)
         open(filename, "a") do file
-            makefasta(world, file, settings["static"] && timestep > 1)
+            makefasta(world, settings, file, settings["static"] && timestep > 1)
         end
     end
 end
