@@ -15,7 +15,8 @@ function defaultSettings()
          # main model settings
          "linkage" => "random", # gene linkage type (random/full/none)
          "nniches" => 2, # number of environmental niches (max. 3)
-         "tolerance" => "low", # sequence similarity threshold for reproduction
+         "tolerance" => 0.8, # sequence similarity threshold for reproduction
+         "fixtol" => true,
          "static" => true, # mainland sites don't undergo eco-evolutionary processes
          "mutate" => true, # mutations occur
          "initadults" => false, # initialize organisms as adults

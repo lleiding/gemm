@@ -4,7 +4,7 @@ function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any})
     for trait in traits
         traitname = settings["traitnames"][trait.nameindex]
         (contains(traitname, "mutprob") && mutationrate != 0) && continue
-        contains(traitname, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
+        contains(traitname, "reptol") && continue # MARK CAVE!
         oldvalue = trait.value
         contains(traitname, "tempopt") && (oldvalue -= 273)
         while oldvalue <= 0 # make sure sd of Normal dist != 0

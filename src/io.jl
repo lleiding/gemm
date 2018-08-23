@@ -55,9 +55,9 @@ function parsecommandline()
             range_tester = x -> x > 0 && x <= 3
             required = false
         "--tolerance", "-t"
-            help = "tolerance of sequence identity when reproducing (\"high\", \"evo\", \"low\" or \"none\")"
-            arg_type = String
-            range_tester = x->in(x,["high", "evo", "low", "none"])
+            help = "tolerance of sequence identity when reproducing"
+            arg_type = Float64
+            range_tester = x -> 0.0 <= x <= 1.0
             required = false
         "--dest", "-d"
             help = "output directory. Defaults to current date"
@@ -268,6 +268,7 @@ function setupdatadir(settings::Dict{String, Any})
                 cp(m, joinpath(settings["dest"], m), remove_destination = true) # most likely replicates with same parameters
             end
         end
+        cp(joinpath("src", "constants.jl"), joinpath(settings["dest"], "constants.jl"), remove_destination = true)
     end
 end
 
