@@ -68,7 +68,6 @@ function runit(prerun::Bool = false)
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
         !prerun && writedata(world, settings, settings["maps"][i], 0)
         simulation!(world, settings, settings["maps"][i], timesteps)
-        !prerun && writedata(world, settings, settings["maps"][i], -1)
     end
 end
 
