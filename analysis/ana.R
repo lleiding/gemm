@@ -4,14 +4,14 @@
 ## Ludwig Leidinger <ludwig.leidinger@uni-wuerzburg.de>
 ## Dec., 2017
 
-library(stats) # what for?
+#library(stats) # what for?
 library(ape)
 library(ggplot2)
 library(ggtree)
 library(dplyr)
 library(vegan)
 library(viridis)
-#library(phyloseq)
+library(paleotree)
 
 
 args = commandArgs(trailingOnly = TRUE)
@@ -26,20 +26,9 @@ for(basename in basenames){
     ## read main data:
     allworld = read.table(paste0(basename, ".tsv"), header = T)
 
-    nameparts = unlist(strsplit(basename, "_"))
-    nameparts[length(nameparts) - 1] = "t0"
-    mlname = paste(nameparts, collapse = "_")
-    mlworld = read.table(paste0(mlname, ".tsv"), header = T)
-
     ## read sequences (fasta format!):
     allseqs = read.dna(file=paste0(basename, ".fa"), format="fasta")
     headers = names(allseqs[sapply(allseqs, length) == 200])[c(TRUE,FALSE)]
-
-    mlseqs = read.dna(file=paste0(mlname, ".fa"), format="fasta")
-    mlheaders = names(mlseqs[sapply(mlseqs, length) == 200])[c(TRUE,FALSE)]
-
-    ## make sure seqs and data have same length and elements:
-    allworld = allworld %>% filter(island == 1)
 
     allworld$tips = headers
     cols = ncol(allworld)
@@ -52,35 +41,8 @@ for(basename in basenames){
     allworld$linkage = "intermediate"
     allworld$linkage[allworld$lnkgunits == 2] = "full"
     allworld$linkage[allworld$lnkgunits >= 22] = "none"
-    nameparts = unlist(strsplit(basename, "_"))
-    time = nameparts[length(nameparts) - 1]
-    time = strsplit(time, "t")
-    time = as.numeric(rev(unlist(time))[1])
-    allworld$time = time
     allworld$FAD = abs(max(allworld$time) - allworld$time) + allworld$age
     allworld$LAD = abs(max(allworld$time) - allworld$time)
-
-    mlworld$tips = mlheaders
-    cols = ncol(mlworld)
-    mlworld = mlworld[,c(cols,1:(cols-1))]
-    names(mlworld)[names(mlworld) == "id"] = "ID"
-    mlworld$location = paste(mlworld$xloc, mlworld$yloc, sep = ",")
-    mlworld$temp.C = mlworld$temp - 273
-    mlworld$tempopt = mlworld$tempopt - 273
-    mlworld$habitat = paste0(mlworld$temp.C, "C.", mlworld$p, "p")
-    mlworld$linkage = "intermediate"
-    mlworld$linkage[mlworld$lnkgunits == 2] = "full"
-    mlworld$linkage[mlworld$lnkgunits >= 22] = "none"
-    mlworld$time = time
-    mlworld$FAD = max(allworld$time)
-    mlworld$LAD = 0
-
-    if(mlworld$temp.C > max(allworld$temp.C)){
-        mlworld$temp.C = max(allworld$temp.C)
-    }
-    if(mlworld$temp.C < max(allworld$temp.C)){
-        mlworld$temp.C = min(allworld$temp.C)
-    }
 
     ## get ids of lineages with at least two individuals:
     lineages = names(table(allworld$lineage))[table(allworld$lineage) >= 2]
@@ -89,100 +51,105 @@ for(basename in basenames){
     for(lineage in lineages){
         ## subset
         world = allworld[allworld$lineage == lineage, ]
-        if(sum(world$size >= world$repsize) >= 2){ # build trees only for lineages with at least two adult individuals on island
-            seqs = allseqs[grep(lineage, names(allseqs))]
+        seqs = allseqs[grep(lineage, names(allseqs))]
 
-            ## filter sequences according to header:
-                                        #seqs = seqs[grep("compat", names(seqs))]
-            seqs = seqs[sapply(seqs, length) == 200]
-            mlseqs = mlseqs[sapply(mlseqs, length) == 200]
-            mlseqs = mlseqs[c(TRUE,FALSE)]
-            ## one chromosome copy:
-            seqs = seqs[c(TRUE,FALSE)]
+        ## filter sequences according to header:
+        ##seqs = seqs[grep("compat", names(seqs))]
+        seqs = seqs[sapply(seqs, length) == 200]
 
-            established = world$size > world$seedsize
-            world = world[established,]
-            seqs = seqs[established]
+        ## one chromosome copy:
+        seqs = seqs[c(TRUE,FALSE)]
 
-            if(nrow(world) > 40000){
-                inds = sample(1:nrow(world), 40000)
-                world = world[inds,]
-                seqs = seqs[inds]
-            }
-                                        # also get mainland population infos:
-            world = rbind(world, mlworld[mlworld$lineage == lineage, ][1,])
-            seqs = c(seqs, mlseqs[grep(lineage, names(mlseqs))][1])
-            
-            ## compute distances:
-            dists = dist.dna(seqs, model = "JC69") # use JukesCantor distances JC69: gives most precise results
+        established = world$size > world$seedsize | allworld$island == 0
+        world = world[established,]
+        seqs = seqs[established]
 
-            ## calculate the tree:
-            tre = hclust(dists, method = "average") # CAVE: "average" = UPGMA. NJ?
-            tre$height <- round(tre$height, 6)
-            ## cluster tips to create species:
-            grps = cutree(tre, h = 0.25) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
+        dupinds = rev(!duplicated(rev(world$tips))) # last appearance in table
+        world = world[dupinds,]
+        seqs = seqs[dupinds]
 
-            world$speciesID = NA
-            maxgrps = max(grps)
-            for(i in unique(grps[tre$order])){
-                world$speciesID[grps == i] = maxgrps
-                maxgrps = maxgrps - 1
-            }
-            world$taxon = paste(world$lineage, world$speciesID, sep = "_")
-            world$population = paste(world$taxon, world$time, world$location, sep = "_")
-            locspecab = table(world$population)
-
-            ## make species table with abundance
-            species = world[!duplicated(world$population),] ## TODO: use aggregate or group_by to get respective medians
-            ## doesn't work yet:
-            ## world %>% select_if(is.numeric) %>% aggregate(by = list("patch_no", "speciesID"), median) %>% head ##summarise?
-            species$abundance = as.vector(table(world$population))
-            species$abundance[species$island == 0] = round(
-                exp(28.0) * species$repsize[species$island == 0]^(-1/4) *
-                exp(-1e-19/(1.38064852e-23*species$tempopt[species$island == 0]))) ## should be temp!
-            
-            phylo = as.phylo(tre)
-            phylo = root(phylo, which(phylo$tip.label == mlworld$tips[1]))
-            phylo = drop.tip(phylo, setdiff(world$tips, species$tips))
-
-            cladegroups = list()
-            for(i in unique(species$speciesID)){
-                cladegroups[[i]] = species$tips[species$speciesID == i]
-                ##cladegroups[[paste0("c", as.character(i))]] = species$tips[species$speciesID == i]
-            }
-            nspecs = length(cladegroups)
-            phylo = groupOTU(phylo, cladegroups) #, group_name = "speciesID")
-            
-            p = ggtree(phylo, aes(color=group), size = 1)
-            p = p %<+% species + #aes(color=groups) +
-                geom_tippoint(colour="transparent", shape = 21, aes(fill=temp.C, size=abundance)) + #, alpha=prec)) +
-                scale_color_manual(values = c("black", viridis_pal()(nspecs)),
-                                   labels=c("", as.character(1:nspecs)),
-                                   name = "Species ID") +
-                scale_fill_viridis(option = "plasma", name = "Temp./°C", breaks = c(19,21,23,25)) +
-                scale_alpha(range = c(0.5, 1.0)) +
-                guides(color = guide_legend(order = 1),
-                       size = guide_legend(title = "Pop. size", order = 2, override.aes = list(fill = "black"))) +
-                ##alpha = guide_legend(title = "Precipitation", override.aes = list(fill = "black"))) +
-                geom_treescale(width=0.05) +
-                ## scale_x_continuous(breaks=seq(0.0, max(dists)/3, 0.02)) +
-                theme(legend.position="right")
-            p
-            ## timed phylogenies:
-            ## timephylo = timePaleoPhy(phylo, timeData, type = "equal", vartime = 100)
-            ## ggtree(timephylo, size = 1) + theme_tree2()
-            ## old version (worked):
-            ##p = ggtree(drop.tip(as.phylo(tre), setdiff(world$tips, species$tips)))                                                 
-            ##p = p %<+% species + scale_color_gradient(low="blue", high="red") +
-            ##    geom_tippoint(aes(color=prec, size=abundance, alpha=temp.C)) +
-            ##    geom_tiplab(aes(subset=!duplicated(speciesID),label=speciesID), geom='text')                                      
-            ##p + theme(legend.position="right")
-            ## save phylo plots:
-            ggsave(file=paste0(basename, "_", lineage, "_tre.pdf"), height = 8, width = 8 * max(dists)/0.5)
-
-            ## store all species:
-            allspecies = rbind(allspecies, species)
+        if(nrow(world) > 40000){
+            inds = sample(1:nrow(world), 40000)
+            world = world[inds,]
+            seqs = seqs[inds]
         }
+
+        ## compute distances:
+        dists = dist.dna(seqs, model = "JC69") # use JukesCantor distances JC69: gives most precise results
+
+        ## calculate the tree:
+        tre = hclust(dists, method = "average") # CAVE: "average" = UPGMA. NJ?
+        tre$height <- round(tre$height, 6)
+        ## cluster tips to create species:
+        grps = cutree(tre, h = 0.05) # conservative height of 0.1. similarity 0.8 for high tol, 0.95 for low tol
+
+        world$speciesID = NA
+        maxgrps = max(grps)
+        for(i in unique(grps[tre$order])){
+            world$speciesID[grps == i] = maxgrps
+            maxgrps = maxgrps - 1
+        }
+        world$taxon = paste(world$lineage, world$speciesID, sep = "_")
+        world$population = paste(world$taxon, "t", world$time, sep = "_")#, world$location, sep = "_")
+        locspecab = table(world$population)
+
+        ## make species table with abundance
+        species = world[!duplicated(world$population),] ## TODO: use aggregate or group_by to get respective medians
+        ## doesn't work yet:
+        ## world %>% select_if(is.numeric) %>% aggregate(by = list("patch_no", "speciesID"), median) %>% head ##summarise?
+        species$abundance = as.vector(table(world$population))
+        species$abundance[species$island == 0] = round(
+            exp(28.0) * species$repsize[species$island == 0]^(-1/4) *
+            exp(-1e-19/(1.38064852e-23*species$temp[species$island == 0])))
+        
+        phylo = as.phylo(tre)
+        phylo = root(phylo, which(phylo$tip.label == species$tips[species$island == 0][1]))
+        phylo = drop.tip(phylo, setdiff(world$tips, species$tips))
+
+        cladegroups = list()
+        for(i in unique(species$speciesID)){
+            cladegroups[[i]] = species$tips[species$speciesID == i]
+            ##cladegroups[[paste0("c", as.character(i))]] = species$tips[species$speciesID == i]
+        }
+        nspecs = length(cladegroups)
+        phylo = groupOTU(phylo, cladegroups) #, group_name = "speciesID")
+
+        ## timed phylogeny:
+        timeData = cbind(species$FAD, species$LAD)
+        colnames(timeData) = c("FAD", "LAD")
+        rownames(timeData) = species$tips
+        timephylo = timePaleoPhy(phylo, timeData, type = "equal", vartime = 10)
+        pdf("phylodiv.pdf", width = 8, height = 8)
+        phyloDiv(timephylo)
+        dev.off()
+        
+        p = ggtree(phylo, aes(color=group), size = 1)
+        p = p %<+% species + #aes(color=groups) +
+            geom_tippoint(colour="transparent", shape = 21, aes(fill=temp.C, size=abundance)) + #, alpha=prec)) +
+            scale_color_manual(values = c("black", viridis_pal()(nspecs)),
+                               labels=c("", as.character(1:nspecs)),
+                               name = "Species ID") +
+            scale_fill_viridis(option = "plasma", name = "Temp./°C", breaks = c(19,21,23,25)) +
+            scale_alpha(range = c(0.5, 1.0)) +
+            guides(color = guide_legend(order = 1),
+                   size = guide_legend(title = "Pop. size", order = 2, override.aes = list(fill = "black"))) +
+            ##alpha = guide_legend(title = "Precipitation", override.aes = list(fill = "black"))) +
+            geom_treescale(width=0.05) +
+            ## scale_x_continuous(breaks=seq(0.0, max(dists)/3, 0.02)) +
+            theme(legend.position="right")
+        p
+        ## ggtree(timephylo, size = 1) + theme_tree2()
+        ## old version (worked):
+        ##p = ggtree(drop.tip(as.phylo(tre), setdiff(world$tips, species$tips)))                                                 
+        ##p = p %<+% species + scale_color_gradient(low="blue", high="red") +
+        ##    geom_tippoint(aes(color=prec, size=abundance, alpha=temp.C)) +
+        ##    geom_tiplab(aes(subset=!duplicated(speciesID),label=speciesID), geom='text')                                      
+        ##p + theme(legend.position="right")
+        ## save phylo plots:
+        ggsave(file=paste0(basename, "_", lineage, "_tre.pdf"), height = 8, width = 8 * max(dists)/0.5)
+
+        ## store all species:
+        allspecies = rbind(allspecies, species)
     }
 
     rlyallsp = rbind(rlyallsp, allspecies)
@@ -227,7 +194,7 @@ ggplot(meltworld, aes(x = Time, y = value, fill = linkage, color = linkage)) +
     theme_bw() +
     scale_fill_viridis_d() +
     scale_color_viridis_d() +
-    #ylab(label = trait) +
+                                        #ylab(label = trait) +
     scale_linetype_manual(name = "", values = c(2))+
     facet_wrap(~Trait, ncol=1, scales='free')
 ggsave(file=paste0("traits_time_", rev(unlist(strsplit(parts[[1]], "_")))[1], ".pdf"), height = 16, width = 12)
@@ -243,7 +210,7 @@ for(lineage in unique(allspecies$lineage)){
 corename = unlist(strsplit(basename, "_"))[-length(unlist(strsplit(basename, "_")))]
 corename = c(corename, "t1")
 corename = paste(corename, collapse = "_")
-#mainland = read.table(paste0(corename, ".tsv"), header = T)
+                                        #mainland = read.table(paste0(corename, ".tsv"), header = T)
 
 traitnames = c("lnkgunits", "ngenes", "temptol", "seedsize", "tempopt", "repsize", "repradius", "dispmean", "prectol", "precopt", "dispshape")
 
