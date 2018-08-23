@@ -172,8 +172,7 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
                 print(io, "size", sep)
                 print(io, "lnkgunits", sep)
                 print(io, "ngenes", sep)
-                traitkeys = keys(ind.traits) #XXX This will give problems if we lose traits
-                for key in traitkeys
+                for key in settings["traitnames"]
                     print(io, key, sep)
                 end
                 println(io)
@@ -199,7 +198,7 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
             print(io, ind.size, sep)
             print(io, length(ind.genome), sep)
             print(io, sum(map(x -> length(x.genes), ind.genome)), sep)
-            for key in traitkeys
+            for key in settings["traitnames"]
                 try
                     print(io, ind.traits[key], sep)
                 catch
