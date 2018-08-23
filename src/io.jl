@@ -140,7 +140,7 @@ Output all data of individuals in `world` as table to `io`. Columns are separate
 """
 function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep::Int, io::IO = STDOUT, sep::String = "\t")
     header = true
-    timestep > 0 && (header = false)
+    timestep != 0 && (header = false)
     traitkeys = []
     onlyisland = settings["static"] && timestep > 1
     for patch in world
