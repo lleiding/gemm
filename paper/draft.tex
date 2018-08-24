@@ -41,6 +41,7 @@
 \end{abstract}
 
 \section{Introduction}
+%% WHY ARE GENERA DIFFERENTLY RICH BESIDE ECOLOGY AND GEOGRAPHY/GEOLOGY? GENETICS!
 
 %% Q24. What is the relative importance of ecological versus geographical speciation on islands?
 %% => Patino hardly considering genetic mechanisms
@@ -58,10 +59,10 @@ For a population to produce separate species, that population must
 (a) have sufficient variability in any one characteristic, e.g. traits or genome, and
 (b) have gene-flow restricting factors (e.g. environmental/geographical, ecological or behavioral) that facilitate establishment of distinct distribution patterns of said characteristic.
 In islands, as well as continental and aquatic systems, researchers still mainly focus on reproductive barriers like environmental and ecological factors to explain speed and occurences of radiations \cite{krugSpeciesGenusRatios2008}\cite{hurlbertProcessesGeneratingLatitudinal2014}\cite{willisSpeciesDiversityScale2002}. % when radiations DID happen!
-In fact, these factors indeed often correlate strongly with the timing of genetic divergence of species and populations \cite{hembryEvolutionaryBiogeographyTerrestrial}. % REFS!
-But even then, in some cases the reason for maintenance of population diversity remains in the dark. \cite{chenConcordanceGeneticDiversity}
+These factors indeed often correlate strongly with the timing of genetic divergence of species and populations \cite{hembryEvolutionaryBiogeographyTerrestrial}. % REFS!
+But even then, in some cases the reason for maintenance of population variability remains unclear. \cite{chenConcordanceGeneticDiversity}
 %% HERE COME SOME EXAMPLES
-Additionally, these studies highlight the cases of successful radiations, while a conclusive explanation for why these population variablities and thus radiations could occur in the first place is still missing.
+Additionally, these studies highlight the cases of successful radiations, while a conclusive explanation for why these population variabilities and thus radiations could occur in the first place is still missing.
 This becomes especially apparent on islands, where species generally experience nearly identical environmental conditions.%REF
 Yet, only a fraction of them manage to radiate into multiple species through the course of their evolutionary history \cite{hembryEvolutionaryBiogeographyTerrestrial}.
 %mechanisms often fail to explain how the rapid establishment of reproductive barriers or isolation arises,
@@ -128,7 +129,7 @@ Thus, genetic characteristics presents a powerful opportunity for a deeper under
 %and adapting to changing climates."
 %==> what affects evolutionary rate?
 
-However, the problem of investigating speciation processes is the time frame and study extent needed to go beyond mere correlation \cite{dormannCorrelationProcessSpecies}.
+The problem of investigating speciation processes is the time frame and study extent needed to go beyond mere correlation \cite{dormannCorrelationProcessSpecies}.
 Because island biogeography processes and thus radiations generally take place at evolutionary time frames (millions of years),
 comprehensive and meaningful data is difficult to obtain (\cite{didierLikelihoodTreeTopologies2017}, but see \cite{mitchellInferringDiversificationRate})
 Therefore, there has been an interest in building process-based island models to test the causality of assumptions and hypotheses.
@@ -139,7 +140,7 @@ most models failed to include micro-evolutionary or more explicit genetic proces
 One direction towards this is given by models using concepts such as ``protracted speciaton'' \cite{rosindellUnifiedModelSpecies2013}.
 where speciation occurs with a delay from the actual
 divergence event if the population remains isolated during that time.
-But nature is usually more complex than this (cf.\ \cite{silvertownGhostCompetitionPhylogeny2004} but see \cite{herbenGhostHybridizationNiche2005}) 
+But nature is usually more complex than this %(cf.\ \cite{silvertownGhostCompetitionPhylogeny2004} but see \cite{herbenGhostHybridizationNiche2005}) 
 and we expect genetic mechanisms to play a central role in speciation/radiation and species richness.
 Questions, such as "What functional traits (e.g. relating to dispersal capacity,
 reproduction, trophic ecology) are associated with high diversification rates within and across island systems?" %better another...
@@ -162,7 +163,7 @@ are not implemented more often in island simulations.
 
 %% Aim, objectives:
 %% In this study, we aim to address...
-To assess the role of genetic processes, namely genetic linkage, for island radiations,
+To assess the role of genetic factors, namely genetic linkage, for island radiations
 we present a mechanistic model that overcomes above-mentioned shortcomings like missing micro-evolutinary processes and lack of integrative design
 by implementing genetic processes on a niche-explicit background
 using an island biogeography simulation arena.
@@ -172,8 +173,8 @@ and (c) which genetic and functional trait syndromes %% Which?
 distinguish successful colonizer,
 strong competitor and diversifying lineages.
 Considering these phenomena, we expect speciation rates to be highest at intermediate levels of gene linkage --- low
-levels leads to dissolving phenotype populations, whereas high levels hinder rapid adaption. %what Schiffers et al say about linkage and evolutionary rescue (basically the opposite of diversification?)
-
+levels leads to dissolving phenotype populations, whereas high levels hinder rapid adaption. %Provide Refs! %what Schiffers et al say about linkage and evolutionary rescue (basically the opposite of diversification?)
+%After presenting the study questions and expectations, you should say how the questions are going to be answered  (e.g. short explain simulation experimental design).
 
 \section{Material and Methods}
 %% Include simplified model description ``based on ODD''
@@ -185,10 +186,10 @@ levels leads to dissolving phenotype populations, whereas high levels hinder rap
   %\includegraphics{}
   \caption{Schematic of the model's individuals genetic architecture.
     Individuals are composed of a diploid set of linkage units which combine the genes coding for functional traits.}
-  \label{schematic}
+  \label{fig:schematic}
 \end{figure}
 
-We use an individual-based spatially and temporally explicit metacommunity model written in julia \cite{bezansonJuliaFreshApproach2017}.
+We use an individual-based spatially and temporally explicit metacommunity model written in julia \cite{bezansonJuliaFreshApproach2017} .  \ref{fig:schematic}
 The model considers competition between individuals, environmental niche adaptation, density independent mortality,
 dispersal, sexual reproduction and mutation.
 Individuals are characterized by a lineage identifier,
@@ -224,7 +225,15 @@ initially unpopulated island some distance apart (user-defined in the experiment
 During the course of the simulation, individuals may disperse from the mainland to the island, thus colonizing it. 
 The complete state of the simulation is recorded every 1000 time steps for analysis.
 
-\subsection{scenarios}
+\subsection{Data recording}
+We record individual data (properties and genome) at the start and end of a simulation run
+and at intervals of 1000 time steps.% and each time the arena changes (geomorphological dynamics).
+Additionally, we keep track of the genealogy of our individuals through time,
+allowing us to validate inferred phylogenies.
+Using the thus simulated data, we calculate phylogenies of the colonizing lineages, emerging species numbers and
+trait space. % etc. [WHAT ELSE?]
+
+\subsection{Experimental design and scenarios}
 In the simulations, we modify the value and extent of
 %(a)
 gene linkage
@@ -237,14 +246,6 @@ and analyize emerging species numbers.
 \cref{tab:scenarios} summarizes the parameters which were varied for the scenarios, their meaning and their values. %TODO: make table.
 Each parameter combination was replicated %TODO: how much?
 times.%, setting a different random seed for each replicate.
-
-\subsection{Data recording}
-We record individual data (properties and genome) at the start and end of a simulation run
-and at intervals of 1000 time steps.% and each time the arena changes (geomorphological dynamics).
-Additionally, we keep track of the genealogy of our individuals through time,
-allowing us to validate inferred phylogenies.
-Using the thus simulated data, we calculate phylogenies of the colonizing lineages, emerging species numbers and
-trait space. % etc. [WHAT ELSE?]
 
 \section{Results}
 
@@ -260,13 +261,14 @@ Several 10.000 years later, however, high-linkage lineages began with strong rad
     Emerging numbers of species (and average population sizes) over time.
     Low-linkage lineages in COLOR1, high-linkage lineages in COLOR2.
     Top row: lineages simulated in isolation.
-    Bottom row: simulated communities.}
+    !Bottom row: simulated communities.!}
   \label{specieslinkage}
 \end{figure}
 
 \begin{figure}
   %\includegraphics{}
   \caption{[2 x 2]
+    ???
     Extinctions and numbers of species per lineage after XXXX timesteps against degree of genetic linkage.
     Top row: lineages simulated in isolation.
     Bottom row: simulated communities.}
@@ -275,7 +277,7 @@ Several 10.000 years later, however, high-linkage lineages began with strong rad
 
 \begin{figure}
   %\includegraphics{}
-  \caption{Trait space characteristics of lineages.
+  \caption{Trait space characteristics of lineages./Evolution of trait values over time against linkage
     (A) [Ordination] Trait space of successful colonizers compared to the mainland species pool. Each point represents a lineage.
     Arrows denote the traits.
     (B) [Ordination?] Linkage of traits of successful colonizers(/radiators?). Traits perpendicular to each other are inherited independently,
@@ -296,6 +298,11 @@ Several 10.000 years later, however, high-linkage lineages began with strong rad
 \end{figure}
 
 \section{Discussion}
+%% GENETIC ARCHITECTURE/DYNAMICS STUDIED FOR DECADES. WITH GENETIC/BIG DATA, APPLY in (ISLAND) BIOGEOGRAPHY.
+
+% Hypothesis: Species rich lineages in island systems due to adaptive radiation, thus low linkage.
+% high linkage species groups maybe not even considered because different taxonomic level?
+
 The fact that low-linkage (single) species speciated in general faster than their high-linkage counterparts
 is in line with expectations given their higher potential for fast evolutionary response [as exemplified REFS].
 What did come as a surprise, however was that, over time, high linkage lineages surpassed low linkage lineages
@@ -321,6 +328,10 @@ present complex challenges.
 %Assortative mating
 
 %Clonality
+
+Linkage as dynamic process: polyploidy, TEs, etc.
+Here we investigate the long term effects of fixed linkage degrees on species richness.
+
 
 Shortcomings. (/Processes/Factors not considered.)
 (Dynamic) resource availability: assumed constant in model, but petentially more variation, complexity in community dynamics.
