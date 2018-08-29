@@ -32,7 +32,7 @@
 22 3 0 isisland temp=298 prec=2
 23 3 1 isisland temp=296 prec=3
 24 3 2 isisland temp=294 prec=4
-25 3 3 isisland temp=292 prec=4 # island mountain peak
+25 3 3 isisland temp=292 prec=5 # island mountain peak
 26 3 4 isisland temp=294 prec=6
 27 3 5 isisland temp=296 prec=7
 28 3 6 isisland temp=298 prec=8
