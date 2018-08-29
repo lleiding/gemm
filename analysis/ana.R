@@ -4,11 +4,9 @@
 ## Ludwig Leidinger <ludwig.leidinger@uni-wuerzburg.de>
 ## Dec., 2017
 
-#library(stats) # what for?
+library(tidyverse)
 library(ape)
-library(ggplot2)
 library(ggtree)
-library(dplyr)
 library(vegan)
 library(viridis)
 library(paleotree)
@@ -37,7 +35,7 @@ for(basename in basenames){
     allworld$location = paste(allworld$xloc, allworld$yloc, sep = ",")
     allworld$temp.C = allworld$temp - 273
     allworld$tempopt = allworld$tempopt - 273
-    allworld$habitat = paste0(allworld$temp.C, "C.", allworld$p, "p")
+    allworld$habitat = paste0(allworld$temp.C, "C.", allworld$prec, "p")
     allworld$linkage = "intermediate"
     allworld$linkage[allworld$lnkgunits == 2] = "full"
     allworld$linkage[allworld$lnkgunits >= 22] = "none"
@@ -52,15 +50,11 @@ for(basename in basenames){
         ## subset
         world = allworld[allworld$lineage == lineage, ]
         seqs = allseqs[grep(lineage, names(allseqs))]
+        
+        ## filter sequences by length and copy:
+        seqs = seqs[sapply(seqs, length) == 200][c(TRUE,FALSE)]
 
-        ## filter sequences according to header:
-        ##seqs = seqs[grep("compat", names(seqs))]
-        seqs = seqs[sapply(seqs, length) == 200]
-
-        ## one chromosome copy:
-        seqs = seqs[c(TRUE,FALSE)]
-
-        established = world$size > world$seedsize | allworld$island == 0
+        established = world$size > world$seedsize | world$island == 0
         world = world[established,]
         seqs = seqs[established]
 
@@ -119,7 +113,7 @@ for(basename in basenames){
         colnames(timeData) = c("FAD", "LAD")
         rownames(timeData) = species$tips
         timephylo = timePaleoPhy(phylo, timeData, type = "equal", vartime = 10)
-        pdf("phylodiv.pdf", width = 8, height = 8)
+        jpeg(paste0("phylodiv_", species$linkage[1], "_s4.jpg"), width = 12.5, height = 12.5, units = "cm", res = 300, quality = 100)
         phyloDiv(timephylo)
         dev.off()
         
@@ -186,7 +180,7 @@ for(basename in basenames){
 
 traits = c("seedsize", "repsize", "dispmean", "dispshape", "tempopt", "temptol", "precopt", "prectol")
 rlyallsp$Time = as.factor(rlyallsp$time)
-meltworld = reshape2::melt(rlyallsp, measure = traits, variable = "Trait")
+meltworld = gather(rlyallsp, key = "Trait", traits)
 ## TRAITS:
 ggplot(meltworld, aes(x = Time, y = value, fill = linkage, color = linkage)) +
     geom_violin(data = filter(meltworld, island == 1), position = position_dodge(width = 0.7)) +
