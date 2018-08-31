@@ -305,7 +305,7 @@ function seq2num(sequence::String)
     for base in sequence
         binary *= bin(search(bases, base) + 3)
     end
-    parse(Int, binary, 2) # Int64 allows for max length of 21bp
+    parse(Int, binary, base = 2) # Int64 allows for max length of 21bp
 end
 
 function seq2bignum(sequence::String)
@@ -314,7 +314,7 @@ function seq2bignum(sequence::String)
     for base in sequence
         binary *= bin(search(bases, base) + 3)
     end
-    parse(BigInt, binary, 2)
+    parse(BigInt, binary, base = 2)
 end
 
 """
