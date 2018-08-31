@@ -326,7 +326,7 @@ function num2seq(n::Integer)
     binary = string(n, base = 2)
     sequence = ""
     for i in 1:3:(length(binary) - 2)
-        sequence *= string(bases[parse(Int, binary[i:(i + 2)], 2) - 3])
+        sequence *= string(bases[parse(Int, binary[i:(i + 2)], base = 2) - 3])
     end
     sequence
 end

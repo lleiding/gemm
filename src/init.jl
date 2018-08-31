@@ -82,10 +82,10 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
             elseif length(varval) < 2
                 val = true # if no value is specified, assume 'true'
             else
-                val = parse(varval[2])
+                val = Meta.parse(varval[2])
             end
             # check for correct type and modify the new patch
-            vartype = typeof(eval(parse("newpatch."*var)))
+            vartype = typeof(eval(Meta.parse("newpatch."*var)))
             if !isa(val, vartype)
                 try
                     val = convert(vartype, val)
@@ -94,7 +94,7 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
                     continue
                 end
             end
-            eval(parse("newpatch."*string(var)*" = $val"))
+            eval(Meta.parse("newpatch."*string(var)*" = $val"))
         end
         if newpatch.initpop && settings["initadults"]
             append!(newpatch.community, genesis(settings))

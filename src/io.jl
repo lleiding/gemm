@@ -111,9 +111,13 @@ function parseconfig(configfilename::String)
         if length(c) != 2
             simlog("Bad config file syntax: $c", settings, 'w')
         elseif c[1] in keys(defaults)
-            value = parse(c[2])
-            if !isa(value, typeof(defaults[c[1]]))
-                simlog("$(c[1]): expected $(typeof(defaults[c[1]])), got $(typeof(value)).", settings, 'w')
+            value = c[2]
+            if !(typeof(defaults[c[1]]) <: AbstractString)
+                try
+                    value = parse(typeof(defaults[c[1]]), c[2])
+                catch
+                    simlog("$(c[1]) not of type $(typeof(defaults[c[1]])).", settings, 'w')
+                end
             end
             settings[c[1]] = value
         else
@@ -126,7 +130,7 @@ end
 function readmapfile(mapfilename::String, settings::Dict{String, Any})
     simlog("Reading map file $mapfilename.", settings)
     mapfile = basicparser(mapfilename)
-    timesteps = parse(mapfile[1][1])
+    timesteps = parse(Int, mapfile[1][1])
     if length(mapfile[1]) != 1 || !isa(timesteps, Integer)
         timesteps = 1000
         simlog("Invalid timestep information in the mapfile. Setting timesteps to 1000.", settings, 'w')
@@ -265,10 +269,10 @@ function setupdatadir(settings::Dict{String, Any})
         writesettings(settings)
         if haskey(settings, "maps")
             for m in settings["maps"]
-                cp(m, joinpath(settings["dest"], m), remove_destination = true) # most likely replicates with same parameters
+                cp(m, joinpath(settings["dest"], m), force = true) # most likely replicates with same parameters
             end
         end
-        cp(joinpath("src", "constants.jl"), joinpath(settings["dest"], "constants.jl"), remove_destination = true)
+        cp(joinpath("src", "constants.jl"), joinpath(settings["dest"], "constants.jl"), force = true)
     end
 end
 
