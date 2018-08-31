@@ -11,6 +11,8 @@ module GeMM
 
 
 using
+    Dates,
+    Random,
     Distributions,
     ArgParse
 

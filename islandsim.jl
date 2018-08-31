@@ -17,7 +17,9 @@
 thisDir = joinpath(pwd(), "src")
 any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 
-using GeMM
+using
+    GeMM,
+    Random
 
 function simulation!(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile::String, timesteps::Int=1000)
     simlog("Starting simulation.", settings)
