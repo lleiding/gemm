@@ -331,7 +331,7 @@ function recordstatistics(world::Array{Patch,1}, settings::Dict{String, Any})
     end
     popsize = sum(x -> length(x.community), world)
     lineages = unique(reduce(vcat, map(p -> collect(keys(p.whoiswho)), world)))
-    div = round.(diversity(world),3)
+    div = round.(diversity(world),3) # XXX throws an error in 1.0.0!
     space = freespace(world)
     simlog("Population size: $popsize, lineages: $(length(lineages))", settings)
     simlog("$popsize,$space,$(length(lineages)),$(div[1]),$(div[2]),$(div[3])", settings,
