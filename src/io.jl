@@ -138,7 +138,7 @@ end
     dumpinds(world, io, sep)
 Output all data of individuals in `world` as table to `io`. Columns are separated by `sep`.
 """
-function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep::Int, io::IO = STDOUT, sep::String = "\t")
+function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep::Int, io::IO = stdout, sep::String = "\t")
     header = true
     timestep != 0 && (header = false)
     traitkeys = []
@@ -211,7 +211,7 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
     end
 end
 
-function makefasta(world::Array{Patch, 1}, settings::Dict{String, Any}, io::IO = STDOUT, onlyisland::Bool = false, sep::String = "_")
+function makefasta(world::Array{Patch, 1}, settings::Dict{String, Any}, io::IO = stdout, onlyisland::Bool = false, sep::String = "_")
     for patch in world
         (onlyisland && !patch.isisland) && continue
         lineage = ""
@@ -380,9 +380,9 @@ Categories: d (debug), i (information, default), w (warn), e (error)
 """
 function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile="simulation.log", onlylog=false)
     (isa(category, String) && length(category) == 1) && (category = category[1])
-    function logprint(msg::String, settings::Dict{String, Any}, stderr=false)
-        if stderr || !(settings["quiet"] || onlylog)
-            stderr ? iostr = STDERR : iostr = STDOUT
+    function logprint(msg::String, settings::Dict{String, Any}, tostderr=false)
+        if tostderr || !(settings["quiet"] || onlylog)
+            tostderr ? iostr = stderr : iostr = stdout
             println(iostr, msg)
         end
         if settings["logging"]
