@@ -267,26 +267,25 @@ function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly.
         repsize = exp(settings["minrepsize"] + repoffset * rand())
     end
     for idx in eachindex(traitnames)
-        if contains(traitnames[idx], "rate")
+        if occursin("rate", traitnames[idx])
             push!(traits, Trait(idx, rand() * 100))
-        elseif contains(traitnames[idx], "dispshape")
+        elseif occursin("dispshape", traitnames[idx])
             push!(traits, Trait(idx, rand() * maxdispmean))
-        elseif contains(traitnames[idx], "tempopt")
-            #push!(traits, Trait(idx, rand() * 40 + 273)) #CAVE: code values elsewhere?
+        elseif occursin("tempopt", traitnames[idx])
             push!(traits, Trait(idx, rand() * 25 + 288)) # range 15-40°C
-        elseif contains(traitnames[idx], "temptol")
+        elseif occursin("temptol", traitnames[idx])
             push!(traits, Trait(idx, (rand() + 0.39) * 5)) #CAVE: code values elsewhere?
-        elseif contains(traitnames[idx], "mut")
+        elseif occursin("mut", traitnames[idx])
             mutationrate == 0 ? push!(traits, Trait(idx, rand())) : push!(traits, Trait(idx, mutationrate)) #CAVE: code values elsewhere?
-        elseif contains(traitnames[idx], "repsize")
+        elseif occursin("repsize", traitnames[idx])
             push!(traits, Trait(idx, repsize)) #CAVE: code values elsewhere?
-        elseif contains(traitnames[idx], "seedsize")
+        elseif occursin("seedsize", traitnames[idx])
             push!(traits, Trait(idx, seedsize)) #CAVE: code values elsewhere?
-        elseif contains(traitnames[idx], "precopt")
+        elseif occursin("precopt", traitnames[idx])
             push!(traits, Trait(idx, rand() * 10))
-        elseif contains(traitnames[idx], "prectol")
+        elseif occursin("prectol", traitnames[idx])
             push!(traits, Trait(idx, rand() + 0.39))
-        elseif contains(traitnames[idx], "reptol")
+        elseif occursin("reptol", traitnames[idx])
             push!(traits, Trait(idx, settings["tolerance"]))
         else
             push!(traits, Trait(idx, rand()))

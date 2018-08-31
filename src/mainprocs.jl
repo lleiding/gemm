@@ -3,20 +3,20 @@
 function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any})
     for trait in traits
         traitname = settings["traitnames"][trait.nameindex]
-        (contains(traitname, "mutprob") && mutationrate != 0) && continue
-        contains(traitname, "reptol") && settings["fixtol"] && continue # MARK CAVE!
+        (occursin("mutprob", traitname) && mutationrate != 0) && continue
+        occursin("reptol", traitname) && settings["fixtol"] && continue # MARK CAVE!
         oldvalue = trait.value
-        contains(traitname, "tempopt") && (oldvalue -= 273)
+        occursin("tempopt", traitname) && (oldvalue -= 273)
         while oldvalue <= 0 # make sure sd of Normal dist != 0
             oldvalue = abs(rand(Normal(0,0.01)))
         end
         newvalue = oldvalue + rand(Normal(0, oldvalue/phylconstr)) # CAVE: maybe handle temp + prec separately
         newvalue < 0 && (newvalue=abs(newvalue))
-        (newvalue > 1 && contains(traitname,"prob")) && (newvalue=1)
-        while newvalue <= 0 #&& contains(trait.name,"mut")
+        (newvalue > 1 && occursin("prob", traitname)) && (newvalue=1)
+        while newvalue <= 0
             newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
         end
-        contains(traitname, "tempopt") && (newvalue += 273)
+        occursin("tempopt", traitname) && (newvalue += 273)
         trait.value = newvalue
     end
 end

@@ -7,18 +7,16 @@ function genesis(settings::Dict{String, Any})
     while true
         # Create a new species and calculate its population size
         newind = createind(settings)
-        if contains(settings["initpopsize"], "metabolic") || contains(settings["initpopsize"], "single")
+        if occursin("metabolic", settings["initpopsize"]) || occursin("single", settings["initpopsize"])
             # population size determined by adult size and temperature niche optimum
             popsize = round(fertility * newind.traits["repsize"]^(-1/4) *
                             exp(-act/(boltz*newind.traits["tempopt"])))
-        elseif contains(settings["initpopsize"], "bodysize")
+        elseif occursin("bodysize", settings["initpopsize"])
             # population size up to 25% of the maximum possible in this cell
             quarterpopsize = Integer(floor((settings["cellsize"] / newind.traits["repsize"]) / 4))
             popsize = rand(0:quarterpopsize)
-        elseif contains(settings["initpopsize"], "minimal")
+        elseif occursin("minimal", settings["initpopsize"])
             popsize = 2 #Takes two to tangle ;-) #XXX No reproduction occurs!
-        # elseif contains(settings["initpopsize"], "single")
-        #     popsize = div(settings["cellsize"], newind.size)
         else
             simlog("Invalid value for `initpopsize`: $(settings["initpopsize"])", settings, 'e')
         end
@@ -35,7 +33,7 @@ function genesis(settings::Dict{String, Any})
         # Check the cell capacity
         popmass = popsize * newind.size
         if totalmass + popmass > settings["cellsize"] # stop loop if cell is full
-            if totalmass >= settings["cellsize"]*0.75 || contains(settings["initpopsize"], "single") #make sure the cell is full enough
+            if totalmass >= settings["cellsize"]*0.75 || occursin("single", settings["initpopsize"]) #make sure the cell is full enough
                 simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", settings, 'd') #DEBUG
                 break
             else
@@ -49,7 +47,7 @@ function genesis(settings::Dict{String, Any})
             !settings["static"] && (newind = deepcopy(newind))
             push!(community, newind)
         end
-        contains(settings["initpopsize"], "single") && break
+        occursin("single", settings["initpopsize"]) && break
     end
     simlog("Patch initialized with $(length(community)) individuals.", settings, 'd') #DEBUG
     community
