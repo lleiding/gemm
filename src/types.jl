@@ -53,11 +53,11 @@ end
 
 # constructors:
 # XXX These default values should be defined elsewhere (constants.jl, to be precise)
-Patch(id,location,area) =
-    Patch(id,location,area,298,false,5,0,Individual[], Individual[],
-          false, false, false, Dict{String, Array{Int, 1}}(), Array{Int, 2}(0,3))
-Patch(id,location) =
-    Patch(id,location,2e7,298,false,5,0,Individual[], Individual[],
-          false, false, false, Dict{String, Array{Int, 1}}(), Array{Int, 2}(0,3))
+Patch(id, location, area) =
+    Patch(id, location, area, 298, false, 5, 0, Individual[], Individual[],
+          false, false, false, Dict{String, Array{Int, 1}}(), Array{Int, 2}(undef, 0, 2)) # (0, 3) with both parents
+Patch(id, location) =
+    Patch(id, location, 2e7, 298, false, 5, 0, Individual[], Individual[],
+          false, false, false, Dict{String, Array{Int, 1}}(), Array{Int, 2}(undef, 0, 2)) # (0, 3) with both parents
 
 

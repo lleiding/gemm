@@ -251,7 +251,7 @@ directory by appending a counter.
 function setupdatadir(settings::Dict{String, Any})
     if isdir(settings["dest"]) # && !isempty(readdir(settings["dest"])) ## prevent mixing up of ouptut data from parallel sims
         replicate = split(settings["dest"], "_")[end]
-        if all(isnumber, replicate)
+        if all(isnumeric, replicate)
             replicate = parse(UInt8, replicate) + 1 # throw an error if replicate > 255
             settings["dest"] = string(split(settings["dest"], "_")[1:(end-1)]...) * "_" * string(replicate)
         else

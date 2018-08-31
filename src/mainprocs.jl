@@ -297,7 +297,7 @@ Reproduction of individuals in a patch `p`
 """
 function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
     identifyAdults!(patch)
-    patch.phylo = Array{Int}(0, 2) # (0, 3) with both parents
+    patch.phylo = Array{Int}(undef, 0, 2)
     for ind in patch.community
         if !ind.marked && ind.age > 0
             currentmass = ind.size
@@ -319,8 +319,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                         ind.size = parentmass
                     end
                     ## save origin of actually reproducing individuals:
-                    patch.phylo = [patch.phylo;
-                                   ind.id ind.parentid[1]] # ind.parentid[2]; # for now only use sparse genealogy
+                    patch.phylo = vcat(patch.phylo, [ind.id ind.parentid[1]]) # ind.parentid[2]; # for now only use sparse genealogy
                     # partner.id partner.parentid[1] partner.parentid[2]]
                     for i in 1:noffs # pmap? this loop could be factorized!
                         partnergenome = meiosis(partner.genome, false) # offspring have different genome!
