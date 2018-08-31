@@ -114,7 +114,7 @@ function parseconfig(configfilename::String)
             value = c[2]
             if !(typeof(defaults[c[1]]) <: AbstractString)
                 try
-                    value = parse(typeof(defaults[c[1]]), c[2])
+                    value = parse(typeof(defaults[c[1]]), c[2]) # or Meta.parse with the old functionality
                 catch
                     simlog("$(c[1]) not of type $(typeof(defaults[c[1]])).", settings, 'w')
                 end
