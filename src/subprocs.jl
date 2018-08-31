@@ -303,7 +303,7 @@ function seq2num(sequence::String)
     bases = "acgt"
     binary = ""
     for base in sequence
-        binary *= bin(search(bases, base) + 3)
+        binary *= string(search(bases, base) + 3, base = 2)
     end
     parse(Int, binary, base = 2) # Int64 allows for max length of 21bp
 end
@@ -312,7 +312,7 @@ function seq2bignum(sequence::String)
     bases = "acgt"
     binary = ""
     for base in sequence
-        binary *= bin(search(bases, base) + 3)
+        binary *= string(search(bases, base) + 3, base = 2)
     end
     parse(BigInt, binary, base = 2)
 end
@@ -323,7 +323,7 @@ Convert an integer into binary and then into a DNA base sequence string.
 """
 function num2seq(n::Integer)
     bases = "acgt"
-    binary = bin(n)
+    binary = string(n, base = 2)
     sequence = ""
     for i in 1:3:(length(binary) - 2)
         sequence *= string(bases[parse(Int, binary[i:(i + 2)], 2) - 3])
