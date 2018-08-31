@@ -131,7 +131,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
         ycord = parse(Int, entry[3])
         # XXX the 'global' here is a hack so that I can use eval() later on
         # (this always works on the global scope)
-        idx = find(x->x.id == id, world)
+        idx = findall(x -> x.id == id, world)
         if length(idx) == 0
             marked = true
             global newpatch = Patch(id, (xcord, ycord), cellsize)

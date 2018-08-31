@@ -1,8 +1,8 @@
 # Subsidiary functions for GeMM
 
 function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include further dynamics, errors...
-    firstset = find(x->x.maternal,genome)
-    secondset = find(x->!x.maternal,genome)
+    firstset = findall(x -> x.maternal, genome)
+    secondset = findall(x -> !x.maternal, genome)
     size(firstset,1) != size(secondset,1) && return Chromosome[] # CAVE: more elegant solution...
     gameteidxs = []
     for i in eachindex(firstset)
@@ -207,7 +207,7 @@ function identifyAdults!(patch::Patch)
 end
 
 function iscompatible(mate::Individual, ind::Individual, traitnames::Array{String, 1})
-    compatidx = findin(traitnames, ["compat"])[1]
+    compatidx = findfirst(x -> x == "compat", traitnames)
     tolerance = ind.traits["reptol"]
     indgene = ""
     for chrm in ind.genome
@@ -303,7 +303,7 @@ function seq2num(sequence::String)
     bases = "acgt"
     binary = ""
     for base in sequence
-        binary *= string(search(bases, base) + 3, base = 2)
+        binary *= string(findfirst(x -> x == base, bases) + 3, base = 2)
     end
     parse(Int, binary, base = 2) # Int64 allows for max length of 21bp
 end
@@ -312,7 +312,7 @@ function seq2bignum(sequence::String)
     bases = "acgt"
     binary = ""
     for base in sequence
-        binary *= string(search(bases, base) + 3, base = 2)
+        binary *= string(findfirst(x -> x == base, bases) + 3, base = 2)
     end
     parse(BigInt, binary, base = 2)
 end
@@ -333,7 +333,7 @@ end
 
 function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String, Any})
     genes = AbstractGene[]
-    compatidx = findin(settings["traitnames"], ["compat"])[1]
+    compatidx = findfirst(x -> x == "compat", settings["traitnames"])
     for i in 1:ngenes
         sequence = String(rand(collect("acgt"), settings["smallgenelength"])) # arbitrary start sequence
         seqint = seq2num(sequence)
