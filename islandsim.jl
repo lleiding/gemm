@@ -57,7 +57,7 @@ function runit(prerun::Bool = false)
         settings["maps"] = [getsettings()["maps"][1]]
         settings["cellsize"] = 1.0e6
     end
-    srand(settings["seed"])
+    Random.seed!(settings["seed"])
     !prerun && setupdatadir(settings)
     world = Patch[]
     for i in 1:length(settings["maps"])
