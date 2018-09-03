@@ -157,7 +157,6 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
             (!patch.isisland && settings["static"] && ind.lineage == lineage) && continue
             if header
                 #XXX Transfer to a dynamic system? (As in createworld()?)
-                print(io, "time", sep)
                 print(io, "patch_no", sep)
                 print(io, "xloc", sep)
                 print(io, "yloc", sep)
@@ -179,10 +178,10 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
                 for key in settings["traitnames"]
                     print(io, key, sep)
                 end
+                print(io, "time")
                 println(io)
                 header = false
             end
-            print(io, timestep, sep)
             print(io, patch.id, sep)
             print(io, patch.location[1], sep)
             print(io, patch.location[2], sep)
@@ -209,6 +208,7 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
                     print(io, "NA", sep)
                 end
             end
+            print(io, timestep)
             println(io)
             lineage = ind.lineage
         end
