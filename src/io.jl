@@ -138,14 +138,39 @@ function readmapfile(mapfilename::String, settings::Dict{String, Any})
     return timesteps,mapfile[2:end]
 end
 
+function printheader(settings::Dict{String, Any}, io::IO = stdout, sep::String = "\t")
+        #XXX Transfer to a dynamic system? (As in createworld()?)
+        print(io, "patch_no", sep)
+        print(io, "xloc", sep)
+        print(io, "yloc", sep)
+        print(io, "temp", sep)
+        print(io, "area", sep)
+        print(io, "prec", sep)
+        print(io, "island", sep)
+        print(io, "isolation", sep)
+        print(io, "invasible", sep)
+        print(io, "initpop", sep)
+        print(io, "id", sep)
+        print(io, "lineage", sep)
+        print(io, "age", sep)
+        print(io, "new", sep)
+        print(io, "fitness", sep)
+        print(io, "size", sep)
+        print(io, "lnkgunits", sep)
+        print(io, "ngenes", sep)
+        for key in settings["traitnames"]
+            print(io, key, sep)
+        end
+        print(io, "time")
+        println(io)
+end
+
 """
     dumpinds(world, io, sep)
 Output all data of individuals in `world` as table to `io`. Columns are separated by `sep`.
 """
 function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep::Int, io::IO = stdout, sep::String = "\t")
-    header = true
-    timestep != 0 && (header = false)
-    traitkeys = []
+    timestep == 0 && printheader(settings, io, sep)
     onlyisland = settings["static"] && timestep > 1
     for patch in world
         #XXX Sometimes, this only dumps three or four individuals, with a population of >10⁴!
@@ -155,33 +180,6 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
         for ind in patch.community
             # only one individual per species on a static mainland (should be the case anyway)
             (!patch.isisland && settings["static"] && ind.lineage == lineage) && continue
-            if header
-                #XXX Transfer to a dynamic system? (As in createworld()?)
-                print(io, "patch_no", sep)
-                print(io, "xloc", sep)
-                print(io, "yloc", sep)
-                print(io, "temp", sep)
-                print(io, "area", sep)
-                print(io, "prec", sep)
-                print(io, "island", sep)
-                print(io, "isolation", sep)
-                print(io, "invasible", sep)
-                print(io, "initpop", sep)
-                print(io, "id", sep)
-                print(io, "lineage", sep)
-                print(io, "age", sep)
-                print(io, "new", sep)
-                print(io, "fitness", sep)
-                print(io, "size", sep)
-                print(io, "lnkgunits", sep)
-                print(io, "ngenes", sep)
-                for key in settings["traitnames"]
-                    print(io, key, sep)
-                end
-                print(io, "time")
-                println(io)
-                header = false
-            end
             print(io, patch.id, sep)
             print(io, patch.location[1], sep)
             print(io, patch.location[2], sep)
