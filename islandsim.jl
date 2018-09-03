@@ -53,18 +53,22 @@ function runit(prerun::Bool = false)
     settings = getsettings()
     if prerun
         settings = defaultSettings()
-        settings["quiet"] = true
-        settings["maps"] = [getsettings()["maps"][1]]
         settings["cellsize"] = 1.0e6
+        settings["initadults"] = true
+        settings["initpopsize"] = "single"
+        settings["maps"] = [getsettings()["maps"][1]]
+        settings["phylo"] = false
+        settings["quiet"] = true
+        settings["static"] = false
     end
     Random.seed!(settings["seed"])
     !prerun && setupdatadir(settings)
     world = Patch[]
     for i in 1:length(settings["maps"])
-        timesteps,maptable = readmapfile(settings["maps"][i], settings)
+        timesteps, maptable = readmapfile(settings["maps"][i], settings)
         if prerun
             timesteps = 10
-            maptable = [["0", "0", "0", "initpop"], ["1", "9", "0", "isisland"]]
+            maptable = [["1", "1", "1", "initpop"], ["2", "2", "1", "isisland"]]
         end
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world,maptable,settings["cellsize"])

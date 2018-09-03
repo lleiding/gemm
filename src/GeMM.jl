@@ -5,8 +5,6 @@
 #
 # contains all custom types and functions necessary for eco-evo-env speciation island model
 
-__precompile__()
-
 module GeMM
 
 
