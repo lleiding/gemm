@@ -8,7 +8,7 @@ const mortality = exp(22) # global base mortality from Brown et al. 2004 is 26.3
 const fertility = exp(28.0) # global base reproduction rate 23.8 from Brown et al. 2004, alternatively 25.0, default 30.0
 const phylconstr = 10 #parse(ARGS[2])
 # const meangenes = 20 # mean number of genes per individual
-const mutationrate = 1e7 # one mutation per generation with 200bp genes, corrected for metabolic function
+const mutationrate = 3.6e10 # one mutation per generation/individual, corrected for metabolic function
 const isolationweight = 3 # additional distance to be crossed when dispersing from or to isolated patches
 const maxdispmean = 10 # maximum mean dispersal distance
 

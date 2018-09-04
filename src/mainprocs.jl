@@ -22,24 +22,28 @@ function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any})
 end
 
 function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
-    for chrm in ind.genome
-        for idx in eachindex(chrm.genes)
-            charseq = collect(num2seq(chrm.genes[idx].sequence))
-            for i in eachindex(charseq)
-                if rand() <= 1 - exp(-ind.traits["mutprob"] * exp(-act/(boltz*temp)))
-                    newbase = rand(collect("acgt"),1)[1]
-                    while newbase == charseq[i]
-                        newbase = rand(collect("acgt"),1)[1]
-                    end
-                    charseq[i] = newbase
-                    mutate!(chrm.genes[idx].codes, settings)
-                end
-            end
-            if length(charseq) > 21
-                chrm.genes[idx].sequence = seq2bignum(String(charseq))
-            else
-                chrm.genes[idx].sequence = seq2num(String(charseq))
-            end
+    muts = ind.traits["mutprob"] * exp(-act/(boltz*temp)) # settings["mutsperind"]?
+    nmuts = rand(Poisson(muts))
+    nmuts == 0 && return
+    chrmidcs = rand(eachindex(ind.genome), nmuts)
+    for c in chrmidcs
+        length(ind.genome[c].genes) == 0 && continue
+        g = rand(eachindex(ind.genome[c].genes))
+        #println("N2S:")
+        charseq = collect(num2seq(ind.genome[c].genes[g].sequence))
+        #println("MUT:")
+        i = rand(eachindex(charseq))
+        newbase = rand(collect("acgt"),1)[1]
+        while newbase == charseq[i]
+            newbase = rand(collect("acgt"),1)[1]
+        end
+        charseq[i] = newbase
+        mutate!(ind.genome[c].genes[g].codes, settings)
+        #println("S2M:")
+        if length(charseq) > 21
+            ind.genome[c].genes[g].sequence = seq2bignum(String(charseq))
+        else
+            ind.genome[c].genes[g].sequence = seq2num(String(charseq))
         end
     end
     ind.traits = chrms2traits(ind.genome, settings["traitnames"])
@@ -52,6 +56,7 @@ function mutate!(patch::Patch, settings::Dict{String, Any})
 end
 
 function mutate!(world::Array{Patch, 1}, settings::Dict{String, Any})
+    println("MUT:")
     for patch in world
         (patch.isisland || !settings["static"]) && mutate!(patch, settings)
     end
