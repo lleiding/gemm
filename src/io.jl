@@ -328,7 +328,7 @@ function recordstatistics(world::Array{Patch,1}, settings::Dict{String, Any})
     lineages = unique(reduce(vcat, map(p -> collect(keys(p.whoiswho)), world)))
     div = round.(diversity(world), digits = 3)
     space = freespace(world)
-    simlog("Population size: $popsize, lineages: $(length(lineages))", settings)
+    simlog("Metacommunity size: $popsize, lineages: $(length(lineages))", settings)
     simlog("$popsize,$space,$(length(lineages)),$(div[1]),$(div[2]),$(div[3])", settings,
            'i', "diversity.log", true)
 end
