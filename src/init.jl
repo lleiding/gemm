@@ -7,18 +7,18 @@ function genesis(settings::Dict{String, Any})
     while true
         # Create a new species and calculate its population size
         newind = createind(settings)
-        if occursin("metabolic", settings["initpopsize"]) || occursin("single", settings["initpopsize"])
+        if occursin("metabolic", settings["popsize"]) || occursin("single", settings["popsize"])
             # population size determined by adult size and temperature niche optimum
             popsize = round(fertility * newind.traits["repsize"]^(-1/4) *
                             exp(-act/(boltz*newind.traits["tempopt"])))
-        elseif occursin("bodysize", settings["initpopsize"])
+        elseif occursin("bodysize", settings["popsize"])
             # population size up to 25% of the maximum possible in this cell
             quarterpopsize = Integer(floor((settings["cellsize"] / newind.traits["repsize"]) / 4))
             popsize = rand(0:quarterpopsize)
-        elseif occursin("minimal", settings["initpopsize"])
+        elseif occursin("minimal", settings["popsize"])
             popsize = 2 #Takes two to tangle ;-) #XXX No reproduction occurs!
         else
-            simlog("Invalid value for `initpopsize`: $(settings["initpopsize"])", settings, 'e')
+            simlog("Invalid value for `popsize`: $(settings["popsize"])", settings, 'e')
         end
         # prevent an infinity loop when the cellsize is very small
         if popsize < 2
@@ -33,7 +33,7 @@ function genesis(settings::Dict{String, Any})
         # Check the cell capacity
         popmass = popsize * newind.size
         if totalmass + popmass > settings["cellsize"] # stop loop if cell is full
-            if totalmass >= settings["cellsize"]*0.75 || occursin("single", settings["initpopsize"]) #make sure the cell is full enough
+            if totalmass >= settings["cellsize"]*0.75 || occursin("single", settings["popsize"]) #make sure the cell is full enough
                 simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", settings, 'd') #DEBUG
                 break
             else
@@ -45,9 +45,13 @@ function genesis(settings::Dict{String, Any})
         simlog("Initializing lineage $(newind.lineage) with $popsize individuals.", settings, 'd') #DEBUG
         for i in 1:popsize
             !settings["static"] && (newind = deepcopy(newind))
+            if settings["indsize"] == "mixed"
+                # XXX: sizes shouldn't be uniformally dist'd + seeds vs. non-seeds?:
+                newind.size = newind.traits["seedsize"] + rand() * newind.traits["repsize"] 
+            end
             push!(community, newind)
         end
-        occursin("single", settings["initpopsize"]) && break
+        occursin("single", settings["popsize"]) && break
     end
     simlog("Patch initialized with $(length(community)) individuals.", settings, 'd') #DEBUG
     community
@@ -96,7 +100,7 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
             end
             eval(Meta.parse("newpatch."*string(var)*" = $val"))
         end
-        if newpatch.initpop && settings["initadults"]
+        if newpatch.initpop && settings["indsize"] != "seed"
             append!(newpatch.community, genesis(settings))
         elseif newpatch.initpop && !newpatch.isisland && settings["static"]
             append!(newpatch.seedbank, genesis(settings))

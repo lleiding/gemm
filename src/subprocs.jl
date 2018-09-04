@@ -118,7 +118,7 @@ function freespace(world::Array{Patch,1})
             space += p.area
         end
     end
-    round((space/length(world))/1e6, 3)
+    round((space/length(world))/1e6, digits = 3)
 end
 
 """
@@ -403,7 +403,13 @@ function createind(settings::Dict{String, Any})
     end
     chromosomes = createchrs(nchrms,genes)
     traitdict = chrms2traits(chromosomes, settings["traitnames"])
-    settings["initadults"] ? indsize = traitdict["repsize"] : indsize = traitdict["seedsize"]
+    if settings["indsize"] == "adult"
+        indsize = traitdict["repsize"]
+    elseif settings["indsize"] == "seed"
+        indsize = traitdict["seedsize"]
+    else
+        indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
+    end
     Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize, id, parentid)
 end
 
