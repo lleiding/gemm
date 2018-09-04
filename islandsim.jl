@@ -54,7 +54,7 @@ function runit(prerun::Bool = false)
     if prerun
         settings = defaultSettings()
         settings["cellsize"] = 1.0e6
-        settings["initadults"] = true
+        settings["indsize"] = "adult"
         settings["popsize"] = "single"
         settings["maps"] = [getsettings()["maps"][1]]
         settings["phylo"] = false

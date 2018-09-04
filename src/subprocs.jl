@@ -353,9 +353,11 @@ function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String,
             push!(gene.codes,trait)
         end
     end
-    # if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
-    push!(genes, BigGene(seq2bignum(String(rand(collect("acgt"), settings["biggenelength"]))), [Trait(compatidx, 0.5)]))
-    # end
+    if settings["usebiggenes"]
+        push!(genes, BigGene(seq2bignum(String(rand(collect("acgt"), settings["biggenelength"]))), [Trait(compatidx, 0.5)]))
+    else
+        push!(genes, Gene(seq2num(String(rand(collect("acgt"), settings["smallgenelength"]))), [Trait(compatidx, 0.5)]))
+    end
     genes
 end
 
