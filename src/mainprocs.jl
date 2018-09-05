@@ -17,6 +17,7 @@ function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any})
             newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
         end
         occursin("tempopt", traitname) && (newvalue += 273)
+        trait.value = deepcopy(trait.value)
         trait.value = newvalue
     end
 end
@@ -29,9 +30,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
     for c in chrmidcs
         length(ind.genome[c].genes) == 0 && continue
         g = rand(eachindex(ind.genome[c].genes))
-        #println("N2S:")
         charseq = collect(num2seq(ind.genome[c].genes[g].sequence))
-        #println("MUT:")
         i = rand(eachindex(charseq))
         newbase = rand(collect("acgt"),1)[1]
         while newbase == charseq[i]
@@ -39,7 +38,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
         end
         charseq[i] = newbase
         mutate!(ind.genome[c].genes[g].codes, settings)
-        #println("S2M:")
+        ind.genome[c].genes[g].sequence = deepcopy(ind.genome[c].genes[g].sequence)
         if length(charseq) > 21
             ind.genome[c].genes[g].sequence = seq2bignum(String(charseq))
         else
@@ -56,7 +55,6 @@ function mutate!(patch::Patch, settings::Dict{String, Any})
 end
 
 function mutate!(world::Array{Patch, 1}, settings::Dict{String, Any})
-    println("MUT:")
     for patch in world
         (patch.isisland || !settings["static"]) && mutate!(patch, settings)
     end
@@ -268,12 +266,12 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
             end
             if length(possdest) > 0 # if no viable target patch, individual dies
                 if static && !patch.isisland
-                    indleft = deepcopy(patch.seedbank[idx])
+                    indleft = patch.seedbank[idx]
                 end
                 destination = rand(possdest) # currently there is only one possible destination
                 originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated origin patch
                 targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated target patch
-                (!originisolated && !targetisolated) && push!(world[destination].community, indleft) # new independent individual
+                (!originisolated && !targetisolated) && push!(world[destination].community, deepcopy(indleft)) # new independent individual
             end
             patch.isisland && (idx -= 1)
             idx += 1

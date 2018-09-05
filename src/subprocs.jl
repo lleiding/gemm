@@ -12,7 +12,7 @@ function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include fur
     for i in gameteidxs
         push!(gamete, Chromosome(genome[i].genes, maternal))
     end
-    deepcopy(gamete)
+    gamete
 end
 
 function chrms2traits(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
