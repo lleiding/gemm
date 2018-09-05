@@ -17,7 +17,6 @@ function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any})
             newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
         end
         occursin("tempopt", traitname) && (newvalue += 273)
-        trait.value = deepcopy(trait.value)
         trait.value = newvalue
     end
 end
@@ -28,6 +27,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
     nmuts == 0 && return
     chrmidcs = rand(eachindex(ind.genome), nmuts)
     for c in chrmidcs
+        ind.genome[c] = deepcopy(ind.genome[c])
         length(ind.genome[c].genes) == 0 && continue
         g = rand(eachindex(ind.genome[c].genes))
         charseq = collect(num2seq(ind.genome[c].genes[g].sequence))
@@ -271,7 +271,7 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
                 destination = rand(possdest) # currently there is only one possible destination
                 originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated origin patch
                 targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated target patch
-                (!originisolated && !targetisolated) && push!(world[destination].community, deepcopy(indleft)) # new independent individual
+                (!originisolated && !targetisolated) && push!(world[destination].community, indleft) # new independent individual
             end
             patch.isisland && (idx -= 1)
             idx += 1
@@ -334,7 +334,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                         marked = true
                         fitness = 0.0
                         newsize = seedsize
-                        ind = Individual(ind.lineage, genome,traits,age,marked,fitness,
+                        ind = Individual(ind.lineage, genome, traits, age, marked, fitness,
                                          newsize, rand(Int32), ind.id) #, partner.id))
                         push!(patch.seedbank, ind) # maybe actually deepcopy!?
                     end

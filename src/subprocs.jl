@@ -1,12 +1,12 @@
 # Subsidiary functions for GeMM
 
-function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include further dynamics, errors...
+function meiosis(genome::Array{Chromosome,1}, maternal::Bool) # TODO: include further dynamics, errors...
     firstset = findall(x -> x.maternal, genome)
     secondset = findall(x -> !x.maternal, genome)
-    size(firstset,1) != size(secondset,1) && return Chromosome[] # CAVE: more elegant solution...
+    length(firstset) != length(secondset) && return Chromosome[] # CAVE: more elegant solution...
     gameteidxs = []
     for i in eachindex(firstset)
-        push!(gameteidxs,rand([firstset[i],secondset[i]]))
+        push!(gameteidxs, rand([firstset[i], secondset[i]]))
     end
     gamete = Chromosome[]
     for i in gameteidxs
