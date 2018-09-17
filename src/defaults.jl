@@ -23,6 +23,7 @@ function defaultSettings()
          "mutate" => true, # mutations occur
          "nniches" => 2, # number of environmental niches (max. 3)
          "outfreq" => 100, # output frequency
+         "phylconstr" = 0.1 # phylogenetic constraint during mutation and inter-loci variation. scales trait value as sd.
          "phylo" => false, # record phylogeny?
          "popsize" => "metabolic", # initialisation algorithm: metabolic/bodysize/minimal/single
          "propagule-pressure" => 0, # number of non-native individuals introduced per invasion event
