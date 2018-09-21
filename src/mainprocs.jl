@@ -169,7 +169,6 @@ species-independent mortality due to disturbance on patch `p`
 """
 function disturb!(patch::Patch, intensity::Int)
     length(patch.community) <= 0 && return
-    intensity > 100 && error("intensity must be less than 100%")
     deaths = Integer(round(length(patch.community) * (intensity/100)))
     dead = unique(rand(1:length(patch.community), deaths))
     while length(dead) < deaths
@@ -182,6 +181,10 @@ end
 
 function disturb!(world::Array{Patch,1}, settings::Dict{String, Any})
     (settings["disturbance"] == 0) && return
+    if settings["disturbance"] > 100
+        simlog("disturbance must be no more than 100%", 'w')
+        settings["disturbance"] = 100
+    end
     for patch in world
         (patch.isisland || !settings["static"]) && disturb!(patch, settings["disturbance"])
     end
@@ -310,7 +313,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                 metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*patch.temp))
                 noffs = rand(Poisson(metaboffs))# * ind.fitness)) # add some stochasticity
                 if noffs < 1
-                    #simlog("0 offspring chosen", settings, 'd')
+                    #simlog("0 offspring chosen", settings, 'd') #DEBUG - noisy!
                     continue
                 end
                 partner = findposspartner(patch, ind, settings["traitnames"])

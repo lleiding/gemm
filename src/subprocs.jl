@@ -96,6 +96,7 @@ function diversity(world::Array{Patch,1})
     globalindex = Dict{String, Int}()
     for p in world
         localindex = Dict{String, Int}()
+        #TODO Should not use `whoiswho`
         for s in keys(p.whoiswho)
             localindex[s] = length(p.whoiswho[s])
         end
@@ -255,7 +256,7 @@ function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String
 end
 
 function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
-    #TODO move traits to constants.jl
+    #TODO move traits to defaults.jl -> or the whole function?
     traitnames = settings["traitnames"]
     traits = Trait[]
     # exponential distributions of body sizes:

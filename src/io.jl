@@ -326,6 +326,7 @@ function recordstatistics(world::Array{Patch,1}, settings::Dict{String, Any})
                'i', "diversity.log", true)
     end
     popsize = sum(x -> length(x.community), world)
+    #CAVE Should not use `whoiswho`
     lineages = unique(reduce(vcat, map(p -> collect(keys(p.whoiswho)), world)))
     div = round.(diversity(world), digits = 3)
     space = freespace(world)
@@ -343,6 +344,7 @@ function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, time
         simlog("t,X,Y,lineage,population", settings, 'i', "lineages.log", true)
     end
     for p in world
+        #CAVE Should not use `whoiswho`
         for l in keys(p.whoiswho)
             simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(p.whoiswho[l]))", settings,
                    'i', "lineages.log", true)
