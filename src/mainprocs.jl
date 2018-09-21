@@ -10,11 +10,11 @@ function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any})
         while oldvalue <= 0 # make sure sd of Normal dist != 0
             oldvalue = abs(rand(Normal(0,0.01)))
         end
-        newvalue = oldvalue + rand(Normal(0, oldvalue/phylconstr)) # CAVE: maybe handle temp + prec separately
+        newvalue = oldvalue + rand(Normal(0, oldvalue * settings["phylconstr"])) # CAVE: maybe handle temp + prec separately
         newvalue < 0 && (newvalue=abs(newvalue))
         (newvalue > 1 && occursin("prob", traitname)) && (newvalue=1)
         while newvalue <= 0
-            newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
+            newvalue = trait.value + rand(Normal(0, trait.value * settings["phylconstr"]))
         end
         occursin("tempopt", traitname) && (newvalue += 273)
         trait.value = newvalue

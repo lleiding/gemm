@@ -375,3 +375,49 @@ function createind(settings::Dict{String, Any})
     Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize, id, parentid)
 end
 
+function createpop(settings::Dict{String, Any})
+    traits = createtraits(settings)
+    if occursin("metabolic", settings["popsize"]) || occursin("single", settings["popsize"])
+        # population size determined by adult size and temperature niche optimum
+        popsize = round(fertility * traits["repsize"] ^ (-1 / 4) *
+                        exp(-act / (boltz * traits["tempopt"])))
+    elseif occursin("bodysize", settings["popsize"])
+        # population size up to 25% of the maximum possible in this cell
+        quarterpopsize = Integer(floor((settings["cellsize"] / traits["repsize"]) / 4))
+        popsize = rand(2:quarterpopsize)
+    elseif occursin("minimal", settings["popsize"])
+        popsize = 2 #Takes two to tangle ;-)
+    else
+        simlog("Invalid value for `popsize`: $(settings["popsize"])", settings, 'e')
+    end
+    lineage = randstring(4)
+    ngenes = settings["avgnoloci"] * length(settings["traitnames"])
+    ngenes < 1 && (ngenes = 1)
+    while true
+        locivar = rand()
+        locivar >= settings["phylconstr"] && break
+    end
+    population = Individual[]
+    for i in 1:popsize
+        genes = creategenes(ngenes, traits, settings)
+        randchrms = rand(1:length(genes))
+        if settings["linkage"] == "none"
+            nchrms = length(genes)
+        elseif settings["linkage"] == "full"
+            nchrms = 1
+        else
+            nchrms = randchrms
+        end
+        chromosomes = createchrs(nchrms, genes)
+        traitdict = chrms2traits(chromosomes, settings["traitnames"])
+        if settings["indsize"] == "adult"
+            indsize = traitdict["repsize"]
+        elseif settings["indsize"] == "seed"
+            indsize = traitdict["seedsize"]
+        else
+            indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
+        end
+        push!(population, Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize, id, parentid))
+    end
+end
+
