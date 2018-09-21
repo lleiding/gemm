@@ -46,3 +46,43 @@ function defaultSettings()
          ) 
 end
 
+# Return a list of traits with randomised default values
+function defaultΤraits(settings::Dict{String, Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+    traitnames = settings["traitnames"]
+    traits = Trait[]
+    # exponential distributions of body sizes:
+    seedoffset = settings["maxseedsize"] - settings["minseedsize"]
+    repoffset = settings["maxrepsize"] - settings["minrepsize"]
+    seedsize = exp(settings["minseedsize"] + seedoffset * rand()) 
+    repsize = exp(settings["minrepsize"] + repoffset * rand())
+    while repsize <= seedsize
+        repsize = exp(settings["minrepsize"] + repoffset * rand())
+    end
+    for idx in eachindex(traitnames)
+        if occursin("rate", traitnames[idx])
+            push!(traits, Trait(idx, rand() * 100))
+        elseif occursin("dispshape", traitnames[idx])
+            push!(traits, Trait(idx, rand() * maxdispmean))
+        elseif occursin("tempopt", traitnames[idx])
+            push!(traits, Trait(idx, rand() * 25 + 288)) # range 15-40°C
+        elseif occursin("temptol", traitnames[idx])
+            push!(traits, Trait(idx, (rand() + 0.39) * 5))
+        elseif occursin("mut", traitnames[idx])
+            mutationrate == 0 ? push!(traits, Trait(idx, rand())) : push!(traits, Trait(idx, mutationrate))
+        elseif occursin("repsize", traitnames[idx])
+            push!(traits, Trait(idx, repsize))
+        elseif occursin("seedsize", traitnames[idx])
+            push!(traits, Trait(idx, seedsize))
+        elseif occursin("precopt", traitnames[idx])
+            push!(traits, Trait(idx, rand() * 10))
+        elseif occursin("prectol", traitnames[idx])
+            push!(traits, Trait(idx, rand() + 0.39))
+        elseif occursin("reptol", traitnames[idx])
+            push!(traits, Trait(idx, settings["tolerance"]))
+        else
+            push!(traits, Trait(idx, rand()))
+        end
+    end
+    traits
+end
+
