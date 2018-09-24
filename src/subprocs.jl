@@ -255,6 +255,46 @@ function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String
     posspartner 
 end
 
+function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+    #TODO move traits to defaults.jl -> or the whole function?
+    traitnames = settings["traitnames"]
+    traits = Trait[]
+    # exponential distributions of body sizes:
+    seedoffset = settings["maxseedsize"] - settings["minseedsize"]
+    repoffset = settings["maxrepsize"] - settings["minrepsize"]
+    seedsize = exp(settings["minseedsize"] + seedoffset * rand()) 
+    repsize = exp(settings["minrepsize"] + repoffset * rand())
+    while repsize <= seedsize
+        repsize = exp(settings["minrepsize"] + repoffset * rand())
+    end
+    for idx in eachindex(traitnames)
+        if occursin("rate", traitnames[idx])
+            push!(traits, Trait(idx, rand() * 100))
+        elseif occursin("dispshape", traitnames[idx])
+            push!(traits, Trait(idx, rand() * maxdispmean))
+        elseif occursin("tempopt", traitnames[idx])
+            push!(traits, Trait(idx, rand() * 25 + 288)) # range 15-40°C
+        elseif occursin("temptol", traitnames[idx])
+            push!(traits, Trait(idx, (rand() + 0.39) * 5)) #CAVE: code values elsewhere?
+        elseif occursin("mut", traitnames[idx])
+            mutationrate == 0 ? push!(traits, Trait(idx, rand())) : push!(traits, Trait(idx, mutationrate)) #CAVE: code values elsewhere?
+        elseif occursin("repsize", traitnames[idx])
+            push!(traits, Trait(idx, repsize)) #CAVE: code values elsewhere?
+        elseif occursin("seedsize", traitnames[idx])
+            push!(traits, Trait(idx, seedsize)) #CAVE: code values elsewhere?
+        elseif occursin("precopt", traitnames[idx])
+            push!(traits, Trait(idx, rand() * 10))
+        elseif occursin("prectol", traitnames[idx])
+            push!(traits, Trait(idx, rand() + 0.39))
+        elseif occursin("reptol", traitnames[idx])
+            push!(traits, Trait(idx, settings["tolerance"]))
+        else
+            push!(traits, Trait(idx, rand()))
+        end
+    end
+    traits
+end
+
 """
     seq2num(sequence)
 Convert a DNA base sequence (a string) into binary and then into an integer.
@@ -353,7 +393,7 @@ function createind(settings::Dict{String, Any})
     lineage = randstring(4)
     ngenes = settings["avgnoloci"] * length(settings["traitnames"])
     ngenes < 1 && (ngenes = 1)
-    traits = defaultTraits(settings)
+    traits = createtraits(settings)
     genes = creategenes(ngenes, traits, settings)
     randchrms = rand(1:length(genes))
     if settings["linkage"] == "none"
