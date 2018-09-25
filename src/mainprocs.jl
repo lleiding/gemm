@@ -3,7 +3,6 @@
 function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any})
     for trait in traits
         traitname = settings["traitnames"][trait.nameindex]
-        (occursin("mutprob", traitname) && mutationrate != 0) && continue
         occursin("reptol", traitname) && settings["fixtol"] && continue # MARK CAVE!
         oldvalue = trait.value
         occursin("tempopt", traitname) && (oldvalue -= 273)
@@ -22,7 +21,7 @@ function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any})
 end
 
 function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
-    muts = ind.traits["mutprob"] * exp(-act/(boltz*temp)) # settings["mutsperind"]?
+    muts = settings["mutationrate"] * exp(-act/(boltz*temp)) # settings["mutsperind"]?
     nmuts = rand(Poisson(muts))
     nmuts == 0 && return
     chrmidcs = rand(eachindex(ind.genome), nmuts)
@@ -138,7 +137,7 @@ end
     survive!(p)
 density independent survival of individuals in patch `p`
 """
-function survive!(patch::Patch)
+function survive!(patch::Patch, mortality::Float64)
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
@@ -157,9 +156,9 @@ function survive!(patch::Patch)
     end
 end
 
-function survive!(world::Array{Patch,1}, static::Bool = true)
+function survive!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
-        (patch.isisland || !static) && survive!(patch) # pmap(!,patch) ???
+        (patch.isisland || !settings["static"]) && survive!(patch, settings["mortality"]) # pmap(!,patch) ???
     end
 end
 
@@ -219,7 +218,7 @@ end
     grow!(p)
 Growth of individuals in patch `p`
 """
-function grow!(patch::Patch)
+function grow!(patch::Patch, growthrate::Float64)
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
@@ -241,9 +240,9 @@ function grow!(patch::Patch)
     end
 end
 
-function grow!(world::Array{Patch,1}, static::Bool = true)
+function grow!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
-        (patch.isisland || !static) && grow!(patch) # pmap(!,patch) ???
+        (patch.isisland || !settings["static"]) && grow!(patch, settings["growthrate"]) # pmap(!,patch) ???
     end
 end
 
@@ -272,9 +271,7 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
                     indleft = patch.seedbank[idx]
                 end
                 destination = rand(possdest) # currently there is only one possible destination
-                originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated origin patch
-                targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated target patch
-                (!originisolated && !targetisolated) && push!(world[destination].community, indleft) # new independent individual
+                push!(world[destination].community, indleft)
             end
             patch.isisland && (idx -= 1)
             idx += 1
@@ -310,7 +307,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
             seedsize = ind.traits["seedsize"]
             if currentmass >= ind.traits["repsize"]
                 reptol = ind.traits["reptol"]
-                metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*patch.temp))
+                metaboffs = settings["fertility"] * currentmass^(-1/4) * exp(-act/(boltz*patch.temp))
                 noffs = rand(Poisson(metaboffs))# * ind.fitness)) # add some stochasticity
                 if noffs < 1
                     #simlog("0 offspring chosen", settings, 'd') #DEBUG - noisy!

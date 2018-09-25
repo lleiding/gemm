@@ -9,23 +9,32 @@ function defaultSettings()
          "dest" => string(Dates.today()), # output folder name
          "disturbance" => 0, # percentage of individuals killed per update per cell
          "fasta" => false, # record fasta data?
+         "fertility" => exp(28.0), # global base reproduction rate 23.8 from Brown et al. 2004, alternatively 25.0, default 30.0
          "fixtol" => true,
          "global-species-pool" => 0, # size of the global species pool (invasion source)
+         "growthrate" => exp(25.2), # global base growth/biomass production from Brown et al. 2004
          "indsize" => "seed", # initialize organisms as seed, adult or mixed
+         "isolationweight" => 3, # additional distance to be crossed when dispersing from or to isolated patches
          "lineages" => false, # record lineage and diversity data?
          "linkage" => "random", # gene linkage type (random/full/none)
          "logging" => false, # write output to logfile
          "maps" => "", # comma-separated list of map files
+         "maxdispmean" => 10, # maximum mean dispersal distance
          "maxrepsize" => 14, # maximal repsize in grams calculated as exp(maxrepsize) -> 1.2 t
          "maxseedsize" => 10, # maximal seedsize in grams calculated as exp(maxseedsize) -> 22 kg
+         "maxtemp" => 313, # max optimum temp in K 
          "minrepsize" => 3, # minimal repsize in grams calculated as exp(minrepsize) -> 20 g
          "minseedsize" => -2, # minimal seedsize in grams calculated as exp(minseedsize) -> 0.14 g
+         "mintemp" => 283, # min optimum temp in K 
+         "mortality" => exp(22), # global base mortality from Brown et al. 2004 is 26.3, but competition and dispersal introduce add. mort.
          "mutate" => true, # mutations occur
+         "mutationrate" => 3.6e10, # one mutation per generation/individual, corrected for metabolic function
          "nniches" => 2, # number of environmental niches (max. 3)
          "outfreq" => 100, # output frequency
-         "phylconstr" = 0.1 # phylogenetic constraint during mutation and inter-loci variation. scales trait value as sd.
+         "phylconstr" => 0.1, # phylogenetic constraint during mutation and inter-loci variation. scales trait value as sd.
          "phylo" => false, # record phylogeny?
          "popsize" => "metabolic", # initialisation algorithm: metabolic/bodysize/minimal/single
+         "precrange" => 10, # range from 0 for precipitation optimum
          "propagule-pressure" => 0, # number of non-native individuals introduced per invasion event
          "quiet" => false, # don't write output to screen
          "seed" => 0, # for the RNG, seed = 0 -> random seed
@@ -35,7 +44,6 @@ function defaultSettings()
          "traitnames" => ["compat",
                           "dispmean",
                           "dispshape",
-                          "mutprob",
                           "precopt",
                           "prectol",
                           "repsize",

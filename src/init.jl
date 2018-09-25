@@ -9,7 +9,7 @@ function genesis(settings::Dict{String, Any})
         newind = createind(settings)
         if occursin("metabolic", settings["popsize"]) || occursin("single", settings["popsize"])
             # population size determined by adult size and temperature niche optimum
-            popsize = round(fertility * newind.traits["repsize"]^(-1/4) *
+            popsize = round(settings["fertility"] * newind.traits["repsize"]^(-1/4) *
                             exp(-act/(boltz*newind.traits["tempopt"])))
         elseif occursin("bodysize", settings["popsize"])
             # population size up to 25% of the maximum possible in this cell

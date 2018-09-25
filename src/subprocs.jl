@@ -255,46 +255,6 @@ function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String
     posspartner 
 end
 
-function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
-    #TODO move traits to defaults.jl -> or the whole function?
-    traitnames = settings["traitnames"]
-    traits = Trait[]
-    # exponential distributions of body sizes:
-    seedoffset = settings["maxseedsize"] - settings["minseedsize"]
-    repoffset = settings["maxrepsize"] - settings["minrepsize"]
-    seedsize = exp(settings["minseedsize"] + seedoffset * rand()) 
-    repsize = exp(settings["minrepsize"] + repoffset * rand())
-    while repsize <= seedsize
-        repsize = exp(settings["minrepsize"] + repoffset * rand())
-    end
-    for idx in eachindex(traitnames)
-        if occursin("rate", traitnames[idx])
-            push!(traits, Trait(idx, rand() * 100))
-        elseif occursin("dispshape", traitnames[idx])
-            push!(traits, Trait(idx, rand() * maxdispmean))
-        elseif occursin("tempopt", traitnames[idx])
-            push!(traits, Trait(idx, rand() * 25 + 288)) # range 15-40°C
-        elseif occursin("temptol", traitnames[idx])
-            push!(traits, Trait(idx, (rand() + 0.39) * 5)) #CAVE: code values elsewhere?
-        elseif occursin("mut", traitnames[idx])
-            mutationrate == 0 ? push!(traits, Trait(idx, rand())) : push!(traits, Trait(idx, mutationrate)) #CAVE: code values elsewhere?
-        elseif occursin("repsize", traitnames[idx])
-            push!(traits, Trait(idx, repsize)) #CAVE: code values elsewhere?
-        elseif occursin("seedsize", traitnames[idx])
-            push!(traits, Trait(idx, seedsize)) #CAVE: code values elsewhere?
-        elseif occursin("precopt", traitnames[idx])
-            push!(traits, Trait(idx, rand() * 10))
-        elseif occursin("prectol", traitnames[idx])
-            push!(traits, Trait(idx, rand() + 0.39))
-        elseif occursin("reptol", traitnames[idx])
-            push!(traits, Trait(idx, settings["tolerance"]))
-        else
-            push!(traits, Trait(idx, rand()))
-        end
-    end
-    traits
-end
-
 """
     seq2num(sequence)
 Convert a DNA base sequence (a string) into binary and then into an integer.
@@ -330,6 +290,40 @@ function num2seq(n::Integer)
         sequence *= string(bases[parse(Int, binary[i:(i + 2)], base = 2) - 3])
     end
     sequence
+end
+
+function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+    traitnames = settings["traitnames"]
+    traits = Trait[]
+    # exponential distributions of body sizes:
+    repoffset = settings["maxrepsize"] - settings["minrepsize"]
+    seedoffset = settings["maxseedsize"] - settings["minseedsize"]
+    tempoffset = settings["maxtemp"] - settings["mintemp"]
+    sizes = Vector{Float64}(undef, 2)
+    while true
+        sizes[1] = exp(settings["minrepsize"] + repoffset * rand())
+        sizes[2] = exp(settings["minseedsize"] + seedoffset * rand())
+        sizes[1] > sizes[2] && break
+    end
+    repsize, seedsize = sizes
+    for idx in eachindex(traitnames)
+        if occursin("dispshape", traitnames[idx]) # use for both dispersal parameters?
+            push!(traits, Trait(idx, rand() * settings["maxdispmean"]))
+        elseif occursin("precopt", traitnames[idx])
+            push!(traits, Trait(idx, rand() * settings["precrange"]))
+        elseif occursin("repsize", traitnames[idx])
+            push!(traits, Trait(idx, repsize))
+        elseif occursin("reptol", traitnames[idx])
+            push!(traits, Trait(idx, settings["tolerance"])) # assortative mating might evolve
+        elseif occursin("seedsize", traitnames[idx])
+            push!(traits, Trait(idx, seedsize))
+        elseif occursin("tempopt", traitnames[idx])
+            push!(traits, Trait(idx, settings["mintemp"] + rand() * tempoffset))
+        else
+            push!(traits, Trait(idx, rand()))
+        end
+    end
+    traits
 end
 
 function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String, Any})
@@ -419,7 +413,7 @@ function createpop(settings::Dict{String, Any})
     traits = createtraits(settings)
     if occursin("metabolic", settings["popsize"]) || occursin("single", settings["popsize"])
         # population size determined by adult size and temperature niche optimum
-        popsize = round(fertility * traits["repsize"] ^ (-1 / 4) *
+        popsize = round(settings["fertility"] * traits["repsize"] ^ (-1 / 4) *
                         exp(-act / (boltz * traits["tempopt"])))
     elseif occursin("bodysize", settings["popsize"])
         # population size up to 25% of the maximum possible in this cell
@@ -459,5 +453,6 @@ function createpop(settings::Dict{String, Any})
         end
         push!(population, Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize, id, parentid))
     end
+    population
 end
 

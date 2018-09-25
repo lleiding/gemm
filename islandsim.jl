@@ -29,9 +29,9 @@ function simulation!(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile
         # ecological processes
         establish!(world, settings["nniches"], settings["static"])
         compete!(world, settings["static"])
-        survive!(world, settings["static"])
+        survive!(world, settings)
         disturb!(world, settings)
-        grow!(world, settings["static"])
+        grow!(world, settings)
         compete!(world, settings["static"])
         reproduce!(world, settings)
         settings["mutate"] && mutate!(world, settings)
