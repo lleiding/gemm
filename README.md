@@ -10,46 +10,48 @@ This model is designed to simulate several patterns across genetic, individual, 
 Individuals (plants or animals) are the basic entity in the model.
 Each individual carries a diploid set of chromosomes, which in turn are comprised of genes.
 Some of the genes code for one ore more traits (pleiotropy), while a trait can be dependent on more than one gene (polygene).
-The realized trait value is the mean of the trait alleles.
+The realized trait value is the mean of the trait alleles (quantitative trait loci).
 Traits thus controlled encompass
 the initial body mass (size) of offspring ("seedsize"),
 the body mass determining onset of maturity and thus reproductive capability ("repsize"),
 mean dispersal distance ("dispmean"),
 the shape of the dispersal kernel, controlling long-distance-dispersal ("dispshape"),
-the radius in which an individual searches for a mate ("repradius"),
-the threshold of seed size similarity between mates determining compatibility ("reptol"),
+the threshold of sequence similarity between mates determining compatibility ("reptol"),
 and values representing the optimum and the tolerance (standard deviation) of a physical niche parameter, such as temeperature and precipitation ("tempopt" and "temptol" or "precopt" and "prectol",
 resp.).
 Alternatively to be controlled by mutable genes, these traits can also be set to fixed values.
 Additionally, individuals carry attributes which describe their bodymass, their age and their adaptation to the physical environment (fitness).
-Furthermore, every indivdual carries a marker which denotes whether a given individual has newly arrived to a patch/grid cell.
+Furthermore, every indivdual carries a Boolean marker used e.g.\ to store wether a given individual has newly arrived to a patch/grid cell.
 
 The base rates for processes governed by the metabolic theory of ecology (Brown et al. 2004) - growth, reproduction, mortality -
 are global constants. Mutation rate is also a global constant.
 
 Every individual is placed inside an arena of grid cells or patches, each of which has a unique location (coordinates)
-and is characterized by physical properties such as temperature, precipiation and size (carrying capacity), but also isolation
-(e.g., by barriers).
+and is characterized by physical properties such as temperature, precipiation and size (carrying capacity).
 Over the course of the simulation these properties (location or physical parameters) might change, reflecting
-geomorphological dynamics.
+geomorphological dynamics. 
 All individuals within one patch constitute a community.
+The characteristics of the patches combined with the state of inhabiting individuals constitute the state variables of the model.
+Additional patterns or summary statistics may be calculated based on these individual information.
 
-Processes and updates are repeated every timestep, while each timestep represent approximately one year/generation.
+Processes and updates are repeated every timestep, while each timestep represent approximately one year.
 
 # 3. Process overview and scheduling
 
 In each discrete timestep each individual in each patch will (in no particular order unless otherwise stated) undergo
 the following processes:
-- (1) establishment
-- (2) filtering of unviable individuals
-- (3) competition (individuals are sorted according to their fitness)
-- (4) Density independent mortality,
-- (5) growth,
-- (6) competition (individuals are sorted according to their fitness)
-- (7) reproduction with mutation of offspring
+- (1) establishment,
+- (2) competition (individuals are sorted according to their fitness),
+- (3) density independent mortality,
+- [disturbance]
+- (4) growth,
+- (5) competition (individuals are sorted according to their fitness),
+- (6) reproduction with mutation of offspring,
+- (7) filtering of unviable individuals,
+- [invasion]
 - (8) dispersal.
 
-Updates to individuals and thus the local communities happen instantaneously after a specific process has been employed
+Updates to individuals and thus the local communities happen instantaneously after a specific process has been executed
 (asynchronous updating).
 
 # 4. Design concepts
@@ -72,8 +74,8 @@ Species numbers, endemics, speciation rate.
 
 Adaption. (+Objectives.)
 ------------------------
-See entities. Traits follow evolution: a trait changes its value randomly within a given constraint.
-The success of the change (fitness) emerges as the reproductive success of an individual over its competitors.
+See entities. Traits follow evolution: a trait changes its value randomly within a given phylogenetic constraint.
+The success of the change (fitness) emerges as the result of adaption to the physical environment and the reproductive success of an individual over its competitors.
 
 Learning.
 ---------
@@ -87,31 +89,31 @@ Individuals sense directly the properties of their physical environment (e.g., t
 
 Interaction.
 ------------
-Individuals directly interact when sexually reproducing. However, they themselves are not affected by this interaction but the
+Individuals directly interact when sexually reproducing. However, they are not affected themself by this interaction but the
 interaction aims solely at determining the genotype of their offspring.
-Additionally, competition for resource/energy/space between individuals represents an indirect interaction.
+Additionally, competition for resource/energy/space between individuals represents indirect interaction.
 
 Stochasticity.
 --------------
 Most of the submodels are carried out by all elegible individuals.
 Some submodels, however, happen with specific frequencies.
 These latter submodels are executed randomly in combination with individual probabilities.
-All decisions inside all of the submodels are stochastic (e.g., number of offspring) to maintain variability.
+All decisions inside all of the submodels are stochastic (e.g., number of offspring) to maintain variability and relax assumptions.
 
 Collectives.
 ------------
 
 Observation.
 ------------
-At the start and end of the simulation and at regular time intervals between (1000 time steps), the properties of all individuals
+At the start and end of the simulation and at definable regular time intervals, the properties of all individuals
 (including the properties of their locations) are recorded and written to files.
-Furthermore, all island colonizers are recorded and output in a similar way.
 
 
 # 5. Initialisation
 
 The initialisation step creates individuals with randomly chosen parameters and traits and deposits them in one patch.
-At the end of initialisation each patch holds several different individuals, each representing one lineage.
+
+At the end of initialisation each of the thus populated patches holds several different individuals, each representing one lineage.
 
 # 6. Input
 
