@@ -45,16 +45,18 @@ export
 
 include("defaults.jl")
 
-include("types.jl")
+include("entities.jl")
 
-include("io.jl")
+include("input.jl")
+
+include("output.jl")
 
 include("constants.jl")
 
-include("subprocs.jl")
+include("auxfuncts.jl")
 
-include("init.jl")
+include("initialisation.jl")
 
-include("mainprocs.jl")
+include("submodels.jl")
 
 end
