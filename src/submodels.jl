@@ -44,7 +44,7 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
             ind.genome[c].genes[g].sequence = seq2num(String(charseq))
         end
     end
-    ind.traits = chrms2traits(ind.genome, settings["traitnames"])
+    ind.traits = gettraitdict(ind.genome, settings["traitnames"])
 end
 
 function mutate!(patch::Patch, settings::Dict{String, Any})
@@ -329,7 +329,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                         mothergenome = meiosis(ind.genome, true)
                         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
                         genome = vcat(partnergenome,mothergenome)
-                        traits = chrms2traits(genome, settings["traitnames"])
+                        traits = gettraitdict(genome, settings["traitnames"])
                         age = 0
                         marked = true
                         fitness = 0.0
