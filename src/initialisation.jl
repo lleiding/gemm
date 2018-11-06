@@ -2,13 +2,14 @@
 
 function createpop(settings::Dict{String, Any})
     traits = createtraits(settings)
+    traitdict = gettraitdict(traits, settings["traitnames"])
     if occursin("metabolic", settings["popsize"]) || occursin("single", settings["popsize"])
         # population size determined by adult size and temperature niche optimum
-        popsize = round(settings["fertility"] * traits[findall(x -> x == "repsize", settings["traitnames"])[1]] ^ (-1 / 4) *
-                        exp(-act / (boltz * traits[findall(x -> x == "tempopt", settings["traitnames"])[1]])))
+        popsize = round(settings["fertility"] * traitdict["repsize"] ^ (-1 / 4) *
+                        exp(-act / (boltz * traitdict["tempopt"])))
     elseif occursin("bodysize", settings["popsize"])
         # population size up to 25% of the maximum possible in this cell
-        quarterpopsize = Integer(floor((settings["cellsize"] / traits[findall(x -> x == "repsize", settings["traitnames"])[1]]) / 4))
+        quarterpopsize = Integer(floor((settings["cellsize"] / traitdict["repsize"]) / 4))
         popsize = rand(2:quarterpopsize)
     elseif occursin("minimal", settings["popsize"])
         popsize = 2 #Takes two to tangle ;-)
