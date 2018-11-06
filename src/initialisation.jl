@@ -35,7 +35,7 @@ function createpop(settings::Dict{String, Any})
         else
             nchrms = randchrms
         end
-        chromosomes = createchrs(nchrms, genes)
+        chromosomes = createchrms(nchrms, genes)
         traitdict = gettraitdict(chromosomes, settings["traitnames"])
         if settings["indsize"] == "adult"
             indsize = traitdict["repsize"]

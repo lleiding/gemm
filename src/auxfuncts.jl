@@ -375,18 +375,18 @@ function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String,
     genes
 end
 
-function createchrs(nchrs::Int,genes::Array{AbstractGene,1})
+function createchrms(nchrms::Int,genes::Array{AbstractGene,1})
     ngenes=size(genes,1)
-    if nchrs>1
-        chrsplits = sort(rand(1:ngenes,nchrs-1))
+    if nchrms>1
+        chrmsplits = sort(rand(1:ngenes,nchrms-1))
         chromosomes = Chromosome[]
-        for chr in 1:nchrs
+        for chr in 1:nchrms
             if chr==1 # first chromosome
-                push!(chromosomes, Chromosome(genes[1:chrsplits[chr]], true))
-            elseif chr==nchrs # last chromosome
-                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):end], true))
+                push!(chromosomes, Chromosome(genes[1:chrmsplits[chr]], true))
+            elseif chr==nchrms # last chromosome
+                push!(chromosomes, Chromosome(genes[(chrmsplits[chr-1]+1):end], true))
             else
-                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):chrsplits[chr]], true))
+                push!(chromosomes, Chromosome(genes[(chrmsplits[chr-1]+1):chrmsplits[chr]], true))
             end
         end
     else # only one chromosome
@@ -416,7 +416,7 @@ function createind(settings::Dict{String, Any})
     else
         nchrms = randchrms
     end
-    chromosomes = createchrs(nchrms,genes)
+    chromosomes = createchrms(nchrms,genes)
     traitdict = chrms2traits(chromosomes, settings["traitnames"])
     if settings["indsize"] == "adult"
         indsize = traitdict["repsize"]
