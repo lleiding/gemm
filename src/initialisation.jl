@@ -17,14 +17,17 @@ function createpop(settings::Dict{String, Any})
         simlog("Invalid value for `popsize`: $(settings["popsize"])", settings, 'e')
     end
     lineage = randstring(4)
+    parentid = rand(Int32)
     ngenes = settings["avgnoloci"] * length(settings["traitnames"])
     ngenes < 1 && (ngenes = 1)
+    locivar = 0.0
     while true
         locivar = rand()
         locivar >= settings["phylconstr"] && break
     end
     population = Individual[]
     for i in 1:popsize
+        id = rand(Int32)
         genes = creategenes(ngenes, traits, settings)
         varyalleles!(genes, locivar)
         randchrms = rand(1:length(genes))

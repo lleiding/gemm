@@ -417,7 +417,7 @@ function createind(settings::Dict{String, Any})
         nchrms = randchrms
     end
     chromosomes = createchrms(nchrms,genes)
-    traitdict = chrms2traits(chromosomes, settings["traitnames"])
+    traitdict = gettraitdict(chromosomes, settings["traitnames"])
     if settings["indsize"] == "adult"
         indsize = traitdict["repsize"]
     elseif settings["indsize"] == "seed"
@@ -430,7 +430,7 @@ end
 
 function varyalleles!(genes::Array{AbstractGene, 1}, locivar::Float64)
     for gene in genes
-        for trait in gene.traits
+        for trait in gene.codes
             trait.value = rand(Normal(trait.value, locivar))
         end
     end
