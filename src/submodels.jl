@@ -68,7 +68,7 @@ function checkviability!(community::Array{Individual, 1}, settings::Dict{String,
         any(collect(values(community[idx].traits)) .< 0) && (dead = true) && (reason *= "traitvalues ")
         community[idx].traits["repsize"] <= community[idx].traits["seedsize"] && (dead = true) && (reason *= "seed/rep ")
         community[idx].fitness < 0 && (dead = true) && (reason *= "fitness ")
-        !traitsexist(community[idx].traits, settings["traitnames"]) && (dead = true) && (reason *= "missingtrait ")
+        !traitsexist(community[idx].traits, settings) && (dead = true) && (reason *= "missingtrait ")
         if dead
             simlog("Individual not viable: $reason. Being killed.", settings, 'w')
             splice!(community,idx)
@@ -265,6 +265,7 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
             static && filter!(x -> world[x].isisland, possdest) # disperse only to islands
             if !static || patch.isisland
                 indleft = splice!(patch.seedbank,idx) # only remove individuals from islands!
+                idx -= 1
             end
             if length(possdest) > 0 # if no viable target patch, individual dies
                 if static && !patch.isisland
@@ -273,7 +274,6 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
                 destination = rand(possdest) # currently there is only one possible destination
                 push!(world[destination].community, indleft)
             end
-            patch.isisland && (idx -= 1)
             idx += 1
         end
     end
