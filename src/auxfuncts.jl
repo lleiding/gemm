@@ -50,39 +50,25 @@ function gettraitdict(traits::Array{Trait, 1}, traitnames::Array{String, 1})
     traitdict
 end
 
-function traitsexist(traits::Dict{String, Float64}, traitnames::Array{String, 1})
+function traitsexist(traits::Dict{String, Float64}, settings::Dict{String, Any})
+    traitnames = settings["traitnames"]
     for trait in traitnames
         if !haskey(traits, trait)
-            simlog("Missing trait $trait. Individual might be killed.", 'w')
+            simlog("Missing trait $trait. Individual might be killed.", settings, 'w')
             return false
         end
     end
     true
 end
 
-function traitsexist(ind::Individual, traitnames::Array{String, 1})
+function traitsexist(ind::Individual, settings::Dict{String, Any})
     # FIXME If a trait doesn't exist, we need an error
+    traitnames = settings["traitnames"]
     for trait in traitnames
         if !haskey(ind.traits, trait)
-            simlog("Individual is missing trait $trait. Might be killed.", 'w')
+            simlog("Individual is missing trait $trait. Might be killed.", settings, 'w')
             return false
         end
-    end
-    true
-end
-
-function traitsexist(traits::Dict{String, Float64}, traitname::String)
-    if !haskey(traits, traitname)
-        simlog("Missing trait $traitname. Individual might be killed.", 'w')
-        return false
-    end
-    true
-end
-
-function traitsexist(ind::Individual, traitname::String)
-    if !haskey(ind.traits, traitname)
-        simlog("Individual is missing trait $traitname. Might be killed.", 'w')
-        return false
     end
     true
 end
@@ -431,9 +417,19 @@ end
 function varyalleles!(genes::Array{AbstractGene, 1}, locivar::Float64)
     for gene in genes
         for trait in gene.codes
-            trait.value = rand(Normal(trait.value, locivar))
+            trait = deepcopy(trait)
+            newvalue = rand(Normal(trait.value, trait.value * locivar))
+            while newvalue <= 0
+                newvalue = rand(Normal(trait.value, trait.value * locivar))
+            end
+            trait.value = newvalue
         end
     end
 end
 
+function varyalleles!(chrms::Array{Chromosome, 1}, locivar::Float64)
+    for chrm in chrms
+        varyalleles!(chrm.genes, locivar)
+    end
+end
 
