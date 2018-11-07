@@ -375,7 +375,7 @@ function writephylo(world::Array{Patch,1}, settings::Dict{String, Any}, timestep
 end    
 
 """
-    simlog(msg, logfile, category)
+    simlog(msg, settings, category)
 Write a log message to STDOUT/STDERR and the specified logfile 
 (if logging is turned on in the settings).
 Categories: d (debug), i (information, default), w (warn), e (error)
@@ -403,6 +403,6 @@ function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile=
         logprint("ERROR: "*string(msg), settings, true)
         exit(1)
     else
-        simlog("Invalid log category $category.", 'w')
+        simlog("Invalid log category $category.", settings, 'w')
     end
 end
