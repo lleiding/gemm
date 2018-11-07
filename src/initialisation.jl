@@ -20,34 +20,37 @@ function createpop(settings::Dict{String, Any})
     parentid = rand(Int32)
     ngenes = settings["avgnoloci"] * length(settings["traitnames"])
     ngenes < 1 && (ngenes = 1)
+    genes = creategenes(ngenes, traits, settings)
+    randchrms = rand(1:length(genes))
+    if settings["linkage"] == "none"
+        nchrms = length(genes)
+    elseif settings["linkage"] == "full"
+        nchrms = 1
+    else
+        nchrms = randchrms
+    end
+    chromosomes = createchrms(nchrms, genes)
     locivar = 0.0
     while true
         locivar = rand()
-        locivar >= settings["phylconstr"] && break
+        locivar <= settings["phylconstr"] && break
     end
     population = Individual[]
     for i in 1:popsize
         id = rand(Int32)
-        genes = creategenes(ngenes, traits, settings)
-        varyalleles!(genes, locivar)
-        randchrms = rand(1:length(genes))
-        if settings["linkage"] == "none"
-            nchrms = length(genes)
-        elseif settings["linkage"] == "full"
-            nchrms = 1
-        else
-            nchrms = randchrms
-        end
-        chromosomes = createchrms(nchrms, genes)
+        varyalleles!(chromosomes, locivar)
         traitdict = gettraitdict(chromosomes, settings["traitnames"])
         if settings["indsize"] == "adult"
             indsize = traitdict["repsize"]
+            age = 1
         elseif settings["indsize"] == "seed"
             indsize = traitdict["seedsize"]
+            age = 0
         else
             indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
+            age = 1
         end
-        push!(population, Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize, id, parentid))
+        push!(population, Individual(lineage, chromosomes, traitdict, age, false, 1.0, indsize, id, parentid))
     end
     population
 end
@@ -57,21 +60,8 @@ function genesis(settings::Dict{String, Any})
     totalmass = 0.0
     ttl = 50
     while true
-        # Create a new species and calculate its population size
-        newind = createind(settings)
-        if occursin("metabolic", settings["popsize"]) || occursin("single", settings["popsize"])
-            # population size determined by adult size and temperature niche optimum
-            popsize = round(settings["fertility"] * newind.traits["repsize"]^(-1/4) *
-                            exp(-act/(boltz*newind.traits["tempopt"])))
-        elseif occursin("bodysize", settings["popsize"])
-            # population size up to 25% of the maximum possible in this cell
-            quarterpopsize = Integer(floor((settings["cellsize"] / newind.traits["repsize"]) / 4))
-            popsize = rand(0:quarterpopsize)
-        elseif occursin("minimal", settings["popsize"])
-            popsize = 2 #Takes two to tangle ;-) #XXX No reproduction occurs!
-        else
-            simlog("Invalid value for `popsize`: $(settings["popsize"])", settings, 'e')
-        end
+        population = createpop(settings)
+        popsize = length(population)
         # prevent an infinity loop when the cellsize is very small
         if popsize < 2
             if ttl == 0
@@ -83,7 +73,7 @@ function genesis(settings::Dict{String, Any})
             end
         end
         # Check the cell capacity
-        popmass = popsize * newind.size
+        popmass = sum(map(x -> x.size, population))
         if totalmass + popmass > settings["cellsize"] # stop loop if cell is full
             if totalmass >= settings["cellsize"]*0.75 || occursin("single", settings["popsize"]) #make sure the cell is full enough
                 simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", settings, 'd') #DEBUG
@@ -92,17 +82,8 @@ function genesis(settings::Dict{String, Any})
                 continue
             end
         end
-        # Initialize the new population
         totalmass += popmass
-        simlog("Initializing lineage $(newind.lineage) with $popsize individuals.", settings, 'd') #DEBUG
-        for i in 1:popsize
-            !settings["static"] && (newind = deepcopy(newind))
-            if settings["indsize"] == "mixed"
-                # XXX: sizes shouldn't be uniformally dist'd + seeds vs. non-seeds?:
-                newind.size = newind.traits["seedsize"] + rand() * newind.traits["repsize"] 
-            end
-            push!(community, newind)
-        end
+        append!(community, population)
         occursin("single", settings["popsize"]) && break
     end
     simlog("Patch initialized with $(length(community)) individuals.", settings, 'd') #DEBUG
