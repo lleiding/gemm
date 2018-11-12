@@ -351,3 +351,12 @@ function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
         (patch.isisland || !settings["static"]) && reproduce!(patch, settings) # pmap(!,patch) ???
     end
 end
+
+function changeenv!(world::Array{Patch,1}, sdtemp::Float64)
+    if sdtemp > 0
+        deltaval = rand(Normal(0.0, sdtemp))
+        for patch in world
+            patch.temp += deltaval 
+        end
+    end
+end    
