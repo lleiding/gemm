@@ -184,77 +184,72 @@ If a parameter value is not specified by the user, the default value for that pa
 # 7. Submodels
 
 ## Establishment.
-When an individual is new to a grid cell (by recent birth or dispersal event), their physical niche preferences
-are compared with the actual niche properties of the present grid cell.
-The individual fitness parameter is set according to the deviation from the optimum value considering the niche breadth
+Whenever an individual is new to a grid cell (by recent birth, dispersal event or environmental change [TODO]), their physical niche preferences
+are compared with the actual niche properties, e.g. the temperature, T, of the present grid cell.
+The individual fitness parameter, F, is set according to the deviation from the optimum value considering the niche breadth
 as standard deviation of a gaussian curve.
 ```
-(a = 1 / (tolerance * sqrt(2 * pi)))
-fitness = min(1, a * exp(-(value - optimum)^2 / (2 * tolerance^2)) )
+F = a * exp(-(T - T_mean)^2 / (2 * sigma_T^2)) )
+with a = 1 / (sigma_T * sqrt(2 * pi))
 ```
 
 ## Competition.
 Individuals are sorted according to fitness (low to high).
 Starting with the least fit individuals an individual will be removed from the local community with high probability
-(following a geometric distribution), if the sum of the community's bodymasses exceed the available space.
-Once total bodymass is below carrying capacity, the procedure is finished.
+(following a geometric distribution), if the sum of the community's bodymass exceed the available space.
+Once total bodymass is below carrying capacity, the procedure terminates.
 
 ## Growth.
-Given an individual has undergone establishment (new-marker set to "false"), an individual changes its size (mass + delta_mass) following the metabolic theory and the global base growth rate:
+Given an individual has undergone establishment,
+an individual changes its size (mass + delta_mass)
+following the metabolic theory and the global base growth rate, b_0:
 ```
-    delta_mass = growthrate * mass^(3 / 4) * exp(-act / (boltz * temp))
+    delta_M = b_0 * M^(3 / 4) * exp(-E_A / (k_B * T))
 ```
-In case this change results in negative body mass or the individual's initial body mass was less or equal zero,
+with E_A as activation energy and k_B the Boltzmann constant.
+In case this change results in zero or negative body mass,
 the individual is removed from the community.
 
 
 ## Density independent mortality/Survival.
-An individual is removed from the local community with a probability `p_mort` depending on its size `mass` and a global base
-mortality rate `mort`:
+An individual is removed from the local community with a probability `p_mort` depending on its size `M` and a global base
+mortality rate `b_mort`:
 ```
-    p_mort = mort * mass^(-1 / 4) * exp(-act / (boltz * temp))
+    p_mort = b_mort * M^(-1 / 4) * exp(-E_A / (k_B * T))
 ```
-If it survives instead, its age is increased by one.
-
+If the individual survives, its age increases by one.
 
 ## Reproduction and mutation.
 All individuals that have grown to or beyond their individual reproduction sizes may reproduce.
-The number of offspring is randomly drawn, following a Poisson distribution with a mean `n_offs` determined by the individual's
-size `mass` and a global base offspring number `meanoffs`:
+The number of offspring is randomly drawn following a Poisson distribution with mean N determined by the individual's
+size `M` and a global base offspring number `N_0`:
 ```
-    n_offs =  meanoffs * currentmass^(-1 / 4) * exp(-act / (boltz * temp))
+    N =  N_0 * M^(-1 / 4) * exp(-E_A / (k_B * T))
 ```
-Following the individuals reproductive radius possible partners in the vicinity (grid cells whose distances fall within the
-radius) are selected based on whether they belong to the same lineage, have reached maturity (which includes having established on the grid cell) and whether their seed size trait (`seedsize_mate`) falls within the mating individual's tolerance interval (`reptol`), which is determined by the following logical examination
-```
-(seedsize_mate >= reptol * seedsize) && (reptol * seedsize_mate <= seedsize)
-```
+Possible mates are selected within the same grid cell based on whether they belong to the same lineage, have reached maturity (which includes having established on the grid cell) and whether their compatibility sequences are sufficiently similar.
 If a suitable partner is found, sets of haploid chromosomes from the diploid sets of both individuals are drawn randomly,
 comprising the genome for the offspring.
-In case of a unsuccessful mate search, it is possible to enable self-compatibility, which involves recombination as well.
-At this point every position in the offspring's basecode may mutate with a given probability.
+[In case of a unsuccessful mate search, it is possible to enable self-compatibility, which involves recombination as well.]
+At this point, mutations in the offspring's basecode may happen with a given probability.
 In the case of mutation all traits associated with the respective gene will randomly change value (normally distributed,
-with the standard deviation the quotient of the original value over a scaling constant - the phylogenetic constraint `phylconstr`).
+with the standard deviation the product of sigma_l (phylogenetic constraint) and the original.
 ```
     newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
 ```
 The new individuals' trait values are then calculated as the means of all alleles and
-the individuals added to the community, marked as new and with their size set to the initial bodymass (seed size).
+the individuals added to the community, with their size set to the initial bodymass (seed size).
 
 ## Dispersal.
 After reproduction and mutation, each offspring individual may disperse.
-For each of these, a distance is drawn randomly following a logistic distribution with mean and shape parameters (which controls long-distance-dispersal)
-taken from the individual's traits.
-Subsequently, a grid cell is chosen randomly that fits the drawn distance.
-If such a grid cell is found, the dispersing individual will be placed there and removed from the original community.
+For each of these, a new location is drawn randomly following a logistic distribution with mean and shape parameters (which controls long-distance-dispersal)
+taken from the individual's traits. # explain coordinates!
+If a suitable grid cell is found at the drawn coordinates, the dispersing individual will be placed there and removed from the original community.
 The removal happens even when there is no destination grid cell to be found.
-In case origin or destination grid cell are marked as isolated, the probability for successful dispersal needs to be
+[In case origin or destination grid cell are marked as isolated, the probability for successful dispersal needs to be
 considered again for each isolated grid cell, whose barriers are to be crossed (origin and destination).
-The barrier strength represents an additional distance, controlled by a global constant.
-Special attention is paid when the destination grid cell is of island type, while the origin is on the mainland.
-In this case the dispersing individual is copied to the new destinaction instead of moved.
-Additionally, each  of these colonizers is recorded and its properties together with the respective
-time step stored for later analysis.
+The barrier strength represents an additional distance, controlled by a global constant.]
+Special attention is paid when the destination grid cell is of island type, while the origin is on the mainland and the simulation runs in static mode.
+In this case the dispersing individual is copied to the new destination instead of moved.
 
 ## Output/Calculation
 The main simulation data output is stored in two separate formats.
