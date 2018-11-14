@@ -130,6 +130,7 @@ Every other non-empty line defines one grid cell with a unique identifier (a num
 Optionally, one can define the type of the grid cell (island or continent), whether it is isolated, the temperature, ~~and the size~~.
 
 Other optional parameters can be set in a separate configuration file and pertain to defining simulation scenarios:
+
 | Name/Function | Default value | Description |
 |---------------|---------------|-------------|
 |"avgnoloci" | 1 | average number of loci/copies per gene |
@@ -176,9 +177,7 @@ Other optional parameters can be set in a separate configuration file and pertai
 |         "tolerance" | 0.8, | sequence similarity threshold for reproduction|
 |         "traitnames" | ["compat", "dispmean", "dispshape", "precopt", "prectol", "repsize", "reptol", "seedsize", "tempopt", "temptol"], | minimal required traitnames|
 |         "usebiggenes" | true||
-         the inital random seed,
-a comma-separated list of the names of arena (maps) definition files, the degree of genetic linkage (none, random or full),
-and the compatibility tolerance of seed size values for reproduction (high, evolving or low).
+
 If a parameter value is not specified by the user, the default value for that parameter set in the simulation code is assumed.
 
 
