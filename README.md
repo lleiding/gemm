@@ -29,7 +29,7 @@ are global constants. Mutation rate is also a global constant.
 Every individual is placed inside an arena of grid cells or patches, each of which has a unique location (coordinates)
 and is characterized by physical properties such as temperature, precipiation and size (carrying capacity).
 Over the course of the simulation these properties (location or physical parameters) might change, reflecting
-geomorphological dynamics. 
+geomorphological dynamics.
 All individuals within one patch constitute a community.
 The characteristics of the patches combined with the state of inhabiting individuals constitute the state variables of the model.
 Additional patterns or summary statistics may be calculated based on these individual information.
@@ -149,7 +149,7 @@ Once total bodymass is below carrying capacity, the procedure is finished.
 ## Growth.
 Given an individual has undergone establishment (new-marker set to "false"), an individual changes its size (mass + delta_mass) following the metabolic theory and the global base growth rate:
 ```
-    delta_mass = growthrate * mass^(3 / 4) * exp(-act / (boltz * temp)) 
+    delta_mass = growthrate * mass^(3 / 4) * exp(-act / (boltz * temp))
 ```
 In case this change results in negative body mass or the individual's initial body mass was less or equal zero,
 the individual is removed from the community.
@@ -178,7 +178,7 @@ radius) are selected based on whether they belong to the same lineage, have reac
 ```
 If a suitable partner is found, sets of haploid chromosomes from the diploid sets of both individuals are drawn randomly,
 comprising the genome for the offspring.
-In case of a unsuccessful mate search, it is possible to enable self-compatibility, which involves recombination as well. 
+In case of a unsuccessful mate search, it is possible to enable self-compatibility, which involves recombination as well.
 At this point every position in the offspring's basecode may mutate with a given probability.
 In the case of mutation all traits associated with the respective gene will randomly change value (normally distributed,
 with the standard deviation the quotient of the original value over a scaling constant - the phylogenetic constraint `phylconstr`).
@@ -204,7 +204,15 @@ Additionally, each  of these colonizers is recorded and its properties together 
 time step stored for later analysis.
 
 ## Output/Calculation
-Currently, output during the simulation happens as raw julia code.
-This can be converted to table format with each line representing one individual with all their properties and information about their location.
-Additionally, genetic information can be converted to fasta format, while headers contain information to identify individuals and associated traits.
-
+The main simulation data output is stored in two separate formats.
+The first is a table containg data characterising the individuals.
+Each line represents on individual.
+The columns describe an individual's current state.
+This is characterised by location, environmental conditions, ecological traits
+and summary of the genetic architecture [UPDATE].
+The second format is a fasta file containing the entire genome of all individuals.
+Association of sequences to individuals, linkage units, genes and coded traits is defined in the
+fasta headers [REVIEW].
+Output is stored at the beginning and end of a simulation and at user-definable intervals.
+The output considers the state of all individuals at those times,
+but can be set to ignore individuals of a certain developmental stage or age [TODO].
