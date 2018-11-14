@@ -131,7 +131,7 @@ Optionally, one can define the type of the grid cell (island or continent), whet
 
 Other optional parameters can be set in a separate configuration file and pertain to defining simulation scenarios:
 | Name/Function | Default value | Description |
-+---------------+---------------+-------------|
++---------------|---------------|-------------|
 |"avgnoloci" | 1 | average number of loci/copies per gene |
 |         "biggenelength" | 200,||
 |         "burn-in" | 1000, | timesteps before invasion starts|
