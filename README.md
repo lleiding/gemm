@@ -12,33 +12,32 @@ Each individual carries a diploid set of chromosomes, which in turn are comprise
 Some of the genes code for one ore more traits (pleiotropy), while a trait can be dependent on more than one gene (polygene).
 The realized trait value is the mean of the trait alleles (quantitative trait loci).
 Traits thus controlled encompass
-the initial body mass (size) of offspring ("seedsize"),
-the body mass determining onset of maturity and thus reproductive capability ("repsize"),
-mean dispersal distance ("dispmean"),
-the shape of the dispersal kernel, controlling long-distance-dispersal ("dispshape"),
-the threshold of sequence similarity between mates determining compatibility ("reptol"),
-and values representing the optimum and the tolerance (standard deviation) of a physical niche parameter, such as temeperature and precipitation ("tempopt" and "temptol" or "precopt" and "prectol",
-resp.).
+the initial body mass (size) of offspring, M_s,
+the body mass determining onset of maturity and thus reproductive capability, M_r,
+mean dispersal distance, D_mean,
+the shape of the dispersal kernel, controlling long-distance-dispersal, D_s,
+the threshold of sequence similarity between mates determining compatibility, delta_I,
+and values representing the optimum and the tolerance (standard deviation) of a physical niche parameter, such as temeperature and precipitation (T_mean and sigma_T or P_mean and sigma_P, resp.).
 Alternatively to be controlled by mutable genes, these traits can also be set to fixed values.
-Additionally, individuals carry attributes which describe their bodymass, their age and their adaptation to the physical environment (fitness).
-Furthermore, every indivdual carries a Boolean marker used e.g.\ to store wether a given individual has newly arrived to a patch/grid cell.
+Additionally, individuals carry attributes which describe their bodymass, M, their age, A and their adaptation to the physical environment (fitness), F.
+Furthermore, every indivdual carries a Boolean marker used e.g.\ to store wether a given individual has newly arrived to a grid cell.
 
 The base rates for processes governed by the metabolic theory of ecology (Brown et al. 2004) - growth, reproduction, mortality -
 are global constants. Mutation rate is also a global constant.
 
-Every individual is placed inside an arena of grid cells or patches, each of which has a unique location (coordinates)
+Every individual is placed inside an arena of grid cells, each of which has a unique location (coordinates)
 and is characterized by physical properties such as temperature, precipiation and size (carrying capacity).
 Over the course of the simulation these properties (location or physical parameters) might change, reflecting
 geomorphological dynamics.
-All individuals within one patch constitute a community.
-The characteristics of the patches combined with the state of inhabiting individuals constitute the state variables of the model.
+All individuals within one grid cell constitute a community.
+The characteristics of the grid cells combined with the state of inhabiting individuals constitute the state variables of the model.
 Additional patterns or summary statistics may be calculated based on these individual information.
 
 Processes and updates are repeated every timestep, while each timestep represent approximately one year.
 
 # 3. Process overview and scheduling
 
-In each discrete timestep each individual in each patch will (in no particular order unless otherwise stated) undergo
+In each discrete timestep each individual in each grid cell will (in no particular order unless otherwise stated) undergoes
 the following processes:
 - (1) establishment,
 - (2) competition (individuals are sorted according to their fitness),
@@ -46,10 +45,12 @@ the following processes:
 - [disturbance]
 - (4) growth,
 - (5) competition (individuals are sorted according to their fitness),
-- (6) reproduction with mutation of offspring,
-- (7) filtering of unviable individuals,
+- (6) competition (individuals are sorted according to their fitness),
+- (7) reproduction
+- (8) mutation of offspring,
+- (9) filtering of unviable individuals,
 - [invasion]
-- (8) dispersal.
+- (10) seed dispersal.
 
 Updates to individuals and thus the local communities happen instantaneously after a specific process has been executed
 (asynchronous updating).
@@ -111,17 +112,17 @@ At the start and end of the simulation and at definable regular time intervals, 
 
 # 5. Initialisation
 
-The initialisation step creates individuals with randomly chosen parameters and traits and deposits them in one patch.
+The initialisation step creates individuals with randomly chosen parameters and traits and deposits them in one grid cell.
 
-At the end of initialisation each of the thus populated patches holds several different individuals, each representing one lineage.
+At the end of initialisation each of the thus populated grid cells holds several different individuals, each representing one lineage.
 
 # 6. Input
 
 At the start of a simulation user defined parameters are read, containing also a definition of the simulation arena.
 This definition is provided in a separate plain text file.
 Within the text file a line at the top containing a single number defines the number of timesteps the arena definition is valid for.
-Every other non-empty line defines one patch with a unique identifier (a number), and the location of the patch as two coordinates.
-Optionally, one can define the type of the patch (island or continent), whether it is isolated, the temperature, ~~and the size~~.
+Every other non-empty line defines one grid cell with a unique identifier (a number), and the location of the grid cell as two coordinates.
+Optionally, one can define the type of the grid cell (island or continent), whether it is isolated, the temperature, ~~and the size~~.
 
 Other parameters specified at run time pertain to defining simulation scenarios:  the inital random seed,
 a comma-separated list of the names of arena (maps) definition files, the degree of genetic linkage (none, random or full),
@@ -131,8 +132,8 @@ and the compatibility tolerance of seed size values for reproduction (high, evol
 # 7. Submodels
 
 ## Establishment.
-When an individual is new to a patch (by recent birth or dispersal event), their physical niche preferences
-are compared with the actual niche properties of the present patch.
+When an individual is new to a grid cell (by recent birth or dispersal event), their physical niche preferences
+are compared with the actual niche properties of the present grid cell.
 The individual fitness parameter is set according to the deviation from the optimum value considering the niche breadth
 as standard deviation of a gaussian curve.
 ```
@@ -171,8 +172,8 @@ size `mass` and a global base offspring number `meanoffs`:
 ```
     n_offs =  meanoffs * currentmass^(-1 / 4) * exp(-act / (boltz * temp))
 ```
-Following the individuals reproductive radius possible partners in the vicinity (patches whose distances fall within the
-radius) are selected based on whether they belong to the same lineage, have reached maturity (which includes having established on the patch) and whether their seed size trait (`seedsize_mate`) falls within the mating individual's tolerance interval (`reptol`), which is determined by the following logical examination
+Following the individuals reproductive radius possible partners in the vicinity (grid cells whose distances fall within the
+radius) are selected based on whether they belong to the same lineage, have reached maturity (which includes having established on the grid cell) and whether their seed size trait (`seedsize_mate`) falls within the mating individual's tolerance interval (`reptol`), which is determined by the following logical examination
 ```
 (seedsize_mate >= reptol * seedsize) && (reptol * seedsize_mate <= seedsize)
 ```
@@ -192,13 +193,13 @@ the individuals added to the community, marked as new and with their size set to
 After reproduction and mutation, each offspring individual may disperse.
 For each of these, a distance is drawn randomly following a logistic distribution with mean and shape parameters (which controls long-distance-dispersal)
 taken from the individual's traits.
-Subsequently, a patch is chosen randomly that fits the drawn distance.
-If such a patch is found, the dispersing individual will be placed there and removed from the original community.
-The removal happens even when there is no destination patch to be found.
-In case origin or destination patch are marked as isolated, the probability for successful dispersal needs to be
-considered again for each isolated patch, whose barriers are to be crossed (origin and destination).
+Subsequently, a grid cell is chosen randomly that fits the drawn distance.
+If such a grid cell is found, the dispersing individual will be placed there and removed from the original community.
+The removal happens even when there is no destination grid cell to be found.
+In case origin or destination grid cell are marked as isolated, the probability for successful dispersal needs to be
+considered again for each isolated grid cell, whose barriers are to be crossed (origin and destination).
 The barrier strength represents an additional distance, controlled by a global constant.
-Special attention is paid when the destination patch is of island type, while the origin is on the mainland.
+Special attention is paid when the destination grid cell is of island type, while the origin is on the mainland.
 In this case the dispersing individual is copied to the new destinaction instead of moved.
 Additionally, each  of these colonizers is recorded and its properties together with the respective
 time step stored for later analysis.
