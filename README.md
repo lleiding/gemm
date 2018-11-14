@@ -90,15 +90,15 @@ Individuals sense directly the properties of their physical environment (e.g., t
 
 Interaction.
 ------------
-Individuals directly interact when sexually reproducing. However, they are not affected themself by this interaction but the
-interaction aims solely at determining the genotype of their offspring.
+Individuals directly interact when sexually reproducing. However, they are not affected themself by this interaction.
+Instead, the interaction aims solely at determining the genotype of their offspring.
 Additionally, competition for resource/energy/space between individuals represents indirect interaction.
 
 Stochasticity.
 --------------
 Most of the submodels are carried out by all elegible individuals.
-Some submodels, however, happen with specific frequencies.
-These latter submodels are executed randomly in combination with individual probabilities.
+Some submodels (Survival, Competition, Mutation and Dispersal), however, happen with particular probabilities.
+In these cases, execution of submodels is decided at random, taking into account individual characteristics, such as body size, fitness, genome size, or dispersal abilities.
 All decisions inside all of the submodels are stochastic (e.g., number of offspring) to maintain variability and relax assumptions.
 
 Collectives.
@@ -112,21 +112,74 @@ At the start and end of the simulation and at definable regular time intervals, 
 
 # 5. Initialisation
 
-The initialisation step creates individuals with randomly chosen parameters and traits and deposits them in one grid cell.
-
-At the end of initialisation each of the thus populated grid cells holds several different individuals, each representing one lineage.
+The initialisation step creates lineages with randomly chosen genetic and ecological traits.
+Population size of a lineage is determined by the adult body size of individuals from a lineage.
+Values for ecological traits are then varied in each gene where a given trait is found, for all individuals of a lineage.
+The variation is Normal distributed with the lineage trait value as mean and the product of sigma_l (phylogenetic constraint) and the lineage trait value as standard deviation.
+This ensures initial genetic variation within a lineage population.
+Thus created populations are added to a grid cell's community until the additional mass of another population would exceed the grid cell's carrying capacity.
+Whether a grid cell receives an initial community depends on the map definition.
+At the end of initialisation each of the thus populated grid cells holds one or more different populations, each from a separate lineage.
 
 # 6. Input
 
-At the start of a simulation user defined parameters are read, containing also a definition of the simulation arena.
+At the start of a simulation user defined parameters are read, containing also a definition of the simulation arena (map definition).
 This definition is provided in a separate plain text file.
 Within the text file a line at the top containing a single number defines the number of timesteps the arena definition is valid for.
 Every other non-empty line defines one grid cell with a unique identifier (a number), and the location of the grid cell as two coordinates.
 Optionally, one can define the type of the grid cell (island or continent), whether it is isolated, the temperature, ~~and the size~~.
 
-Other parameters specified at run time pertain to defining simulation scenarios:  the inital random seed,
+Other optional parameters can be set in a separate configuration file and pertain to defining simulation scenarios:
+| Name/Function | Default value | Description |
++---------------+---------------+-------------|
+|"avgnoloci" | 1 | average number of loci/copies per gene |
+|         "biggenelength" | 200,||
+|         "burn-in" | 1000, | timesteps before invasion starts|
+|         "cellsize" | 20e6, | maximum biomass per hectare in gramm (based on Clark et al. 2001)|
+|         "config" | "simulation.conf", | configuration file name|
+|         "debug" | false, | write out debug statements|
+|         "dest" | string(Dates.today()), | output folder name|
+|         "disturbance" | 0, | percentage of individuals killed per update per cell|
+|         "fasta" | false, | record fasta data?|
+|         "fertility" | exp(28.0), | global base reproduction rate 23.8 from Brown et al. 2004, alternatively 25.0, default 30.0|
+|         "fixtol" | true,||
+|         "global-species-pool" | 0, | size of the global species pool (invasion source)|
+|         "growthrate" | exp(25.2), | global base growth/biomass production from Brown et al. 2004|
+|         "indsize" | "seed", | initialize organisms as seed, adult or mixed|
+|         "isolationweight" | 3, | additional distance to be crossed when dispersing from or to isolated patches|
+|         "lineages" | false, | record lineage and diversity data?|
+|         "linkage" | "random", | gene linkage type (random/full/none)|
+|         "logging" | false, | write output to logfile|
+|         "maps" | "", | comma-separated list of map files|
+|         "maxdispmean" | 10, | maximum mean dispersal distance|
+|         "maxrepsize" | 14, | maximal repsize in grams calculated as exp(maxrepsize) -> 1.2 t|
+|         "maxseedsize" | 10, | maximal seedsize in grams calculated as exp(maxseedsize) -> 22 kg|
+|         "maxtemp" | 313, | max optimum temp in K |
+|         "minrepsize" | 3, | minimal repsize in grams calculated as exp(minrepsize) -> 20 g|
+|         "minseedsize" | -2, | minimal seedsize in grams calculated as exp(minseedsize) -> 0.14 g|
+|         "mintemp" | 283, | min optimum temp in K |
+|         "mortality" | exp(22), | global base mortality from Brown et al. 2004 is 26.3, but competition and dispersal introduce add. mort.|
+|         "mutate" | true, | mutations occur|
+|         "mutationrate" | 3.6e10, | one mutation per generation/individual, corrected for metabolic function|
+|         "nniches" | 2, | number of environmental niches (max. 3)|
+|         "outfreq" | 100, | output frequency|
+|         "phylconstr" | 0.1, | phylogenetic constraint during mutation and inter-loci variation. scales trait value as sd.|
+|         "phylo" | false, | record phylogeny?|
+|         "popsize" | "metabolic", | initialisation algorithm: metabolic/bodysize/minimal/single|
+|         "precrange" | 10, | range from 0 for precipitation optimum|
+|         "propagule-pressure" | 0, | number of non-native individuals introduced per invasion event|
+|         "quiet" | false, | don't write output to screen|
+|         "sdtemp" | 0.0, | SD of temperature change per time step|
+|         "seed" | 0, | for the RNG, seed = 0 -> random seed|
+|         "smallgenelength" | 20,|
+|         "static" | true, | mainland sites don't undergo eco-evolutionary| processes|
+|         "tolerance" | 0.8, | sequence similarity threshold for reproduction|
+|         "traitnames" | ["compat", "dispmean", "dispshape", "precopt", "prectol", "repsize", "reptol", "seedsize", "tempopt", "temptol"], | minimal required traitnames|
+|         "usebiggenes" | true||
+         the inital random seed,
 a comma-separated list of the names of arena (maps) definition files, the degree of genetic linkage (none, random or full),
 and the compatibility tolerance of seed size values for reproduction (high, evolving or low).
+If a parameter value is not specified by the user, the default value for that parameter set in the simulation code is assumed.
 
 
 # 7. Submodels
@@ -156,7 +209,7 @@ In case this change results in negative body mass or the individual's initial bo
 the individual is removed from the community.
 
 
-## Density independent mortality.
+## Density independent mortality/Survival.
 An individual is removed from the local community with a probability `p_mort` depending on its size `mass` and a global base
 mortality rate `mort`:
 ```
