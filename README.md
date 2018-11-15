@@ -50,12 +50,11 @@ the following processes:
 - [disturbance]
 - (4) growth,
 - (5) competition (individuals are sorted according to their fitness),
-- (6) competition (individuals are sorted according to their fitness),
-- (7) reproduction
-- (8) mutation of offspring,
-- (9) filtering of unviable individuals,
+- (6) reproduction
+- (7) mutation of offspring,
+- (8) filtering of unviable individuals,
 - [invasion]
-- (10) seed dispersal.
+- (9) seed dispersal.
 
 [Separate, on patch level:] habitat change
 
