@@ -6,11 +6,12 @@ This model is designed to simulate a (meta-)community of plant-like individuals.
 For this, it considers factors and processes across genetic, population and ecological levels.
 The model is able to produce several patterns across genetic, individual, population and (meta-)community levels,
 including adaption and speciation through divergence of populations.
-
+Thus, the momdel expands from basic principles to richer representation of real-world scenarios. [from ODD paper#2]
 
 # 2. Entities, state variables and scales
 
-Individuals (plants or animals) are the basic entity in the model.
+[Linkage! Number of genes?]
+Individuals (plant-like) are the basic entity in the model.
 Each individual carries a diploid set of chromosomes, which in turn are comprised of genes.
 Some of the genes code for one ore more traits (pleiotropy), while a trait can be dependent on more than one gene (polygene). 
 The realized trait value is the mean of the trait alleles (quantitative trait loci).
@@ -138,7 +139,7 @@ At the start of a simulation user defined parameters are read, containing also a
 This definition is provided in a separate plain text file.
 Within the text file a line at the top containing a single number defines the number of timesteps the arena definition is valid for.
 Every other non-empty line defines one grid cell with a unique identifier (a number), and the location of the grid cell as two coordinates.
-Optionally, one can define the type of the grid cell (island or continent), whether it is isolated, the temperature, ~~and the size~~.
+Optionally, one can define the type of the grid cell (island or continent), [whether it is isolated, ]the temperature, ~~and the size~~.
 
 Other optional parameters can be set in a separate configuration file and pertain to defining simulation scenarios:
 
@@ -212,7 +213,7 @@ Once total bodymass is below carrying capacity, the procedure terminates.
 
 ## Growth.
 Given an individual has undergone establishment,
-an individual changes its size (mass + delta_mass)
+an individual changes its size (M + delta_M)
 following the metabolic theory and the global base growth rate, b_0:
 ```
     delta_M = b_0 * M^(3 / 4) * exp(-E_A / (k_B * T))
@@ -253,7 +254,7 @@ the individuals added to the community, with their size set to the initial bodym
 ## Dispersal.
 After reproduction and mutation, each offspring individual may disperse.
 For each of these, a new location is drawn randomly following a logistic distribution with mean and shape parameters (which controls long-distance-dispersal)
-taken from the individual's traits. # explain coordinates!
+taken from the individual's traits. [explain coordinates!]
 If a suitable grid cell is found at the drawn coordinates, the dispersing individual will be placed there and removed from the original community.
 The removal happens even when there is no destination grid cell to be found.
 [In case origin or destination grid cell are marked as isolated, the probability for successful dispersal needs to be
