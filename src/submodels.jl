@@ -189,7 +189,7 @@ function disturb!(world::Array{Patch,1}, settings::Dict{String, Any})
     end
 end
 
-let speciespool = Individual[]
+let speciespool = Individual[] # TODO: `speciespool` should be part of the `world` object holding all grid cells 
     function initspeciespool!(settings::Dict{String, Any})
         for i in 1:settings["global-species-pool"]
             push!(speciespool, createind(settings))
@@ -352,9 +352,16 @@ function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
     end
 end
 
-function changeenv!(world::Array{Patch,1}, sdtemp::Float64)
-    if sdtemp > 0
-        deltaval = rand(Normal(0.0, sdtemp))
+function changehabitat!(world::Array{Patch,1}, settings::Dict{String, Any})
+    # TODO: record trajectory? input trajectory?
+    if settings["sdtemp"] > 0
+        deltaval = rand(Normal(0.0, settings["sdtemp"]))
+        for patch in world
+            patch.temp += deltaval 
+        end
+    end
+    if settings["sdprec"] > 0
+        deltaval = rand(Normal(0.0, settings["sdprec"]))
         for patch in world
             patch.temp += deltaval 
         end
