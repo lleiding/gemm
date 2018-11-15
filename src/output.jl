@@ -164,8 +164,8 @@ end
 writes simulation output from `world` to separate table and fasta files.
 `timestep` and `setting` information is used for file name creation.
 """
-function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile::String, timestep::Int)
-    basename = mapfile * "_s" * string(settings["seed"])
+function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
+    basename = "s" * string(settings["seed"])
     basename = joinpath(settings["dest"], basename)
     filename = basename * ".tsv"
     simlog("Writing data \"$filename\"", settings)
