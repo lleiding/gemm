@@ -12,7 +12,7 @@ including adaption and speciation through divergence of populations.
 
 Individuals (plants or animals) are the basic entity in the model.
 Each individual carries a diploid set of chromosomes, which in turn are comprised of genes.
-Some of the genes code for one ore more traits (pleiotropy), while a trait can be dependent on more than one gene (polygene).
+Some of the genes code for one ore more traits (pleiotropy), while a trait can be dependent on more than one gene (polygene). 
 The realized trait value is the mean of the trait alleles (quantitative trait loci).
 Traits thus controlled encompass
 the initial body mass (size) of offspring, M_s,
@@ -21,9 +21,9 @@ mean dispersal distance, D_mean,
 the shape of the dispersal kernel, controlling long-distance-dispersal, D_s,
 the threshold of sequence similarity between mates determining compatibility, delta_I,
 and values representing the optimum and the tolerance (standard deviation) of a physical niche parameter, such as temeperature and precipitation (T_mean and sigma_T or P_mean and sigma_P, resp.).
-Alternatively to be controlled by mutable genes, these traits can also be set to fixed values.
+Alternatively to be controlled by mutable genes, traits can also be fixed.
 Additionally, individuals carry attributes which describe their bodymass, M, their age, A and their adaptation to the physical environment (fitness), F.
-Furthermore, every indivdual carries a Boolean marker used e.g.\ to store wether a given individual has newly arrived to a grid cell.
+Furthermore, every individual carries a Boolean marker used to store whether a given individual has newly arrived to a grid cell or discriminate individuals from the rest of the community.
 
 The base rates for processes governed by the metabolic theory of ecology (Brown et al. 2004) - growth, reproduction, mortality -
 are global constants. Mutation rate is also a global constant.
@@ -36,7 +36,9 @@ All individuals within one grid cell constitute a community.
 The characteristics of the grid cells combined with the state of inhabiting individuals constitute the state variables of the model.
 Additional patterns or summary statistics may be calculated based on these individual information.
 
-Processes and updates are repeated every timestep, while each timestep represent approximately one year.
+Processes and updates are repeated every timestep, while each timestep can be considered as one year.
+
+[Clarify grid cells without actual grid...]
 
 # 3. Process overview and scheduling
 
@@ -54,7 +56,8 @@ the following processes:
 - (9) filtering of unviable individuals,
 - [invasion]
 - (10) seed dispersal.
-- (11) habitat change
+
+[Separate, on patch level:] habitat change
 
 Updates to individuals and thus the local communities happen instantaneously after a specific process has been executed
 (asynchronous updating).
@@ -116,6 +119,7 @@ At the start and end of the simulation and at definable regular time intervals, 
 
 # 5. Initialisation
 
+[TODO: describe distribution of alleles to genes]
 The initialisation step creates lineages with randomly chosen genetic and ecological traits.
 Population size of a lineage is determined by the adult body size of individuals from a lineage.
 Values for ecological traits are then varied in each gene where a given trait is found, for all individuals of a lineage.
