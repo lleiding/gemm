@@ -9,39 +9,25 @@ module GeMM
 
 
 using
-    Dates,
-    Random,
+    ArgParse,
     Distributions,
-    ArgParse
+    Dates,
+    Random
 
 
 export
     # types:
     Patch,
     # functions:
-    defaultSettings,
-    parseconfig,
-    simlog,
-    getsettings,
-    setupdatadir,
-    recordcolonizers,
-    recordstatistics,
-    recordlineages,
-    readmapfile,
-    writephylo,
-    writedata,
-    checkviability!,
-    establish!,
-    survive!,
-    disturb!,
-    invade!,
-    grow!,
-    disperse!,
-    compete!,
-    reproduce!,
-    mutate!,
     createworld,
-    updateworld!
+    defaultSettings,
+    getsettings,
+    readmapfile,
+    setupdatadir,
+    simulate!,
+    updateworld!,
+    writedata
+
 
 include("defaults.jl")
 
@@ -58,5 +44,8 @@ include("auxfuncts.jl")
 include("initialisation.jl")
 
 include("submodels.jl")
+
+include("scheduling.jl")
+
 
 end

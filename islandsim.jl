@@ -21,34 +21,6 @@ using
     GeMM,
     Random
 
-function simulation!(world::Array{Patch,1}, settings::Dict{String, Any}, mapfile::String, timesteps::Int=1000)
-    simlog("Starting simulation.", settings)
-    checkviability!(world, settings)
-    for t in 1:timesteps
-        simlog("UPDATE $t", settings)
-        # ecological processes
-        establish!(world, settings["nniches"], settings["static"])
-        compete!(world, settings["static"])
-        survive!(world, settings)
-        disturb!(world, settings)
-        grow!(world, settings)
-        compete!(world, settings["static"])
-        reproduce!(world, settings)
-        settings["mutate"] && mutate!(world, settings)
-        checkviability!(world, settings)
-        0 < settings["burn-in"] < t && invade!(world, settings)
-        disperse!(world, settings["static"])
-        # model output
-        map(p -> simlog("Patch $(p.id): $(length(p.community)) individuals.", settings, 'd'), world)
-        if settings["lineages"]
-            recordstatistics(world, settings)
-            recordlineages(world, settings, t)
-        end
-        mod(t, settings["outfreq"]) == 0 && writedata(world, settings, mapfile, t)
-        settings["phylo"] && writephylo(world, settings, t)
-    end
-end
-
 function runit(prerun::Bool = false)
     settings = getsettings()
     if prerun
@@ -72,8 +44,8 @@ function runit(prerun::Bool = false)
         end
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
-        !prerun && writedata(world, settings, settings["maps"][i], 0)
-        simulation!(world, settings, settings["maps"][i], timesteps)
+        !prerun && writedata(world, settings, 0)
+        simulate!(world, settings, timesteps)
     end
 end
 
