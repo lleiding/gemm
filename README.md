@@ -118,9 +118,13 @@ At the start and end of the simulation and at definable regular time intervals, 
 
 # 5. Initialisation
 
-[TODO: describe distribution of alleles to genes]
-The initialisation step creates lineages with randomly chosen genetic and ecological traits.
+[TODO: describe distribution of alleles to genes + random creation of species]
+[Initialisation of grid cells]
+[How is input considered?]
+The initialisation step creates lineages with randomly chosen genetic and ecological trait values.
 Population size of a lineage is determined by the adult body size of individuals from a lineage.
+At this point all individuals of a population are identical.
+[Individuals can have different size!]
 Values for ecological traits are then varied in each gene where a given trait is found, for all individuals of a lineage.
 The variation is Normal distributed with the lineage trait value as mean and the product of sigma_l (phylogenetic constraint) and the lineage trait value as standard deviation.
 This ensures initial genetic variation within a lineage population.
@@ -202,8 +206,8 @@ with a = 1 / (sigma_T * sqrt(2 * pi))
 
 ## Competition.
 Individuals are sorted according to fitness (low to high).
-Starting with the least fit individuals an individual will be removed from the local community with high probability
-(following a geometric distribution), if the sum of the community's bodymass exceed the available space.
+If the sum of the community's bodymass exceed the available space, individuals will be removed from the local community starting with the least fit individual with high probability
+(following a geometric distribution).
 Once total bodymass is below carrying capacity, the procedure terminates.
 
 ## Growth.
