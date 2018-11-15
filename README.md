@@ -54,6 +54,7 @@ the following processes:
 - (9) filtering of unviable individuals,
 - [invasion]
 - (10) seed dispersal.
+- (11) habitat change
 
 Updates to individuals and thus the local communities happen instantaneously after a specific process has been executed
 (asynchronous updating).
@@ -254,7 +255,16 @@ The barrier strength represents an additional distance, controlled by a global c
 Special attention is paid when the destination grid cell is of island type, while the origin is on the mainland and the simulation runs in static mode.
 In this case the dispersing individual is copied to the new destination instead of moved.
 
-## Output/Calculation
+## Habitat change
+If enabled, both environmental habitat parameters - temperature and precipitation -
+change values throughout the simulation arena.
+The amount and direction of change is the same for all grid cells across the landscape.
+Changes to temperature and precipiation happen independently from one another.
+The change is randomly drawn from a Normal distribution with the current value as the mean
+and a user defined standard deviation.
+
+
+# Output/Calculation
 The main simulation data output is stored in two separate formats.
 The first is a table containg data characterising the individuals.
 Each line represents on individual.
