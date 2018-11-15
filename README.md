@@ -2,7 +2,10 @@ The  model  description follows  the  ODD  (Overview,  Design  concepts, Details
 
 # 1. Purpose
 
-This model is designed to simulate several patterns across genetic, individual, population and (meta-)community levels.
+This model is designed to simulate a (meta-)community of plant-like individuals.
+For this, it considers factors and processes across genetic, population and ecological levels.
+The model is able to produce several patterns across genetic, individual, population and (meta-)community levels,
+including adaption and speciation through divergence of populations.
 
 
 # 2. Entities, state variables and scales
