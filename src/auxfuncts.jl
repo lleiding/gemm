@@ -433,3 +433,18 @@ function varyalleles!(chrms::Array{Chromosome, 1}, locivar::Float64)
     end
 end
 
+function markthem!(community::Array{Individual, 1})
+    for ind in community
+        ind.marked = true
+    end
+end
+
+function markthem!(habitat::Patch)
+    markthem!(habitat.community)
+end
+
+function markthem!(world::Array{Patch, 1})
+    for habitat in world
+        markthem!(habitat)
+    end
+end
