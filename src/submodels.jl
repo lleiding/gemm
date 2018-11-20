@@ -97,7 +97,7 @@ function establish!(patch::Patch, nniches::Int=1)
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
-        if patch.community[idx].age == 0
+        if patch.community[idx].marked
             fitness = 1
             opt = patch.community[idx].traits["tempopt"]
             tol = patch.community[idx].traits["temptol"]
@@ -354,16 +354,24 @@ end
 
 function changehabitat!(world::Array{Patch,1}, settings::Dict{String, Any})
     # TODO: record trajectory? input trajectory?
-    if settings["sdtemp"] > 0
-        deltaval = rand(Normal(0.0, settings["sdtemp"]))
-        for patch in world
-            patch.temp += deltaval 
-        end
+    changetemp!(world, settings["sdtemp"])
+    changeprec!(world, settings["sdprec"])
+end    
+ 
+function changetemp!(world::Array{Patch,1}, sdtemp::Float64)
+    sdtemp == 0 && return
+    deltaval = rand(Normal(0.0, sdtemp))
+    for patch in world
+        patch.temp += deltaval 
     end
-    if settings["sdprec"] > 0
-        deltaval = rand(Normal(0.0, settings["sdprec"]))
-        for patch in world
-            patch.temp += deltaval 
-        end
+    markthem!(world)
+end    
+ 
+function changeprec!(world::Array{Patch,1}, sdprec::Float64)
+    sdprec == 0 && return
+    deltaval = rand(Normal(0.0, sdprec))
+    for patch in world
+        patch.prec += deltaval 
     end
+    markthem!(world)
 end    
