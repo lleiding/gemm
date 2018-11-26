@@ -17,17 +17,26 @@ end
 
 function gettraitdict(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
     genes = AbstractGene[]
+    nchrms = 0
     for chrm in chrms
         append!(genes, chrm.genes)
+        nchrms += 1
     end
     traits = Trait[]
+    ngenes = 0
     for gene in genes
         append!(traits, gene.codes)
+        ngenes += 1
     end
     traitdict = Dict{String, Float64}()
+    traitvar = Float64[]
     for traitidx in unique(map(x -> x.nameindex, traits))
         traitdict[traitnames[traitidx]] = mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+        push!(traitvar, sd(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
     end
+    traitdict["nlnkgunits"] = nchrms
+    traitdict["ngenes"] = ngenes
+    traitdict["traitvar"] = traitvar
     traitdict
 end
 

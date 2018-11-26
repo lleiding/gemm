@@ -2,6 +2,7 @@
 
 function printheader(settings::Dict{String, Any}, io::IO = stdout, sep::String = "\t")
     #XXX Transfer to a dynamic system? (As in createworld()?)
+    print(io, "time", sep)
     print(io, "patch_no", sep)
     print(io, "xloc", sep)
     print(io, "yloc", sep)
@@ -24,7 +25,6 @@ function printheader(settings::Dict{String, Any}, io::IO = stdout, sep::String =
     for key in settings["traitnames"]
         print(io, key, sep)
     end
-    print(io, "time")
     println(io)
 end
 
@@ -43,6 +43,7 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
         for ind in patch.community
             # only one individual per species on a static mainland (should be the case anyway)
             (!patch.isisland && settings["static"] && ind.lineage == lineage) && continue
+            print(io, timestep)
             print(io, patch.id, sep)
             print(io, patch.location[1], sep)
             print(io, patch.location[2], sep)
@@ -69,7 +70,6 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
                     print(io, "NA", sep)
                 end
             end
-            print(io, timestep)
             println(io)
             lineage = ind.lineage
         end
