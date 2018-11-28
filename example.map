@@ -1,7 +1,7 @@
 # Invasion experiments map
 	
 # timesteps:
-4000
+2000
 
 # experiment landscape 5x7 with temperature gradient along long
 # and precipitation gradient along short axis
@@ -24,7 +24,7 @@
 20 2 5 initpop temp=292 prec=7
 23 3 1 initpop temp=293 prec=3
 24 3 2 initpop temp=293 prec=4
-25 3 3 initpop temp=293 prec=5 # island mountain peak
+25 3 3 initpop temp=293 prec=5
 26 3 4 initpop temp=293 prec=6
 27 3 5 initpop temp=293 prec=7
 30 4 1 initpop temp=294 prec=3
