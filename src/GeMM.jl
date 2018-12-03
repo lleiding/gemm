@@ -13,7 +13,7 @@ using
     Dates,
     Distributions,
     Random,
-    Statisitics
+    Statistics
 
 
 export
