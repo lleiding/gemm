@@ -10,9 +10,10 @@ module GeMM
 
 using
     ArgParse,
-    Distributions,
     Dates,
-    Random
+    Distributions,
+    Random,
+    Statisitics
 
 
 export

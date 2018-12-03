@@ -32,11 +32,13 @@ function gettraitdict(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
     traitvar = Float64[]
     for traitidx in unique(map(x -> x.nameindex, traits))
         traitdict[traitnames[traitidx]] = mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
-        push!(traitvar, sd(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
+        push!(traitvar, std(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
     end
     traitdict["nlnkgunits"] = nchrms
     traitdict["ngenes"] = ngenes
-    traitdict["traitvar"] = traitvar
+    traitdict["mintraitvar"] = minimum(traitvar)
+    traitdict["medtraitvar"] = median(traitvar)
+    traitdict["maxtraitvar"] = maximum(traitvar)
     traitdict
 end
 
