@@ -271,3 +271,55 @@ function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile=
         simlog("Invalid log category $category.", settings, 'w')
     end
 end
+
+function printpopheader(io::IO = stdout)
+    traitnames =  ["compat", "dispmean", "dispshape", "maxtraitvar",
+    "medtraitvar", "mintraitvar", "ngenes", "nlnkgunits", "precopt",
+    "prectol", "repsize", "reptol", "seedsize", "tempopt", "temptol"]
+    print(io, "time\t", "x\t", "y\t", "temp\t", "prec\t", "area\t", "isisland")
+    print(io, "\tlineage", "\tabundance", "\tmaxage", "\tmaxsize")
+    for traitname in traitnames
+        print(io, "\t", traitname, "min")
+        print(io, "\t", traitname, "max")
+        print(io, "\t", traitname, "med")
+        print(io, "\t", traitname, "std")
+    end
+    println(io)
+end
+    
+function printpopstats(io::IO = stdout, world::Array{Patch, 1}, settings::Dict{String, Any}, timestep::Integer)
+    timestep == 0 && printpopheader(io)
+    traitnames =  ["compat", "dispmean", "dispshape", "maxtraitvar",
+    "medtraitvar", "mintraitvar", "ngenes", "nlnkgunits", "precopt",
+    "prectol", "repsize", "reptol", "seedsize", "tempopt", "temptol"]
+    for patch in world
+        print(io, timestep, "\t", patch.location[1], "\t", patch.location[2],
+        "\t", patch.temp, "\t", patch.prec, "\t", patch.area, "\t", patch.isisland)
+        lineages = unique(map(i -> i.lineage, patch.community))
+        for lineage in lineages
+            popidxs = findall(i -> i.lineage == lineage, patch.community)
+            population = patch.community[popidxs]
+            print(io, "\t", population[1].lineage, "\t", length(population),
+            maximum(map(i -> i.age, population)), "\t", maximum(map(i -> i.size, population)))
+            poptraitdict = Dict{String, Array{Float64, 1}}()
+            for traitname in traitnames
+                poptrait = map(i -> i.traits[traitname], population)
+                print(io, "\t", minimum(poptrait))
+                print(io, "\t", maximum(poptrait))
+                print(io, "\t", median(poptrait))
+                print(io, "\t", std(poptrait))
+            end
+            println(io)
+        end
+    end
+end
+
+function writestatistics(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Integer)
+    basename = "stats_s" * string(settings["seed"])
+    basename = joinpath(settings["dest"], basename)
+    filename = basename * ".tsv"
+    simlog("Writing stats to \"$filename\"", settings)
+    open(filename, "a") do file
+        printpopstats(file, world, settings, timestep)
+    end
+end
