@@ -37,11 +37,13 @@ function defaultSettings()
          "precrange" => 10, # range from 0 for precipitation optimum
          "propagule-pressure" => 0, # number of non-native individuals introduced per invasion event
          "quiet" => false, # don't write output to screen
+         "raw" => true, # record raw data
          "sdtemp" => 0.0, # SD of temperature change per time step
          "sdprec" => 0.0, # SD of precipiation change per time step
          "seed" => 0, # for the RNG, seed = 0 -> random seed
          "smallgenelength" => 20,
          "static" => true, # mainland sites don't undergo eco-evolutionary processes
+         "stats" => true, # record population statistics
          "tolerance" => 0.8, # sequence similarity threshold for reproduction
          "traitnames" => ["compat",
                           "dispmean",

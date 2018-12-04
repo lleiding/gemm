@@ -147,11 +147,11 @@ function writesettings(settings::Dict{String, Any})
             if isa(value, String)
                 value = "\"" * value * "\""
             elseif isa(value, Array)
-                vstr = "\""  #" this comment is for emacs' syntax highlighting ;)
-                for x in value
-                    vstr *= string(x) * ","
-                end
-                value = vstr[1:end-1] * "\"" #" and this one.
+                vstr = "\""
+                        for x in value
+                            vstr *= string(x) * ","
+                        end
+                        value = vstr[1:end-1] * "\""
             end
             println(f, "$k $value")
         end
@@ -165,12 +165,23 @@ writes simulation output from `world` to separate table and fasta files.
 `timestep` and `setting` information is used for file name creation.
 """
 function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
-    basename = "s" * string(settings["seed"])
-    basename = joinpath(settings["dest"], basename)
-    filename = basename * ".tsv"
-    simlog("Writing data \"$filename\"", settings)
-    open(filename, "a") do file
-        dumpinds(world, settings, timestep, file)
+    if settings["raw"]
+        basename = "s" * string(settings["seed"])
+        basename = joinpath(settings["dest"], basename)
+        filename = basename * ".tsv"
+        simlog("Writing data \"$filename\"", settings)
+        open(filename, "a") do file
+            dumpinds(world, settings, timestep, file)
+        end
+    end
+    if settings["stats"]
+        basename = "stats_s" * string(settings["seed"])
+        basename = joinpath(settings["dest"], basename)
+        filename = basename * ".tsv"
+        simlog("Writing stats to \"$filename\"", settings)
+        open(filename, "a") do file
+            printpopstats(file, world, settings, timestep)
+        end
     end
     if settings["fasta"]
         filename = basename * ".fa"
@@ -311,15 +322,5 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
             end
             println(io)
         end
-    end
-end
-
-function writestatistics(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Integer)
-    basename = "stats_s" * string(settings["seed"])
-    basename = joinpath(settings["dest"], basename)
-    filename = basename * ".tsv"
-    simlog("Writing stats to \"$filename\"", settings)
-    open(filename, "a") do file
-        printpopstats(file, world, settings, timestep)
     end
 end
