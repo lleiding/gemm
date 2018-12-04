@@ -272,7 +272,7 @@ function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile=
     end
 end
 
-function printpopheader(io::IO = stdout)
+function printpopheader(io::IO)
     traitnames =  ["compat", "dispmean", "dispshape", "maxtraitvar",
     "medtraitvar", "mintraitvar", "ngenes", "nlnkgunits", "precopt",
     "prectol", "repsize", "reptol", "seedsize", "tempopt", "temptol"]
@@ -287,7 +287,7 @@ function printpopheader(io::IO = stdout)
     println(io)
 end
     
-function printpopstats(io::IO = stdout, world::Array{Patch, 1}, settings::Dict{String, Any}, timestep::Integer)
+function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, Any}, timestep::Integer)
     timestep == 0 && printpopheader(io)
     traitnames =  ["compat", "dispmean", "dispshape", "maxtraitvar",
     "medtraitvar", "mintraitvar", "ngenes", "nlnkgunits", "precopt",
