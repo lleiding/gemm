@@ -427,6 +427,7 @@ function createind(settings::Dict{String, Any})
 end
 
 function varyalleles!(genes::Array{AbstractGene, 1}, locivar::Float64)
+    locivar == 0 && return
     for gene in genes
         for trait in gene.codes
             newvalue = rand(Normal(trait.value, trait.value * locivar))
@@ -439,6 +440,7 @@ function varyalleles!(genes::Array{AbstractGene, 1}, locivar::Float64)
 end
 
 function varyalleles!(chrms::Array{Chromosome, 1}, locivar::Float64)
+    locivar == 0 && return
     for chrm in chrms
         varyalleles!(chrm.genes, locivar)
     end
