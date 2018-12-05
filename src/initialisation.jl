@@ -30,7 +30,7 @@ function createpop(settings::Dict{String, Any})
         nchrms = randchrms
     end
     chromosomes = createchrms(nchrms, genes)
-    locivar = rand() * settings["phylconstraint"]
+    locivar = rand() * settings["phylconstr"]
     population = Individual[]
     for i in 1:popsize
         id = rand(Int32)
