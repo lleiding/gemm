@@ -1,6 +1,7 @@
 # Main processes for GeMM
 
 function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any})
+    settings["phylconstr"] == 0 && return
     for trait in traits
         traitname = settings["traitnames"][trait.nameindex]
         occursin("reptol", traitname) && settings["fixtol"] && continue # MARK CAVE!
