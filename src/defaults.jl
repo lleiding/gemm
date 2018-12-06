@@ -19,7 +19,8 @@ function defaultSettings()
          "linkage" => "random", # gene linkage type (random/full/none)
          "logging" => false, # write output to logfile
          "maps" => "", # comma-separated list of map files
-         "maxdispmean" => 10, # maximum mean dispersal distance
+         "dispmean" => 1, # maximum mean dispersal distance
+         "dispshape" => 1, # maximum mean dispersal distance
          "maxrepsize" => 14, # maximal repsize in grams calculated as exp(maxrepsize) -> 1.2 t
          "maxseedsize" => 10, # maximal seedsize in grams calculated as exp(maxseedsize) -> 22 kg
          "maxtemp" => 313, # max optimum temp in K 

@@ -323,8 +323,10 @@ function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly.
     end
     repsize, seedsize = sizes
     for idx in eachindex(traitnames)
-        if occursin("dispshape", traitnames[idx]) # use for both dispersal parameters?
-            push!(traits, Trait(idx, rand() * settings["maxdispmean"]))
+        if occursin("dispshape", traitnames[idx])
+            push!(traits, Trait(idx, rand() * settings["dispshape"]))
+        elseif occursin("dispmean", traitnames[idx])
+            push!(traits, Trait(idx, rand() * settings["dispmean"]))
         elseif occursin("precopt", traitnames[idx])
             push!(traits, Trait(idx, rand() * settings["precrange"]))
         elseif occursin("repsize", traitnames[idx])
