@@ -26,7 +26,7 @@ function defaultSettings()
          "maxtemp" => 313, # max optimum temp in K 
          "minrepsize" => 3, # minimal repsize in grams calculated as exp(minrepsize) -> 20 g
          "minseedsize" => -2, # minimal seedsize in grams calculated as exp(minseedsize) -> 0.14 g
-         "mintemp" => 283, # min optimum temp in K 
+         "mintemp" => 273, # min optimum temp in K 
          "mortality" => exp(22), # global base mortality from Brown et al. 2004 is 26.3, but competition and dispersal introduce add. mort.
          "mutate" => true, # mutations occur
          "mutationrate" => 3.6e10, # one mutation per generation/individual, corrected for metabolic function
