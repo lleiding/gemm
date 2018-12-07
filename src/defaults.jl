@@ -24,6 +24,7 @@ function defaultSettings()
          "maxrepsize" => 14, # maximal repsize in grams calculated as exp(maxrepsize) -> 1.2 t
          "maxseedsize" => 10, # maximal seedsize in grams calculated as exp(maxseedsize) -> 22 kg
          "maxtemp" => 313, # max optimum temp in K 
+         "minbreadth" => 0.3, # minimal niche breadth, so that fitness at optimal conditions !>> 1
          "minrepsize" => 3, # minimal repsize in grams calculated as exp(minrepsize) -> 20 g
          "minseedsize" => -2, # minimal seedsize in grams calculated as exp(minseedsize) -> 0.14 g
          "mintemp" => 273, # min optimum temp in K 
