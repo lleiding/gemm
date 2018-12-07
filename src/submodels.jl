@@ -103,23 +103,19 @@ function establish!(patch::Patch, nniches::Int=1)
             opt = patch.community[idx].traits["tempopt"]
             tol = patch.community[idx].traits["temptol"]
             fitness *= gausscurve(opt, tol, temp, 0.0)
-            fitness > 1 && (fitness = 1) # should be obsolete
-            fitness < 0 && (fitness = 0) # should be obsolete
             if nniches >= 2
                 opt = patch.community[idx].traits["precopt"]
                 tol = patch.community[idx].traits["prectol"]
                 fitness *= gausscurve(opt, tol, patch.prec, 0.0)
-                fitness > 1 && (fitness = 1) # should be obsolete
-                fitness < 0 && (fitness = 0) # should be obsolete
             end
             if nniches == 3
                 # XXX 'nicheopt' and 'nichetol' don't exist currently!
                 opt = patch.community[idx].traits["nicheopt"]
                 tol = patch.community[idx].traits["nichetol"]
                 fitness *= gausscurve(opt, tol, patch.nicheb, 0.0)
-                fitness > 1 && (fitness = 1) # should be obsolete
-                fitness < 0 && (fitness = 0) # should be obsolete
             end  
+            fitness > 1 && (fitness = 1) # should be obsolete
+            fitness < 0 && (fitness = 0) # should be obsolete
             patch.community[idx].fitness = fitness
             patch.community[idx].marked = false
         end
@@ -145,7 +141,7 @@ function survive!(patch::Patch, mortality::Float64)
         if !patch.community[idx].marked
             mass = patch.community[idx].size
             deathrate = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
-            dieprob = 1 - exp(-deathrate)
+            dieprob = (1 - exp(-deathrate)) * patch.community[idx].fitness
             if rand() < dieprob
                 splice!(patch.community, idx)
                 continue
@@ -281,9 +277,9 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
 end
 
 function compete!(patch::Patch)
-    sort!(patch.community, by = x -> x.fitness)
+    sort!(patch.community, by = x -> x.size)
     while sum(map(x -> x.size, patch.community)) >= patch.area # occupied area larger than available
-        victim = rand(Geometric()) + 1 # fitness sorted?
+        victim = rand(Geometric()) + 1 
         victim > length(patch.community) && (victim = length(patch.community))
         splice!(patch.community, victim)
     end
