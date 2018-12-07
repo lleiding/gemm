@@ -1,7 +1,7 @@
 # Main processes for GeMM
 
-function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any})
-    settings["phylconstr"] == 0 && return
+function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any}, locivar::Float64 = 1.0)
+    settings["phylconstr"] * locivar == 0 && return
     for trait in traits
         traitname = settings["traitnames"][trait.nameindex]
         occursin("reptol", traitname) && settings["fixtol"] && continue # MARK CAVE!
@@ -10,11 +10,10 @@ function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any})
         while oldvalue <= 0 # make sure sd of Normal dist != 0
             oldvalue = abs(rand(Normal(0,0.01)))
         end
-        newvalue = oldvalue + rand(Normal(0, oldvalue * settings["phylconstr"])) # CAVE: maybe handle temp + prec separately
-        newvalue < 0 && (newvalue=abs(newvalue))
-        (newvalue > 1 && occursin("prob", traitname)) && (newvalue=1)
+        newvalue = rand(Normal(oldvalue, oldvalue * settings["phylconstr"] * locivar))
+        (newvalue > 1 && occursin("prob", traitname)) && (newvalue=1.0)
         while newvalue <= 0
-            newvalue = trait.value + rand(Normal(0, trait.value * settings["phylconstr"]))
+            newvalue = rand(Normal(oldvalue, oldvalue * settings["phylconstr"] * locivar))
         end
         occursin("tempopt", traitname) && (newvalue += 273)
         trait.value = newvalue

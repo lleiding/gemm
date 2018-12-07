@@ -30,12 +30,12 @@ function createpop(settings::Dict{String, Any})
         nchrms = randchrms
     end
     chromosomes = createchrms(nchrms, genes)
-    locivar = rand() * settings["phylconstr"]
+    locivar = rand()
     population = Individual[]
     for i in 1:popsize
         id = rand(Int32)
         chromosomes = deepcopy(chromosomes)
-        varyalleles!(chromosomes, locivar)
+        varyalleles!(chromosomes, settings, locivar)
         traitdict = gettraitdict(chromosomes, settings["traitnames"])
         if settings["indsize"] == "adult"
             indsize = traitdict["repsize"]
