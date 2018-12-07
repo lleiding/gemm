@@ -329,6 +329,8 @@ function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly.
             push!(traits, Trait(idx, rand() * settings["dispmean"]))
         elseif occursin("precopt", traitnames[idx])
             push!(traits, Trait(idx, rand() * settings["precrange"]))
+        elseif occursin("prectol", traitnames[idx])
+            push!(traits, Trait(idx, rand(Normal()))
         elseif occursin("repsize", traitnames[idx])
             push!(traits, Trait(idx, repsize))
         elseif occursin("reptol", traitnames[idx])
@@ -337,6 +339,8 @@ function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly.
             push!(traits, Trait(idx, seedsize))
         elseif occursin("tempopt", traitnames[idx])
             push!(traits, Trait(idx, settings["mintemp"] + rand() * tempoffset))
+        elseif occursin("temptol", traitnames[idx])
+            push!(traits, Trait(idx, rand(Normal()))
         else
             push!(traits, Trait(idx, rand()))
         end
