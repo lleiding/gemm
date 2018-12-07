@@ -304,10 +304,10 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
     "medtraitvar", "mintraitvar", "ngenes", "nlnkgunits", "precopt",
     "prectol", "repsize", "reptol", "seedsize", "tempopt", "temptol"]
     for patch in world
-        print(io, timestep, "\t", patch.location[1], "\t", patch.location[2],
-        "\t", patch.temp, "\t", patch.prec, "\t", patch.area, "\t", patch.isisland)
         lineages = unique(map(i -> i.lineage, patch.community))
         for lineage in lineages
+            print(io, timestep, "\t", patch.location[1], "\t", patch.location[2],
+                  "\t", patch.temp, "\t", patch.prec, "\t", patch.area, "\t", patch.isisland)
             popidxs = findall(i -> i.lineage == lineage, patch.community)
             population = patch.community[popidxs]
             print(io, "\t", population[1].lineage, "\t", length(population),
