@@ -3,15 +3,16 @@
 function createpop(settings::Dict{String, Any})
     traits = createtraits(settings)
     traitdict = gettraitdict(traits, settings["traitnames"])
+    popsize = 0
     if occursin("metabolic", settings["popsize"]) || occursin("single", settings["popsize"])
-        # population size determined by adult size and temperature niche optimum
+        # population size determined by adult size
         popsize = round(settings["fertility"] * traitdict["repsize"] ^ (-1 / 4) *
-                        exp(-act / (boltz * traitdict["tempopt"])))
+                        exp(-act / (boltz * 298.0)))
     elseif occursin("bodysize", settings["popsize"])
         # population size up to 25% of the maximum possible in this cell
         quarterpopsize = Integer(floor((settings["cellsize"] / traitdict["repsize"]) / 4))
         popsize = rand(2:quarterpopsize)
-    elseif occursin("minimal", settings["popsize"])
+    elseif occursin("minimal", settings["popsize"]) || popsize == 0
         popsize = 2 #Takes two to tangle ;-)
     else
         simlog("Invalid value for `popsize`: $(settings["popsize"])", settings, 'e')
@@ -55,24 +56,13 @@ end
 function genesis(settings::Dict{String, Any})
     community = Individual[]
     totalmass = 0.0
-    ttl = 50
     while true
         population = createpop(settings)
         popsize = length(population)
-        # prevent an infinity loop when the cellsize is very small
-        if popsize < 2
-            if ttl == 0
-                simlog("This cell might be too small to hold a community.", settings, 'w')
-                break
-            else
-                ttl -= 1
-                continue
-            end
-        end
         # Check the cell capacity
         popmass = sum(map(x -> x.size, population))
         if totalmass + popmass > settings["cellsize"] # stop loop if cell is full
-            if totalmass >= settings["cellsize"]*0.75 || occursin("single", settings["popsize"]) #make sure the cell is full enough
+            if totalmass >= settings["cellsize"] * 0.9 || occursin("single", settings["popsize"]) #make sure the cell is full enough
                 simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", settings, 'd') #DEBUG
                 break
             else
