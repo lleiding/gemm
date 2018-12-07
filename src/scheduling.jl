@@ -7,7 +7,6 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
         simlog("UPDATE $t", settings)
         # ecological processes
         establish!(world, settings["nniches"], settings["static"])
-        compete!(world, settings["static"])
         survive!(world, settings)
         disturb!(world, settings)
         grow!(world, settings)
