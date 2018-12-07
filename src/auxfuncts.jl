@@ -84,7 +84,7 @@ function traitsexist(ind::Individual, settings::Dict{String, Any})
     true
 end
 
-function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
+function gausscurve(b, c, x, a = 1.0)
     if c != 0 && a != 1.0
         a = 1 / (c * sqrt(2 * pi))
         y = a * exp(-(x-b)^2/(2*c^2))
