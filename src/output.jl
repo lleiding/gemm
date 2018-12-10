@@ -284,11 +284,11 @@ function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile=
 end
 
 function printpopheader(io::IO)
+    print(io, "time\t", "x\t", "y\t", "temp\t", "prec\t", "area\t", "isisland")
+    print(io, "\tlineage", "\tabundance", "\tmaxage", "\tmaxsize", "\tmaxfitness")
     traitnames =  ["compat", "dispmean", "dispshape", "maxtraitvar",
     "medtraitvar", "mintraitvar", "ngenes", "nlnkgunits", "precopt",
     "prectol", "repsize", "reptol", "seedsize", "tempopt", "temptol"]
-    print(io, "time\t", "x\t", "y\t", "temp\t", "prec\t", "area\t", "isisland")
-    print(io, "\tlineage", "\tabundance", "\tmaxage", "\tmaxsize")
     for traitname in traitnames
         print(io, "\t", traitname, "min")
         print(io, "\t", traitname, "max")
@@ -311,7 +311,8 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
             popidxs = findall(i -> i.lineage == lineage, patch.community)
             population = patch.community[popidxs]
             print(io, "\t", population[1].lineage, "\t", length(population), "\t",
-            maximum(map(i -> i.age, population)), "\t", maximum(map(i -> i.size, population)))
+                  maximum(map(i -> i.age, population)), "\t", maximum(map(i -> i.size, population))
+                  , "\t", maximum(map(i -> i.fitness, population)))
             poptraitdict = Dict{String, Array{Float64, 1}}()
             for traitname in traitnames
                 poptrait = map(i -> i.traits[traitname], population)
