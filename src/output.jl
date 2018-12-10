@@ -310,7 +310,7 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
                   "\t", patch.temp, "\t", patch.prec, "\t", patch.area, "\t", patch.isisland)
             popidxs = findall(i -> i.lineage == lineage, patch.community)
             population = patch.community[popidxs]
-            print(io, "\t", population[1].lineage, "\t", length(population),
+            print(io, "\t", population[1].lineage, "\t", length(population), "\t",
             maximum(map(i -> i.age, population)), "\t", maximum(map(i -> i.size, population)))
             poptraitdict = Dict{String, Array{Float64, 1}}()
             for traitname in traitnames
