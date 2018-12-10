@@ -4,7 +4,7 @@ function defaultSettings()
          "biggenelength" => 200,
          "burn-in" => 1000, # timesteps before invasion starts
          "cellsize" => 20e6, # maximum biomass per hectare in gramm (based on Clark et al. 2001)
-         "config" => "simulation.conf", # configuration file name
+         "config" => "example.conf", # configuration file name
          "debug" => false, # write out debug statements
          "dest" => string(Dates.today()), # output folder name
          "disturbance" => 0, # percentage of individuals killed per update per cell
