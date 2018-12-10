@@ -67,7 +67,8 @@ function checkviability!(community::Array{Individual, 1}, settings::Dict{String,
         community[idx].size <= 0 && (dead = true) && (reason *= "size ")
         any(collect(values(community[idx].traits)) .< 0) && (dead = true) && (reason *= "traitvalues ")
         community[idx].traits["repsize"] <= community[idx].traits["seedsize"] && (dead = true) && (reason *= "seed/rep ")
-        community[idx].fitness < 0 && (dead = true) && (reason *= "fitness ")
+        community[idx].tempadaption < 0 && (dead = true) && (reason *= "fitness ")
+        community[idx].precadaption < 0 && (dead = true) && (reason *= "fitness ")
         !traitsexist(community[idx].traits, settings) && (dead = true) && (reason *= "missingtrait ")
         if dead
             simlog("Individual not viable: $reason. Being killed.", settings, 'w')
@@ -90,7 +91,7 @@ end
 
 """
     establish!(p, n)
-establishment of individuals in patch `p`. Sets fitness scaling parameter
+establishment of individuals in patch `p`. Sets adaption parameter
 according to adaptation to number `n` niches of the surrounding environment.
 """
 function establish!(patch::Patch, nniches::Int=1)
@@ -98,24 +99,20 @@ function establish!(patch::Patch, nniches::Int=1)
     idx = 1
     while idx <= size(patch.community,1)
         if patch.community[idx].marked
-            fitness = 1
             opt = patch.community[idx].traits["tempopt"]
             tol = patch.community[idx].traits["temptol"]
-            fitness *= gausscurve(opt, tol, temp, 0.0)
+            fitness = gausscurve(opt, tol, temp, 0.0)
+            fitness > 1 && (fitness = 1) # should be obsolete
+            fitness < 0 && (fitness = 0) # should be obsolete
+            patch.community[idx].tempadaption = fitness
             if nniches >= 2
                 opt = patch.community[idx].traits["precopt"]
                 tol = patch.community[idx].traits["prectol"]
-                fitness *= gausscurve(opt, tol, patch.prec, 0.0)
+                fitness = gausscurve(opt, tol, patch.prec, 0.0)
+                fitness > 1 && (fitness = 1) # should be obsolete
+                fitness < 0 && (fitness = 0) # should be obsolete
+                patch.community[idx].precadaption = fitness
             end
-            if nniches == 3
-                # XXX 'nicheopt' and 'nichetol' don't exist currently!
-                opt = patch.community[idx].traits["nicheopt"]
-                tol = patch.community[idx].traits["nichetol"]
-                fitness *= gausscurve(opt, tol, patch.nicheb, 0.0)
-            end  
-            fitness > 1 && (fitness = 1) # should be obsolete
-            fitness < 0 && (fitness = 0) # should be obsolete
-            patch.community[idx].fitness = fitness
             patch.community[idx].marked = false
         end
         idx += 1
@@ -140,7 +137,7 @@ function survive!(patch::Patch, mortality::Float64)
         if !patch.community[idx].marked
             mass = patch.community[idx].size
             deathrate = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
-            dieprob = (1 - exp(-deathrate)) * patch.community[idx].fitness
+            dieprob = (1 - exp(-deathrate)) * patch.community[idx].tempadaption
             if rand() < dieprob
                 splice!(patch.community, idx)
                 continue
@@ -276,11 +273,10 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
 end
 
 function compete!(patch::Patch)
-    sort!(patch.community, by = x -> x.size)
+    sort!(patch.community, by = x -> x.precadaption)
     while sum(map(x -> x.size, patch.community)) >= patch.area # occupied area larger than available
-        victim = rand(Geometric()) + 1 
-        victim > length(patch.community) && (victim = length(patch.community))
-        splice!(patch.community, victim)
+        length(patch.community) < 1 && break
+        popfirst!(patch.community)
     end
 end
 
@@ -331,7 +327,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                         fitness = 0.0
                         newsize = seedsize
                         ind = Individual(ind.lineage, genome, traits, age, marked, fitness,
-                                         newsize, rand(Int32), ind.id) #, partner.id))
+                                         fitness, newsize, rand(Int32), ind.id) #, partner.id))
                         push!(patch.seedbank, ind) # maybe actually deepcopy!?
                     end
                 end

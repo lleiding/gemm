@@ -28,7 +28,8 @@ mutable struct Individual
     traits::Dict{String, Float64}
     age::Int
     marked::Bool # indicator whether individual is new to a patch (after dispersal or birth)
-    fitness::Float64 # rate scaling factor
+    precadaption::Float64 # adaption to precipitation
+    tempadaption::Float64 # adaption to temperature
     size::Float64 # body mass
     id::Int
     parentid::Int #Tuple{Int, Int} # for now only sparse genealogy

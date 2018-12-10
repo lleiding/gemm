@@ -429,7 +429,7 @@ function createind(settings::Dict{String, Any})
     else
         indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
     end
-    Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize, id, parentid)
+    Individual(lineage, chromosomes, traitdict, 0, false, 1.0, 1.0, indsize, id, parentid)
 end
 
 function varyalleles!(genes::Array{AbstractGene, 1}, settings::Dict{String, Any}, locivar::Float64)
