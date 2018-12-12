@@ -277,7 +277,7 @@ function compete!(patch::Patch)
     while totalmass >= patch.area # occupied area larger than available
         firstind = rand(eachindex(patch.community))
         secondind = rand(eachindex(patch.community))
-        firstind == secondind && continue
+        firstind == secondind && length(rand(eachindex(patch.community))) > 1 && continue
         if patch.community[firstind].precadaption < patch.community[secondind].precadaption
             totalmass -= patch.community[firstind].size
             splice!(patch.community, firstind)
@@ -346,7 +346,6 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
             end
         end
     end
-    checkviability!(patch.seedbank, settings)
     simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
 end
 
