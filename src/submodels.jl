@@ -273,10 +273,22 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
 end
 
 function compete!(patch::Patch)
-    sort!(patch.community, by = x -> x.precadaption)
-    while sum(map(x -> x.size, patch.community)) >= patch.area # occupied area larger than available
-        length(patch.community) < 1 && break
-        popfirst!(patch.community)
+    totalmass = sum(map(x -> x.size, patch.community))
+    while totalmass >= patch.area # occupied area larger than available
+        firstind = rand(eachindex(patch.community))
+        secondind = rand(eachindex(patch.community))
+        firstind == secondind && continue
+        if patch.community[firstind].precadaption < patch.community[secondind].precadaption
+            totalmass -= patch.community[firstind].size
+            splice!(patch.community, firstind)
+        elseif patch.community[firstind].precadaption > patch.community[secondind].precadaption
+            totalmass -= patch.community[secondind].size
+            splice!(patch.community, secondind)
+        else
+            victim = rand([firstind, secondind])
+            totalmass -= patch.community[victim].size
+            splice!(patch.community, victim)
+        end
     end
 end
 
