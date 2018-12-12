@@ -256,7 +256,7 @@ function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String
     mateidx = startidx
     while true
         mate = patch.community[communityidxs[mateidx]]
-        if !mate.marked && iscompatible(mate, ind, traitnames)
+        if !mate.marked # && iscompatible(mate, ind, traitnames)
             posspartner = mate
             break
         end
