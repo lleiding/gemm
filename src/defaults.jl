@@ -44,7 +44,7 @@ function defaultSettings()
          "sdprec" => 0.0, # SD of precipiation change per time step
          "seed" => 0, # for the RNG, seed = 0 -> random seed
          "smallgenelength" => 20,
-         "static" => true, # mainland sites don't undergo eco-evolutionary processes
+         "static" => false, # whether mainland sites undergo eco-evolutionary processes
          "stats" => true, # record population statistics
          "tolerance" => 0.8, # sequence similarity threshold for reproduction
          "traitnames" => ["compat",

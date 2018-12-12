@@ -403,7 +403,7 @@ function createchrms(nchrms::Int,genes::Array{AbstractGene,1})
     chromosomes
 end
 
-function createind(settings::Dict{String, Any})
+function createind(settings::Dict{String, Any}, marked::Bool = false)
     id = rand(Int32)
     parentid = rand(Int32)
     lineage = randstring(4)
@@ -429,7 +429,7 @@ function createind(settings::Dict{String, Any})
     else
         indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
     end
-    Individual(lineage, chromosomes, traitdict, 0, false, 1.0, 1.0, indsize, id, parentid)
+    Individual(lineage, chromosomes, traitdict, 0, marked, 1.0, 1.0, indsize, id, parentid)
 end
 
 function varyalleles!(genes::Array{AbstractGene, 1}, settings::Dict{String, Any}, locivar::Float64)
