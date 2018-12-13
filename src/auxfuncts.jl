@@ -15,6 +15,14 @@ function meiosis(genome::Array{Chromosome,1}, maternal::Bool) # TODO: include fu
     gamete
 end
 
+function getmeantraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
+    mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+end
+
+function getstdtraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
+    std(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+end
+
 function gettraitdict(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
     genes = AbstractGene[]
     nchrms = 0
@@ -28,8 +36,8 @@ function gettraitdict(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
     traitdict = Dict{String, Float64}()
     traitvar = Float64[]
     for traitidx in eachindex(traitnames)
-        traitdict[traitnames[traitidx]] = mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
-        push!(traitvar, std(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
+        traitdict[traitnames[traitidx]] = getmeantraitvalue(traits, traitidx)
+        push!(traitvar, getstdtraitvalue(traits, traitidx))
     end
     traitdict["nlnkgunits"] = nchrms
     traitdict["ngenes"] = ngenes
@@ -59,12 +67,10 @@ function gettraitdict(traits::Array{Trait, 1}, traitnames::Array{String, 1})
 end
 
 function traitsexist(traits::Dict{String, Float64}, settings::Dict{String, Any})
-    traitnames = settings["traitnames"]
-    for trait in traitnames
-        if !haskey(traits, trait)
-            simlog("Missing trait $trait. Individual might be killed.", settings, 'w')
-            return false
-        end
+    missingtraits = setdiff(settings["traitnames"], keys(traits))
+    if length(missingtraits) > 0
+        simlog("Missing trait $missingtrait. Individual might be killed.", settings, 'w')
+        return false
     end
     true
 end

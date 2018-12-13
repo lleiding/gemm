@@ -280,14 +280,14 @@ function compete!(patch::Patch)
         firstind == secondind && length(rand(eachindex(patch.community))) > 1 && continue
         if patch.community[firstind].precadaption < patch.community[secondind].precadaption
             totalmass -= patch.community[firstind].size
-            splice!(patch.community, firstind)
+            splice!(patch.community, firstind) # profiling: expensive!
         elseif patch.community[firstind].precadaption > patch.community[secondind].precadaption
             totalmass -= patch.community[secondind].size
-            splice!(patch.community, secondind)
+            splice!(patch.community, secondind) # profiling: expensive!
         else
             victim = rand([firstind, secondind])
             totalmass -= patch.community[victim].size
-            splice!(patch.community, victim)
+            splice!(patch.community, victim) # profiling: expensive!
         end
     end
 end
