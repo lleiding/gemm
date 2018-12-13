@@ -15,11 +15,11 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
         if settings["mutate"]
             mutate!(world, settings)
         end
-        checkviability!(world, settings)
         if 0 < settings["burn-in"] < t
             invade!(world, settings)
         end
         disperse!(world, settings["static"])
+        checkviability!(world, settings)
         changehabitat!(world, settings) # model output
         # map(p -> simlog("Patch $(p.id): $(length(p.community)) individuals.", settings, 'd'), world) # disabled - performance concerns
         if settings["lineages"]
