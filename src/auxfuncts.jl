@@ -69,7 +69,7 @@ end
 function traitsexist(traits::Dict{String, Float64}, settings::Dict{String, Any})
     missingtraits = setdiff(settings["traitnames"], keys(traits))
     if length(missingtraits) > 0
-        simlog("Missing trait $missingtrait. Individual might be killed.", settings, 'w')
+        simlog("Missing trait $missingtraits. Individual might be killed.", settings, 'w')
         return false
     end
     true

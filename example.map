@@ -1,7 +1,7 @@
 # Invasion experiments map
 	
 # timesteps:
-2000
+20
 
 # experiment landscape 5x7 with temperature gradient along long
 # and precipitation gradient along short axis
