@@ -94,7 +94,7 @@ function gausscurve(b, c, x, a = 1.0)
     elseif c != 0
         y = a * exp(-(x-b)^2/(2*c^2))
     else
-        y = 0
+        y = 0.0
     end
 end
 
@@ -255,22 +255,23 @@ function iscompatible(mate::Individual, ind::Individual, traitnames::Array{Strin
 end
 
 function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String, 1})
+    indstate = ind.marked
     ind.marked = true
-    posspartner = nothing
+    posspartner = Individual[]
     communityidxs = patch.whoiswho[ind.lineage]
     startidx = rand(1:length(communityidxs))
     mateidx = startidx
     while true
         mate = patch.community[communityidxs[mateidx]]
         if !mate.marked # && iscompatible(mate, ind, traitnames)
-            posspartner = mate
+            push!(posspartner, mate)
             break
         end
         mateidx += 1
         mateidx > length(communityidxs) && (mateidx = 1)
         mateidx == startidx && break
     end
-    ind.marked = false
+    ind.marked = indstate
     posspartner 
 end
 

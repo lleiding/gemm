@@ -317,8 +317,9 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                     #simlog("0 offspring chosen", settings, 'd') #DEBUG - noisy!
                     continue
                 end
-                partner = findposspartner(patch, ind, settings["traitnames"])
-                if partner != nothing
+                partners = findposspartner(patch, ind, settings["traitnames"])
+                if length(partners) > 0
+                    partner = partners[1]
                     parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
                     if parentmass <= 0
                         continue
