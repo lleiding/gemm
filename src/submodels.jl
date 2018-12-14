@@ -313,29 +313,15 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                     continue
                 end
                 partners = findposspartner(patch, ind, settings["traitnames"])
-                if length(partners) > 0
-                    partner = partners[1]
-                    parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
-                    if parentmass <= 0
-                        continue
-                    else
-                        ind.size = parentmass
-                    end
-                    for i in 1:noffs # pmap? this loop could be factorized!
-                        partnergenome = meiosis(partner.genome, false) # offspring have different genome!
-                        mothergenome = meiosis(ind.genome, true)
-                        (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
-                        genome = vcat(partnergenome,mothergenome)
-                        traits = gettraitdict(genome, settings["traitnames"])
-                        age = 0
-                        marked = true
-                        fitness = 0.0
-                        newsize = ind.traits["seedsize"]
-                        ind = Individual(ind.lineage, genome, traits, age, marked, fitness,
-                                         fitness, newsize, rand(Int32))
-                        push!(patch.seedbank, ind)
-                    end
+                length(partners) < 1 && continue
+                partner = partners[1]
+                parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
+                if parentmass <= 0
+                    continue
+                else
+                    ind.size = parentmass
                 end
+                append!(patch.seedbank, createoffspring(noffs, ind, partner, settings["traitnames"]))
             end
         end
     end

@@ -275,6 +275,24 @@ function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String
     posspartner 
 end
 
+function createoffspring(noffs::Integer, ind::Individual, partner::Individual, traitnames::Array{String, 1})
+    offspring = Individual[]
+    for i in 1:noffs # pmap? this loop could be factorized!
+        partnergenome = meiosis(partner.genome, false) # offspring have different genome!
+        mothergenome = meiosis(ind.genome, true)
+        (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
+        genome = vcat(partnergenome,mothergenome)
+        traits = gettraitdict(genome, traitnames)
+        age = 0
+        marked = true
+        fitness = 0.0
+        newsize = ind.traits["seedsize"]
+        ind = Individual(ind.lineage, genome, traits, age, marked, fitness,
+                         fitness, newsize, rand(Int32))
+        push!(offspring, ind)
+    end
+    offspring
+end
 """
     seq2num(sequence)
 Convert a DNA base sequence (a string) into binary and then into an integer.
