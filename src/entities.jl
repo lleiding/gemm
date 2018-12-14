@@ -32,7 +32,6 @@ mutable struct Individual
     tempadaption::Float64 # adaption to temperature
     size::Float64 # body mass
     id::Int
-    parentid::Int #Tuple{Int, Int} # for now only sparse genealogy
 end
 
 mutable struct Patch
@@ -49,7 +48,6 @@ mutable struct Patch
     isolated::Bool
     initpop::Bool # initialise with a population
     whoiswho::Dict{String, Array{Int, 1}}
-    phylo::Array{Int, 2}
 end
 
 # constructors:

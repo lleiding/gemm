@@ -231,28 +231,6 @@ function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, time
 end
 
 """
-    writephylo(w, settings, t)
-Save the phylogeny of individuals currently in world `w`.
-"""
-function writephylo(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
-    if !isfile(joinpath(settings["dest"], "phylo.tsv"))
-        open(joinpath(settings["dest"], "phylo$(settings["seed"]).tsv"), "w") do f
-            println(f, "t\tpatch\tid\tparent")
-        end
-    end
-    open(joinpath(settings["dest"], "phylo$(settings["seed"]).tsv"), "a") do f
-        for p in world
-            for i in 1:size(p.phylo, 1)
-                print(f, timestep, "\t")
-                print(f, p.id, "\t")
-                print(f, p.phylo[i, 1], "\t")
-                println(f, p.phylo[i, 2])
-            end
-        end
-    end
-end    
-
-"""
     simlog(msg, settings, category)
 Write a log message to STDOUT/STDERR and the specified logfile 
 (if logging is turned on in the settings).

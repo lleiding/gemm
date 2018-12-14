@@ -29,9 +29,6 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
         if mod(t, settings["outfreq"]) == 0
             writedata(world, settings, t)
         end
-        if settings["phylo"]
-            writephylo(world, settings, t)
-        end
     end
 end
 

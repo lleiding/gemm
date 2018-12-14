@@ -304,14 +304,12 @@ Reproduction of individuals in a patch `p`
 """
 function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
     identifyAdults!(patch)
-    patch.phylo = Array{Int}(undef, 0, 2)
     for ind in patch.community
         if !ind.marked && ind.age > 0
             if ind.size >= ind.traits["repsize"]
                 metaboffs = settings["fertility"] * ind.size^(-1/4) * exp(-act/(boltz*patch.temp))
                 noffs = rand(Poisson(metaboffs))
                 if noffs < 1
-                    #simlog("0 offspring chosen", settings, 'd') #DEBUG - noisy!
                     continue
                 end
                 partners = findposspartner(patch, ind, settings["traitnames"])
@@ -323,9 +321,6 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                     else
                         ind.size = parentmass
                     end
-                    ## save origin of actually reproducing individuals:
-                    patch.phylo = vcat(patch.phylo, [ind.id ind.parentid[1]]) # ind.parentid[2]; # for now only use sparse genealogy
-                    # partner.id partner.parentid[1] partner.parentid[2]]
                     for i in 1:noffs # pmap? this loop could be factorized!
                         partnergenome = meiosis(partner.genome, false) # offspring have different genome!
                         mothergenome = meiosis(ind.genome, true)
