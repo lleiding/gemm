@@ -332,7 +332,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                         fitness = 0.0
                         newsize = ind.traits["seedsize"]
                         ind = Individual(ind.lineage, genome, traits, age, marked, fitness,
-                                         fitness, newsize, rand(Int32), ind.id)
+                                         fitness, newsize, rand(Int32))
                         push!(patch.seedbank, ind)
                     end
                 end
