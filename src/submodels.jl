@@ -307,12 +307,9 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
     patch.phylo = Array{Int}(undef, 0, 2)
     for ind in patch.community
         if !ind.marked && ind.age > 0
-            currentmass = ind.size
-            seedsize = ind.traits["seedsize"]
-            if currentmass >= ind.traits["repsize"]
-                reptol = ind.traits["reptol"]
-                metaboffs = settings["fertility"] * currentmass^(-1/4) * exp(-act/(boltz*patch.temp))
-                noffs = rand(Poisson(metaboffs))# * ind.fitness)) # add some stochasticity
+            if ind.size >= ind.traits["repsize"]
+                metaboffs = settings["fertility"] * ind.size^(-1/4) * exp(-act/(boltz*patch.temp))
+                noffs = rand(Poisson(metaboffs))
                 if noffs < 1
                     #simlog("0 offspring chosen", settings, 'd') #DEBUG - noisy!
                     continue
@@ -320,7 +317,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                 partners = findposspartner(patch, ind, settings["traitnames"])
                 if length(partners) > 0
                     partner = partners[1]
-                    parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
+                    parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
                     if parentmass <= 0
                         continue
                     else
@@ -338,10 +335,10 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                         age = 0
                         marked = true
                         fitness = 0.0
-                        newsize = seedsize
+                        newsize = ind.traits["seedsize"]
                         ind = Individual(ind.lineage, genome, traits, age, marked, fitness,
-                                         fitness, newsize, rand(Int32), ind.id) #, partner.id))
-                        push!(patch.seedbank, ind) # maybe actually deepcopy!?
+                                         fitness, newsize, rand(Int32), ind.id)
+                        push!(patch.seedbank, ind)
                     end
                 end
             end
