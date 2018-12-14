@@ -5,56 +5,48 @@
 #
 # contains all custom types and functions necessary for eco-evo-env speciation island model
 
-__precompile__()
-
 module GeMM
 
 
 using
+    ArgParse,
+    Dates,
     Distributions,
-    ArgParse
+    Random,
+    Statistics
 
 
 export
     # types:
     Patch,
     # functions:
-    defaultSettings,
-    parseconfig,
-    simlog,
-    getsettings,
-    setupdatadir,
-    recordcolonizers,
-    recordstatistics,
-    recordlineages,
-    readmapfile,
-    writerawdata,
-    writedata,
-    checkviability!,
-    establish!,
-    survive!,
-    disturb!,
-    invade!,
-    grow!,
-    disperse!,
-    compete!,
-    reproduce!,
-    mutate!,
     createworld,
-    updateworld!
+    defaultSettings,
+    getsettings,
+    readmapfile,
+    setupdatadir,
+    simulate!,
+    updateworld!,
+    writedata
+
 
 include("defaults.jl")
 
-include("types.jl")
+include("entities.jl")
 
-include("io.jl")
+include("input.jl")
+
+include("output.jl")
 
 include("constants.jl")
 
-include("subprocs.jl")
+include("auxfuncts.jl")
 
-include("init.jl")
+include("initialisation.jl")
 
-include("mainprocs.jl")
+include("submodels.jl")
+
+include("scheduling.jl")
+
 
 end

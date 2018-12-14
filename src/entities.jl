@@ -28,8 +28,11 @@ mutable struct Individual
     traits::Dict{String, Float64}
     age::Int
     marked::Bool # indicator whether individual is new to a patch (after dispersal or birth)
-    fitness::Float64 # rate scaling factor
+    precadaption::Float64 # adaption to precipitation
+    tempadaption::Float64 # adaption to temperature
     size::Float64 # body mass
+    id::Int
+    parentid::Int #Tuple{Int, Int} # for now only sparse genealogy
 end
 
 mutable struct Patch
@@ -46,13 +49,16 @@ mutable struct Patch
     isolated::Bool
     initpop::Bool # initialise with a population
     whoiswho::Dict{String, Array{Int, 1}}
+    phylo::Array{Int, 2}
 end
 
 # constructors:
-# XXX These default values should be defined elsewhere (constants.jl, to be precise)
-Patch(id,location,area) =
-    Patch(id,location,area,298,false,5,0,Individual[], Individual[], false, false, false, Dict{String, Array{Int, 1}}())
-Patch(id,location) =
-    Patch(id,location,2e7,298,false,5,0,Individual[], Individual[], false, false, false, Dict{String, Array{Int, 1}}())
+# TODO These default values should be defined elsewhere (defaults.jl, to be precise)
+Patch(id, location, area) =
+    Patch(id, location, area, 298, false, 5, 0, Individual[], Individual[],
+          false, false, false, Dict{String, Array{Int, 1}}(), Array{Int, 2}(undef, 0, 2)) # (0, 3) with both parents
+Patch(id, location) =
+    Patch(id, location, 2e7, 298, false, 5, 0, Individual[], Individual[],
+          false, false, false, Dict{String, Array{Int, 1}}(), Array{Int, 2}(undef, 0, 2)) # (0, 3) with both parents
 
 

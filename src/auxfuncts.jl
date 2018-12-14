@@ -1,26 +1,53 @@
 # Subsidiary functions for GeMM
 
-function meiosis(genome::Array{Chromosome,1},maternal::Bool) # TODO: include further dynamics, errors...
-    firstset = find(x->x.maternal,genome)
-    secondset = find(x->!x.maternal,genome)
-    size(firstset,1) != size(secondset,1) && return Chromosome[] # CAVE: more elegant solution...
+function meiosis(genome::Array{Chromosome,1}, maternal::Bool) # TODO: include further dynamics, errors...
+    firstset = findall(x -> x.maternal, genome)
+    secondset = findall(x -> !x.maternal, genome)
+    length(firstset) != length(secondset) && return Chromosome[] # CAVE: more elegant solution...
     gameteidxs = []
     for i in eachindex(firstset)
-        push!(gameteidxs,rand([firstset[i],secondset[i]]))
+        push!(gameteidxs, rand([firstset[i], secondset[i]]))
     end
     gamete = Chromosome[]
     for i in gameteidxs
         push!(gamete, Chromosome(genome[i].genes, maternal))
     end
-    deepcopy(gamete)
+    gamete
 end
 
-function chrms2traits(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
+function getmeantraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
+    mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+end
+
+function getstdtraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
+    std(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+end
+
+function gettraitdict(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
     genes = AbstractGene[]
+    nchrms = 0
+    ngenes = 0
     for chrm in chrms
         append!(genes, chrm.genes)
+        nchrms += 1
+        ngenes += length(chrm.genes)
     end
-    traits = Trait[]
+    traits = vcat(map(g -> g.codes, genes)...)
+    traitdict = Dict{String, Float64}()
+    traitvar = Float64[]
+    for traitidx in eachindex(traitnames)
+        traitdict[traitnames[traitidx]] = getmeantraitvalue(traits, traitidx)
+        push!(traitvar, getstdtraitvalue(traits, traitidx))
+    end
+    traitdict["nlnkgunits"] = nchrms
+    traitdict["ngenes"] = ngenes
+    traitdict["mintraitvar"] = minimum(traitvar)
+    traitdict["medtraitvar"] = median(traitvar)
+    traitdict["maxtraitvar"] = maximum(traitvar)
+    traitdict
+end
+
+function gettraitdict(genes::Array{AbstractGene, 1}, traitnames::Array{String, 1})
     for gene in genes
         append!(traits, gene.codes)
     end
@@ -31,51 +58,43 @@ function chrms2traits(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
     traitdict
 end
 
-function traitsexist(traits::Dict{String, Float64}, traitnames::Array{String, 1})
-    for trait in traitnames
-        if !haskey(traits, trait)
-            simlog("Missing trait $trait. Individual might be killed.", 'w')
-            return false
-        end
+function gettraitdict(traits::Array{Trait, 1}, traitnames::Array{String, 1})
+    traitdict = Dict{String, Float64}()
+    for traitidx in unique(map(x -> x.nameindex, traits))
+        traitdict[traitnames[traitidx]] = mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+    end
+    traitdict
+end
+
+function traitsexist(traits::Dict{String, Float64}, settings::Dict{String, Any})
+    missingtraits = setdiff(settings["traitnames"], keys(traits))
+    if length(missingtraits) > 0
+        simlog("Missing trait $missingtrait. Individual might be killed.", settings, 'w')
+        return false
     end
     true
 end
 
-function traitsexist(ind::Individual, traitnames::Array{String, 1})
+function traitsexist(ind::Individual, settings::Dict{String, Any})
     # FIXME If a trait doesn't exist, we need an error
+    traitnames = settings["traitnames"]
     for trait in traitnames
         if !haskey(ind.traits, trait)
-            simlog("Individual is missing trait $trait. Might be killed.", 'w')
+            simlog("Individual is missing trait $trait. Might be killed.", settings, 'w')
             return false
         end
     end
     true
 end
 
-function traitsexist(traits::Dict{String, Float64}, traitname::String)
-    if !haskey(traits, traitname)
-        simlog("Missing trait $traitname. Individual might be killed.", 'w')
-        return false
-    end
-    true
-end
-
-function traitsexist(ind::Individual, traitname::String)
-    if !haskey(ind.traits, traitname)
-        simlog("Individual is missing trait $traitname. Might be killed.", 'w')
-        return false
-    end
-    true
-end
-
-function gausscurve(b::Float64, c::Float64, x::Float64, a::Float64=1.0)
+function gausscurve(b, c, x, a = 1.0)
     if c != 0 && a != 1.0
         a = 1 / (c * sqrt(2 * pi))
         y = a * exp(-(x-b)^2/(2*c^2))
     elseif c != 0
         y = a * exp(-(x-b)^2/(2*c^2))
     else
-        y = 0
+        y = 0.0
     end
 end
 
@@ -96,6 +115,7 @@ function diversity(world::Array{Patch,1})
     globalindex = Dict{String, Int}()
     for p in world
         localindex = Dict{String, Int}()
+        #TODO Should not use `whoiswho`
         for s in keys(p.whoiswho)
             localindex[s] = length(p.whoiswho[s])
         end
@@ -118,7 +138,7 @@ function freespace(world::Array{Patch,1})
             space += p.area
         end
     end
-    round((space/length(world))/1e6, 3)
+    round((space/length(world))/1e6, digits = 3)
 end
 
 """
@@ -207,7 +227,7 @@ function identifyAdults!(patch::Patch)
 end
 
 function iscompatible(mate::Individual, ind::Individual, traitnames::Array{String, 1})
-    compatidx = findin(traitnames, ["compat"])[1]
+    compatidx = findfirst(x -> x == "compat", traitnames)
     tolerance = ind.traits["reptol"]
     indgene = ""
     for chrm in ind.genome
@@ -235,72 +255,24 @@ function iscompatible(mate::Individual, ind::Individual, traitnames::Array{Strin
 end
 
 function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String, 1})
+    indstate = ind.marked
     ind.marked = true
-    posspartner = nothing
+    posspartner = Individual[]
     communityidxs = patch.whoiswho[ind.lineage]
     startidx = rand(1:length(communityidxs))
     mateidx = startidx
     while true
         mate = patch.community[communityidxs[mateidx]]
-        if !mate.marked && iscompatible(mate, ind, traitnames)
-            posspartner = mate
+        if !mate.marked # && iscompatible(mate, ind, traitnames)
+            push!(posspartner, mate)
             break
         end
         mateidx += 1
         mateidx > length(communityidxs) && (mateidx = 1)
         mateidx == startidx && break
     end
-    ind.marked = false
+    ind.marked = indstate
     posspartner 
-end
-
-function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
-    #TODO move traits to constants.jl
-    traitnames = settings["traitnames"]
-    traits = Trait[]
-    # exponential distributions of body sizes:
-    seedoffset = settings["maxseedsize"] - settings["minseedsize"]
-    repoffset = settings["maxrepsize"] - settings["minrepsize"]
-    seedsize = exp(settings["minseedsize"] + seedoffset * rand()) 
-    repsize = exp(settings["minrepsize"] + repoffset * rand())
-    while repsize <= seedsize
-        repsize = exp(settings["minrepsize"] + repoffset * rand())
-    end
-    for idx in eachindex(traitnames)
-        if contains(traitnames[idx], "rate")
-            push!(traits, Trait(idx, rand() * 100))
-        elseif contains(traitnames[idx], "dispshape")
-            push!(traits, Trait(idx, rand() * maxdispmean))
-        elseif contains(traitnames[idx], "tempopt")
-            #push!(traits, Trait(idx, rand() * 40 + 273)) #CAVE: code values elsewhere?
-            push!(traits, Trait(idx, rand() * 25 + 288)) # range 15-40°C
-        elseif contains(traitnames[idx], "temptol")
-            push!(traits, Trait(idx, (rand() + 0.39) * 5)) #CAVE: code values elsewhere?
-        elseif contains(traitnames[idx], "mut")
-            mutationrate == 0 ? push!(traits, Trait(idx, rand())) : push!(traits, Trait(idx, mutationrate)) #CAVE: code values elsewhere?
-        elseif contains(traitnames[idx], "repsize")
-            push!(traits, Trait(idx, repsize)) #CAVE: code values elsewhere?
-        elseif contains(traitnames[idx], "seedsize")
-            push!(traits, Trait(idx, seedsize)) #CAVE: code values elsewhere?
-        elseif contains(traitnames[idx], "precopt")
-            push!(traits, Trait(idx, rand() * 10))
-        elseif contains(traitnames[idx], "prectol")
-            push!(traits, Trait(idx, rand() + 0.39))
-        elseif contains(traitnames[idx], "reptol")
-            if settings["tolerance"] == "high"
-                push!(traits, Trait(idx, 0.8))
-            elseif settings["tolerance"] == "low"
-                push!(traits, Trait(idx, 0.95)) #CAVE: code values elsewhere?
-            elseif settings["tolerance"] == "none"
-                push!(traits, Trait(idx, 0.01)) #CAVE: code values elsewhere?
-            else
-                push!(traits, Trait(idx, 0.5 + rand() * 0.5))
-            end
-        else
-            push!(traits, Trait(idx, rand()))
-        end
-    end
-    traits
 end
 
 """
@@ -312,18 +284,18 @@ function seq2num(sequence::String)
     bases = "acgt"
     binary = ""
     for base in sequence
-        binary *= bin(search(bases, base) + 3)
+        binary *= string(findfirst(x -> x == base, bases) + 3, base = 2)
     end
-    parse(Int, binary, 2) # Int64 allows for max length of 21bp
+    parse(Int, binary, base = 2) # Int64 allows for max length of 21bp
 end
 
 function seq2bignum(sequence::String)
     bases = "acgt"
     binary = ""
     for base in sequence
-        binary *= bin(search(bases, base) + 3)
+        binary *= string(findfirst(x -> x == base, bases) + 3, base = 2)
     end
-    parse(BigInt, binary, 2)
+    parse(BigInt, binary, base = 2)
 end
 
 """
@@ -332,17 +304,57 @@ Convert an integer into binary and then into a DNA base sequence string.
 """
 function num2seq(n::Integer)
     bases = "acgt"
-    binary = bin(n)
+    binary = string(n, base = 2)
     sequence = ""
     for i in 1:3:(length(binary) - 2)
-        sequence *= string(bases[parse(Int, binary[i:(i + 2)], 2) - 3])
+        sequence *= string(bases[parse(Int, binary[i:(i + 2)], base = 2) - 3])
     end
     sequence
 end
 
+function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+    traitnames = settings["traitnames"]
+    traits = Trait[]
+    # exponential distributions of body sizes:
+    repoffset = settings["maxrepsize"] - settings["minrepsize"]
+    seedoffset = settings["maxseedsize"] - settings["minseedsize"]
+    tempoffset = settings["maxtemp"] - settings["mintemp"]
+    sizes = Vector{Float64}(undef, 2)
+    while true
+        sizes[1] = exp(settings["minrepsize"] + repoffset * rand())
+        sizes[2] = exp(settings["minseedsize"] + seedoffset * rand())
+        sizes[1] > sizes[2] && break
+    end
+    repsize, seedsize = sizes
+    for idx in eachindex(traitnames)
+        if occursin("dispshape", traitnames[idx])
+            push!(traits, Trait(idx, rand() * settings["dispshape"]))
+        elseif occursin("dispmean", traitnames[idx])
+            push!(traits, Trait(idx, rand() * settings["dispmean"]))
+        elseif occursin("precopt", traitnames[idx])
+            push!(traits, Trait(idx, rand() * settings["precrange"]))
+        elseif occursin("prectol", traitnames[idx])
+            push!(traits, Trait(idx, rand() * settings["maxbreadth"]))
+        elseif occursin("repsize", traitnames[idx])
+            push!(traits, Trait(idx, repsize))
+        elseif occursin("reptol", traitnames[idx])
+            push!(traits, Trait(idx, settings["tolerance"])) # assortative mating might evolve
+        elseif occursin("seedsize", traitnames[idx])
+            push!(traits, Trait(idx, seedsize))
+        elseif occursin("tempopt", traitnames[idx])
+            push!(traits, Trait(idx, settings["mintemp"] + rand() * tempoffset))
+        elseif occursin("temptol", traitnames[idx])
+            push!(traits, Trait(idx, rand() * settings["maxbreadth"]))
+        else
+            push!(traits, Trait(idx, rand()))
+        end
+    end
+    traits
+end
+
 function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String, Any})
     genes = AbstractGene[]
-    compatidx = findin(settings["traitnames"], ["compat"])[1]
+    compatidx = findfirst(x -> x == "compat", settings["traitnames"])
     for i in 1:ngenes
         sequence = String(rand(collect("acgt"), settings["smallgenelength"])) # arbitrary start sequence
         seqint = seq2num(sequence)
@@ -362,24 +374,26 @@ function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String,
             push!(gene.codes,trait)
         end
     end
-    # if !any(map(x -> length(x.codes) == 0, genes)) # make sure there is a neutral gene!
-    push!(genes, BigGene(seq2bignum(String(rand(collect("acgt"), settings["biggenelength"]))), [Trait(compatidx, 0.5)]))
-    # end
+    if settings["usebiggenes"]
+        push!(genes, BigGene(seq2bignum(String(rand(collect("acgt"), settings["biggenelength"]))), [Trait(compatidx, 0.5)]))
+    else
+        push!(genes, Gene(seq2num(String(rand(collect("acgt"), settings["smallgenelength"]))), [Trait(compatidx, 0.5)]))
+    end
     genes
 end
 
-function createchrs(nchrs::Int,genes::Array{AbstractGene,1})
+function createchrms(nchrms::Int,genes::Array{AbstractGene,1})
     ngenes=size(genes,1)
-    if nchrs>1
-        chrsplits = sort(rand(1:ngenes,nchrs-1))
+    if nchrms>1
+        chrmsplits = sort(rand(1:ngenes,nchrms-1))
         chromosomes = Chromosome[]
-        for chr in 1:nchrs
+        for chr in 1:nchrms
             if chr==1 # first chromosome
-                push!(chromosomes, Chromosome(genes[1:chrsplits[chr]], true))
-            elseif chr==nchrs # last chromosome
-                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):end], true))
+                push!(chromosomes, Chromosome(genes[1:chrmsplits[chr]], true))
+            elseif chr==nchrms # last chromosome
+                push!(chromosomes, Chromosome(genes[(chrmsplits[chr-1]+1):end], true))
             else
-                push!(chromosomes, Chromosome(genes[(chrsplits[chr-1]+1):chrsplits[chr]], true))
+                push!(chromosomes, Chromosome(genes[(chrmsplits[chr-1]+1):chrmsplits[chr]], true))
             end
         end
     else # only one chromosome
@@ -393,12 +407,11 @@ function createchrs(nchrs::Int,genes::Array{AbstractGene,1})
     chromosomes
 end
 
-function createind(settings::Dict{String, Any})
+function createind(settings::Dict{String, Any}, marked::Bool = false)
     id = rand(Int32)
     parentid = rand(Int32)
     lineage = randstring(4)
-    meangenes = length(settings["traitnames"])
-    ngenes = rand(Poisson(meangenes))
+    ngenes = settings["avgnoloci"] * length(settings["traitnames"])
     ngenes < 1 && (ngenes = 1)
     traits = createtraits(settings)
     genes = creategenes(ngenes, traits, settings)
@@ -410,9 +423,45 @@ function createind(settings::Dict{String, Any})
     else
         nchrms = randchrms
     end
-    chromosomes = createchrs(nchrms,genes)
-    traitdict = chrms2traits(chromosomes, settings["traitnames"])
-    settings["initadults"] ? indsize = traitdict["repsize"] : indsize = traitdict["seedsize"]
-    Individual(lineage, chromosomes, traitdict, 0, false, 1.0, indsize)
+    chromosomes = createchrms(nchrms, genes)
+    varyalleles!(chromosomes, settings, locivar)
+    traitdict = gettraitdict(chromosomes, settings["traitnames"])
+    if settings["indsize"] == "adult"
+        indsize = traitdict["repsize"]
+    elseif settings["indsize"] == "seed"
+        indsize = traitdict["seedsize"]
+    else
+        indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
+    end
+    Individual(lineage, chromosomes, traitdict, 0, marked, 1.0, 1.0, indsize, id, parentid)
 end
 
+function varyalleles!(genes::Array{AbstractGene, 1}, settings::Dict{String, Any}, locivar::Float64)
+    locivar == 0 && return
+    for gene in genes
+        mutate!(gene.codes, settings, locivar)
+    end
+end
+
+function varyalleles!(chrms::Array{Chromosome, 1}, settings::Dict{String, Any}, locivar::Float64)
+    locivar == 0 && return
+    for chrm in chrms
+        varyalleles!(chrm.genes, settings, locivar)
+    end
+end
+
+function markthem!(community::Array{Individual, 1})
+    for ind in community
+        ind.marked = true
+    end
+end
+
+function markthem!(habitat::Patch)
+    markthem!(habitat.community)
+end
+
+function markthem!(world::Array{Patch, 1})
+    for habitat in world
+        markthem!(habitat)
+    end
+end

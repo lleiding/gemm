@@ -1,52 +1,78 @@
 # initialisation functions for GeMM
 
+function createpop(settings::Dict{String, Any})
+    traits = createtraits(settings)
+    traitdict = gettraitdict(traits, settings["traitnames"])
+    popsize = 0
+    if occursin("metabolic", settings["popsize"]) || occursin("single", settings["popsize"])
+        # population size determined by adult size
+        popsize = round(settings["fertility"] * traitdict["repsize"] ^ (-1 / 4) *
+                        exp(-act / (boltz * 298.0)))
+    elseif occursin("bodysize", settings["popsize"])
+        # population size up to 25% of the maximum possible in this cell
+        quarterpopsize = Integer(floor((settings["cellsize"] / traitdict["repsize"]) / 4))
+        popsize = rand(2:quarterpopsize)
+    elseif occursin("minimal", settings["popsize"]) || popsize == 0
+        popsize = 2 #Takes two to tangle ;-)
+    else
+        simlog("Invalid value for `popsize`: $(settings["popsize"])", settings, 'e')
+    end
+    lineage = randstring(4)
+    parentid = rand(Int32)
+    ngenes = settings["avgnoloci"] * length(settings["traitnames"])
+    ngenes < 1 && (ngenes = 1)
+    genes = creategenes(ngenes, traits, settings)
+    randchrms = rand(1:length(genes))
+    if settings["linkage"] == "none"
+        nchrms = length(genes)
+    elseif settings["linkage"] == "full"
+        nchrms = 1
+    else
+        nchrms = randchrms
+    end
+    chromosomes = createchrms(nchrms, genes)
+    locivar = rand()
+    population = Individual[]
+    for i in 1:popsize
+        id = rand(Int32)
+        chromosomes = deepcopy(chromosomes)
+        varyalleles!(chromosomes, settings, locivar)
+        traitdict = gettraitdict(chromosomes, settings["traitnames"])
+        if settings["indsize"] == "adult"
+            indsize = traitdict["repsize"]
+            age = 1
+        elseif settings["indsize"] == "seed"
+            indsize = traitdict["seedsize"]
+            age = 0
+        else
+            indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
+            age = 1
+        end
+        push!(population, Individual(lineage, chromosomes, traitdict, age, true, 1.0, 1.0, indsize, id, parentid))
+    end
+    population
+end
+
 function genesis(settings::Dict{String, Any})
     community = Individual[]
     totalmass = 0.0
-    ttl = 50
     while true
-        # Create a new species and calculate its population size
-        newind = createind(settings)
-        if contains(settings["initpopsize"], "metabolic")
-            # population size determined by adult size and temperature niche optimum
-            popsize = round(fertility * newind.traits["repsize"]^(-1/4) *
-                            exp(-act/(boltz*newind.traits["tempopt"])))
-        elseif contains(settings["initpopsize"], "bodysize")
-            # population size up to 25% of the maximum possible in this cell
-            quarterpopsize = Integer(floor((settings["cellsize"] / newind.traits["repsize"]) / 4))
-            popsize = rand(0:quarterpopsize)
-        elseif contains(settings["initpopsize"], "minimal")
-            popsize = 2 #Takes two to tangle ;-) #XXX No reproduction occurs!
-        else
-            simlog("Invalid value for `initpopsize`: $(settings["initpopsize"])", settings, 'e')
-        end
-        # prevent an infinity loop when the cellsize is very small
-        if popsize < 2
-            if ttl == 0
-                simlog("This cell might be too small to hold a community.", settings, 'w')
-                break
-            else
-                ttl -= 1
-                continue
-            end
-        end
+        population = createpop(settings)
+        popsize = length(population)
         # Check the cell capacity
-        popmass = popsize * newind.size
-        if totalmass + popmass > settings["cellsize"] # stop loop if cell is full
-            if totalmass >= settings["cellsize"]*0.75 #make sure the cell is full enough
+        popmass = sum(map(x -> x.size, population))
+        settings["static"] ? overfill = 1 : overfill = 10
+        if totalmass + popmass > settings["cellsize"] * overfill # stop loop if cell is full
+            if totalmass >= settings["cellsize"] * 0.9 || occursin("single", settings["popsize"]) #make sure the cell is full enough
                 simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", settings, 'd') #DEBUG
                 break
             else
                 continue
             end
         end
-        # Initialize the new population
         totalmass += popmass
-        simlog("Initializing lineage $(newind.lineage) with $popsize individuals.", settings, 'd') #DEBUG
-        for i in 1:popsize
-            !settings["static"] && (newind = deepcopy(newind))
-            push!(community, newind)
-        end
+        append!(community, population)
+        occursin("single", settings["popsize"]) && break
     end
     simlog("Patch initialized with $(length(community)) individuals.", settings, 'd') #DEBUG
     community
@@ -81,10 +107,10 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
             elseif length(varval) < 2
                 val = true # if no value is specified, assume 'true'
             else
-                val = parse(varval[2])
+                val = Meta.parse(varval[2])
             end
             # check for correct type and modify the new patch
-            vartype = typeof(eval(parse("newpatch."*var)))
+            vartype = typeof(eval(Meta.parse("newpatch."*var)))
             if !isa(val, vartype)
                 try
                     val = convert(vartype, val)
@@ -93,9 +119,9 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
                     continue
                 end
             end
-            eval(parse("newpatch."*string(var)*" = $val"))
+            eval(Meta.parse("newpatch."*string(var)*" = $val"))
         end
-        if newpatch.initpop && settings["initadults"]
+        if newpatch.initpop && settings["indsize"] != "seed"
             append!(newpatch.community, genesis(settings))
         elseif newpatch.initpop && !newpatch.isisland && settings["static"]
             append!(newpatch.seedbank, genesis(settings))
@@ -130,7 +156,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
         ycord = parse(Int, entry[3])
         # XXX the 'global' here is a hack so that I can use eval() later on
         # (this always works on the global scope)
-        idx = find(x->x.id == id, world)
+        idx = findall(x -> x.id == id, world)
         if length(idx) == 0
             marked = true
             global newpatch = Patch(id, (xcord, ycord), cellsize)

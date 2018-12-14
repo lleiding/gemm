@@ -1,48 +1,50 @@
 # Main processes for GeMM
 
-function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any})
+function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any}, locivar::Float64 = 1.0)
+    settings["phylconstr"] * locivar == 0 && return
     for trait in traits
         traitname = settings["traitnames"][trait.nameindex]
-        (contains(traitname, "mutprob") && mutationrate != 0) && continue
-        contains(traitname, "reptol") && settings["tolerance"] != "evo" && continue # MARK CAVE!
+        occursin("reptol", traitname) && settings["fixtol"] && continue # MARK CAVE!
         oldvalue = trait.value
-        contains(traitname, "tempopt") && (oldvalue -= 273)
+        occursin("tempopt", traitname) && (oldvalue -= 273)
         while oldvalue <= 0 # make sure sd of Normal dist != 0
             oldvalue = abs(rand(Normal(0,0.01)))
         end
-        newvalue = oldvalue + rand(Normal(0, oldvalue/phylconstr)) # CAVE: maybe handle temp + prec separately
-        newvalue < 0 && (newvalue=abs(newvalue))
-        (newvalue > 1 && contains(traitname,"prob")) && (newvalue=1)
-        while newvalue <= 0 #&& contains(trait.name,"mut")
-            newvalue = trait.value + rand(Normal(0, trait.value/phylconstr))
+        newvalue = rand(Normal(oldvalue, oldvalue * settings["phylconstr"] * locivar))
+        (newvalue > 1 && occursin("prob", traitname)) && (newvalue=1.0)
+        while newvalue <= 0
+            newvalue = rand(Normal(oldvalue, oldvalue * settings["phylconstr"] * locivar))
         end
-        contains(traitname, "tempopt") && (newvalue += 273)
+        occursin("tempopt", traitname) && (newvalue += 273)
         trait.value = newvalue
     end
 end
 
 function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
-    for chrm in ind.genome
-        for idx in eachindex(chrm.genes)
-            charseq = collect(num2seq(chrm.genes[idx].sequence))
-            for i in eachindex(charseq)
-                if rand() <= 1 - exp(-ind.traits["mutprob"] * exp(-act/(boltz*temp)))
-                    newbase = rand(collect("acgt"),1)[1]
-                    while newbase == charseq[i]
-                        newbase = rand(collect("acgt"),1)[1]
-                    end
-                    charseq[i] = newbase
-                    mutate!(chrm.genes[idx].codes, settings)
-                end
-            end
-            if length(charseq) > 21
-                chrm.genes[idx].sequence = seq2bignum(String(charseq))
-            else
-                chrm.genes[idx].sequence = seq2num(String(charseq))
-            end
+    muts = settings["mutationrate"] * exp(-act/(boltz*temp)) # settings["mutsperind"]?
+    nmuts = rand(Poisson(muts))
+    nmuts == 0 && return
+    chrmidcs = rand(eachindex(ind.genome), nmuts)
+    for c in chrmidcs
+        ind.genome[c] = deepcopy(ind.genome[c])
+        length(ind.genome[c].genes) == 0 && continue
+        g = rand(eachindex(ind.genome[c].genes))
+        charseq = collect(num2seq(ind.genome[c].genes[g].sequence))
+        i = rand(eachindex(charseq))
+        newbase = rand(collect("acgt"),1)[1]
+        while newbase == charseq[i]
+            newbase = rand(collect("acgt"),1)[1]
+        end
+        charseq[i] = newbase
+        mutate!(ind.genome[c].genes[g].codes, settings)
+        ind.genome[c].genes[g].sequence = deepcopy(ind.genome[c].genes[g].sequence)
+        if length(charseq) > 21
+            ind.genome[c].genes[g].sequence = seq2bignum(String(charseq))
+        else
+            ind.genome[c].genes[g].sequence = seq2num(String(charseq))
         end
     end
-    ind.traits = chrms2traits(ind.genome, settings["traitnames"])
+    ind.traits = gettraitdict(ind.genome, settings["traitnames"])
 end
 
 function mutate!(patch::Patch, settings::Dict{String, Any})
@@ -65,8 +67,9 @@ function checkviability!(community::Array{Individual, 1}, settings::Dict{String,
         community[idx].size <= 0 && (dead = true) && (reason *= "size ")
         any(collect(values(community[idx].traits)) .< 0) && (dead = true) && (reason *= "traitvalues ")
         community[idx].traits["repsize"] <= community[idx].traits["seedsize"] && (dead = true) && (reason *= "seed/rep ")
-        community[idx].fitness < 0 && (dead = true) && (reason *= "fitness ")
-        !traitsexist(community[idx].traits, settings["traitnames"]) && (dead = true) && (reason *= "missingtrait ")
+        community[idx].tempadaption < 0 && (dead = true) && (reason *= "fitness ")
+        community[idx].precadaption < 0 && (dead = true) && (reason *= "fitness ")
+        !traitsexist(community[idx].traits, settings) && (dead = true) && (reason *= "missingtrait ")
         if dead
             simlog("Individual not viable: $reason. Being killed.", settings, 'w')
             splice!(community,idx)
@@ -88,36 +91,28 @@ end
 
 """
     establish!(p, n)
-establishment of individuals in patch `p`. Sets fitness scaling parameter
+establishment of individuals in patch `p`. Sets adaption parameter
 according to adaptation to number `n` niches of the surrounding environment.
 """
 function establish!(patch::Patch, nniches::Int=1)
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
-        if patch.community[idx].age == 0
-            fitness = 1
+        if patch.community[idx].marked
             opt = patch.community[idx].traits["tempopt"]
             tol = patch.community[idx].traits["temptol"]
-            fitness *= gausscurve(opt, tol, temp, 0.0)
+            fitness = gausscurve(opt, tol, temp, 0.0)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
+            patch.community[idx].tempadaption = fitness
             if nniches >= 2
                 opt = patch.community[idx].traits["precopt"]
                 tol = patch.community[idx].traits["prectol"]
-                fitness *= gausscurve(opt, tol, patch.prec, 0.0)
+                fitness = gausscurve(opt, tol, patch.prec, 0.0)
                 fitness > 1 && (fitness = 1) # should be obsolete
                 fitness < 0 && (fitness = 0) # should be obsolete
+                patch.community[idx].precadaption = fitness
             end
-            if nniches == 3
-                # XXX 'nicheopt' and 'nichetol' don't exist currently!
-                opt = patch.community[idx].traits["nicheopt"]
-                tol = patch.community[idx].traits["nichetol"]
-                fitness *= gausscurve(opt, tol, patch.nicheb, 0.0)
-                fitness > 1 && (fitness = 1) # should be obsolete
-                fitness < 0 && (fitness = 0) # should be obsolete
-            end  
-            patch.community[idx].fitness = fitness
             patch.community[idx].marked = false
         end
         idx += 1
@@ -135,14 +130,14 @@ end
     survive!(p)
 density independent survival of individuals in patch `p`
 """
-function survive!(patch::Patch)
+function survive!(patch::Patch, mortality::Float64)
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
         if !patch.community[idx].marked
             mass = patch.community[idx].size
             deathrate = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
-            dieprob = 1 - exp(-deathrate)
+            dieprob = (1 - exp(-deathrate)) * patch.community[idx].tempadaption
             if rand() < dieprob
                 splice!(patch.community, idx)
                 continue
@@ -154,9 +149,9 @@ function survive!(patch::Patch)
     end
 end
 
-function survive!(world::Array{Patch,1}, static::Bool = true)
+function survive!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
-        (patch.isisland || !static) && survive!(patch) # pmap(!,patch) ???
+        (patch.isisland || !settings["static"]) && survive!(patch, settings["mortality"]) # pmap(!,patch) ???
     end
 end
 
@@ -166,7 +161,6 @@ species-independent mortality due to disturbance on patch `p`
 """
 function disturb!(patch::Patch, intensity::Int)
     length(patch.community) <= 0 && return
-    intensity > 100 && error("intensity must be less than 100%")
     deaths = Integer(round(length(patch.community) * (intensity/100)))
     dead = unique(rand(1:length(patch.community), deaths))
     while length(dead) < deaths
@@ -179,12 +173,16 @@ end
 
 function disturb!(world::Array{Patch,1}, settings::Dict{String, Any})
     (settings["disturbance"] == 0) && return
+    if settings["disturbance"] > 100
+        simlog("disturbance must be no more than 100%", 'w')
+        settings["disturbance"] = 100
+    end
     for patch in world
         (patch.isisland || !settings["static"]) && disturb!(patch, settings["disturbance"])
     end
 end
 
-let speciespool = Individual[]
+let speciespool = Individual[] # TODO: `speciespool` should be part of the `world` object holding all grid cells 
     function initspeciespool!(settings::Dict{String, Any})
         for i in 1:settings["global-species-pool"]
             push!(speciespool, createind(settings))
@@ -213,7 +211,7 @@ end
     grow!(p)
 Growth of individuals in patch `p`
 """
-function grow!(patch::Patch)
+function grow!(patch::Patch, growthrate::Float64)
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
@@ -235,9 +233,9 @@ function grow!(patch::Patch)
     end
 end
 
-function grow!(world::Array{Patch,1}, static::Bool = true)
+function grow!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
-        (patch.isisland || !static) && grow!(patch) # pmap(!,patch) ???
+        (patch.isisland || !settings["static"]) && grow!(patch, settings["growthrate"]) # pmap(!,patch) ???
     end
 end
 
@@ -256,32 +254,41 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
             xdest = patch.location[1] + Int(round(xdir))
             ydest = patch.location[2] + Int(round(ydir))
             !patch.isisland ? target = checkborderconditions(world, xdest, ydest) : target = (xdest, ydest)
-            possdest = find(x -> in(x.location, [target]), world)
+            possdest = findall(x -> in(x.location, [target]), world)
             static && filter!(x -> world[x].isisland, possdest) # disperse only to islands
             if !static || patch.isisland
                 indleft = splice!(patch.seedbank,idx) # only remove individuals from islands!
+                idx -= 1
             end
             if length(possdest) > 0 # if no viable target patch, individual dies
                 if static && !patch.isisland
-                    indleft = deepcopy(patch.seedbank[idx])
+                    indleft = patch.seedbank[idx]
                 end
                 destination = rand(possdest) # currently there is only one possible destination
-                originisolated = patch.isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated origin patch
-                targetisolated = world[destination].isolated && rand(Logistic(dispmean,dispshape)) <= isolationweight # additional roll for isolated target patch
-                (!originisolated && !targetisolated) && push!(world[destination].community, indleft) # new independent individual
+                push!(world[destination].community, indleft)
             end
-            patch.isisland && (idx -= 1)
             idx += 1
         end
     end
 end
 
 function compete!(patch::Patch)
-    sort!(patch.community, by = x -> x.fitness)
-    while sum(map(x -> x.size, patch.community)) >= patch.area # occupied area larger than available
-        victim = rand(Geometric()) + 1 # fitness sorted?
-        victim > length(patch.community) && (victim = length(patch.community))
-        splice!(patch.community, victim)
+    totalmass = sum(map(x -> x.size, patch.community))
+    while totalmass >= patch.area # occupied area larger than available
+        firstind = rand(eachindex(patch.community))
+        secondind = rand(eachindex(patch.community))
+        firstind == secondind && length(rand(eachindex(patch.community))) > 1 && continue
+        if patch.community[firstind].precadaption < patch.community[secondind].precadaption
+            totalmass -= patch.community[firstind].size
+            splice!(patch.community, firstind) # profiling: expensive!
+        elseif patch.community[firstind].precadaption > patch.community[secondind].precadaption
+            totalmass -= patch.community[secondind].size
+            splice!(patch.community, secondind) # profiling: expensive!
+        else
+            victim = rand([firstind, secondind])
+            totalmass -= patch.community[victim].size
+            splice!(patch.community, victim) # profiling: expensive!
+        end
     end
 end
 
@@ -297,44 +304,46 @@ Reproduction of individuals in a patch `p`
 """
 function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
     identifyAdults!(patch)
+    patch.phylo = Array{Int}(undef, 0, 2)
     for ind in patch.community
         if !ind.marked && ind.age > 0
-            currentmass = ind.size
-            seedsize = ind.traits["seedsize"]
-            if currentmass >= ind.traits["repsize"]
-                reptol = ind.traits["reptol"]
-                metaboffs = fertility * currentmass^(-1/4) * exp(-act/(boltz*patch.temp))
-                noffs = rand(Poisson(metaboffs))# * ind.fitness)) # add some stochasticity
+            if ind.size >= ind.traits["repsize"]
+                metaboffs = settings["fertility"] * ind.size^(-1/4) * exp(-act/(boltz*patch.temp))
+                noffs = rand(Poisson(metaboffs))
                 if noffs < 1
-                    #simlog("0 offspring chosen", settings, 'd')
+                    #simlog("0 offspring chosen", settings, 'd') #DEBUG - noisy!
                     continue
                 end
-                partner = findposspartner(patch, ind, settings["traitnames"])
-                if partner != nothing
-                    parentmass = currentmass - noffs * seedsize # subtract offspring mass from parent
+                partners = findposspartner(patch, ind, settings["traitnames"])
+                if length(partners) > 0
+                    partner = partners[1]
+                    parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
                     if parentmass <= 0
                         continue
                     else
                         ind.size = parentmass
                     end
+                    ## save origin of actually reproducing individuals:
+                    patch.phylo = vcat(patch.phylo, [ind.id ind.parentid[1]]) # ind.parentid[2]; # for now only use sparse genealogy
+                    # partner.id partner.parentid[1] partner.parentid[2]]
                     for i in 1:noffs # pmap? this loop could be factorized!
                         partnergenome = meiosis(partner.genome, false) # offspring have different genome!
                         mothergenome = meiosis(ind.genome, true)
                         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
                         genome = vcat(partnergenome,mothergenome)
-                        traits = chrms2traits(genome, settings["traitnames"])
+                        traits = gettraitdict(genome, settings["traitnames"])
                         age = 0
                         marked = true
                         fitness = 0.0
-                        newsize = seedsize
-                        ind = Individual(ind.lineage, genome,traits,age,marked,fitness,newsize)
-                        push!(patch.seedbank, ind) # maybe actually deepcopy!?
+                        newsize = ind.traits["seedsize"]
+                        ind = Individual(ind.lineage, genome, traits, age, marked, fitness,
+                                         fitness, newsize, rand(Int32), ind.id)
+                        push!(patch.seedbank, ind)
                     end
                 end
             end
         end
     end
-    checkviability!(patch.seedbank, settings)
     simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
 end
 
@@ -343,3 +352,27 @@ function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
         (patch.isisland || !settings["static"]) && reproduce!(patch, settings) # pmap(!,patch) ???
     end
 end
+
+function changehabitat!(world::Array{Patch,1}, settings::Dict{String, Any})
+    # TODO: record trajectory? input trajectory?
+    changetemp!(world, settings["sdtemp"])
+    changeprec!(world, settings["sdprec"])
+end    
+ 
+function changetemp!(world::Array{Patch,1}, sdtemp::Float64)
+    sdtemp == 0 && return
+    deltaval = rand(Normal(0.0, sdtemp))
+    for patch in world
+        patch.temp += deltaval 
+    end
+    markthem!(world)
+end    
+ 
+function changeprec!(world::Array{Patch,1}, sdprec::Float64)
+    sdprec == 0 && return
+    deltaval = rand(Normal(0.0, sdprec))
+    for patch in world
+        patch.prec += deltaval 
+    end
+    markthem!(world)
+end    
