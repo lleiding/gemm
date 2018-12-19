@@ -19,7 +19,7 @@ function createpop(settings::Dict{String, Any})
     end
     lineage = randstring(4)
     parentid = rand(Int32)
-    ngenes = settings["avgnoloci"] * length(settings["traitnames"])
+    ngenes = rand(1:settings["maxloci"]) * length(settings["traitnames"])
     ngenes < 1 && (ngenes = 1)
     genes = creategenes(ngenes, traits, settings)
     randchrms = rand(1:length(genes))

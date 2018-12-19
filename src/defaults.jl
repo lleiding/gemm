@@ -1,6 +1,6 @@
 # Return the default settings. All parameters must be registered here.
 function defaultSettings()
-    Dict("avgnoloci" => 1, # average number of loci/copies per gene
+    Dict("maxloci" => 1, # maximum number of loci/copies per gene
          "biggenelength" => 200,
          "burn-in" => 1000, # timesteps before invasion starts
          "cellsize" => 20e6, # maximum biomass per hectare in gramm (based on Clark et al. 2001)
