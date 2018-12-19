@@ -265,7 +265,7 @@ end
 
 function printpopheader(io::IO)
     print(io, "time\t", "x\t", "y\t", "temp\t", "prec\t", "area\t", "isisland")
-    print(io, "\tlineage", "\tabundance", "\tmaxage", "\tmaxsize", "\tmaxtempadation", "\tmaxprecadation")
+    print(io, "\tlineage", "\tjuveniles", "\tadults", "\tmaxage", "\tmaxsize", "\tmaxtempadation", "\tmaxprecadation")
     traitnames =  ["compat", "dispmean", "dispshape", "maxtraitvar",
     "medtraitvar", "mintraitvar", "ngenes", "nlnkgunits", "precopt",
     "prectol", "repsize", "reptol", "seedsize", "tempopt", "temptol"]
@@ -290,7 +290,8 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
                   "\t", patch.temp, "\t", patch.prec, "\t", patch.area, "\t", patch.isisland)
             popidxs = findall(i -> i.lineage == lineage, patch.community)
             population = patch.community[popidxs]
-            print(io, "\t", population[1].lineage, "\t", length(population), "\t",
+            adultidxs = findall(i -> i.size > i.traits["repsize"], patch.community[popidxs])
+            print(io, "\t", population[1].lineage, "\t", length(popidxs) - length(adultidxs), "\t", length(adultidxs), "\t",
                   maximum(map(i -> i.age, population)), "\t", maximum(map(i -> i.size, population)),
                   "\t", maximum(map(i -> i.tempadaption, population)), "\t", maximum(map(i -> i.precadaption, population)))
             poptraitdict = Dict{String, Array{Float64, 1}}()
