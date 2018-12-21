@@ -300,7 +300,7 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
                 print(io, "\t", minimum(poptrait))
                 print(io, "\t", maximum(poptrait))
                 print(io, "\t", median(poptrait))
-                print(io, "\t", std(poptrait))
+                print(io, "\t", std(skipmissing(poptrait)))
             end
             println(io)
         end
