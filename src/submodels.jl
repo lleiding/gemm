@@ -119,7 +119,6 @@ function establish!(patch::Patch, nniches::Int=1)
     end
 end
 
-
 function establish!(world::Array{Patch,1}, nniches::Int=1, static::Bool = true)
     for patch in world
         (patch.isisland || !static) && establish!(patch, nniches) # pmap(!,patch) ???
@@ -137,8 +136,8 @@ function survive!(patch::Patch, mortality::Float64)
         if !patch.community[idx].marked
             mass = patch.community[idx].size
             deathrate = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
-            dieprob = (1 - exp(-deathrate)) * patch.community[idx].tempadaption
-            if rand() < dieprob
+            dieprob = (1 - exp(-deathrate))
+            if rand() * patch.community[idx].tempadaption < dieprob
                 splice!(patch.community, idx)
                 continue
             else
