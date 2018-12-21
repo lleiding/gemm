@@ -265,7 +265,7 @@ end
 
 function printpopheader(io::IO)
     print(io, "time\t", "x\t", "y\t", "temp\t", "prec\t", "area\t", "isisland")
-    print(io, "\tlineage", "\tjuveniles", "\tadults", "\tmaxage", "\tmaxsize", "\tmaxtempadation", "\tmaxprecadation")
+    print(io, "\tlineage", "\tjuveniles", "\tadults", "\tmaxage", "\tmaxsize", "\tmaxtempadaption", "\tmaxprecadaption")
     traitnames =  ["compat", "dispmean", "dispshape", "maxtraitvar",
     "medtraitvar", "mintraitvar", "ngenes", "nlnkgunits", "precopt",
     "prectol", "repsize", "reptol", "seedsize", "tempopt", "temptol"]
