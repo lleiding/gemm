@@ -275,6 +275,7 @@ function printpopheader(io::IO)
         print(io, "\t", traitname, "med")
         print(io, "\t", traitname, "std")
     end
+    print(io, "\treplicate", "\tconf")
     println(io)
 end
     
@@ -302,6 +303,7 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
                 print(io, "\t", median(poptrait))
                 print(io, "\t", std(skipmissing(poptrait)))
             end
+            print(io, "\t", settings["seed"], "\t", settings["config"])
             println(io)
         end
     end
