@@ -44,7 +44,7 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
         for ind in patch.community
             # only one individual per species on a static mainland (should be the case anyway)
             (!patch.isisland && settings["static"] && ind.lineage == lineage) && continue
-            print(io, timestep)
+            print(io, timestep, sep)
             print(io, patch.id, sep)
             print(io, patch.location[1], sep)
             print(io, patch.location[2], sep)
