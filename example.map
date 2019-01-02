@@ -12,7 +12,7 @@
 4 0 3 initpop temp=290 prec=5
 5 0 4 initpop temp=290 prec=6
 6 0 5 initpop temp=290 prec=7
-9 1 1 initpop temp=290 prec=3
+9 1 1 initpop temp=291 prec=3
 10 1 2 initpop temp=291 prec=4
 11 1 3 initpop temp=291 prec=5
 12 1 4 initpop temp=291 prec=6
