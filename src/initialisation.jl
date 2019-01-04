@@ -18,7 +18,6 @@ function createpop(settings::Dict{String, Any})
         simlog("Invalid value for `popsize`: $(settings["popsize"])", settings, 'e')
     end
     lineage = randstring(4)
-    parentid = rand(Int32)
     ngenes = rand(1:settings["maxloci"]) * length(settings["traitnames"])
     ngenes < 1 && (ngenes = 1)
     genes = creategenes(ngenes, traits, settings)
