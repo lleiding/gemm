@@ -135,7 +135,6 @@ function setupdatadir(settings::Dict{String, Any})
                 cp(m, joinpath(settings["dest"], m), force = true) # most likely replicates with same parameters
             end
         end
-        cp(joinpath("src", "constants.jl"), joinpath(settings["dest"], "constants.jl"), force = true)
     end
 end
 
