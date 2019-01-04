@@ -34,16 +34,12 @@ function gettraitdict(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
     end
     traits = vcat(map(g -> g.codes, genes)...)
     traitdict = Dict{String, Float64}()
-    traitvar = Float64[]
     for traitidx in eachindex(traitnames)
         traitdict[traitnames[traitidx]] = getmeantraitvalue(traits, traitidx)
-        push!(traitvar, getstdtraitvalue(traits, traitidx))
+        traitdict[string(traitnames[traitidx]) * "sd"] = getstdtraitvalue(traits, traitidx)
     end
     traitdict["nlnkgunits"] = nchrms
     traitdict["ngenes"] = ngenes
-    traitdict["mintraitvar"] = minimum(traitvar)
-    traitdict["medtraitvar"] = median(traitvar)
-    traitdict["maxtraitvar"] = maximum(traitvar)
     traitdict
 end
 

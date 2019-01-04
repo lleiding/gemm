@@ -266,9 +266,10 @@ end
 function printpopheader(io::IO)
     print(io, "time\t", "x\t", "y\t", "temp\t", "prec\t", "area\t", "isisland")
     print(io, "\tlineage", "\tjuveniles", "\tadults", "\tmaxage", "\tmaxsize", "\ttempadaptionmed", "\tprecadaptionmed")
-    traitnames =  ["compat", "dispmean", "dispshape", "maxtraitvar",
-    "medtraitvar", "mintraitvar", "ngenes", "nlnkgunits", "precopt",
-    "prectol", "repsize", "reptol", "seedsize", "tempopt", "temptol"]
+    traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd", 
+                   "ngenes", "nlnkgunits", "precopt", "precoptsd", "prectol", "prectolsd",
+                   "repsize", "repsizesd", "reptol", "reptolsd", "seedsize", "seedsizesd",
+                   "tempopt", "tempoptsd", "temptol", "temptolsd"]
     for traitname in traitnames
         print(io, "\t", traitname, "min")
         print(io, "\t", traitname, "max")
@@ -281,9 +282,10 @@ end
     
 function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, Any}, timestep::Integer)
     timestep == 0 && printpopheader(io)
-    traitnames =  ["compat", "dispmean", "dispshape", "maxtraitvar",
-    "medtraitvar", "mintraitvar", "ngenes", "nlnkgunits", "precopt",
-    "prectol", "repsize", "reptol", "seedsize", "tempopt", "temptol"]
+    traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd", 
+                   "ngenes", "nlnkgunits", "precopt", "precoptsd", "prectol", "prectolsd",
+                   "repsize", "repsizesd", "reptol", "reptolsd", "seedsize", "seedsizesd",
+                   "tempopt", "tempoptsd", "temptol", "temptolsd"]
     for patch in world
         lineages = unique(map(i -> i.lineage, patch.community))
         for lineage in lineages
