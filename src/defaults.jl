@@ -19,8 +19,8 @@ function defaultSettings()
          "linkage" => "random", # gene linkage type (random/full/none)
          "logging" => false, # write output to logfile
          "maps" => "", # comma-separated list of map files
-         "dispmean" => 1, # mean dispersal distance in cells
-         "dispshape" => 10, # shape parameter fo dispersal kernel - tail fatness
+         "dispmean" => 1.0, # mean dispersal distance in cells
+         "dispshape" => 10.0, # shape parameter fo dispersal kernel - tail fatness
          "maxbreadth" => 5, # maximum niche breadth
          "maxrepsize" => 14, # maximal repsize in grams calculated as exp(maxrepsize) -> 1.2 t
          "maxseedsize" => 10, # maximal seedsize in grams calculated as exp(maxseedsize) -> 22 kg
