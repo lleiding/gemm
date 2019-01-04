@@ -219,12 +219,12 @@ Save the abundance of each lineage per patch
 """
 function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
     if !isfile(joinpath(settings["dest"], "lineages.log"))
-        simlog("t,X,Y,lineage,population", settings, 'i', "lineages.log", true)
+        simlog("t,X,Y,lineage,abundance,temp,prec", settings, 'i', "lineages.log", true)
     end
     for p in world
         #CAVE Should not use `whoiswho`
         for l in keys(p.whoiswho)
-            simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(p.whoiswho[l]))", settings,
+            simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(p.whoiswho[l])),p.temp,p.prec", settings,
                    'i', "lineages.log", true)
         end
     end    
