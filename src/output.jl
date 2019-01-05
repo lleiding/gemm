@@ -224,7 +224,7 @@ function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, time
     for p in world
         #CAVE Should not use `whoiswho`
         for l in keys(p.whoiswho)
-            simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(p.whoiswho[l])),p.temp,p.prec", settings,
+            simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(p.whoiswho[l])),$(p.temp),$(p.prec)", settings,
                    'i', "lineages.log", true)
         end
     end    
