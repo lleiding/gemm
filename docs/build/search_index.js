@@ -145,6 +145,46 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "aux/#GeMM.createchrms-Tuple{Int64,Array{GeMM.AbstractGene,1}}",
+    "page": "Internal functions",
+    "title": "GeMM.createchrms",
+    "category": "method",
+    "text": "createchrms(nchrms, genes) Randomly distribute the passed genes into the given number of chromosomes. Returns an array of chromosome objects.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.creategenes-Tuple{Int64,Array{GeMM.Trait,1},Dict{String,Any}}",
+    "page": "Internal functions",
+    "title": "GeMM.creategenes",
+    "category": "method",
+    "text": "creategenes(ngenes, traits, settings) Randomly create a given number of gene objects, with their base sequence and associated traits. Returns the result as an array of AbstractGenes.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.createind",
+    "page": "Internal functions",
+    "title": "GeMM.createind",
+    "category": "function",
+    "text": "createind(settings, marked=false) Create an individual organism with of a new species with a random genome.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.createoffspring-Tuple{Integer,GeMM.Individual,GeMM.Individual,Array{String,1}}",
+    "page": "Internal functions",
+    "title": "GeMM.createoffspring",
+    "category": "method",
+    "text": "createoffspring(noffs, individual, partner, traitnames) The main reproduction function. Take two organisms and create the given number of offspring individuals. Returns an array of individuals.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.createtraits-Tuple{Dict{String,Any}}",
+    "page": "Internal functions",
+    "title": "GeMM.createtraits",
+    "category": "method",
+    "text": "createtraits(settings) Create an array of trait objects generated from the default trait values (with a random offset).\n\n\n\n\n\n"
+},
+
+{
     "location": "aux/#GeMM.diversity-Tuple{Array{Patch,1}}",
     "page": "Internal functions",
     "title": "GeMM.diversity",
@@ -161,6 +201,118 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "aux/#GeMM.findposspartner-Tuple{Patch,GeMM.Individual,Array{String,1}}",
+    "page": "Internal functions",
+    "title": "GeMM.findposspartner",
+    "category": "method",
+    "text": "findposspartner(patch, individual, traitnames) Find a reproduction partner for the given individual in the given patch.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.freespace-Tuple{Array{Patch,1}}",
+    "page": "Internal functions",
+    "title": "GeMM.freespace",
+    "category": "method",
+    "text": "freespace(world) Calculate the average amount of free space on each patch.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.gausscurve",
+    "page": "Internal functions",
+    "title": "GeMM.gausscurve",
+    "category": "function",
+    "text": "gausscurve(b, c, x, a=1.0) Calculate the value of the Gauss function (\"bell curve\") at point x; with a being the maximum height of the curve, b the position of the curve center and c the standard deviation (\"width\").\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.getmeantraitvalue-Tuple{Array{GeMM.Trait,1},Integer}",
+    "page": "Internal functions",
+    "title": "GeMM.getmeantraitvalue",
+    "category": "method",
+    "text": "getmeantraitvalue(traits, traitidx) Take an array of traits and return the mean value of the indexed trait.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.getstdtraitvalue-Tuple{Array{GeMM.Trait,1},Integer}",
+    "page": "Internal functions",
+    "title": "GeMM.getstdtraitvalue",
+    "category": "method",
+    "text": "getstdtraitvalue(traits, traitidx) Take an array of traits and return the standard deviation of the indexed trait.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.gettraitdict-Tuple{Array{GeMM.AbstractGene,1},Array{String,1}}",
+    "page": "Internal functions",
+    "title": "GeMM.gettraitdict",
+    "category": "method",
+    "text": "gettraitdict(genes, traitnames) Calculate the trait dict for an array of genes.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.gettraitdict-Tuple{Array{GeMM.Chromosome,1},Array{String,1}}",
+    "page": "Internal functions",
+    "title": "GeMM.gettraitdict",
+    "category": "method",
+    "text": "gettraitdict(chromosomes, traitnames) Convert a genome (an array of chromosomes) into a dict of traits and their values.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.gettraitdict-Tuple{Array{GeMM.Trait,1},Array{String,1}}",
+    "page": "Internal functions",
+    "title": "GeMM.gettraitdict",
+    "category": "method",
+    "text": "gettraitdict(traits, traitnames) Construct a trait dict from a list of Trait objects.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.identifyAdults!-Tuple{Patch}",
+    "page": "Internal functions",
+    "title": "GeMM.identifyAdults!",
+    "category": "method",
+    "text": "identifyAdults!(patch) Build up the whoiswho index of individuals and species in a patch.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.iscompatible-Tuple{GeMM.Individual,GeMM.Individual,Array{String,1}}",
+    "page": "Internal functions",
+    "title": "GeMM.iscompatible",
+    "category": "method",
+    "text": "iscompatible(mate, individual, traitnames) Check to see whether two individual organisms are reproductively compatible.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.markthem!-Tuple{Array{GeMM.Individual,1}}",
+    "page": "Internal functions",
+    "title": "GeMM.markthem!",
+    "category": "method",
+    "text": "markthem!(community) Set each individual in the community (= array of individuals) as \"marked\".\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.markthem!-Tuple{Array{Patch,1}}",
+    "page": "Internal functions",
+    "title": "GeMM.markthem!",
+    "category": "method",
+    "text": "markthem!(world) Set every individual in the world as \"marked\".\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.markthem!-Tuple{Patch}",
+    "page": "Internal functions",
+    "title": "GeMM.markthem!",
+    "category": "method",
+    "text": "markthem!(habitat) Set each individual in the given patch as \"marked\".\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.meiosis-Tuple{Array{GeMM.Chromosome,1},Bool}",
+    "page": "Internal functions",
+    "title": "GeMM.meiosis",
+    "category": "method",
+    "text": "meiosis(genome, maternal) Carry out meiosis on a genome (marked as maternal or not). Returns a haploid gamete genome. (genome => array of chromosomes)\n\n\n\n\n\n"
+},
+
+{
     "location": "aux/#GeMM.num2seq-Tuple{Integer}",
     "page": "Internal functions",
     "title": "GeMM.num2seq",
@@ -169,11 +321,51 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "aux/#GeMM.seq2bignum-Tuple{String}",
+    "page": "Internal functions",
+    "title": "GeMM.seq2bignum",
+    "category": "method",
+    "text": "seq2bignum(sequence)\n\nConvert a DNA base sequence (a string) into binary and then into an BigInt (for larger genes). This saves memory.\n\n\n\n\n\n"
+},
+
+{
     "location": "aux/#GeMM.seq2num-Tuple{String}",
     "page": "Internal functions",
     "title": "GeMM.seq2num",
     "category": "method",
     "text": "seq2num(sequence)\n\nConvert a DNA base sequence (a string) into binary and then into an integer. This saves memory.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.traitsexist-Tuple{Dict{String,Float64},Dict{String,Any}}",
+    "page": "Internal functions",
+    "title": "GeMM.traitsexist",
+    "category": "method",
+    "text": "traitsexist(traits, settings) Check a trait dict to make sure it contains the full set of traitnames required by the model (as defined in the settings).\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.traitsexist-Tuple{GeMM.Individual,Dict{String,Any}}",
+    "page": "Internal functions",
+    "title": "GeMM.traitsexist",
+    "category": "method",
+    "text": "traitsexist(individual, settings) Make sure an individual organism has the full set of traits required by the model (as defined in the settings).\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.varyalleles!-Tuple{Array{GeMM.AbstractGene,1},Dict{String,Any},Float64}",
+    "page": "Internal functions",
+    "title": "GeMM.varyalleles!",
+    "category": "method",
+    "text": "varyalleles!(genes, settings, locivar) Mutate gene traits in the passed array of genes.\n\n\n\n\n\n"
+},
+
+{
+    "location": "aux/#GeMM.varyalleles!-Tuple{Array{GeMM.Chromosome,1},Dict{String,Any},Float64}",
+    "page": "Internal functions",
+    "title": "GeMM.varyalleles!",
+    "category": "method",
+    "text": "varyalleles!(chromosomes, settings, locivar) Mutate gene traits in the passed array of chromosomes.\n\n\n\n\n\n"
 },
 
 {
