@@ -2,18 +2,18 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "#",
-    "page": "GeMM",
-    "title": "GeMM",
+    "page": "Introduction",
+    "title": "Introduction",
     "category": "page",
     "text": "CurrentModule = GeMM"
 },
 
 {
-    "location": "#GeMM-1",
-    "page": "GeMM",
-    "title": "GeMM",
+    "location": "#Introduction-1",
+    "page": "Introduction",
+    "title": "Introduction",
     "category": "section",
-    "text": "This is the documentation for the Genetically explicit Metacommunity Model.<small>&copy; 2016-2018 Ludwig Leidinger, Daniel Vedder</small>"
+    "text": "This is the documentation for the Genetically explicit Metacommunity Model.(c) 2016-2018 Ludwig Leidinger, Daniel Vedder"
 },
 
 {
