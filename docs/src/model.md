@@ -1,5 +1,8 @@
 # Main Model
 
+These are the core functions of the model, implementing the high-level processes
+of the simulation and the object classes that are involved.
+
 ## entities.jl
 
 ```@autodocs

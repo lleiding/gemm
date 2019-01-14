@@ -1,5 +1,9 @@
 # Input, Output, and Settings
 
+These functions are responsible for reading in all model configurations (passed
+by config file or commandline), administrating them during a run, and printing
+any output.
+
 ## constants.jl
 
 ```@autodocs

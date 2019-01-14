@@ -13,7 +13,103 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "Introduction",
     "category": "section",
-    "text": "This is the documentation for the Genetically explicit Metacommunity Model.(c) 2016-2018 Ludwig Leidinger, Daniel Vedder"
+    "text": "This is the documentation for the Island Speciation Model, a.k.a. Genetically explicit Metacommunity Model (GeMM). (Yeah, we\'re still working on the name...)The aim of this model is to create a virtual island ecosystem that can be used to explore ecological and evolutionary hypotheses in silico. It is genetically and spatially explicit, with discrete space and time.(c) 2016-2018 Ludwig Leidinger, Daniel Vedder"
+},
+
+{
+    "location": "model/#",
+    "page": "Main Model",
+    "title": "Main Model",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "model/#Main-Model-1",
+    "page": "Main Model",
+    "title": "Main Model",
+    "category": "section",
+    "text": "These are the core functions of the model, implementing the high-level processes of the simulation and the object classes that are involved."
+},
+
+{
+    "location": "model/#entities.jl-1",
+    "page": "Main Model",
+    "title": "entities.jl",
+    "category": "section",
+    "text": "Modules = [GeMM]\nPages = [\"entities.jl\"]"
+},
+
+{
+    "location": "model/#initialisation.jl-1",
+    "page": "Main Model",
+    "title": "initialisation.jl",
+    "category": "section",
+    "text": "Modules = [GeMM]\nPages = [\"initalisation.jl\"]"
+},
+
+{
+    "location": "model/#GeMM.disperse!",
+    "page": "Main Model",
+    "title": "GeMM.disperse!",
+    "category": "function",
+    "text": "disperse!(w)\n\nDispersal of individuals within world (array of patches) w\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.disturb!-Tuple{Patch,Int64}",
+    "page": "Main Model",
+    "title": "GeMM.disturb!",
+    "category": "method",
+    "text": "disturb!(p,i)\n\nspecies-independent mortality due to disturbance on patch p\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.establish!",
+    "page": "Main Model",
+    "title": "GeMM.establish!",
+    "category": "function",
+    "text": "establish!(p, n)\n\nestablishment of individuals in patch p. Sets adaption parameter according to adaptation to number n niches of the surrounding environment.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.grow!-Tuple{Patch,Float64}",
+    "page": "Main Model",
+    "title": "GeMM.grow!",
+    "category": "method",
+    "text": "grow!(p)\n\nGrowth of individuals in patch p\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.reproduce!-Tuple{Patch,Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.reproduce!",
+    "category": "method",
+    "text": "reproduce!(p, settings)\n\nReproduction of individuals in a patch p\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.survive!-Tuple{Patch,Float64}",
+    "page": "Main Model",
+    "title": "GeMM.survive!",
+    "category": "method",
+    "text": "survive!(p)\n\ndensity independent survival of individuals in patch p\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#submodels.jl-1",
+    "page": "Main Model",
+    "title": "submodels.jl",
+    "category": "section",
+    "text": "Modules = [GeMM]\nPages = [\"submodels.jl\"]"
+},
+
+{
+    "location": "model/#scheduling.jl-1",
+    "page": "Main Model",
+    "title": "scheduling.jl",
+    "category": "section",
+    "text": "Modules = [GeMM]\nPages = [\"scheduling.jl\"]"
 },
 
 {
@@ -29,7 +125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Input, Output, and Settings",
     "title": "Input, Output, and Settings",
     "category": "section",
-    "text": ""
+    "text": "These functions are responsible for reading in all model configurations (passed by config file or commandline), administrating them during a run, and printing any output."
 },
 
 {
@@ -133,7 +229,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "Internal functions",
     "category": "section",
-    "text": ""
+    "text": "These are functions that the model uses in the background. They include a range of things: sub-submodels such findposspartner, utility functions like  gausscurve, or performance hacks like seq2num."
 },
 
 {
@@ -374,102 +470,6 @@ var documenterSearchIndex = {"docs": [
     "title": "auxfuncts.jl",
     "category": "section",
     "text": "Modules = [GeMM]\nPages = [\"auxfuncts.jl\"]"
-},
-
-{
-    "location": "model/#",
-    "page": "Main Model",
-    "title": "Main Model",
-    "category": "page",
-    "text": ""
-},
-
-{
-    "location": "model/#Main-Model-1",
-    "page": "Main Model",
-    "title": "Main Model",
-    "category": "section",
-    "text": ""
-},
-
-{
-    "location": "model/#entities.jl-1",
-    "page": "Main Model",
-    "title": "entities.jl",
-    "category": "section",
-    "text": "Modules = [GeMM]\nPages = [\"entities.jl\"]"
-},
-
-{
-    "location": "model/#initialisation.jl-1",
-    "page": "Main Model",
-    "title": "initialisation.jl",
-    "category": "section",
-    "text": "Modules = [GeMM]\nPages = [\"initalisation.jl\"]"
-},
-
-{
-    "location": "model/#GeMM.disperse!",
-    "page": "Main Model",
-    "title": "GeMM.disperse!",
-    "category": "function",
-    "text": "disperse!(w)\n\nDispersal of individuals within world (array of patches) w\n\n\n\n\n\n"
-},
-
-{
-    "location": "model/#GeMM.disturb!-Tuple{Patch,Int64}",
-    "page": "Main Model",
-    "title": "GeMM.disturb!",
-    "category": "method",
-    "text": "disturb!(p,i)\n\nspecies-independent mortality due to disturbance on patch p\n\n\n\n\n\n"
-},
-
-{
-    "location": "model/#GeMM.establish!",
-    "page": "Main Model",
-    "title": "GeMM.establish!",
-    "category": "function",
-    "text": "establish!(p, n)\n\nestablishment of individuals in patch p. Sets adaption parameter according to adaptation to number n niches of the surrounding environment.\n\n\n\n\n\n"
-},
-
-{
-    "location": "model/#GeMM.grow!-Tuple{Patch,Float64}",
-    "page": "Main Model",
-    "title": "GeMM.grow!",
-    "category": "method",
-    "text": "grow!(p)\n\nGrowth of individuals in patch p\n\n\n\n\n\n"
-},
-
-{
-    "location": "model/#GeMM.reproduce!-Tuple{Patch,Dict{String,Any}}",
-    "page": "Main Model",
-    "title": "GeMM.reproduce!",
-    "category": "method",
-    "text": "reproduce!(p, settings)\n\nReproduction of individuals in a patch p\n\n\n\n\n\n"
-},
-
-{
-    "location": "model/#GeMM.survive!-Tuple{Patch,Float64}",
-    "page": "Main Model",
-    "title": "GeMM.survive!",
-    "category": "method",
-    "text": "survive!(p)\n\ndensity independent survival of individuals in patch p\n\n\n\n\n\n"
-},
-
-{
-    "location": "model/#submodels.jl-1",
-    "page": "Main Model",
-    "title": "submodels.jl",
-    "category": "section",
-    "text": "Modules = [GeMM]\nPages = [\"submodels.jl\"]"
-},
-
-{
-    "location": "model/#scheduling.jl-1",
-    "page": "Main Model",
-    "title": "scheduling.jl",
-    "category": "section",
-    "text": "Modules = [GeMM]\nPages = [\"scheduling.jl\"]"
 },
 
 ]}
