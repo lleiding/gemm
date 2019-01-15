@@ -1,7 +1,8 @@
 # Subsidiary functions for GeMM
 
 """
-  meiosis(genome, maternal)
+    meiosis(genome, maternal)
+
 Carry out meiosis on a genome (marked as maternal or not). Returns a haploid
 gamete genome. (genome => array of chromosomes)
 """
@@ -21,7 +22,8 @@ function meiosis(genome::Array{Chromosome,1}, maternal::Bool) # TODO: include fu
 end
 
 """
-  getmeantraitvalue(traits, traitidx)
+    getmeantraitvalue(traits, traitidx)
+
 Take an array of traits and return the mean value of the indexed trait.
 """
 function getmeantraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
@@ -29,7 +31,8 @@ function getmeantraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
 end
 
 """
-  getstdtraitvalue(traits, traitidx)
+    getstdtraitvalue(traits, traitidx)
+
 Take an array of traits and return the standard deviation of the indexed trait.
 """
 function getstdtraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
@@ -37,7 +40,8 @@ function getstdtraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
 end
 
 """
-  gettraitdict(chromosomes, traitnames)
+    gettraitdict(chromosomes, traitnames)
+
 Convert a genome (an array of chromosomes) into a dict of traits and their values.
 """
 function gettraitdict(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
@@ -61,7 +65,8 @@ function gettraitdict(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
 end
 
 """
-  gettraitdict(genes, traitnames)
+    gettraitdict(genes, traitnames)
+
 Calculate the trait dict for an array of genes.
 """
 function gettraitdict(genes::Array{AbstractGene, 1}, traitnames::Array{String, 1})
@@ -76,7 +81,8 @@ function gettraitdict(genes::Array{AbstractGene, 1}, traitnames::Array{String, 1
 end
 
 """
-  gettraitdict(traits, traitnames)
+    gettraitdict(traits, traitnames)
+
 Construct a trait dict from a list of Trait objects.
 """
 function gettraitdict(traits::Array{Trait, 1}, traitnames::Array{String, 1})
@@ -89,7 +95,8 @@ function gettraitdict(traits::Array{Trait, 1}, traitnames::Array{String, 1})
 end
 
 """
-  traitsexist(traits, settings)
+    traitsexist(traits, settings)
+
 Check a trait dict to make sure it contains the full set of traitnames required
 by the model (as defined in the settings).
 """
@@ -103,7 +110,8 @@ function traitsexist(traits::Dict{String, Float64}, settings::Dict{String, Any})
 end
 
 """
-  traitsexist(individual, settings)
+    traitsexist(individual, settings)
+
 Make sure an individual organism has the full set of traits required by the model
 (as defined in the settings).
 """
@@ -120,7 +128,8 @@ function traitsexist(ind::Individual, settings::Dict{String, Any})
 end
 
 """
-  gausscurve(b, c, x, a=1.0)
+    gausscurve(b, c, x, a=1.0)
+
 Calculate the value of the Gauss function ("bell curve") at point x; with
 a being the maximum height of the curve, b the position of the curve center and
 c the standard deviation ("width").
@@ -138,6 +147,7 @@ end
 
 """
     diversity(w)
+
 Calculate (average) alpha, beta and gamma diversity of the world.
 Returns a tuple with the three values (a,b,g).
 cf. Veech et al. 2002
@@ -167,7 +177,8 @@ function diversity(world::Array{Patch,1})
 end
 
 """
-  freespace(world)
+    freespace(world)
+
 Calculate the average amount of free space on each patch.
 """
 function freespace(world::Array{Patch,1})
@@ -184,6 +195,7 @@ end
 
 """
     findisland(w)
+
 within world `w`, find out in which direction from the continent the island(s) lie(s).
 """
 function findisland(world::Array{Patch,1})
@@ -210,6 +222,7 @@ end
 
 """
     checkborderconditions!(w, x, y)
+
 check if coordinates `x` and `y` lie within world `w` and correct if not,
 considering defined border conditions.
 """
@@ -259,7 +272,8 @@ function checkborderconditions(world::Array{Patch,1}, xdest::Int, ydest::Int)
 end
 
 """
-  identifyAdults!(patch)
+    identifyAdults!(patch)
+
 Build up the `whoiswho` index of individuals and species in a patch.
 """
 function identifyAdults!(patch::Patch)
@@ -272,7 +286,8 @@ function identifyAdults!(patch::Patch)
 end
 
 """
-  iscompatible(mate, individual, traitnames)
+    iscompatible(mate, individual, traitnames)
+
 Check to see whether two individual organisms are reproductively compatible.
 """
 function iscompatible(mate::Individual, ind::Individual, traitnames::Array{String, 1})
@@ -304,7 +319,8 @@ function iscompatible(mate::Individual, ind::Individual, traitnames::Array{Strin
 end
 
 """
-  findposspartner(patch, individual, traitnames)
+    findposspartner(patch, individual, traitnames)
+
 Find a reproduction partner for the given individual in the given patch.
 """
 function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String, 1})
@@ -329,7 +345,8 @@ function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String
 end
 
 """
-  createoffspring(noffs, individual, partner, traitnames)
+    createoffspring(noffs, individual, partner, traitnames)
+
 The main reproduction function. Take two organisms and create the given number
 of offspring individuals. Returns an array of individuals.
 """
@@ -354,6 +371,7 @@ end
 
 """
     seq2num(sequence)
+
 Convert a DNA base sequence (a string) into binary and then into an integer.
 This saves memory.
 """
@@ -368,6 +386,7 @@ end
 
 """
     seq2bignum(sequence)
+
 Convert a DNA base sequence (a string) into binary and then into an BigInt (for
 larger genes). This saves memory.
 """
@@ -382,6 +401,7 @@ end
 
 """
     num2seq(n)
+
 Convert an integer into binary and then into a DNA base sequence string.
 """
 function num2seq(n::Integer)
@@ -395,7 +415,8 @@ function num2seq(n::Integer)
 end
 
 """
-  createtraits(settings)
+    createtraits(settings)
+
 Create an array of trait objects generated from the default trait values (with a
 random offset).
 """
@@ -440,7 +461,8 @@ function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly.
 end
 
 """
-  creategenes(ngenes, traits, settings)
+    creategenes(ngenes, traits, settings)
+
 Randomly create a given number of gene objects, with their base sequence and
 associated traits. Returns the result as an array of AbstractGenes.
 """
@@ -475,7 +497,8 @@ function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String,
 end
 
 """
-  createchrms(nchrms, genes)
+    createchrms(nchrms, genes)
+
 Randomly distribute the passed genes into the given number of chromosomes.
 Returns an array of chromosome objects.
 """
@@ -505,7 +528,8 @@ function createchrms(nchrms::Int,genes::Array{AbstractGene,1})
 end
 
 """
-  createind(settings, marked=false)
+    createind(settings, marked=false)
+
 Create an individual organism with of a new species with a random genome.
 """
 function createind(settings::Dict{String, Any}, marked::Bool = false)
@@ -538,7 +562,8 @@ function createind(settings::Dict{String, Any}, marked::Bool = false)
 end
 
 """
-  varyalleles!(genes, settings, locivar)
+    varyalleles!(genes, settings, locivar)
+
 Mutate gene traits in the passed array of genes.
 """
 function varyalleles!(genes::Array{AbstractGene, 1}, settings::Dict{String, Any}, locivar::Float64)
@@ -549,7 +574,8 @@ function varyalleles!(genes::Array{AbstractGene, 1}, settings::Dict{String, Any}
 end
 
 """
-  varyalleles!(chromosomes, settings, locivar)
+    varyalleles!(chromosomes, settings, locivar)
+
 Mutate gene traits in the passed array of chromosomes.
 """
 function varyalleles!(chrms::Array{Chromosome, 1}, settings::Dict{String, Any}, locivar::Float64)
@@ -560,7 +586,8 @@ function varyalleles!(chrms::Array{Chromosome, 1}, settings::Dict{String, Any}, 
 end
 
 """
-  markthem!(community)
+    markthem!(community)
+
 Set each individual in the community (= array of individuals) as "marked".
 """
 function markthem!(community::Array{Individual, 1})
@@ -570,7 +597,8 @@ function markthem!(community::Array{Individual, 1})
 end
 
 """
-  markthem!(habitat)
+    markthem!(habitat)
+
 Set each individual in the given patch as "marked".
 """
 function markthem!(habitat::Patch)
@@ -578,7 +606,8 @@ function markthem!(habitat::Patch)
 end
 
 """
-  markthem!(world)
+    markthem!(world)
+
 Set every individual in the world as "marked".
 """
 function markthem!(world::Array{Patch, 1})

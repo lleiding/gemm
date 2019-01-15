@@ -245,7 +245,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.createchrms",
     "category": "method",
-    "text": "createchrms(nchrms, genes) Randomly distribute the passed genes into the given number of chromosomes. Returns an array of chromosome objects.\n\n\n\n\n\n"
+    "text": "createchrms(nchrms, genes)\n\nRandomly distribute the passed genes into the given number of chromosomes. Returns an array of chromosome objects.\n\n\n\n\n\n"
 },
 
 {
@@ -253,7 +253,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.creategenes",
     "category": "method",
-    "text": "creategenes(ngenes, traits, settings) Randomly create a given number of gene objects, with their base sequence and associated traits. Returns the result as an array of AbstractGenes.\n\n\n\n\n\n"
+    "text": "creategenes(ngenes, traits, settings)\n\nRandomly create a given number of gene objects, with their base sequence and associated traits. Returns the result as an array of AbstractGenes.\n\n\n\n\n\n"
 },
 
 {
@@ -261,7 +261,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.createind",
     "category": "function",
-    "text": "createind(settings, marked=false) Create an individual organism with of a new species with a random genome.\n\n\n\n\n\n"
+    "text": "createind(settings, marked=false)\n\nCreate an individual organism with of a new species with a random genome.\n\n\n\n\n\n"
 },
 
 {
@@ -269,7 +269,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.createoffspring",
     "category": "method",
-    "text": "createoffspring(noffs, individual, partner, traitnames) The main reproduction function. Take two organisms and create the given number of offspring individuals. Returns an array of individuals.\n\n\n\n\n\n"
+    "text": "createoffspring(noffs, individual, partner, traitnames)\n\nThe main reproduction function. Take two organisms and create the given number of offspring individuals. Returns an array of individuals.\n\n\n\n\n\n"
 },
 
 {
@@ -277,7 +277,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.createtraits",
     "category": "method",
-    "text": "createtraits(settings) Create an array of trait objects generated from the default trait values (with a random offset).\n\n\n\n\n\n"
+    "text": "createtraits(settings)\n\nCreate an array of trait objects generated from the default trait values (with a random offset).\n\n\n\n\n\n"
 },
 
 {
@@ -301,7 +301,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.findposspartner",
     "category": "method",
-    "text": "findposspartner(patch, individual, traitnames) Find a reproduction partner for the given individual in the given patch.\n\n\n\n\n\n"
+    "text": "findposspartner(patch, individual, traitnames)\n\nFind a reproduction partner for the given individual in the given patch.\n\n\n\n\n\n"
 },
 
 {
@@ -309,7 +309,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.freespace",
     "category": "method",
-    "text": "freespace(world) Calculate the average amount of free space on each patch.\n\n\n\n\n\n"
+    "text": "freespace(world)\n\nCalculate the average amount of free space on each patch.\n\n\n\n\n\n"
 },
 
 {
@@ -317,7 +317,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.gausscurve",
     "category": "function",
-    "text": "gausscurve(b, c, x, a=1.0) Calculate the value of the Gauss function (\"bell curve\") at point x; with a being the maximum height of the curve, b the position of the curve center and c the standard deviation (\"width\").\n\n\n\n\n\n"
+    "text": "gausscurve(b, c, x, a=1.0)\n\nCalculate the value of the Gauss function (\"bell curve\") at point x; with a being the maximum height of the curve, b the position of the curve center and c the standard deviation (\"width\").\n\n\n\n\n\n"
 },
 
 {
@@ -325,7 +325,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.getmeantraitvalue",
     "category": "method",
-    "text": "getmeantraitvalue(traits, traitidx) Take an array of traits and return the mean value of the indexed trait.\n\n\n\n\n\n"
+    "text": "getmeantraitvalue(traits, traitidx)\n\nTake an array of traits and return the mean value of the indexed trait.\n\n\n\n\n\n"
 },
 
 {
@@ -333,7 +333,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.getstdtraitvalue",
     "category": "method",
-    "text": "getstdtraitvalue(traits, traitidx) Take an array of traits and return the standard deviation of the indexed trait.\n\n\n\n\n\n"
+    "text": "getstdtraitvalue(traits, traitidx)\n\nTake an array of traits and return the standard deviation of the indexed trait.\n\n\n\n\n\n"
 },
 
 {
@@ -341,7 +341,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.gettraitdict",
     "category": "method",
-    "text": "gettraitdict(genes, traitnames) Calculate the trait dict for an array of genes.\n\n\n\n\n\n"
+    "text": "gettraitdict(genes, traitnames)\n\nCalculate the trait dict for an array of genes.\n\n\n\n\n\n"
 },
 
 {
@@ -349,7 +349,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.gettraitdict",
     "category": "method",
-    "text": "gettraitdict(chromosomes, traitnames) Convert a genome (an array of chromosomes) into a dict of traits and their values.\n\n\n\n\n\n"
+    "text": "gettraitdict(chromosomes, traitnames)\n\nConvert a genome (an array of chromosomes) into a dict of traits and their values.\n\n\n\n\n\n"
 },
 
 {
@@ -357,7 +357,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.gettraitdict",
     "category": "method",
-    "text": "gettraitdict(traits, traitnames) Construct a trait dict from a list of Trait objects.\n\n\n\n\n\n"
+    "text": "gettraitdict(traits, traitnames)\n\nConstruct a trait dict from a list of Trait objects.\n\n\n\n\n\n"
 },
 
 {
@@ -365,7 +365,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.identifyAdults!",
     "category": "method",
-    "text": "identifyAdults!(patch) Build up the whoiswho index of individuals and species in a patch.\n\n\n\n\n\n"
+    "text": "identifyAdults!(patch)\n\nBuild up the whoiswho index of individuals and species in a patch.\n\n\n\n\n\n"
 },
 
 {
@@ -373,7 +373,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.iscompatible",
     "category": "method",
-    "text": "iscompatible(mate, individual, traitnames) Check to see whether two individual organisms are reproductively compatible.\n\n\n\n\n\n"
+    "text": "iscompatible(mate, individual, traitnames)\n\nCheck to see whether two individual organisms are reproductively compatible.\n\n\n\n\n\n"
 },
 
 {
@@ -381,7 +381,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.markthem!",
     "category": "method",
-    "text": "markthem!(community) Set each individual in the community (= array of individuals) as \"marked\".\n\n\n\n\n\n"
+    "text": "markthem!(community)\n\nSet each individual in the community (= array of individuals) as \"marked\".\n\n\n\n\n\n"
 },
 
 {
@@ -389,7 +389,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.markthem!",
     "category": "method",
-    "text": "markthem!(world) Set every individual in the world as \"marked\".\n\n\n\n\n\n"
+    "text": "markthem!(world)\n\nSet every individual in the world as \"marked\".\n\n\n\n\n\n"
 },
 
 {
@@ -397,7 +397,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.markthem!",
     "category": "method",
-    "text": "markthem!(habitat) Set each individual in the given patch as \"marked\".\n\n\n\n\n\n"
+    "text": "markthem!(habitat)\n\nSet each individual in the given patch as \"marked\".\n\n\n\n\n\n"
 },
 
 {
@@ -405,7 +405,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.meiosis",
     "category": "method",
-    "text": "meiosis(genome, maternal) Carry out meiosis on a genome (marked as maternal or not). Returns a haploid gamete genome. (genome => array of chromosomes)\n\n\n\n\n\n"
+    "text": "meiosis(genome, maternal)\n\nCarry out meiosis on a genome (marked as maternal or not). Returns a haploid gamete genome. (genome => array of chromosomes)\n\n\n\n\n\n"
 },
 
 {
@@ -437,7 +437,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.traitsexist",
     "category": "method",
-    "text": "traitsexist(traits, settings) Check a trait dict to make sure it contains the full set of traitnames required by the model (as defined in the settings).\n\n\n\n\n\n"
+    "text": "traitsexist(traits, settings)\n\nCheck a trait dict to make sure it contains the full set of traitnames required by the model (as defined in the settings).\n\n\n\n\n\n"
 },
 
 {
@@ -445,7 +445,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.traitsexist",
     "category": "method",
-    "text": "traitsexist(individual, settings) Make sure an individual organism has the full set of traits required by the model (as defined in the settings).\n\n\n\n\n\n"
+    "text": "traitsexist(individual, settings)\n\nMake sure an individual organism has the full set of traits required by the model (as defined in the settings).\n\n\n\n\n\n"
 },
 
 {
@@ -453,7 +453,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.varyalleles!",
     "category": "method",
-    "text": "varyalleles!(genes, settings, locivar) Mutate gene traits in the passed array of genes.\n\n\n\n\n\n"
+    "text": "varyalleles!(genes, settings, locivar)\n\nMutate gene traits in the passed array of genes.\n\n\n\n\n\n"
 },
 
 {
@@ -461,7 +461,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.varyalleles!",
     "category": "method",
-    "text": "varyalleles!(chromosomes, settings, locivar) Mutate gene traits in the passed array of chromosomes.\n\n\n\n\n\n"
+    "text": "varyalleles!(chromosomes, settings, locivar)\n\nMutate gene traits in the passed array of chromosomes.\n\n\n\n\n\n"
 },
 
 {
