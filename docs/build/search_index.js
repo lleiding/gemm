@@ -13,7 +13,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "Introduction",
     "category": "section",
-    "text": "This is the documentation for the Island Speciation Model, a.k.a. Genetically explicit Metacommunity Model (GeMM). (Yeah, we\'re still working on the name...)The aim of this model is to create a virtual island ecosystem that can be used to explore ecological and evolutionary hypotheses in silico. It is genetically and spatially explicit, with discrete space and time.(c) 2016-2018 Ludwig Leidinger, Daniel Vedder"
+    "text": "This is the documentation for the Island Speciation Model, a.k.a. Genetically explicit Metacommunity Model (GeMM). (Yeah, we\'re still working on the name...)The aim of this model is to create a virtual island ecosystem that can be used to explore ecological and evolutionary hypotheses in silico. It is genetically and spatially explicit, with discrete space and time.This documentation is generated from the source code using Julia\'s inbuilt Documenter module. It is sorted first by functionality, second by source code file.(c) 2016-2018 Ludwig Leidinger, Daniel Vedder"
 },
 
 {
@@ -30,6 +30,62 @@ var documenterSearchIndex = {"docs": [
     "title": "Main Model",
     "category": "section",
     "text": "These are the core functions of the model, implementing the high-level processes of the simulation and the object classes that are involved."
+},
+
+{
+    "location": "model/#GeMM.Patch",
+    "page": "Main Model",
+    "title": "GeMM.Patch",
+    "category": "type",
+    "text": "One of the core structs of the model, representing a one-hectare patch of ground.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.AbstractGene",
+    "page": "Main Model",
+    "title": "GeMM.AbstractGene",
+    "category": "type",
+    "text": "An abstraction layer to hide the implementation details of genes.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.BigGene",
+    "page": "Main Model",
+    "title": "GeMM.BigGene",
+    "category": "type",
+    "text": "A variation of the standard Gene struct that allows for longer base sequence lengths through its use of BigInt.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.Chromosome",
+    "page": "Main Model",
+    "title": "GeMM.Chromosome",
+    "category": "type",
+    "text": "A struct that saves a collection of genes and a tag to denote whether they are maternal or not.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.Gene",
+    "page": "Main Model",
+    "title": "GeMM.Gene",
+    "category": "type",
+    "text": "The standard gene struct; including the base sequence (represented in binary and stored and as an integer), and an array of traits the gene codes for.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.Individual",
+    "page": "Main Model",
+    "title": "GeMM.Individual",
+    "category": "type",
+    "text": "One of the core structs of the model, representing an individual organism.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.Trait",
+    "page": "Main Model",
+    "title": "GeMM.Trait",
+    "category": "type",
+    "text": "A simple struct to store organism trait names and values.\n\n\n\n\n\n"
 },
 
 {

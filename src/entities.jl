@@ -1,27 +1,48 @@
 # Types for GeMM
 
+"""
+A simple struct to store organism trait names and values.
+"""
 mutable struct Trait
     nameindex::UInt8
     value::Float64
 end
 
+"""
+An abstraction layer to hide the implementation details of genes.
+"""
 abstract type AbstractGene end
 
+"""
+The standard gene struct; including the base sequence (represented in binary and
+stored and as an integer), and an array of traits the gene codes for.
+"""
 mutable struct Gene <: AbstractGene
     sequence::Int
     codes::Array{Trait, 1}
 end
 
+"""
+A variation of the standard Gene struct that allows for longer base sequence
+lengths through its use of BigInt.
+"""
 mutable struct BigGene <: AbstractGene
     sequence::BigInt
     codes::Array{Trait, 1}
 end
 
+"""
+A struct that saves a collection of genes and a tag to denote whether they are
+maternal or not.
+"""
 mutable struct Chromosome
     genes::Array{AbstractGene, 1}
     maternal::Bool # parental origin of chromosome
 end
 
+"""
+One of the core structs of the model, representing an individual organism.
+"""
 mutable struct Individual
     lineage::String
     genome::Array{Chromosome, 1}
@@ -34,6 +55,9 @@ mutable struct Individual
     id::Int
 end
 
+"""
+One of the core structs of the model, representing a one-hectare patch of ground.
+"""
 mutable struct Patch
     id::Int
     location::Tuple{Int, Int}

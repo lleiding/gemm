@@ -11,5 +11,9 @@ The aim of this model is to create a virtual island ecosystem that can be used t
 explore ecological and evolutionary hypotheses *in silico*. It is genetically
 and spatially explicit, with discrete space and time.
 
+This documentation is generated from the source code using Julia's inbuilt
+`Documenter` module. It is sorted first by functionality, second by source code
+file.
+
 ---
 (c) 2016-2018 Ludwig Leidinger, Daniel Vedder
