@@ -1,5 +1,11 @@
 # Scheduling of processes in GeMM
 
+"""
+    simulate!(world, settings, timesteps)
+
+This is the central function of the model with the main event loop. It defines
+the scheduling for all submodels and output functions.
+"""
 function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps::Int=1000)
     simlog("Starting simulation.", settings)
     checkviability!(world, settings)

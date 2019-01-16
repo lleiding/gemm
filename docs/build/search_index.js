@@ -97,11 +97,43 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "model/#GeMM.createworld-Tuple{Array{Array{String,1},1},Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.createworld",
+    "category": "method",
+    "text": "createworld(maptable, settings)\n\nUse a parsed map file (as returned by readmapfile) to create the world.  Initialises each patch with its parameters and a new community, then returns an array of patches.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.updateworld!-Tuple{Array{Patch,1},Array{Array{String,1},1},Float64}",
+    "page": "Main Model",
+    "title": "GeMM.updateworld!",
+    "category": "method",
+    "text": "updateworld!(world, maptable, cellsize)\n\nReinitialise the world from another parsed map file. Works analogously to  createworld. Intended for use in scenarios where the model world changes during a run (e.g. through global warming or island growth).\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.createpop-Tuple{Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.createpop",
+    "category": "method",
+    "text": "createpop(settings)\n\nCreate a new, random individual and replicates it a certain number of times (depending on metabolic variables) to create a new population of organisms. Returns an array of individuals.\n\nXXX Why does this not interface with auxfuncts/createind()?\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.genesis-Tuple{Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.genesis",
+    "category": "method",
+    "text": "genesis(settings)\n\nCreate a new community, composed of random new species populations, for a patch. Returns an array of individuals.\n\n\n\n\n\n"
+},
+
+{
     "location": "model/#initialisation.jl-1",
     "page": "Main Model",
     "title": "initialisation.jl",
     "category": "section",
-    "text": "Modules = [GeMM]\nPages = [\"initalisation.jl\"]"
+    "text": "Modules = [GeMM]\nPages = [\"initialisation.jl\"]"
 },
 
 {
@@ -158,6 +190,14 @@ var documenterSearchIndex = {"docs": [
     "title": "submodels.jl",
     "category": "section",
     "text": "Modules = [GeMM]\nPages = [\"submodels.jl\"]"
+},
+
+{
+    "location": "model/#GeMM.simulate!",
+    "page": "Main Model",
+    "title": "GeMM.simulate!",
+    "category": "function",
+    "text": "simulate!(world, settings, timesteps)\n\nThis is the central function of the model with the main event loop. It defines the scheduling for all submodels and output functions.\n\n\n\n\n\n"
 },
 
 {

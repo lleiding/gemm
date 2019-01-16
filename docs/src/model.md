@@ -14,7 +14,7 @@ Pages = ["entities.jl"]
 
 ```@autodocs
 Modules = [GeMM]
-Pages = ["initalisation.jl"]
+Pages = ["initialisation.jl"]
 ```
 
 ## submodels.jl

@@ -1,5 +1,14 @@
 # initialisation functions for GeMM
 
+"""
+    createpop(settings)
+
+Create a new, random individual and replicates it a certain number of times
+(depending on metabolic variables) to create a new population of organisms.
+Returns an array of individuals.
+
+XXX Why does this not interface with auxfuncts/createind()?
+"""
 function createpop(settings::Dict{String, Any})
     traits = createtraits(settings)
     traitdict = gettraitdict(traits, settings["traitnames"])
@@ -52,6 +61,12 @@ function createpop(settings::Dict{String, Any})
     population
 end
 
+"""
+    genesis(settings)
+
+Create a new community, composed of random new species populations, for a patch.
+Returns an array of individuals.
+"""
 function genesis(settings::Dict{String, Any})
     community = Individual[]
     totalmass = 0.0
@@ -77,6 +92,13 @@ function genesis(settings::Dict{String, Any})
     community
 end
 
+"""
+    createworld(maptable, settings)
+
+Use a parsed map file (as returned by `readmapfile`) to create the world. 
+Initialises each patch with its parameters and a new community, then returns
+an array of patches.
+"""
 function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String, Any})
     simlog("Creating world...", settings)
     world = Patch[]
@@ -140,6 +162,13 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
     world
 end
 
+"""
+    updateworld!(world, maptable, cellsize)
+
+Reinitialise the world from another parsed map file. Works analogously to 
+`createworld`. Intended for use in scenarios where the model world changes
+during a run (e.g. through global warming or island growth).
+"""
 function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},cellsize::Float64)
     #TODO: add functionality to remove patches!
     simlog("Updating world...", settings)
