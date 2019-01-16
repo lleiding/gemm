@@ -1,5 +1,11 @@
 # Input functions for GeMM
 
+"""
+    getsettings()
+
+Combines all configuration options to produce a single settings dict.
+Order of precedence: commandline parameters - config file - default values
+"""
 function getsettings()
     defaults = defaultSettings()
     commandline = parsecommandline()
@@ -26,7 +32,11 @@ function getsettings()
     settings
 end
 
+"""
+    parsecommandline()
 
+Certain parameters can be set via the commandline.
+"""
 function parsecommandline()
     s = ArgParseSettings()
     @add_arg_table s begin
@@ -78,7 +88,8 @@ function parsecommandline()
 end
 
 """
-    basicparser(f)
+    basicparser(filename)
+
 Do elementary parsing on a config or map file.
 
 Reads in the file, strips whole-line and inline comments
@@ -100,6 +111,14 @@ function basicparser(filename::String)
     map(l -> map(s -> convert(String, s), l), lines)
 end
 
+"""
+    parseconfig(filename)
+
+Parse a configuration file and return a settings dict.
+
+The config syntax is very simple: each line consists of a parameter
+name and a value (unquoted), e.g. `nniches 2`. `#` is the comment character.
+"""
 function parseconfig(configfilename::String)
     config = basicparser(configfilename)
     settings = Dict{String, Any}()
@@ -124,6 +143,13 @@ function parseconfig(configfilename::String)
     settings
 end
 
+"""
+    readmapfile(mapfilename, settings)
+
+Parse a map file and return the number of timesteps this map is to be used for
+(first line of the file) and the patch definitions. The latter is used by
+`createworld` and `updateworld!`.
+"""
 function readmapfile(mapfilename::String, settings::Dict{String, Any})
     simlog("Reading map file $mapfilename.", settings)
     mapfile = basicparser(mapfilename)

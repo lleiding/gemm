@@ -6,10 +6,11 @@ any output.
 
 ## constants.jl
 
-```@autodocs
-Modules = [GeMM]
-Pages = ["constants.jl"]
-```
+This file defines constants that are needed for calculations involving the
+metabolic theory of ecology.
+
+Currently includes `boltz` (the Boltzmann constant) and `act` (the activation
+energy).
 
 ## defaults.jl
 

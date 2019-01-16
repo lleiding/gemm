@@ -1,5 +1,11 @@
 # Output functions for GeMM
 
+"""
+    printheader(settings, io, sep)
+
+Print a list of property names to the given IO stream. This is a helper function
+for `dumpinds`.
+"""
 function printheader(settings::Dict{String, Any}, io::IO = stdout, sep::String = "\t")
     #XXX Transfer to a dynamic system? (As in createworld()?)
     print(io, "time", sep)
@@ -31,7 +37,9 @@ end
 
 """
     dumpinds(world, io, sep)
+
 Output all data of individuals in `world` as table to `io`. Columns are separated by `sep`.
+WARNING: this produces *very* large files!
 """
 function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep::Int, io::IO = stdout, sep::String = "\t")
     timestep == 0 && printheader(settings, io, sep)
@@ -78,6 +86,12 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
     end
 end
 
+"""
+    makefasta(world, settings, io, onlyisland, sep)
+
+Record the genome of every individual currently alive to the given IO stream.
+WARNING: this produces *very* large files!
+"""
 function makefasta(world::Array{Patch, 1}, settings::Dict{String, Any}, io::IO = stdout, onlyisland::Bool = false, sep::String = "_")
     for patch in world
         (onlyisland && !patch.isisland) && continue
@@ -111,6 +125,7 @@ end
 
 """
     setupdatadir(dir)
+
 Creates the output directory and copies relevant files into it.
 If the output directory already includes files, create a new
 directory by appending a counter.
@@ -138,6 +153,13 @@ function setupdatadir(settings::Dict{String, Any})
     end
 end
 
+"""
+    writesettings(settings)
+
+Record the settings actually used for a simulation run (cf. `getsettings`).
+Creates a config file that can be used for future replicate runs.
+Also records a time stamp and the current git commit.
+"""
 function writesettings(settings::Dict{String, Any})
     open(joinpath(settings["dest"], settings["config"]), "w") do f
         println(f, "#\n# --- Island speciation model settings ---")
@@ -160,11 +182,12 @@ function writesettings(settings::Dict{String, Any})
     end
 end
 
-#TODO: complete docstring!
 """
     writedata(world, settings, timestep)
-writes simulation output from `world` to separate table and fasta files.
-`timestep` and `setting` information is used for file name creation.
+
+Writes simulation output from `world` to separate table and fasta files. (Which
+data is recorded depends on the settings.) `timestep` and `setting` information
+is used for file name creation.
 """
 function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
     if settings["raw"]
@@ -196,6 +219,7 @@ end
 
 """
     recordstatistics(w)
+
 Write out world properties to the log file for later analysis.
 """
 function recordstatistics(world::Array{Patch,1}, settings::Dict{String, Any})
@@ -215,7 +239,8 @@ end
 
 """
     recordlineages(w)
-Save the abundance of each lineage per patch
+
+Save the abundance of each lineage per patch.
 """
 function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
     if !isfile(joinpath(settings["dest"], "lineages.log"))
@@ -231,38 +256,11 @@ function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, time
 end
 
 """
-    simlog(msg, settings, category)
-Write a log message to STDOUT/STDERR and the specified logfile 
-(if logging is turned on in the settings).
-Categories: d (debug), i (information, default), w (warn), e (error)
-"""
-function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile="simulation.log", onlylog=false)
-    (isa(category, String) && length(category) == 1) && (category = category[1])
-    function logprint(msg::String, settings::Dict{String, Any}, tostderr=false)
-        if tostderr || !(settings["quiet"] || onlylog)
-            tostderr ? iostr = stderr : iostr = stdout
-            println(iostr, msg)
-        end
-        if settings["logging"]
-            open(joinpath(settings["dest"], logfile), "a") do f
-                println(f, msg)
-            end
-        end
-    end
-    if category == 'i'
-        logprint(msg, settings)
-    elseif category == 'd'
-        settings["debug"] && logprint("DEBUG: "*string(msg), settings)
-    elseif category == 'w'
-        logprint("WARNING: "*string(msg), settings, true)
-    elseif category == 'e'
-        logprint("ERROR: "*string(msg), settings, true)
-        exit(1)
-    else
-        simlog("Invalid log category $category.", settings, 'w')
-    end
-end
+    printpopheader(io)
 
+Print a list of property names to the given IO stream. This is a helper function
+for `printpopstats`.
+"""
 function printpopheader(io::IO)
     print(io, "time\t", "x\t", "y\t", "temp\t", "prec\t", "area\t", "isisland")
     print(io, "\tlineage", "\tjuveniles", "\tadults", "\tmaxage", "\tmaxsize", "\ttempadaptionmed", "\tprecadaptionmed")
@@ -279,7 +277,13 @@ function printpopheader(io::IO)
     print(io, "\treplicate", "\tconf")
     println(io)
 end
-    
+
+"""
+    printpopstats(io, world, settings, timestep)
+
+Record statistical information (maximum, minimum, median, standard deviation)
+for a range of individual properties, as seen over the whole world population.
+"""
 function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, Any}, timestep::Integer)
     timestep == 0 && printpopheader(io)
     traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd", 
@@ -308,5 +312,40 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
             print(io, "\t", settings["seed"], "\t", settings["config"])
             println(io)
         end
+    end
+end
+
+"""
+    simlog(msg, settings, category)
+
+Write a log message to STDOUT/STDERR and the specified logfile 
+(if logging is turned on in the settings).
+
+Categories: `d` (debug), `i` (information, default), `w` (warn), `e` (error)
+"""
+function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile="simulation.log", onlylog=false)
+    (isa(category, String) && length(category) == 1) && (category = category[1])
+    function logprint(msg::String, settings::Dict{String, Any}, tostderr=false)
+        if tostderr || !(settings["quiet"] || onlylog)
+            tostderr ? iostr = stderr : iostr = stdout
+            println(iostr, msg)
+        end
+        if settings["logging"]
+            open(joinpath(settings["dest"], logfile), "a") do f
+                println(f, msg)
+            end
+        end
+    end
+    if category == 'i'
+        logprint(msg, settings)
+    elseif category == 'd'
+        settings["debug"] && logprint("DEBUG: "*string(msg), settings)
+    elseif category == 'w'
+        logprint("WARNING: "*string(msg), settings, true)
+    elseif category == 'e'
+        logprint("ERROR: "*string(msg), settings, true)
+        exit(1)
+    else
+        simlog("Invalid log category $category.", settings, 'w')
     end
 end

@@ -1,5 +1,11 @@
-# Return the default settings. All parameters must be registered here.
+"""
+    defaultSettings()
+
+Defines the list of configuration variables and returns their default values
+in a dict.
+"""
 function defaultSettings()
+    # Return the default settings. All parameters must be registered here.
     Dict("maxloci" => 1, # maximum number of loci/copies per gene
          "biggenelength" => 200,
          "burn-in" => 1000, # timesteps before invasion starts

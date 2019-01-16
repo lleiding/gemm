@@ -137,6 +137,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "model/#submodels.jl-1",
+    "page": "Main Model",
+    "title": "submodels.jl",
+    "category": "section",
+    "text": ""
+},
+
+{
     "location": "model/#GeMM.disperse!",
     "page": "Main Model",
     "title": "GeMM.disperse!",
@@ -185,9 +193,9 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#submodels.jl-1",
+    "location": "model/#TODO-1",
     "page": "Main Model",
-    "title": "submodels.jl",
+    "title": "TODO",
     "category": "section",
     "text": "Modules = [GeMM]\nPages = [\"submodels.jl\"]"
 },
@@ -229,7 +237,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Input, Output, and Settings",
     "title": "constants.jl",
     "category": "section",
-    "text": "Modules = [GeMM]\nPages = [\"constants.jl\"]"
+    "text": "This file defines constants that are needed for calculations involving the metabolic theory of ecology.Currently includes boltz (the Boltzmann constant) and act (the activation energy)."
+},
+
+{
+    "location": "io/#GeMM.defaultSettings-Tuple{}",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.defaultSettings",
+    "category": "method",
+    "text": "defaultSettings()\n\nDefines the list of configuration variables and returns their default values in a dict.\n\n\n\n\n\n"
 },
 
 {
@@ -241,11 +257,43 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "io/#GeMM.getsettings-Tuple{}",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.getsettings",
+    "category": "method",
+    "text": "getsettings()\n\nCombines all configuration options to produce a single settings dict. Order of precedence: commandline parameters - config file - default values\n\n\n\n\n\n"
+},
+
+{
+    "location": "io/#GeMM.readmapfile-Tuple{String,Dict{String,Any}}",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.readmapfile",
+    "category": "method",
+    "text": "readmapfile(mapfilename, settings)\n\nParse a map file and return the number of timesteps this map is to be used for (first line of the file) and the patch definitions. The latter is used by createworld and updateworld!.\n\n\n\n\n\n"
+},
+
+{
     "location": "io/#GeMM.basicparser-Tuple{String}",
     "page": "Input, Output, and Settings",
     "title": "GeMM.basicparser",
     "category": "method",
-    "text": "basicparser(f)\n\nDo elementary parsing on a config or map file.\n\nReads in the file, strips whole-line and inline comments and separates lines by whitespace. Returns a 2d array representing the tokens in each line.\n\n\n\n\n\n"
+    "text": "basicparser(filename)\n\nDo elementary parsing on a config or map file.\n\nReads in the file, strips whole-line and inline comments and separates lines by whitespace. Returns a 2d array representing the tokens in each line.\n\n\n\n\n\n"
+},
+
+{
+    "location": "io/#GeMM.parsecommandline-Tuple{}",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.parsecommandline",
+    "category": "method",
+    "text": "parsecommandline()\n\nCertain parameters can be set via the commandline.\n\n\n\n\n\n"
+},
+
+{
+    "location": "io/#GeMM.parseconfig-Tuple{String}",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.parseconfig",
+    "category": "method",
+    "text": "parseconfig(filename)\n\nParse a configuration file and return a settings dict.\n\nThe config syntax is very simple: each line consists of a parameter name and a value (unquoted), e.g. nniches 2. # is the comment character.\n\n\n\n\n\n"
 },
 
 {
@@ -269,7 +317,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Input, Output, and Settings",
     "title": "GeMM.writedata",
     "category": "method",
-    "text": "writedata(world, settings, timestep)\n\nwrites simulation output from world to separate table and fasta files. timestep and setting information is used for file name creation.\n\n\n\n\n\n"
+    "text": "writedata(world, settings, timestep)\n\nWrites simulation output from world to separate table and fasta files. (Which data is recorded depends on the settings.) timestep and setting information is used for file name creation.\n\n\n\n\n\n"
 },
 
 {
@@ -277,7 +325,39 @@ var documenterSearchIndex = {"docs": [
     "page": "Input, Output, and Settings",
     "title": "GeMM.dumpinds",
     "category": "function",
-    "text": "dumpinds(world, io, sep)\n\nOutput all data of individuals in world as table to io. Columns are separated by sep.\n\n\n\n\n\n"
+    "text": "dumpinds(world, io, sep)\n\nOutput all data of individuals in world as table to io. Columns are separated by sep. WARNING: this produces very large files!\n\n\n\n\n\n"
+},
+
+{
+    "location": "io/#GeMM.makefasta",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.makefasta",
+    "category": "function",
+    "text": "makefasta(world, settings, io, onlyisland, sep)\n\nRecord the genome of every individual currently alive to the given IO stream. WARNING: this produces very large files!\n\n\n\n\n\n"
+},
+
+{
+    "location": "io/#GeMM.printheader",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.printheader",
+    "category": "function",
+    "text": "printheader(settings, io, sep)\n\nPrint a list of property names to the given IO stream. This is a helper function for dumpinds.\n\n\n\n\n\n"
+},
+
+{
+    "location": "io/#GeMM.printpopheader-Tuple{IO}",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.printpopheader",
+    "category": "method",
+    "text": "printpopheader(io)\n\nPrint a list of property names to the given IO stream. This is a helper function for printpopstats.\n\n\n\n\n\n"
+},
+
+{
+    "location": "io/#GeMM.printpopstats-Tuple{IO,Array{Patch,1},Dict{String,Any},Integer}",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.printpopstats",
+    "category": "method",
+    "text": "printpopstats(io, world, settings, timestep)\n\nRecord statistical information (maximum, minimum, median, standard deviation) for a range of individual properties, as seen over the whole world population.\n\n\n\n\n\n"
 },
 
 {
@@ -285,7 +365,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Input, Output, and Settings",
     "title": "GeMM.recordlineages",
     "category": "method",
-    "text": "recordlineages(w)\n\nSave the abundance of each lineage per patch\n\n\n\n\n\n"
+    "text": "recordlineages(w)\n\nSave the abundance of each lineage per patch.\n\n\n\n\n\n"
 },
 
 {
@@ -301,7 +381,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Input, Output, and Settings",
     "title": "GeMM.simlog",
     "category": "function",
-    "text": "simlog(msg, settings, category)\n\nWrite a log message to STDOUT/STDERR and the specified logfile  (if logging is turned on in the settings). Categories: d (debug), i (information, default), w (warn), e (error)\n\n\n\n\n\n"
+    "text": "simlog(msg, settings, category)\n\nWrite a log message to STDOUT/STDERR and the specified logfile  (if logging is turned on in the settings).\n\nCategories: d (debug), i (information, default), w (warn), e (error)\n\n\n\n\n\n"
+},
+
+{
+    "location": "io/#GeMM.writesettings-Tuple{Dict{String,Any}}",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.writesettings",
+    "category": "method",
+    "text": "writesettings(settings)\n\nRecord the settings actually used for a simulation run (cf. getsettings). Creates a config file that can be used for future replicate runs. Also records a time stamp and the current git commit.\n\n\n\n\n\n"
 },
 
 {
