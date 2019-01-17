@@ -133,6 +133,8 @@ end
 Calculate the value of the Gauss function ("bell curve") at point x; with
 a being the maximum height of the curve, b the position of the curve center and
 c the standard deviation ("width").
+
+XXX This should be replaced with calls to Normal() from the Distributions package.
 """
 function gausscurve(b, c, x, a = 1.0)
     if c != 0 && a != 1.0

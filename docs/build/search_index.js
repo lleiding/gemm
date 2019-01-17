@@ -145,11 +145,83 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "model/#GeMM.changehabitat!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.changehabitat!",
+    "category": "method",
+    "text": "changehabitat!(world, settings)\n\nCarry out \'global change\' on all patches.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.changeprec!-Tuple{Array{Patch,1},Float64}",
+    "page": "Main Model",
+    "title": "GeMM.changeprec!",
+    "category": "method",
+    "text": "changeprec!(world, sdprec)\n\nChange the precipitation of all patches according to a normal distribution.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.changetemp!-Tuple{Array{Patch,1},Float64}",
+    "page": "Main Model",
+    "title": "GeMM.changetemp!",
+    "category": "method",
+    "text": "changetemp!(world, sdtemp)\n\nChange the temperature of all patches according to a normal distribution.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.checkviability!-Tuple{Array{GeMM.Individual,1},Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.checkviability!",
+    "category": "method",
+    "text": "checkviability!(community, settings)\n\nCheck whether all individuals in the passed community conform to a basic set of constraints (i.e. all traits are present and certain properties are >= 0). Individuals that fail the test are removed from the community.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.checkviability!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.checkviability!",
+    "category": "method",
+    "text": "checkviability(world, settings)\n\nCheck the viability of all individuals.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.checkviability!-Tuple{Patch,Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.checkviability!",
+    "category": "method",
+    "text": "checkviability!(patch, settings)\n\nCheck the viability of the individuals in this patch.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.compete!",
+    "page": "Main Model",
+    "title": "GeMM.compete!",
+    "category": "function",
+    "text": "compete!(world, static)\n\nCarry out competition on all patches.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.compete!-Tuple{Patch}",
+    "page": "Main Model",
+    "title": "GeMM.compete!",
+    "category": "method",
+    "text": "compete!(patch)\n\nWhile there are too many organisms in a patch, pick two at random and kill the one that is less adapted to the local precipitation levels.\n\n\n\n\n\n"
+},
+
+{
     "location": "model/#GeMM.disperse!",
     "page": "Main Model",
     "title": "GeMM.disperse!",
     "category": "function",
-    "text": "disperse!(w)\n\nDispersal of individuals within world (array of patches) w\n\n\n\n\n\n"
+    "text": "disperse!(world, static)\n\nDispersal of individuals within the world.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.disturb!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.disturb!",
+    "category": "method",
+    "text": "disturb!(world, settings)\n\nDisturb all patches in the world.\n\n\n\n\n\n"
 },
 
 {
@@ -157,7 +229,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Main Model",
     "title": "GeMM.disturb!",
     "category": "method",
-    "text": "disturb!(p,i)\n\nspecies-independent mortality due to disturbance on patch p\n\n\n\n\n\n"
+    "text": "disturb!(patch, intensity)\n\nSpecies-independent mortality due to disturbance on the given patch. The intensity gives the mortality percentage.\n\n\n\n\n\n"
 },
 
 {
@@ -165,7 +237,23 @@ var documenterSearchIndex = {"docs": [
     "page": "Main Model",
     "title": "GeMM.establish!",
     "category": "function",
-    "text": "establish!(p, n)\n\nestablishment of individuals in patch p. Sets adaption parameter according to adaptation to number n niches of the surrounding environment.\n\n\n\n\n\n"
+    "text": "establish!(world, nniches, static)\n\nCarry out establishment for each patch in the world.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.establish!",
+    "page": "Main Model",
+    "title": "GeMM.establish!",
+    "category": "function",
+    "text": "establish!(patch, nniches)\n\nEstablishment of individuals in patch p: Sets the adaption parameters (~fitness) according to an individual\'s adaptation to the niches of the surrounding environment.\n\nA maximum of two niches is currently supported.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.grow!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.grow!",
+    "category": "method",
+    "text": "grow!(world, settings)\n\nCarry out growth for all patches.\n\n\n\n\n\n"
 },
 
 {
@@ -173,7 +261,47 @@ var documenterSearchIndex = {"docs": [
     "page": "Main Model",
     "title": "GeMM.grow!",
     "category": "method",
-    "text": "grow!(p)\n\nGrowth of individuals in patch p\n\n\n\n\n\n"
+    "text": "grow!(patch, growthrate)\n\nGrowth of individuals in the given patch. The actual growthrate is calculated with a metabolic formula, modified by the passed growthrate variable.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.mutate!",
+    "page": "Main Model",
+    "title": "GeMM.mutate!",
+    "category": "function",
+    "text": "mutate!(traits, settings, locivar)\n\nLoop over an array of traits, mutating each value in place along a normal distribution.\n\nXXX what does locivar do?\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.mutate!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.mutate!",
+    "category": "method",
+    "text": "mutate!(world, settings)\n\nMutate the world. (That sounds scary!)\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.mutate!-Tuple{GeMM.Individual,Float64,Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.mutate!",
+    "category": "method",
+    "text": "mutate!(individual, temp, settings)\n\nMutate an individual\'s genome (sequence and traits) in place.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.mutate!-Tuple{Patch,Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.mutate!",
+    "category": "method",
+    "text": "mutate!(patch, setting)\n\nMutate all seedling individual\'s in a patch.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.reproduce!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.reproduce!",
+    "category": "method",
+    "text": "reproduce!(world, settings)\n\nCarry out reproduction on all patches.\n\n\n\n\n\n"
 },
 
 {
@@ -181,7 +309,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Main Model",
     "title": "GeMM.reproduce!",
     "category": "method",
-    "text": "reproduce!(p, settings)\n\nReproduction of individuals in a patch p\n\n\n\n\n\n"
+    "text": "reproduce!(patch, settings)\n\nReproduction of individuals in a patch.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/#GeMM.survive!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.survive!",
+    "category": "method",
+    "text": "survive!(world, settings)\n\nWorld-wide mortality. Sounds apocalyptic, but is just a fact of life.\n\n\n\n\n\n"
 },
 
 {
@@ -189,7 +325,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Main Model",
     "title": "GeMM.survive!",
     "category": "method",
-    "text": "survive!(p)\n\ndensity independent survival of individuals in patch p\n\n\n\n\n\n"
+    "text": "survive!(patch, mortality)\n\nDensity independent survival of individuals in a patch. The actual mortality  probability is calculated with a metabolic formula, modified by the passed mortality variable and an individual\'s temperature adaptation.\n\n\n\n\n\n"
 },
 
 {
@@ -501,7 +637,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Internal functions",
     "title": "GeMM.gausscurve",
     "category": "function",
-    "text": "gausscurve(b, c, x, a=1.0)\n\nCalculate the value of the Gauss function (\"bell curve\") at point x; with a being the maximum height of the curve, b the position of the curve center and c the standard deviation (\"width\").\n\n\n\n\n\n"
+    "text": "gausscurve(b, c, x, a=1.0)\n\nCalculate the value of the Gauss function (\"bell curve\") at point x; with a being the maximum height of the curve, b the position of the curve center and c the standard deviation (\"width\").\n\nXXX This should be replaced with calls to Normal() from the Distributions package.\n\n\n\n\n\n"
 },
 
 {

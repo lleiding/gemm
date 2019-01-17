@@ -1,5 +1,12 @@
 # Main processes for GeMM
 
+"""
+    mutate!(traits, settings, locivar)
+
+Loop over an array of traits, mutating each value in place along a normal distribution.
+
+XXX what does locivar do?
+"""
 function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any}, locivar::Float64 = 1.0)
     settings["phylconstr"] * locivar == 0 && return
     for trait in traits
@@ -20,6 +27,11 @@ function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any}, locivar::
     end
 end
 
+"""
+    mutate!(individual, temp, settings)
+
+Mutate an individual's genome (sequence and traits) in place.
+"""
 function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
     muts = settings["mutationrate"] * exp(-act/(boltz*temp)) # settings["mutsperind"]?
     nmuts = rand(Poisson(muts))
@@ -47,18 +59,35 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
     ind.traits = gettraitdict(ind.genome, settings["traitnames"])
 end
 
+"""
+    mutate!(patch, setting)
+
+Mutate all seedling individual's in a patch.
+"""
 function mutate!(patch::Patch, settings::Dict{String, Any})
     for ind in patch.seedbank
         mutate!(ind, patch.temp, settings)
     end
 end
 
+"""
+    mutate!(world, settings)
+
+Mutate the world. (That sounds scary!)
+"""
 function mutate!(world::Array{Patch, 1}, settings::Dict{String, Any})
     for patch in world
         (patch.isisland || !settings["static"]) && mutate!(patch, settings)
     end
 end
 
+"""
+    checkviability!(community, settings)
+
+Check whether all individuals in the passed community conform to a basic set of
+constraints (i.e. all traits are present and certain properties are >= 0).
+Individuals that fail the test are removed from the community.
+"""
 function checkviability!(community::Array{Individual, 1}, settings::Dict{String, Any})
     idx=1
     while idx <= size(community,1)
@@ -79,10 +108,20 @@ function checkviability!(community::Array{Individual, 1}, settings::Dict{String,
     end
 end
 
+"""
+    checkviability!(patch, settings)
+
+Check the viability of the individuals in this patch.
+"""
 function checkviability!(patch::Patch, settings::Dict{String, Any})
     checkviability!(patch.community, settings)
 end
 
+"""
+    checkviability(world, settings)
+
+Check the viability of all individuals.
+"""
 function checkviability!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
         (patch.isisland || !settings["static"]) && checkviability!(patch, settings) # pmap(checkviability!,patch) ???
@@ -90,15 +129,19 @@ function checkviability!(world::Array{Patch,1}, settings::Dict{String, Any})
 end
 
 """
-    establish!(p, n)
-establishment of individuals in patch `p`. Sets adaption parameter
-according to adaptation to number `n` niches of the surrounding environment.
+    establish!(patch, nniches)
+
+Establishment of individuals in patch `p`: Sets the adaption parameters (~fitness)
+according to an individual's adaptation to the niches of the surrounding environment.
+
+A maximum of two niches is currently supported.
 """
 function establish!(patch::Patch, nniches::Int=1)
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
         if patch.community[idx].marked
+            #XXX what does the `marked` do?
             opt = patch.community[idx].traits["tempopt"]
             tol = patch.community[idx].traits["temptol"]
             fitness = gausscurve(opt, tol, temp, 0.0)
@@ -119,6 +162,11 @@ function establish!(patch::Patch, nniches::Int=1)
     end
 end
 
+"""
+    establish!(world, nniches, static)
+
+Carry out establishment for each patch in the world.
+"""
 function establish!(world::Array{Patch,1}, nniches::Int=1, static::Bool = true)
     for patch in world
         (patch.isisland || !static) && establish!(patch, nniches) # pmap(!,patch) ???
@@ -126,8 +174,11 @@ function establish!(world::Array{Patch,1}, nniches::Int=1, static::Bool = true)
 end
 
 """
-    survive!(p)
-density independent survival of individuals in patch `p`
+    survive!(patch, mortality)
+
+Density independent survival of individuals in a patch. The actual mortality 
+probability is calculated with a metabolic formula, modified by the passed `mortality`
+variable and an individual's temperature adaptation.
 """
 function survive!(patch::Patch, mortality::Float64)
     temp = patch.temp
@@ -148,6 +199,11 @@ function survive!(patch::Patch, mortality::Float64)
     end
 end
 
+"""
+    survive!(world, settings)
+
+World-wide mortality. Sounds apocalyptic, but is just a fact of life.
+"""
 function survive!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
         (patch.isisland || !settings["static"]) && survive!(patch, settings["mortality"]) # pmap(!,patch) ???
@@ -155,8 +211,10 @@ function survive!(world::Array{Patch,1}, settings::Dict{String, Any})
 end
 
 """
-    disturb!(p,i)
-species-independent mortality due to disturbance on patch `p`
+    disturb!(patch, intensity)
+
+Species-independent mortality due to disturbance on the given patch. The intensity
+gives the mortality percentage.
 """
 function disturb!(patch::Patch, intensity::Int)
     length(patch.community) <= 0 && return
@@ -170,6 +228,11 @@ function disturb!(patch::Patch, intensity::Int)
     deleteat!(patch.community, dead)
 end
 
+"""
+    disturb!(world, settings)
+
+Disturb all patches in the world.
+"""
 function disturb!(world::Array{Patch,1}, settings::Dict{String, Any})
     (settings["disturbance"] == 0) && return
     if settings["disturbance"] > 100
@@ -181,7 +244,14 @@ function disturb!(world::Array{Patch,1}, settings::Dict{String, Any})
     end
 end
 
-let speciespool = Individual[] # TODO: `speciespool` should be part of the `world` object holding all grid cells 
+let speciespool = Individual[]
+    # TODO: `speciespool` should be part of the `world` object holding all grid cells
+    """
+        initspeciespool!(settings)
+
+    Initialise the foreign species pool (i.e. an array of random individuals that
+    are used as the propagule source for invasion events.
+    """
     function initspeciespool!(settings::Dict{String, Any})
         for i in 1:settings["global-species-pool"]
             push!(speciespool, createind(settings))
@@ -190,14 +260,23 @@ let speciespool = Individual[] # TODO: `speciespool` should be part of the `worl
     
     """
         invade!(patch, pressure)
-    select `pressure` individuals from the global species pool and add them to the patch.
+
+    Select a given amount of individuals from the global species pool and add 
+    them to the patch.
     """
     function invade!(patch::Patch, pressure::Int)
         invaders = deepcopy(rand(speciespool, pressure))
         append!(patch.community, invaders)
     end
 
+    """
+        invade!(world, settings)
+
+    Introduce non-native species from the species pool to all patches marked
+    as invasible.
+    """
     global function invade!(world::Array{Patch,1}, settings::Dict{String, Any})
+        # This function has to be global to escape the let-block of the species pool
         (settings["propagule-pressure"] == 0 || settings["global-species-pool"] == 0) && return
         (length(speciespool) == 0) && initspeciespool!(settings)
         for patch in world
@@ -207,8 +286,10 @@ let speciespool = Individual[] # TODO: `speciespool` should be part of the `worl
 end
 
 """
-    grow!(p)
-Growth of individuals in patch `p`
+    grow!(patch, growthrate)
+
+Growth of individuals in the given patch. The actual growthrate is calculated
+with a metabolic formula, modified by the passed `growthrate` variable.
 """
 function grow!(patch::Patch, growthrate::Float64)
     temp = patch.temp
@@ -232,6 +313,11 @@ function grow!(patch::Patch, growthrate::Float64)
     end
 end
 
+"""
+    grow!(world, settings)
+
+Carry out growth for all patches.
+"""
 function grow!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
         (patch.isisland || !settings["static"]) && grow!(patch, settings["growthrate"]) # pmap(!,patch) ???
@@ -239,8 +325,9 @@ function grow!(world::Array{Patch,1}, settings::Dict{String, Any})
 end
 
 """
-    disperse!(w)
-Dispersal of individuals within world (array of patches) `w`
+    disperse!(world, static)
+
+Dispersal of individuals within the world.
 """
 function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additional border conditions, refactorize
     for patch in world
@@ -271,11 +358,18 @@ function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additiona
     end
 end
 
+"""
+    compete!(patch)
+
+While there are too many organisms in a patch, pick two at random and kill the
+one that is less adapted to the local precipitation levels.
+"""
 function compete!(patch::Patch)
     totalmass = sum(map(x -> x.size, patch.community))
     while totalmass >= patch.area # occupied area larger than available
         firstind = rand(eachindex(patch.community))
         secondind = rand(eachindex(patch.community))
+        #XXX what does this next line do?
         firstind == secondind && length(rand(eachindex(patch.community))) > 1 && continue
         if patch.community[firstind].precadaption < patch.community[secondind].precadaption
             totalmass -= patch.community[firstind].size
@@ -291,6 +385,11 @@ function compete!(patch::Patch)
     end
 end
 
+"""
+    compete!(world, static)
+
+Carry out competition on all patches.
+"""
 function compete!(world::Array{Patch,1}, static::Bool = true)
     for patch in world
         (patch.isisland || !static) && compete!(patch) # pmap(!,patch) ???
@@ -298,8 +397,9 @@ function compete!(world::Array{Patch,1}, static::Bool = true)
 end
 
 """
-    reproduce!(p, settings)
-Reproduction of individuals in a patch `p`
+    reproduce!(patch, settings)
+
+Reproduction of individuals in a patch.
 """
 function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
     identifyAdults!(patch)
@@ -327,18 +427,22 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
     simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
 end
 
+"""
+    reproduce!(world, settings)
+
+Carry out reproduction on all patches.
+"""
 function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
         (patch.isisland || !settings["static"]) && reproduce!(patch, settings) # pmap(!,patch) ???
     end
 end
 
-function changehabitat!(world::Array{Patch,1}, settings::Dict{String, Any})
-    # TODO: record trajectory? input trajectory?
-    changetemp!(world, settings["sdtemp"])
-    changeprec!(world, settings["sdprec"])
-end    
- 
+"""
+    changetemp!(world, sdtemp)
+
+Change the temperature of all patches according to a normal distribution.
+"""
 function changetemp!(world::Array{Patch,1}, sdtemp::Float64)
     sdtemp == 0 && return
     deltaval = rand(Normal(0.0, sdtemp))
@@ -348,6 +452,11 @@ function changetemp!(world::Array{Patch,1}, sdtemp::Float64)
     markthem!(world)
 end    
  
+"""
+    changeprec!(world, sdprec)
+
+Change the precipitation of all patches according to a normal distribution.
+"""
 function changeprec!(world::Array{Patch,1}, sdprec::Float64)
     sdprec == 0 && return
     deltaval = rand(Normal(0.0, sdprec))
@@ -355,4 +464,15 @@ function changeprec!(world::Array{Patch,1}, sdprec::Float64)
         patch.prec += deltaval 
     end
     markthem!(world)
+end    
+
+"""
+    changehabitat!(world, settings)
+
+Carry out 'global change' on all patches.
+"""
+function changehabitat!(world::Array{Patch,1}, settings::Dict{String, Any})
+    # TODO: record trajectory? input trajectory?
+    changetemp!(world, settings["sdtemp"])
+    changeprec!(world, settings["sdprec"])
 end    
