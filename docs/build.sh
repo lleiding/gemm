@@ -15,17 +15,15 @@ julia make.jl
 
 echo "Postprocessing..."
 
-sed -i -e "s/href=\"aux\/\"/href=\"aux\/index.html\"/g" build/index.html
-sed -i -e "s/href=\"io\/\"/href=\"io\/index.html\"/g" build/index.html
-sed -i -e "s/href=\"model\/\"/href=\"model\/index.html\"/g" build/index.html
-sed -i -e "s/href=\"search\/\"/href=\"search\/index.html\"/g" build/index.html
+sed -i -e "s/aux\//aux\/index.html/g" build/index.html build/search_index.js
+sed -i -e "s/io\//io\/index.html/g" build/index.html build/search_index.js
+sed -i -e "s/model\//model\/index.html/g" build/index.html build/search_index.js
+sed -i -e "s/search\//search\/index.html/g" build/index.html build/search_index.js
 
 sed -i -e "s/href=\"..\/\"/href=\"..\/index.html\"/g" build/*/index.html
-sed -i -e "s/href=\"..\/aux\/\"/href=\"..\/aux\/index.html\"/g" build/*/index.html
-sed -i -e "s/href=\"..\/io\/\"/href=\"..\/io\/index.html\"/g" build/*/index.html
-sed -i -e "s/href=\"..\/model\/\"/href=\"..\/model\/index.html\"/g" build/*/index.html
-sed -i -e "s/href=\"..\/search\/\"/href=\"..\/search\/index.html\"/g" build/*/index.html
+sed -i -e "s/..\/aux\//..\/aux\/index.html/g" build/*/index.html
+sed -i -e "s/..\/io\//..\/io\/index.html/g" build/*/index.html
+sed -i -e "s/..\/model\//..\/model\/index.html/g" build/*/index.html
+sed -i -e "s/..\/search\//..\/search\/index.html/g" build/*/index.html
 
 echo "Done."
-
-#TODO fix search page
