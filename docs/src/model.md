@@ -19,8 +19,6 @@ Pages = ["initialisation.jl"]
 
 ## submodels.jl
 
-#### TODO
-
 ```@autodocs
 Modules = [GeMM]
 Pages = ["submodels.jl"]

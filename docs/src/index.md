@@ -15,5 +15,4 @@ This documentation is generated from the source code using Julia's inbuilt
 `Documenter` module. It is sorted first by functionality, second by source code
 file.
 
----
-(c) 2016-2018 Ludwig Leidinger, Daniel Vedder
+*Last updated: 2019-01-17 (commit e4149d1)*  
