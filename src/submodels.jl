@@ -369,8 +369,7 @@ function compete!(patch::Patch)
     while totalmass >= patch.area # occupied area larger than available
         firstind = rand(eachindex(patch.community))
         secondind = rand(eachindex(patch.community))
-        #XXX what does this next line do?
-        firstind == secondind && length(rand(eachindex(patch.community))) > 1 && continue
+        firstind == secondind && length(eachindex(patch.community)) > 1 && continue
         if patch.community[firstind].precadaption < patch.community[secondind].precadaption
             totalmass -= patch.community[firstind].size
             splice!(patch.community, firstind) # profiling: expensive!
