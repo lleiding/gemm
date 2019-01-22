@@ -4,8 +4,8 @@
     mutate!(traits, settings, locivar)
 
 Loop over an array of traits, mutating each value in place along a normal distribution.
-
-XXX what does locivar do?
+`locivar` can be used to scale the variance of the normal distribution used to draw new
+trait values (together with `settings[phylconstr]`).
 """
 function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any}, locivar::Float64 = 1.0)
     settings["phylconstr"] * locivar == 0 && return
@@ -141,7 +141,6 @@ function establish!(patch::Patch, nniches::Int=1)
     idx = 1
     while idx <= size(patch.community,1)
         if patch.community[idx].marked
-            #XXX what does the `marked` do?
             opt = patch.community[idx].traits["tempopt"]
             tol = patch.community[idx].traits["temptol"]
             fitness = gausscurve(opt, tol, temp, 0.0)
@@ -369,8 +368,7 @@ function compete!(patch::Patch)
     while totalmass >= patch.area # occupied area larger than available
         firstind = rand(eachindex(patch.community))
         secondind = rand(eachindex(patch.community))
-        #XXX what does this next line do?
-        firstind == secondind && length(rand(eachindex(patch.community))) > 1 && continue
+        firstind == secondind && length(eachindex(patch.community)) > 1 && continue
         if patch.community[firstind].precadaption < patch.community[secondind].precadaption
             totalmass -= patch.community[firstind].size
             splice!(patch.community, firstind) # profiling: expensive!
