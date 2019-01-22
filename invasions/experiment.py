@@ -33,12 +33,12 @@ constant_settings = {"cellsize":2e6, # 2 tonnes/hectar -> default 20?
                      "linkage":'"none"',
                      "static":"false",
                      "nniches":2,
-                     "tolerance":'"none"',
+                     "tolerance":1.0,
                      "static":"false",
                      "mutate":"false",
                      "usebiggenes":"false",
                      "indsize":'"mixed"',
-                     "initpopsize":'"metabolic"',
+                     "popsize":'"metabolic"',
                      "minseedsize":0, # 1g
                      "minrepsize":5,  # 148g
                      "burn-in": 500,
