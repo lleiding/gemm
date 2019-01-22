@@ -125,19 +125,21 @@ function parseconfig(configfilename::String)
     defaults = defaultSettings()
     for c in config
         if length(c) != 2
-            simlog("Bad config file syntax: $c", settings, 'w')
+            simlog("Bad config file syntax: $c", settings, 'w', "")
         elseif c[1] in keys(defaults)
             value = c[2]
             if !(typeof(defaults[c[1]]) <: AbstractString)
                 try
                     value = parse(typeof(defaults[c[1]]), c[2]) # or Meta.parse with the old functionality
                 catch
-                    simlog("$(c[1]) not of type $(typeof(defaults[c[1]])).", settings, 'w')
+                    simlog("$(c[1]) not of type $(typeof(defaults[c[1]])).",
+                           settings, 'w', "")
                 end
             end
             settings[c[1]] = value
         else
-            simlog(c[1]*" is not a recognized parameter!", settings, 'w') # XXX maybe parse anyway
+            # XXX maybe parse anyway
+            simlog(c[1]*" is not a recognized parameter!", settings, 'w', "")
         end
     end
     settings

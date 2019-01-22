@@ -3,7 +3,7 @@
 echo "Starting simulation run."
 
 date
-time julia islandsim.jl --config invasion.config 
+time julia run_simulation.jl --config invasions/invasion.config 
 date
 
 echo "Done."

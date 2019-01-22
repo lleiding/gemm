@@ -316,12 +316,16 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
 end
 
 """
-    simlog(msg, settings, category)
+    simlog(msg, settings, category, logfile, onlylog)
 
 Write a log message to STDOUT/STDERR and the specified logfile 
 (if logging is turned on in the settings).
 
 Categories: `d` (debug), `i` (information, default), `w` (warn), `e` (error)
+
+If `logfile` is the empty string (default: "simulation.log"), the message will 
+only be printed to the screen. If `onlylog` is true (default: false), the
+message is not printed to screen but only to the log.
 """
 function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile="simulation.log", onlylog=false)
     (isa(category, String) && length(category) == 1) && (category = category[1])
@@ -330,7 +334,7 @@ function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile=
             tostderr ? iostr = stderr : iostr = stdout
             println(iostr, msg)
         end
-        if settings["logging"]
+        if settings["logging"] && length(logfile) > 0
             open(joinpath(settings["dest"], logfile), "a") do f
                 println(f, msg)
             end
