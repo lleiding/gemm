@@ -2,7 +2,10 @@
 #
 # Kick off my island experiments
 # Daniel Vedder, 19/6/2018
+#        updated 22/1/2019
 #
+
+#TODO update to new folder structure (`invasion` folder)
 
 import os, sys, time, random
 
@@ -20,8 +23,9 @@ if len(sys.argv) >= 3:
     replicates = int(sys.argv[2])
 
 # These settings stay constant throughout all simulation runs
-constant_settings = {"cellsize":2,
+constant_settings = {"cellsize":2e6, # 2 tonnes/hectar -> default 20?
                      "outfreq":50,
+                     "raw":"false",
                      "logging":"true",
                      "debug":"true", #default: false
                      "fasta":"false",
@@ -32,11 +36,12 @@ constant_settings = {"cellsize":2,
                      "tolerance":'"none"',
                      "static":"false",
                      "mutate":"false",
-                     "initadults":"false",
+                     "usebiggenes":"false",
+                     "indsize":'"mixed"',
                      "initpopsize":'"metabolic"',
-                     "minseedsize":0,
-                     "minrepsize":5,
-                     "burn-in": 1000,
+                     "minseedsize":0, # 1g
+                     "minrepsize":5,  # 148g
+                     "burn-in": 500,
                      "global-species-pool":100}
 
 # These settings are varied (the first value is the default,
@@ -49,6 +54,7 @@ varying_settings = {"maps":['"invasion.map"',
 
 def archive_code():
     "Save the current codebase in a tar archive."
+    #XXX Add config files and maps?
     tarname = time.strftime("codebase_%d%b%y.tar.gz")
     print("Archiving codebase in "+tarname)
     os.system("git log -1 > commit.txt")
