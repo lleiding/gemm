@@ -9,3 +9,4 @@ slurm*.out
 default*.conf
 old_results/
 data/
+analyse.R

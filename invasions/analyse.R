@@ -212,7 +212,7 @@ plotDiversity = function(outdir, maxt=3000, logfile="diversity.log") {
         return()
     }
     data = read.csv(logfile)
-    if (maxt > length(data$population)) maxt = length(data$population)
+    if (maxt < 0 || maxt > length(data$population)) maxt = length(data$population)
     data$lineages = data$lineages/10 #otherwise the Y axis is too big
     # Plot population sizes
     print("Plotting population development...")

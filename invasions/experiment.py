@@ -65,7 +65,7 @@ def archive_code():
 def slurm(config):
     "Send a job to slurm"
     if "gaia" in os.uname().nodename:
-        cmd = "sbatch -c 2 --mem 50GB ./islandsim.jl --config "+str(config)
+        cmd = "sbatch -c 2 --mem 50GB ./run_simulation.jl --config "+str(config)
         os.system(cmd)
         os.system("rm "+config) #cleanup
         time.sleep(3) #prevent output folder merges
@@ -102,7 +102,7 @@ def run_defaults():
         slurm(simname+".conf")
         i = i+1
 
-def run_experiment():
+def run_experiment(control=True):
     "Create a full experiment with all parameter combinations"
     global simname, replicates
     i = 0
@@ -118,9 +118,10 @@ def run_experiment():
                     seed = random.randint(0,10000)
                     runname = simname+"_r"+str(i+1)+"_"+spec
                     write_config(runname+".conf", tm, pp, db, seed)
-                    write_config(runname+"_control.conf", tm, 0, db, seed)
                     slurm(runname+".conf")
-                    slurm(runname+"_control.conf")
+                    if control:
+                        write_config(runname+"_control.conf", tm, 0, db, seed)
+                        slurm(runname+"_control.conf")
         i = i + 1
     print("Done.")
 
