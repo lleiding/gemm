@@ -16,7 +16,7 @@ function getsettings()
     end
     settings = merge(defaults, configs, commandline)
     if settings["seed"] == 0
-        settings["seed"] = abs(rand(Int32))
+        settings["seed"] = round(rand() * 1000000)
     end
     settings["maps"] = map(x -> String(x), split(settings["maps"], ","))
     if isa(settings["traitnames"], String)
