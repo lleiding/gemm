@@ -2,11 +2,13 @@
 
 using
     Distributed,
-    ArgParse
+    ArgParse,
+    Random
 
 @everywhere thisDir = joinpath(pwd(), "src")
 @everywhere any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
-
+@everywhere using Pkg
+@everywhere Pkg.activate(".")
 @everywhere using GeMM
 
 """
@@ -48,7 +50,7 @@ simulations = []
 for i in args["seed"]:(args["seed"] + args["replicates"] - 1)
     args["seed"] != 0 ? rep = abs(rand(RandomDevice(), Int32)) : rep = i
     for config in configs
-        push!(simulations, [config, rep])
+        push!(simulations, [String(config), rep])
     end
 end
 
