@@ -17,6 +17,8 @@
 thisDir = joinpath(pwd(), "src")
 any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 
+# XXX This should be part of GeMM if we're to distribute the model as a package!
+
 using
     GeMM,
     Random

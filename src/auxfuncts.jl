@@ -549,6 +549,7 @@ function createind(settings::Dict{String, Any}, marked::Bool = false)
         nchrms = randchrms
     end
     chromosomes = createchrms(nchrms, genes)
+    locivar = rand() #XXX Is this legit? Don't quite understand `locivar` yet...
     varyalleles!(chromosomes, settings, locivar)
     traitdict = gettraitdict(chromosomes, settings["traitnames"])
     if settings["indsize"] == "adult"
