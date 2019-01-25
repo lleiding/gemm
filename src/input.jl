@@ -19,6 +19,7 @@ function getsettings()
         settings["seed"] = abs(rand(Int32)) #FIXME always creates the same seed?!
     end
     settings["maps"] = map(x -> String(x), split(settings["maps"], ","))
+    map!(x -> join(push!(split(settings["config"], '/')[1:end-1], x), '/'), settings["maps"], settings["maps"])
     if isa(settings["traitnames"], String)
         settings["traitnames"] = map(x -> String(x), split(settings["traitnames"], ","))
     end
