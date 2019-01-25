@@ -1,28 +1,10 @@
-#!/usr/bin/env julia
+"""
+    runsim(config, seed, prerun)
 
-# Island speciation model using GeMM
-#
-# Ludwig Leidinger 2018
-# <l.leidinger@gmx.net>
-#
-# Daniel Vedder 2018
-# <daniel.vedder@stud-mail.uni-wuerzburg.de>
-#
-# For a list of options, run `julia islandsim.jl --help`
-#
-# <MAPFILE> is a textfile containing information about the simulation arena
-# Every line describes one patch in the following format:
-# <ID> <X-COORDINATE> <Y-COORDINATE> [<TYPE>]
-
-thisDir = joinpath(pwd(), "src")
-any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
-
-# XXX This should be part of GeMM if we're to distribute the model as a package!
-
-using
-    GeMM,
-    Random
-
+Performs a simulation run using configuration file `config`, random seed `seed`
+and other settings provided via commandline, configuration file or the defaults.
+`prerun` toggles a pre-compilation run
+"""
 function runsim(config::String = "", seed::Integer = 0, prerun::Bool = false)
     settings = getsettings()
     if prerun
@@ -51,11 +33,17 @@ function runsim(config::String = "", seed::Integer = 0, prerun::Bool = false)
 end
 
 
+"""
+    rungemm(config, seed)
+
+Wrapper for `runsim()`
+Runs a simulation using configuration file `config`, random seed `seed`
+and other settings provided via commandline, configuration file or the defaults.
+Performs a pre-compilation run first.
+"""
 function rungemm(config::String = "", seed::Integer = 0)
     # compilation run:
     runsim("", 1, true)
     # run intended simulation:
     runsim(config, seed)
 end
-
-rungemm()

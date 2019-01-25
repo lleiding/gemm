@@ -17,17 +17,7 @@ using
 
 
 export
-    # types:
-    Patch,
-    # functions:
-    createworld,
-    defaultSettings,
-    getsettings,
-    readmapfile,
-    setupdatadir,
-    simulate!,
-    updateworld!,
-    writedata
+    rungemm
 
 
 include("defaults.jl")
@@ -48,5 +38,6 @@ include("submodels.jl")
 
 include("scheduling.jl")
 
+include("run_simulation.jl")
 
 end
