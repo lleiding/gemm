@@ -9,7 +9,7 @@ Order of precedence: commandline parameters - config file - default values
 function getsettings()
     defaults = defaultSettings()
     commandline = parsecommandline()
-    if isfile(commandline["config"])
+    if haskey(commandline, "config") && isfile(commandline["config"])
         configs = parseconfig(commandline["config"])
     else
         configs = Dict{String, Any}()
@@ -154,12 +154,18 @@ Parse a map file and return the number of timesteps this map is to be used for
 """
 function readmapfile(mapfilename::String, settings::Dict{String, Any})
     simlog("Reading map file $mapfilename.", settings)
-    mapfile = basicparser(mapfilename)
-    timesteps = parse(Int, mapfile[1][1])
-    if length(mapfile[1]) != 1 || !isa(timesteps, Integer)
-        timesteps = 1000
-        simlog("Invalid timestep information in the mapfile. Setting timesteps to 1000.", settings, 'w')
+    if isfile(mapfilename)
+        maptable = basicparser(mapfilename)
+        timesteps = parse(Int, maptable[1][1])
+        if length(maptable[1]) != 1 || !isa(timesteps, Integer)
+            timesteps = 10
+            simlog("Invalid timestep information in the mapfile. Setting timesteps to 10.", settings, 'w')
+        end
+    else
+        simlog("No map definition file provided. Assuming a two-cell world for 10 time steps.", settings, 'w')
+        timesteps = 10
+        maptable = [["",""], ["1", "1", "1", "initpop"], ["2", "2", "1"]]
     end
-    return timesteps,mapfile[2:end]
+    return timesteps,maptable[2:end]
 end
 
