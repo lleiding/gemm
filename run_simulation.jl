@@ -29,7 +29,7 @@ function runit(prerun::Bool = false)
         settings = defaultSettings()
         settings["cellsize"] = 1.0e6
         settings["indsize"] = "adult"
-        settings["popsize"] = "single"
+        settings["popsize"] = "metabolic"
         settings["maps"] = [getsettings()["maps"][1]]
         settings["phylo"] = false
         settings["quiet"] = true
@@ -42,7 +42,7 @@ function runit(prerun::Bool = false)
         timesteps, maptable = readmapfile(settings["maps"][i], settings)
         if prerun
             timesteps = 10
-            maptable = [["1", "1", "1", "initpop"], ["2", "2", "1", "isisland"]]
+            maptable = [["1", "1", "1", "initpop"], ["2", "2", "1"]]
         end
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world,maptable,settings["cellsize"])
@@ -51,5 +51,8 @@ function runit(prerun::Bool = false)
     end
 end
 
+# compilation run:
 runit(true)
-@time runit()
+
+# run intended simulation:
+runit()
