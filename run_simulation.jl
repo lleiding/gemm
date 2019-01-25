@@ -45,7 +45,7 @@ function runit(prerun::Bool = false)
             maptable = [["1", "1", "1", "initpop"], ["2", "2", "1"]]
         end
         i == 1 && (world = createworld(maptable, settings))
-        i > 1 && updateworld!(world,maptable,settings["cellsize"])
+        i > 1 && updateworld!(world,maptable, settings)
         !prerun && writedata(world, settings, 0)
         simulate!(world, settings, timesteps)
     end

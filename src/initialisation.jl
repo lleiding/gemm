@@ -169,8 +169,9 @@ Reinitialise the world from another parsed map file. Works analogously to
 `createworld`. Intended for use in scenarios where the model world changes
 during a run (e.g. through global warming or island growth).
 """
-function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},cellsize::Float64)
+function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, settings::Dict{String, Any})
     #TODO: add functionality to remove patches!
+    cellsize = settings["cellsize"]
     simlog("Updating world...", settings)
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
@@ -202,10 +203,10 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
             elseif length(varval) < 2
                 val = true # if no value is specified, assume 'true'
             else
-                val = parse(varval[2])
+                val = Meta.parse(varval[2])
             end
             # check for correct type and modify the new patch
-            vartype = typeof(eval(parse("newpatch."*var)))
+            vartype = typeof(eval(Meta.parse("newpatch."*var)))
             if !isa(val, vartype)
                 try
                     val = convert(vartype, val)
@@ -214,7 +215,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
                     continue
                 end
             end
-            eval(parse("newpatch."*string(var)*" = $val"))
+            eval(Meta.parse("newpatch."*string(var)*" = $val"))
         end
         if marked
             push!(world, newpatch)
