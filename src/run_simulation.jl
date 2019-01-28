@@ -6,8 +6,7 @@ and other settings provided via commandline, configuration file or the defaults.
 `prerun` toggles a pre-compilation run
 """
 function runsim(config::String = "", seed::Integer = 0, prerun::Bool = false)
-    settings = getsettings()
-    settings["config"] = config
+    settings = getsettings(config)
     settings["seed"] = seed
     if prerun
         settings = defaultSettings()
@@ -47,5 +46,5 @@ function rungemm(config::String = "", seed::Integer = 0)
     # compilation run:
     runsim("", 1, true)
     # run intended simulation:
-    runsim(config, seed)
+    @time runsim(config, seed)
 end

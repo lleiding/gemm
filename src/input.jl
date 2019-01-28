@@ -6,10 +6,12 @@
 Combines all configuration options to produce a single settings dict.
 Order of precedence: commandline parameters - config file - default values
 """
-function getsettings()
+function getsettings(configfile::String = "")
     defaults = defaultSettings()
-    commandline = parsecommandline()
-    if haskey(commandline, "config") && isfile(commandline["config"])
+    commandline = parsecommandline() # deprecate?
+    if !isempty(configfile) && isfile(configfile)
+        configs = parseconfig(configfile)
+    elseif haskey(commandline, "config") && isfile(commandline["config"])
         configs = parseconfig(commandline["config"])
     else
         configs = Dict{String, Any}()
