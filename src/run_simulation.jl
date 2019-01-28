@@ -7,6 +7,8 @@ and other settings provided via commandline, configuration file or the defaults.
 """
 function runsim(config::String = "", seed::Integer = 0, prerun::Bool = false)
     settings = getsettings()
+    settings["config"] = config
+    settings["seed"] = seed
     if prerun
         settings = defaultSettings()
         settings["cellsize"] = 1.0e6
