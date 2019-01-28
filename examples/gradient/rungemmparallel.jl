@@ -48,7 +48,7 @@ configs = split(args["config"], ',')
 simulations = []
 
 for i in args["seed"]:(args["seed"] + args["replicates"] - 1)
-    args["seed"] != 0 ? rep = abs(rand(RandomDevice(), Int32)) : rep = i
+    args["seed"] == 0 ? rep = abs(rand(RandomDevice(), Int32)) : rep = i
     for config in configs
         push!(simulations, [String(config), rep])
     end
