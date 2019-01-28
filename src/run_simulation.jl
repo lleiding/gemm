@@ -6,7 +6,7 @@ and other settings provided via commandline, configuration file or the defaults.
 `prerun` toggles a pre-compilation run
 """
 function runsim(config::String = "", seed::Integer = 0, prerun::Bool = false)
-    settings = getsettings(config)
+    settings = getsettings(config, seed)
     settings["seed"] = seed
     if prerun
         settings = defaultSettings()

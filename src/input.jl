@@ -6,18 +6,20 @@
 Combines all configuration options to produce a single settings dict.
 Order of precedence: commandline parameters - config file - default values
 """
-function getsettings(configfile::String = "")
+function getsettings(configfile::String = "", seed::Integer = 0)
     defaults = defaultSettings()
     commandline = parsecommandline() # deprecate?
     if !isempty(configfile) && isfile(configfile)
         configs = parseconfig(configfile)
+        commandline["config"] = configfile
     elseif haskey(commandline, "config") && isfile(commandline["config"])
         configs = parseconfig(commandline["config"])
     else
         configs = Dict{String, Any}()
     end
+    seed != 0 && (commandline["seed"] = seed)
     settings = merge(defaults, configs, commandline)
-    settings["dest"] = settings["dest"] * "_" * split(split(settings["config"], '/')[end], ".")[end-1] * "_" * string(settings["seed"])
+    settings["dest"] = settings["dest"] * "_" * join(split(split(settings["config"], '/')[end], ".")) * "_" * string(settings["seed"])
     if settings["seed"] == 0
         settings["seed"] = abs(rand(RandomDevice(), Int32))
     end
