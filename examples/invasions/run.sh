@@ -2,7 +2,7 @@
 
 echo "Copying input files."
 
-cp invasions/invasion.config invasions/invasion.map .
+cp examples/invasions/invasion.config examples/invasions/invasion.map .
 
 echo "Starting simulation run."
 

@@ -9,6 +9,8 @@ library(ggplot2)
 resultdir = "results"
 outdir = paste0(resultdir, "/", commandArgs()[length(commandArgs())])
 
+## D-Day
+invasionstart = 500
 
 ### ANALYSE THE WHOLE EXPERIMENT
 
@@ -221,7 +223,7 @@ plotDiversity = function(outdir, maxt=3000, logfile="diversity.log") {
     par(cex=1.6)
     plot(data$population[1:maxt], xlab="Time", ylab="Population size",
          ylim=c(0, max(data$population)), col="red", type='l')
-    abline(v=1000,lty=2,col="darkgreen")
+    abline(v=invasionstart,lty=2,col="darkgreen")
     dev.off()
     # Plot diversity development
     print("Plotting diversity...")
@@ -235,7 +237,7 @@ plotDiversity = function(outdir, maxt=3000, logfile="diversity.log") {
     lines(data$alpha[1:maxt], col="blue", type='l')
     lines(data$beta[1:maxt], col="green", type='l')
     lines(data$gamma[1:maxt], col="red", type='l')
-    abline(v=1000,lty=2,col="darkgreen")
+    abline(v=invasionstart,lty=2,col="darkgreen")
     legend("topright", c("Lineages (x 0.1)", "Free space per tile", "Alpha diversity",
                          "Beta diversity", "Gamma diversity"),
            col=c("orange", "cyan", "blue", "green", "red"), lwd=2)
@@ -278,8 +280,8 @@ plotTimeSeries = function(outdir, step=1) {
     
 visualizeRun = function(outdir, maxt=-1) {
     plotDiversity(outdir,maxt)
-    plotTraits(outdir)
-    plotTraits(outdir, 1000)
+    #plotTraits(outdir)
+    #plotTraits(outdir, 1000)
     plotTimeSeries(outdir, 500)
 }
     
