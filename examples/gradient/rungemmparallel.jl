@@ -5,7 +5,7 @@ using
     ArgParse,
     Random
 
-@everywhere thisDir = joinpath(pwd(), "src")
+@everywhere thisDir = joinpath(pwd(), "..", "..", "src")
 @everywhere any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 @everywhere using Pkg
 @everywhere Pkg.activate(".")
