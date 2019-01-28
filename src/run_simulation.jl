@@ -47,5 +47,5 @@ function rungemm(config::String = "", seed::Integer = 0)
     # compilation run:
     runsim("", 1, true)
     # run intended simulation:
-    world = runsim(config, seed)
+    @time world = runsim(config, seed)
 end
