@@ -31,6 +31,7 @@ function runsim(config::String = "", seed::Integer = 0, prerun::Bool = false)
         !prerun && writedata(world, settings, 0)
         simulate!(world, settings, timesteps)
     end
+    world
 end
 
 
@@ -46,5 +47,5 @@ function rungemm(config::String = "", seed::Integer = 0)
     # compilation run:
     runsim("", 1, true)
     # run intended simulation:
-    @time runsim(config, seed)
+    world = runsim(config, seed)
 end
