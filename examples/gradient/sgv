@@ -2,8 +2,8 @@
 # Daniel Vedder, 30/04/2018
 
 # software parameters
-maps example.map
-outfreq 500
+maps grad.map
+outfreq 50
 logging true
 debug false
 fasta false
@@ -11,14 +11,19 @@ lineages true
 
 # general model parameters
 linkage random
+maxloci 20
 nniches 2
 tolerance 0.5
 static false
 cellsize 1e5
-mutate true
-maxloci 10
+mutate false
+sdtemp 0.2
+sdprec 0.2
+dispshape 1.0
+phylconstr 0.5
+mortality 1.3188157344832146e9 #exp(21)
 
 disturbance 0
-#popsize single
 indsize mixed
 usebiggenes false
+raw false
