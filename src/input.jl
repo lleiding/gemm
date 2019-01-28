@@ -17,8 +17,9 @@ function getsettings(configfile::String = "")
         configs = Dict{String, Any}()
     end
     settings = merge(defaults, configs, commandline)
+    settings["dest"] = settings["dest"] * "_" * split(split(settings["config"], '/')[end], ".")[end-1] * "_" * string(settings["seed"])
     if settings["seed"] == 0
-        settings["seed"] = abs(rand(Int32)) #FIXME always creates the same seed?!
+        settings["seed"] = abs(rand(RandomDevice(), Int32))
     end
     settings["maps"] = map(x -> String(x), split(settings["maps"], ","))
     map!(x -> join(push!(split(settings["config"], '/')[1:end-1], x), '/'), settings["maps"], settings["maps"])
