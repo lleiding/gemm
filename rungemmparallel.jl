@@ -5,7 +5,7 @@ using
     ArgParse,
     Random
 
-@everywhere thisDir = joinpath(pwd(), "..", "..", "src")
+@everywhere thisDir = joinpath(pwd(), "src")
 @everywhere any(path -> path == thisDir, LOAD_PATH) || push!(LOAD_PATH, thisDir)
 @everywhere using Pkg
 @everywhere Pkg.activate(".")
@@ -20,11 +20,11 @@ function parseexperiments()
     s = ArgParseSettings()
     @add_arg_table s begin
         "--config", "-c"
-            help = "list of configuaration files, comma separated"
+            help = "list of configuration files, comma separated"
             arg_type = String
             required = true
         "--seed", "-s"
-            help = "inital random seed"
+            help = "initial random seed"
             arg_type = Int
             required = false
             default = 0
@@ -55,5 +55,3 @@ for i in args["seed"]:(args["seed"] + args["replicates"] - 1)
 end
 
 pmap(x -> rungemm(x[1], x[2]), simulations)
-
-
