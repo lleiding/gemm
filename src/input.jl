@@ -19,7 +19,9 @@ function getsettings(configfile::String = "", seed::Integer = 0)
     end
     seed != 0 && (commandline["seed"] = seed)
     settings = merge(defaults, configs, commandline)
-    settings["dest"] = settings["dest"] * "_" * join(split(split(settings["config"], '/')[end], ".")) * "_" * string(settings["seed"])
+    if settings["dest"] == defaults["dest"]
+        settings["dest"] = settings["dest"] * "_" * join(split(split(settings["config"], '/')[end], ".")) * "_" * string(settings["seed"])
+    end
     if settings["seed"] == 0
         settings["seed"] = abs(rand(RandomDevice(), Int32))
     end
