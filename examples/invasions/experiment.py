@@ -5,7 +5,7 @@
 #        updated 22/1/2019
 #
 
-# NOTE: make sure to copy this to the model root folder before running
+# NOTE: make sure to copy/symlink this to the model root folder before running
 
 import os, sys, time, random
 
@@ -106,7 +106,7 @@ def run_experiment(control=False):
     global simname, replicates
     i = 0
     while i < replicates:
-        for tm in varying_settings["maps"]:
+        for tm in varying_settings["maps"][1:]:
             for pp in varying_settings["propagule-pressure"][1:]:
                 for db in varying_settings["disturbance"][1:]:
                     if '_' in tm: temp = tm.split("_")[1].split(".")[0]

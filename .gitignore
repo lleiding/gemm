@@ -10,3 +10,4 @@ default*.conf
 old_results/
 data/
 analyse.R
+experiment.py
