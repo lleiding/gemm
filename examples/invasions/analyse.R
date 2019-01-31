@@ -15,6 +15,7 @@ invasionstart = 500
 ### ANALYSE THE WHOLE EXPERIMENT
 
 collateSpeciesTable = function(rundir, timestep, compensate=TRUE, showinvaders=TRUE, includeTS=FALSE) {
+    #FIXME output file format has changed!
     ## load raw data
     tsvfile = grep(".tsv", grep(paste0("t", timestep, "_"), list.files(rundir), value=T), value=T)
     if (length(tsvfile) == 0 && compensate) {
@@ -79,6 +80,7 @@ loadSpeciesTable = function(rundir, timestep) {
 }
 
 analyseEstablishment = function(timestep=-1, reanalyze=TRUE) {
+    #FIXME Traitfile format has changed!
     print("Analysing invasion success")
     ## create the results table
     results = array(dim=c(2,2,2,6,4), dimnames=list(temperature=c("T25", "T35"),
@@ -176,6 +178,7 @@ plotFactors = function(results, var="aliens") {
 ### ANALYSE AN INDIVIDUAL RUN
 
 ## Plot the distribution of traits in the population at the given timestep (-1 => END)
+#FIXME traitfile format has changed!
 plotTraits = function(outdir, timestep=-1, compensate=FALSE) {
     simname = strsplit(outdir, "/")[[1]][2]
     print(paste("Plotting traits at timestep", timestep))
