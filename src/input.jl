@@ -20,13 +20,13 @@ function getsettings(configfile::String = "", seed::Integer = 0)
     seed != 0 && (commandline["seed"] = seed)
     settings = merge(defaults, configs, commandline)
     if settings["dest"] == defaults["dest"]
-        settings["dest"] = settings["dest"] * "_" * join(split(split(settings["config"], '/')[end], ".")) * "_" * string(settings["seed"])
+        settings["dest"] = settings["dest"] * "_" * join(split(basename(settings["config"]), ".")) * "_" * string(settings["seed"])
     end
     if settings["seed"] == 0
         settings["seed"] = abs(rand(RandomDevice(), Int32))
     end
     settings["maps"] = map(x -> String(x), split(settings["maps"], ","))
-    map!(x -> join(push!(split(settings["config"], '/')[1:end-1], x), '/'), settings["maps"], settings["maps"])
+    map!(x -> joinpath(dirname(settings["config"]), x), settings["maps"], settings["maps"])
     if isa(settings["traitnames"], String)
         settings["traitnames"] = map(x -> String(x), split(settings["traitnames"], ","))
     end

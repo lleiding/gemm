@@ -148,7 +148,7 @@ function setupdatadir(settings::Dict{String, Any})
         if haskey(settings, "maps")
             for m in settings["maps"]
                 isempty(m) && continue
-                cp(m, joinpath(settings["dest"], split(m, '/')[end]), force = true) # most likely replicates with same parameters
+                cp(m, joinpath(settings["dest"], basename(m)), force = true) # most likely replicates with same parameters
             end
         end
     end
@@ -162,8 +162,11 @@ Creates a config file that can be used for future replicate runs.
 Also records a time stamp and the current git commit.
 """
 function writesettings(settings::Dict{String, Any})
-    # make sure there is a valid config file name even if none provided:
-    settingspath = join(split(split(settings["config"], '/')[end], '.')[1:end-1]) * ".conf"
+    if isempty(basename(settings["config"]))
+        settingspath = "settings.conf"
+    else
+        settingspath = basename(settings["config"])
+    end
     open(joinpath(settings["dest"], settingspath), "w") do f
         println(f, "#\n# --- Island speciation model settings ---")
         println(f, "# This file was generated automatically.")
