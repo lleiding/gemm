@@ -5,7 +5,7 @@
 #        updated 22/1/2019
 #
 
-#TODO update to new folder structure (`invasion` folder)
+# NOTE: make sure to copy this to the model root folder before running
 
 import os, sys, time, random
 
@@ -54,11 +54,10 @@ varying_settings = {"maps":['"invasion.map"',
 
 def archive_code():
     "Save the current codebase in a tar archive."
-    #XXX Add config files and maps?
     tarname = time.strftime("codebase_%d%b%y.tar.gz")
     print("Archiving codebase in "+tarname)
     os.system("git log -1 > commit.txt")
-    cmd = "tar czf "+tarname+" README.md commit.txt islandsim.jl experiment.py analyse.R src/*"
+    cmd = "tar czfh "+tarname+" README.md commit.txt islandsim.jl experiment.py analyse.R src/*"
     os.system(cmd)
     os.remove("commit.txt")
 
@@ -102,7 +101,7 @@ def run_defaults():
         slurm(simname+".conf")
         i = i+1
 
-def run_experiment(control=True):
+def run_experiment(control=False):
     "Create a full experiment with all parameter combinations"
     global simname, replicates
     i = 0
@@ -115,7 +114,7 @@ def run_experiment(control=True):
                     spec = temp+"_"+str(pp)+"PP_"+str(db)+"DB"
                     print("Running simulation with specification "+spec+" for "
                           +str(replicates)+" replicates.")
-                    seed = random.randint(0,10000)
+                    seed = random.randint(0,100000)
                     runname = simname+"_r"+str(i+1)+"_"+spec
                     write_config(runname+".conf", tm, pp, db, seed)
                     slurm(runname+".conf")
