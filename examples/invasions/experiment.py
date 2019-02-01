@@ -27,10 +27,10 @@ constant_settings = {"cellsize":2e6, # 2 tonnes/hectar -> default 20?
                      "outfreq":50,
                      "raw":"false",
                      "logging":"true",
-                     "debug":"true", #default: false
+                     "debug":"false", #default: false
                      "fasta":"false",
                      "lineages":"true",
-                     "linkage":'"none"',
+                     "linkage":"none",
                      "static":"false",
                      "nniches":2,
                      "tolerance":1.0,
@@ -77,7 +77,7 @@ def write_config(config, maps, prop_pressure, disturbance, seed):
     cf.write("# Island speciation model for invasion experiments\n")
     cf.write("# This config file was generated automatically.\n")
     cf.write("# "+time.asctime()+"\n")
-    cf.write('\ndest "results/'+config.replace(".conf", "")+'"\n')
+    cf.write("\ndest results/"+config.replace(".conf", "")+"\n")
     cf.write("\n# Constant settings:\n")
     for k in constant_settings.keys():
         cf.write(k + " " + str(constant_settings[k]) + "\n")
