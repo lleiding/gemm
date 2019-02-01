@@ -7,7 +7,7 @@
 
 # NOTE: make sure to copy/symlink this to the model root folder before running
 
-import os, sys, time, random
+import os, sys, shutil, time, random
 
 global simname, replicates
 
@@ -37,8 +37,8 @@ constant_settings = {"cellsize":2e6, # 2 tonnes/hectar -> default 20?
                      "static":"false",
                      "mutate":"false",
                      "usebiggenes":"false",
-                     "indsize":'"mixed"',
-                     "popsize":'"metabolic"',
+                     "indsize":"mixed",
+                     "popsize":"metabolic",
                      "minseedsize":0, # 1g
                      "minrepsize":5,  # 148g
                      "burn-in": 500,
@@ -46,9 +46,9 @@ constant_settings = {"cellsize":2e6, # 2 tonnes/hectar -> default 20?
 
 # These settings are varied (the first value is the default,
 # every combination of the rest is tested)
-varying_settings = {"maps":['"invasion.map"',
-                            '"invasion_hot.map"',
-                            '"invasion_cold.map"'],
+varying_settings = {"maps":["invasion.map",
+                            "invasion_hot.map",
+                            "invasion_cold.map"],
                     "propagule-pressure":[0,1,10],
                     "disturbance":[0,1,10]}
 
@@ -57,7 +57,7 @@ def archive_code():
     tarname = time.strftime("codebase_%d%b%y.tar.gz")
     print("Archiving codebase in "+tarname)
     os.system("git log -1 > commit.txt")
-    cmd = "tar czfh "+tarname+" README.md commit.txt islandsim.jl experiment.py analyse.R src/*"
+    cmd = "tar czfh "+tarname+" README.md commit.txt rungemmparallel.jl experiment.py analyse.R src/*"
     os.system(cmd)
     os.remove("commit.txt")
 
@@ -92,6 +92,8 @@ def run_defaults():
     "Create a series of runs with the default values (no invasion events)"
     global simname, replicates
     print("Running default simulation with "+str(replicates)+" replicates.")
+    if varying_settings["maps"][0] not in os.listdir():
+        shutil.copy("examples/invasions/"+varying_settings["maps"][0], ".")
     write_config(simname+".conf",
                  varying_settings["maps"][0],
                  varying_settings["propagule-pressure"][0],
@@ -107,6 +109,8 @@ def run_experiment(control=False):
     i = 0
     while i < replicates:
         for tm in varying_settings["maps"][1:]:
+            if tm not in os.listdir():
+                shutil.copy("examples/invasions/"+tm, ".")
             for pp in varying_settings["propagule-pressure"][1:]:
                 for db in varying_settings["disturbance"][1:]:
                     if '_' in tm: temp = tm.split("_")[1].split(".")[0]
