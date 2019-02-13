@@ -17,17 +17,9 @@ worldend = 1500
 collateSpeciesTable = function(rundir)
 {
     st = read.csv(paste0(rundir, "/lineages.log"))
-    alien = c()
-    natives = subset(st, t==invasionstart)$lineage
-    ## The following loop is very slow - vectorise?
-    for (n in st[,1]) {
-        if (n <= invasionstart) alien = c(alien, FALSE)
-        else {
-            if (st[n,]$lineage %in% natives)
-                alien = c(alien, FALSE)
-            else alien = c(alien, TRUE)
-        }
-    }
+    natives = unique(subset(st, t==invasionstart)$lineage)
+    alien = rep(c(FALSE), length(subset(st, t <= invasionstart)[,1]))
+    alien = c(alien, !subset(st, t > invasionstart)$lineage %in% natives)
     st = cbind(st, alien)
     return(st)
 }
@@ -98,15 +90,15 @@ plotEstablishment = function(results) {
         else cols = grey(c(0))
         image(c(15,35),c(1,10),mppl, col=cols,xaxp=c(15,35,1),yaxp=c(1,10,1),
               xlab="Temperature (°C)",ylab="Disturbance (%)", main="Propagule pressure: 1")
-        text(25,1,round(mppl[1,1],2),col="blue",cex=3)
-        text(25,10,round(mppl[1,2],2),col="blue",cex=3)
+        text(15,1,round(mppl[1,1],2),col="blue",cex=3)
+        text(15,10,round(mppl[1,2],2),col="blue",cex=3)
         text(35,1,round(mppl[2,1],2),col="blue",cex=3)
         text(35,10,round(mppl[2,2],2),col="blue",cex=3)
         image(c(15,35),c(1,10),mpph, col=cols,xaxp=c(15,35,1),yaxp=c(1,10,1),
               xlab="Temperature (°C)",ylab="Disturbance (%)",
               main="Propagule pressure: 10")
-        text(25,1,round(mpph[1,1],2),col="blue",cex=3)
-        text(25,10,round(mpph[1,2],2),col="blue",cex=3)
+        text(15,1,round(mpph[1,1],2),col="blue",cex=3)
+        text(15,10,round(mpph[1,2],2),col="blue",cex=3)
         text(35,1,round(mpph[2,1],2),col="blue",cex=3)
         text(35,10,round(mpph[2,2],2),col="blue",cex=3)
         dev.off()
@@ -197,9 +189,17 @@ plotMap = function(outdir, timestep=-1, compensate=TRUE, showinvaders=TRUE) {
            height=4, width=5, dpi="print")
 }
 
-plotTimeSeries = function(outdir, step) {
-    data = analyseEstablishment()
-    ##TODO
+plotTimeSeries = function(rundir, step) {
+    data = collateSpeciesTable(rundir)
+    ## figure out at which timepoints to create a map
+    snapshots = seq(0, worldend, step)
+    snapshots[1] = 1
+    if (!invasionstart %in% snapshots) snapshots = c(snapshots, invasionstart)
+    if (!worldend %in% snapshots) snapshots = c(snapshots, worldend)
+    ## plot the maps
+    for (s in snapshots) {
+        plotmap(subset(data, t == s))
+    }
 }
 
 
@@ -207,7 +207,7 @@ plotTimeSeries = function(outdir, step) {
     
 visualizeRun = function(outdir, maxt=worldend) {
     plotDiversity(outdir,maxt)
-    ##plotTimeSeries(outdir, round(invasionstart/2))
+    #plotTimeSeries(outdir, round(invasionstart/2))
 }
     
 analyseAll = function(plotRuns=TRUE,plotAll=TRUE,maxt=worldend,var="invasives") {
@@ -232,17 +232,17 @@ analyseAll = function(plotRuns=TRUE,plotAll=TRUE,maxt=worldend,var="invasives") 
 ### CALL THE APPROPRIATE FUNCTIONS
     
 # If the simname is given as 'all', do a whole-experiment analysis
-if (commandArgs()[length(commandArgs())] == "all") {
-    outdir = sub("/all", "", outdir)
-    analyseAll(TRUE,TRUE,worldend,"invasives")
-    print("Done.")
-} else {
-    # Otherwise, just look at the specified directory (or the default, if
-    # the specified doesn't exist)
-    if (!(file.exists(outdir) && file.info(outdir)$isdir)) {
-        simname = "tests"
-        outdir = paste0(resultdir, "/", simname)
-    }
-    visualizeRun(outdir)
-    print("Done.")
-}
+## if (commandArgs()[length(commandArgs())] == "all") {
+##     outdir = sub("/all", "", outdir)
+##     analyseAll(TRUE,TRUE,worldend,"invasives")
+##     print("Done.")
+## } else {
+##     # Otherwise, just look at the specified directory (or the default, if
+##     # the specified doesn't exist)
+##     if (!(file.exists(outdir) && file.info(outdir)$isdir)) {
+##         simname = "tests"
+##         outdir = paste0(resultdir, "/", simname)
+##     }
+##     visualizeRun(outdir)
+##     print("Done.")
+## }
