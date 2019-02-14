@@ -42,7 +42,6 @@ analyseEstablishment = function(timestep=worldend) {
         dir = paste0(resultdir, "/", d)
         if (file.info(dir)$isdir && !grepl("control",d)) {
             ## figure out the scenario
-            print(d) #DEBUG
             specs = subset(collateSpeciesTable(dir), t==timestep)
             if (is.null(specs)) next
             repl = strsplit(d, "_")[[1]][2]
@@ -168,24 +167,21 @@ plotDiversity = function(outdir, maxt=3000, logfile="diversity.log") {
     dev.off()
 }
 
-plotMap = function(outdir, timestep=-1, compensate=TRUE, showinvaders=TRUE) {
+plotMap = function(data, timestep, simname) {
     ##FIXME Make sure `alien` status is displayed the same each time, adjust legend, create custom mapping
-    simname = strsplit(outdir, "/")[[1]][2]
-    print(paste0("Plotting map at timestep ", timestep, "..."))
-    st = collateSpeciesTable(outdir, timestep, compensate, showinvaders,TRUE)
-    ts = st$ts
-    allspecies = st$allspecies
-    ts$xloc = ts$xloc + 1
-    ts$yloc = ts$yloc + 1
-    if (is.null(allspecies)) return()
-    m = ggplot(ts, aes(xloc, yloc))
-    m + geom_tile(aes(fill = temp.C)) + labs(x="Longitude", y="Latitude") +
+    print(paste0("Plotting map ", simname, " at timestep ", timestep, "..."))
+    if (is.null(data)) return()
+    data$X = data$X + 1
+    data$Y = data$Y + 1
+    data$temp = data$temp - 273
+    m = ggplot(data, aes(X, Y))
+    m + geom_tile(aes(fill = temp)) + labs(x="Longitude", y="Latitude") +
         scale_fill_continuous(low="lightgrey", high="darkgrey") +
         annotate("rect", xmin=2.5, xmax=3.5, ymin=4.5, ymax=5.5, fill="green", alpha=0.3) +
         annotate("text", x=3, y=5.5, label=paste("t =", timestep)) +
-        geom_jitter(data = allspecies, aes(size = abundance, color = lineage, shape = alien)) +
+        geom_jitter(data = data, aes(size = abundance, color = lineage, shape = alien)) +
         guides(colour=FALSE, shape=FALSE)
-    ggsave(file=paste0(outdir, "/", simname, "_map_t", timestep, ".jpg"),
+    ggsave(file=paste0(resultdir, "/", simname, "/", simname, "_map_t", timestep, ".jpg"),
            height=4, width=5, dpi="print")
 }
 
@@ -198,7 +194,7 @@ plotTimeSeries = function(rundir, step) {
     if (!worldend %in% snapshots) snapshots = c(snapshots, worldend)
     ## plot the maps
     for (s in snapshots) {
-        plotmap(subset(data, t == s))
+        plotMap(subset(data, t == s), s, strsplit(rundir, "/")[[1]][2])
     }
 }
 
@@ -207,10 +203,16 @@ plotTimeSeries = function(rundir, step) {
     
 visualizeRun = function(outdir, maxt=worldend) {
     plotDiversity(outdir,maxt)
-    #plotTimeSeries(outdir, round(invasionstart/2))
+    plotTimeSeries(outdir, round(invasionstart/2))
 }
     
 analyseAll = function(plotRuns=TRUE,plotAll=TRUE,maxt=worldend,var="invasives") {
+    if (plotAll) {
+        results = analyseEstablishment(maxt)
+        save(results, file="experiment_results.dat")
+        plotEstablishment(results)
+        plotFactors(results,var)
+    }
     if (plotRuns) {
         for (f in list.files(resultdir)) {
             print(paste("Processing", f))
@@ -219,30 +221,23 @@ analyseAll = function(plotRuns=TRUE,plotAll=TRUE,maxt=worldend,var="invasives") 
             if (file.info(outdir)$isdir) visualizeRun(outdir)
         }
     }
-    if (plotAll) {
-        results = analyseEstablishment(maxt)
-        save(results, file="experiment_results.dat")
-        plotEstablishment(results)
-        plotFactors(results,var)
-    }
-
 }
 
 
 ### CALL THE APPROPRIATE FUNCTIONS
     
 # If the simname is given as 'all', do a whole-experiment analysis
-## if (commandArgs()[length(commandArgs())] == "all") {
-##     outdir = sub("/all", "", outdir)
-##     analyseAll(TRUE,TRUE,worldend,"invasives")
-##     print("Done.")
-## } else {
-##     # Otherwise, just look at the specified directory (or the default, if
-##     # the specified doesn't exist)
-##     if (!(file.exists(outdir) && file.info(outdir)$isdir)) {
-##         simname = "tests"
-##         outdir = paste0(resultdir, "/", simname)
-##     }
-##     visualizeRun(outdir)
-##     print("Done.")
-## }
+if (commandArgs()[length(commandArgs())] == "all") {
+    outdir = sub("/all", "", outdir)
+    analyseAll(TRUE,TRUE,worldend,"invasives")
+    print("Done.")
+} else {
+    # Otherwise, just look at the specified directory (or the default, if
+    # the specified doesn't exist)
+    if (!(file.exists(outdir) && file.info(outdir)$isdir)) {
+        simname = "tests"
+        outdir = paste0(resultdir, "/", simname)
+    }
+    visualizeRun(outdir)
+    print("Done.")
+}
