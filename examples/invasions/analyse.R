@@ -41,6 +41,7 @@ analyseEstablishment = function(timestep=worldend) {
     for (d in list.files(resultdir)) {
         dir = paste0(resultdir, "/", d)
         if (file.info(dir)$isdir && !grepl("control",d)) {
+            print(d)
             ## figure out the scenario
             specs = subset(collateSpeciesTable(dir), t==timestep)
             if (is.null(specs)) next
@@ -85,8 +86,10 @@ plotEstablishment = function(results) {
         mpph = results[,,"10PP","avg",d]
         par(mfrow=c(1,2), cex=1.2)
         maxv = max(mppl,mpph,na.rm=TRUE)
-        if (maxv > 0) cols = grey(rev((1:maxv)/maxv))
-        else cols = grey(c(0))
+        ##XXX Does the following still give problems when 0 < maxv < 1?
+        if (maxv <= 0) cols = grey(c(0))
+        else if (maxv >= 1) cols = grey(c(1))
+        else cols = grey(rev((0:maxv)/maxv))
         image(c(15,35),c(1,10),mppl, col=cols,xaxp=c(15,35,1),yaxp=c(1,10,1),
               xlab="Temperature (°C)",ylab="Disturbance (%)", main="Propagule pressure: 1")
         text(15,1,round(mppl[1,1],2),col="blue",cex=3)
@@ -104,7 +107,7 @@ plotEstablishment = function(results) {
     }
 }
 
-plotFactors = function(results, var="aliens") {
+plotFactors = function(results, var="invasives") {
     ## Correlate each experimental factor with invasion success
     ## (`var` specifies whether to consider aliens (sensu lato) or invasives (sensu stricto))
     print("Plotting factor boxplots")
@@ -175,6 +178,10 @@ plotMap = function(data, timestep, simname) {
     data$Y = data$Y + 1
     data$temp = data$temp - 273
     m = ggplot(data, aes(X, Y))
+    ##FIXME Does not properly plot tiles that are unoccupied
+    ## The problem is that unoccupied tiles do not appear in the model output
+    ## data at all. Thus, analyse.R has no idea that they exist, or what temperature
+    ## they have...
     m + geom_tile(aes(fill = temp)) + labs(x="Longitude", y="Latitude") +
         scale_fill_continuous(low="lightgrey", high="darkgrey") +
         annotate("rect", xmin=2.5, xmax=3.5, ymin=4.5, ymax=5.5, fill="green", alpha=0.3) +
@@ -182,7 +189,7 @@ plotMap = function(data, timestep, simname) {
         geom_jitter(data = data, aes(size = abundance, color = lineage, shape = alien)) +
         guides(colour=FALSE, shape=FALSE)
     ggsave(file=paste0(resultdir, "/", simname, "/", simname, "_map_t", timestep, ".jpg"),
-           height=4, width=5, dpi="print")
+           height=4, width=5, units="in", dpi="print")
 }
 
 plotTimeSeries = function(rundir, step) {
@@ -208,8 +215,14 @@ visualizeRun = function(outdir, maxt=worldend) {
     
 analyseAll = function(plotRuns=TRUE,plotAll=TRUE,maxt=worldend,var="invasives") {
     if (plotAll) {
-        results = analyseEstablishment(maxt)
-        save(results, file="experiment_results.dat")
+        if (file.exists("experiment_results.dat")) {
+            print("Loading analysed results back from file")
+            load("experiment_results.dat")
+        }
+        else {
+            results = analyseEstablishment(maxt)
+            save(results, file="experiment_results.dat")
+        }
         plotEstablishment(results)
         plotFactors(results,var)
     }
