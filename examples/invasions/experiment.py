@@ -71,7 +71,7 @@ def slurm(config):
     else:
         print("Not on gaia, slurm is probably not available. Retaining job "+config)
 
-def write_config(config, maps, prop_pressure, disturbance, seed):
+def write_config(config, maps, mintemp, prop_pressure, disturbance, seed):
     "Write out a config file with the given values"
     cf = open(config, 'w')
     cf.write("# Island speciation model for invasion experiments\n")
@@ -84,6 +84,9 @@ def write_config(config, maps, prop_pressure, disturbance, seed):
     cf.write("\n# Variable settings:\n")
     cf.write("seed "+str(seed)+"\n")
     cf.write("maps "+str(maps)+"\n")
+    if mintemp > 0:
+        cf.write("mintemp "+str(mintemp)+"\n")
+        cf.write("maxtemp "+str(mintemp+15)+"\n")
     cf.write("propagule-pressure "+str(prop_pressure)+"\n")
     cf.write("disturbance "+str(disturbance)+"\n")
     cf.close()
@@ -108,9 +111,15 @@ def run_experiment(control=False):
     global simname, replicates
     i = 0
     while i < replicates:
+        seed = random.randint(0,100000)
         for tm in varying_settings["maps"][1:]:
             if tm not in os.listdir():
                 shutil.copy("examples/invasions/"+tm, ".")
+            # figure out the range of optimum temperature
+            if "hot" in tm: mt = 298
+            else if "cold" in tm: mt = 278
+            else if "default" in tm: mt = 288
+            else: mt = -1
             for pp in varying_settings["propagule-pressure"][1:]:
                 for db in varying_settings["disturbance"][1:]:
                     if '_' in tm: temp = tm.split("_")[1].split(".")[0]
@@ -118,12 +127,11 @@ def run_experiment(control=False):
                     spec = temp+"_"+str(pp)+"PP_"+str(db)+"DB"
                     print("Running simulation with specification "+spec+" for "
                           +str(replicates)+" replicates.")
-                    seed = random.randint(0,100000)
                     runname = simname+"_r"+str(i+1)+"_"+spec
-                    write_config(runname+".conf", tm, pp, db, seed)
+                    write_config(runname+".conf", tm, mt, pp, db, seed)
                     slurm(runname+".conf")
                     if control:
-                        write_config(runname+"_control.conf", tm, 0, db, seed)
+                        write_config(runname+"_control.conf", tm, mt, 0, db, seed)
                         slurm(runname+"_control.conf")
         i = i + 1
     print("Done.")
