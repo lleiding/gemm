@@ -117,8 +117,8 @@ def run_experiment(control=False):
                 shutil.copy("examples/invasions/"+tm, ".")
             # figure out the range of optimum temperature
             if "hot" in tm: mt = 298
-            else if "cold" in tm: mt = 278
-            else if "default" in tm: mt = 288
+            elif "cold" in tm: mt = 278
+            elif "default" in tm: mt = 288
             else: mt = -1
             for pp in varying_settings["propagule-pressure"][1:]:
                 for db in varying_settings["disturbance"][1:]:
