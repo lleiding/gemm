@@ -13,6 +13,8 @@ function defaultSettings()
          "config" => "", # configuration file name
          "debug" => false, # write out debug statements
          "dest" => string(Dates.today()), # output folder name
+         "dispmean" => 1.0, # maximum value of randomly drawn mean dispersal distance in cells
+         "dispshape" => 1.0, # maximum value of randomly drawn shape parameter fo dispersal kernel. determines tail fatness/long distance dispersal
          "disturbance" => 0, # percentage of individuals killed per update per cell
          "fasta" => false, # record fasta data?
          "fertility" => exp(28.0), # global base reproduction rate 23.8 from Brown et al. 2004, alternatively 25.0, default 30.0
@@ -25,8 +27,6 @@ function defaultSettings()
          "linkage" => "random", # gene linkage type (random/full/none)
          "logging" => false, # write output to logfile
          "maps" => "", # comma-separated list of map files
-         "dispmean" => 1.0, # mean dispersal distance in cells
-         "dispshape" => 10.0, # shape parameter fo dispersal kernel - tail fatness
          "maxbreadth" => 5, # maximum niche breadth
          "maxrepsize" => 14, # maximal repsize in grams calculated as exp(maxrepsize) -> 1.2 t
          "maxseedsize" => 10, # maximal seedsize in grams calculated as exp(maxseedsize) -> 22 kg
