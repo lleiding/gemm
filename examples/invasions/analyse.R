@@ -87,6 +87,7 @@ plotEstablishment = function(results) {
         par(mfrow=c(1,2), cex=1.2)
         maxv = max(mppl,mpph,na.rm=TRUE)
         ##XXX Does the following still give problems when 0 < maxv < 1?
+        ##FIXME This is still not quite right...
         if (maxv <= 0) cols = grey(c(0))
         else if (maxv >= 1) cols = grey(c(1))
         else cols = grey(rev((0:maxv)/maxv))
@@ -118,12 +119,12 @@ plotFactors = function(results, var="invasives") {
     temph = as.vector(results["T35",,,1:nrep,var])
     boxplot(templ, temph, names=c("25°C","35°C"), col="lightblue",
             main="Temperature", ylab=paste("Number of", substr(var,1,nchar(var)-1), "species"))
-    distl = as.vector(results[,"1DB",,1:nrep,"aliens"])
-    disth = as.vector(results[,"10DB",,1:nrep,"aliens"])
+    distl = as.vector(results[,"1DB",,1:nrep,var])
+    disth = as.vector(results[,"10DB",,1:nrep,var])
     boxplot(distl, disth, names=c("1% mortality", "10% mortality"), col="lightblue",
             main="Disturbance")
-    propl = as.vector(results[,,"1PP",1:nrep,"aliens"])
-    proph = as.vector(results[,,"10PP",1:nrep,"aliens"])
+    propl = as.vector(results[,,"1PP",1:nrep,var])
+    proph = as.vector(results[,,"10PP",1:nrep,var])
     boxplot(propl, proph, names=c("1 propagule","10 propagules"), col="lightblue",
             main="Propagule pressure")
     dev.off()
