@@ -3,6 +3,7 @@
 ### graphs of population and diversity development and invasion success
 
 library(ggplot2)
+library(ggfortify)
 
 ## The working directory may be specified via the commandline, otherwise it
 ## defaults to results/tests
@@ -22,6 +23,16 @@ collateSpeciesTable = function(rundir)
     alien = c(alien, !subset(st, t > invasionstart)$lineage %in% natives)
     st = cbind(st, alien)
     return(st)
+}
+
+## Convert a lineage string into a (hopefully unique) colour hex
+lineageColour = function(lineage) {
+    ascii = Reduce(paste0, utf8ToInt(lineage))
+    r = substring(ascii, 1, round(nchar(ascii)/3))
+    g = substring(ascii, round(nchar(ascii)/3)+1, round(nchar(ascii)/3)*2)
+    b = substring(ascii, round(nchar(ascii)/3)*2+1, nchar(ascii)+1)
+    rgbVal = as.numeric(sapply(c(r,g,b), function(i) paste0("0.", i)))
+    return(rgb(rgbVal[1], rgbVal[2], rgbVal[3]))
 }
 
 ### ANALYSE THE WHOLE EXPERIMENT
@@ -173,6 +184,7 @@ plotDiversity = function(outdir, maxt=3000, logfile="diversity.log") {
 
 plotMap = function(data, timestep, simname) {
     ##FIXME Make sure `alien` status is displayed the same each time, adjust legend, create custom mapping
+    ##XXX use lineageColour as in plotTraitPCA
     print(paste0("Plotting map ", simname, " at timestep ", timestep, "..."))
     if (is.null(data)) return()
     data$X = data$X + 1
@@ -206,12 +218,38 @@ plotTimeSeries = function(rundir, step) {
     }
 }
 
+plotTraitPCA = function(outdir) {
+    ## load data and extract the interesting bits
+    statFile = grep("stats_", list.files(outdir), value=T)
+    stats = read.table(paste0(outdir, "/", statFile[1]), sep="\t", header=T)
+    traits = grep("med", colnames(stats), value=T)
+    cnames = c("lineage", traits)
+    st = subset(stats, time==worldend)[cnames]
+    ## figure out which species are aliens
+    natives = unique(subset(stats, time==invasionstart)[,"lineage"])
+    alien = !st$lineage %in% natives
+    st[,"alien"] = alien
+    ## construct the model
+    modeldata = st[traits[!traits %in% names(which(apply(st, 2, var)==0))]] # remove zero-variance columns
+    model = prcomp(modeldata, scale=TRUE)
+    save(model, file=paste0(outdir, "/", "trait_pca_model.dat"))
+    ## plot the PCA graph
+    shapes = rep(16, length(st$alien))
+    shapes[which(st$alien)] = 17
+    colours = sapply(as.character(st$lineage), lineageColour)
+    autoplot(model, colour=colours, shape=shapes, loadings=TRUE,
+             loadings.colour="darkblue", loadings.label=TRUE, loadings.label.size=3)
+    ggsave(paste0(outdir, "/", strsplit(outdir, "/")[[1]][2], "_traits.jpg"),
+           width=12, height=8)
+}
+
 
 ### DISPATCH TO THE APPROPRIATE FUNCTIONS
     
 visualizeRun = function(outdir, maxt=worldend) {
     plotDiversity(outdir,maxt)
     plotTimeSeries(outdir, round(invasionstart/2))
+    plotTraitPCA(outdir)
 }
     
 analyseAll = function(plotRuns=TRUE,plotAll=TRUE,maxt=worldend,var="invasives") {
