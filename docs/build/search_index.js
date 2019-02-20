@@ -37,7 +37,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "Running the model",
     "category": "section",
-    "text": "The functions in the run_simulation.jl file are used to start a simulation run:Modules = [GeMM]\nPages = [\"run_simulation.jl\"]rungemmparallel.jl bundles these for quick access. From the commandline, call:> julia -p <cores> rungemmparallel.jl -c <configs>where <cores> is the number of processors you want to make available to Julia (one processor per simulation max), and <configs> is a comma-separated list of configuration files that are to be processed.Last updated: 2019-02-15 (commit 27a93d0)  "
+    "text": "The functions in the run_simulation.jl file are used to start a simulation run:Modules = [GeMM]\nPages = [\"run_simulation.jl\"]rungemmparallel.jl bundles these for quick access. From the commandline, call:> julia -p <cores> rungemmparallel.jl -c <configs>where <cores> is the number of processors you want to make available to Julia (one processor per simulation max), and <configs> is a comma-separated list of configuration files that are to be processed.Last updated: 2019-02-15 (commit b06bbf5)  "
 },
 
 {

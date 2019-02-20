@@ -40,9 +40,8 @@ lineageColour = function(lineage) {
 analyseEstablishment = function(timestep=worldend) {
     print("Analysing invasion success")
     ## figure out how many replicates there are
-    nrep = length(grep("control", grep("invasion", list.files(resultdir), value=T), value=T, invert=T)) / 8
-    reps = c()
-    for (i in 1:nrep) reps = c(reps, paste0("r", i))
+    reps = unique(sapply(list.files(resultdir), function(d) {strsplit(d, "_")[[1]][2]}))
+    nrep = length(reps)
     ## create the results table
     results = array(dim=c(2,2,2,nrep+1,3), dimnames=list(temperature=c("T15", "T35"),
                                                          disturbance=c("1DB", "10DB"),
@@ -68,10 +67,11 @@ analyseEstablishment = function(timestep=worldend) {
             aliens = length(unique(subset(specs, alien==TRUE)$lineage))
             invasives = 0
             for (a in unique(subset(specs, alien==TRUE)$lineage)) {
-                if (length(subset(specs, lineage==a)$lineage) > 6) invasives = invasives+1
+                if (length(subset(specs, lineage==a)$lineage) >= 6) invasives = invasives+1
             }
             nnative = sum(subset(specs, alien==FALSE)$abundance)
             nalien = sum(subset(specs, alien==TRUE)$abundance)
+            print(c(temp, dist, prop, repl))
             results[temp, dist, prop, repl,] = c(natives, aliens, invasives)
         }
     }

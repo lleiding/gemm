@@ -34,4 +34,4 @@ where `<cores>` is the number of processors you want to make available to Julia
 (one processor per simulation max), and `<configs>` is a comma-separated list of
 configuration files that are to be processed.
 
-*Last updated: 2019-02-15 (commit 27a93d0)*  
+*Last updated: 2019-02-15 (commit b06bbf5)*  
