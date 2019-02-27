@@ -27,7 +27,7 @@ end
 Take an array of traits and return the mean value of the indexed trait.
 """
 function getmeantraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
-    mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+    mean(skipmissing(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
 end
 
 """
@@ -36,7 +36,7 @@ end
 Take an array of traits and return the standard deviation of the indexed trait.
 """
 function getstdtraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
-    std(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+    std(skipmissing(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
 end
 
 """
@@ -75,7 +75,7 @@ function gettraitdict(genes::Array{AbstractGene, 1}, traitnames::Array{String, 1
     end
     traitdict = Dict{String, Float64}()
     for traitidx in unique(map(x -> x.nameindex, traits))
-        traitdict[traitnames[traitidx]] = mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+        traitdict[traitnames[traitidx]] = mean(skipmissing(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
     end
     traitdict
 end
@@ -89,7 +89,7 @@ function gettraitdict(traits::Array{Trait, 1}, traitnames::Array{String, 1})
     traitdict = Dict{String, Float64}()
     for traitidx in unique(map(x -> x.nameindex, traits))
         #XXX Why do we use traitnames here?
-        traitdict[traitnames[traitidx]] = mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+        traitdict[traitnames[traitidx]] = mean(skipmissing(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
     end
     traitdict
 end
