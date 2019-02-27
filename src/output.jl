@@ -313,7 +313,7 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
                 print(io, "\t", minimum(poptrait))
                 print(io, "\t", maximum(poptrait))
                 print(io, "\t", median(poptrait))
-                print(io, "\t", std(skipmissing(poptrait)))
+                print(io, "\t", std(skipmissing(poptrait))) # CAVEAT: this returns NaN if only one individual
             end
             print(io, "\t", settings["seed"], "\t", settings["config"])
             println(io)

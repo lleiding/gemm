@@ -36,7 +36,11 @@ end
 Take an array of traits and return the standard deviation of the indexed trait.
 """
 function getstdtraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
-    std(skipmissing(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
+    if length(traits) <= 1
+        0.0
+    else
+        std(skipmissing(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
+    end
 end
 
 """
