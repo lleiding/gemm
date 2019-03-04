@@ -10,6 +10,10 @@ library(ggfortify)
 resultdir = "results"
 outdir = paste0(resultdir, "/", commandArgs()[length(commandArgs())])
 
+## The minimum number of cells an alien species must be in to be considered
+## invasive (default: 6)
+invasiveThreshold = 2
+
 ## D-Day and apocalypse
 invasionstart = 500
 worldend = 1500
@@ -67,11 +71,10 @@ analyseEstablishment = function(timestep=worldend) {
             aliens = length(unique(subset(specs, alien==TRUE)$lineage))
             invasives = 0
             for (a in unique(subset(specs, alien==TRUE)$lineage)) {
-                if (length(subset(specs, lineage==a)$lineage) >= 6) invasives = invasives+1
+                if (length(subset(specs, lineage==a)$lineage) >= invasiveThreshold) invasives = invasives+1
             }
             nnative = sum(subset(specs, alien==FALSE)$abundance)
             nalien = sum(subset(specs, alien==TRUE)$abundance)
-            print(c(temp, dist, prop, repl))
             results[temp, dist, prop, repl,] = c(natives, aliens, invasives)
         }
     }
@@ -220,6 +223,8 @@ plotTimeSeries = function(rundir, step) {
 
 plotTraitPCA = function(outdir) {
     ## load data and extract the interesting bits
+    ## TODO add  legend
+    print("Plotting PCA...")
     statFile = grep("stats_", list.files(outdir), value=T)
     stats = read.table(paste0(outdir, "/", statFile[1]), sep="\t", header=T)
     traits = grep("med", colnames(stats), value=T)
@@ -240,7 +245,7 @@ plotTraitPCA = function(outdir) {
     autoplot(model, colour=colours, shape=shapes, loadings=TRUE,
              loadings.colour="darkblue", loadings.label=TRUE, loadings.label.size=3)
     ggsave(paste0(outdir, "/", strsplit(outdir, "/")[[1]][2], "_traits.jpg"),
-           width=12, height=8)
+           height=6, width=9)
 }
 
 
