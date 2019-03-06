@@ -29,6 +29,16 @@ collateSpeciesTable = function(rundir)
     return(st)
 }
 
+## Extract the information for one lineage and save it separately
+extractLineage = function(rundir, species, timestep=worldend)
+{
+    statFile = grep("stats_", list.files(rundir), value=T)
+    stats = read.table(paste0(rundir, "/", statFile[1]), sep="\t", header=T)
+    if (timestep > 0) stats = subset(stats, time==timestep)
+    lineageData = subset(stats, lineage==species)
+    write.csv(lineageData, paste0(rundir, "/", species, ".csv"))
+}
+
 ## Convert a lineage string into a (hopefully unique) colour hex
 lineageColour = function(lineage) {
     ascii = Reduce(paste0, utf8ToInt(lineage))
@@ -71,10 +81,15 @@ analyseEstablishment = function(timestep=worldend) {
             aliens = length(unique(subset(specs, alien==TRUE)$lineage))
             invasives = 0
             for (a in unique(subset(specs, alien==TRUE)$lineage)) {
-                if (length(subset(specs, lineage==a)$lineage) >= invasiveThreshold) invasives = invasives+1
+                if (length(subset(specs, lineage==a)$lineage) >= invasiveThreshold) {
+                    print(paste("Species", a, "is invasive in", d))
+                    extractLineage(dir, a)
+                    invasives = invasives+1
+                }
             }
-            nnative = sum(subset(specs, alien==FALSE)$abundance)
-            nalien = sum(subset(specs, alien==TRUE)$abundance)
+            nnative = sum(subset(specs, alien==FALSE)$abundance) # needed for ratio analysis
+            nalien = sum(subset(specs, alien==TRUE)$abundance)   # i.e. currently unnecessary
+            ##FIXME Somehow, NAs end up in this data set -> corrupt/missing data?
             results[temp, dist, prop, repl,] = c(natives, aliens, invasives)
         }
     }
@@ -99,12 +114,7 @@ plotEstablishment = function(results) {
         mppl = results[,,"1PP","avg",d]
         mpph = results[,,"10PP","avg",d]
         par(mfrow=c(1,2), cex=1.2)
-        maxv = max(mppl,mpph,na.rm=TRUE)
-        ##XXX Does the following still give problems when 0 < maxv < 1?
-        ##FIXME This is still not quite right...
-        if (maxv <= 0) cols = grey(c(0))
-        else if (maxv >= 1) cols = grey(c(1))
-        else cols = grey(rev((0:maxv)/maxv))
+        cols = rev(grey.colors(4))
         image(c(15,35),c(1,10),mppl, col=cols,xaxp=c(15,35,1),yaxp=c(1,10,1),
               xlab="Temperature (°C)",ylab="Disturbance (%)", main="Propagule pressure: 1")
         text(15,1,round(mppl[1,1],2),col="blue",cex=3)
@@ -287,6 +297,7 @@ analyseAll = function(plotRuns=TRUE,plotAll=TRUE,maxt=worldend,var="invasives") 
 if (commandArgs()[length(commandArgs())] == "all") {
     outdir = sub("/all", "", outdir)
     analyseAll(TRUE,TRUE,worldend,"invasives")
+    ##analyseAll(FALSE,TRUE,worldend,"invasives")
     print("Done.")
 } else {
     # Otherwise, just look at the specified directory (or the default, if
