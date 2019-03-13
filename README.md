@@ -3,27 +3,29 @@ The  model  description follows  the  ODD  (Overview,  Design  concepts, Details
 # 1. Purpose
 
 This model is designed to simulate a (meta-)community of plant-like individuals.
-For this, it considers factors and processes across genetic, population and ecological levels.
+For this, the model considers factors and processes across genetic, population and ecological levels.
 The model is able to produce several patterns across genetic, individual, population and (meta-)community levels,
-including adaption and speciation through divergence of populations.
-Thus, the momdel expands from basic principles to richer representation of real-world scenarios. [from ODD paper#2]
+including adaptation and speciation through divergence of populations.
+Thus, the model expands from basic principles to richer representation of real-world scenarios. [from ODD paper#2]
 
 # 2. Entities, state variables and scales
 
 [Linkage! Number of genes?]
 Individuals (plant-like) are the basic entity in the model.
-Each individual carries a diploid set of chromosomes, which in turn are comprised of genes.
+Each individual carries a diploid set of one or more linkage units, which in turn are comprised of genes.
+Linkage units are always inherited in their entirety during the recombination phase of a reproduction event.
+The higher the number of genes per linkage unit, the higher the degree of genetic linkage.
 Some of the genes code for one ore more traits (pleiotropy), while a trait can be dependent on more than one gene (polygene). 
-The realized trait value is the mean of the trait alleles (quantitative trait loci).
+The realized trait value is the mean of all the trait alleles (quantitative trait loci).
 Traits thus controlled encompass
 the initial body mass (size) of offspring, M_s,
 the body mass determining onset of maturity and thus reproductive capability, M_r,
 mean dispersal distance, D_mean,
 the shape of the dispersal kernel, controlling long-distance-dispersal, D_s,
-the threshold of sequence similarity between mates determining compatibility, delta_I,
+[the threshold of sequence similarity between mates determining compatibility, delta_I,]
 and values representing the optimum and the tolerance (standard deviation) of a physical niche parameter, such as temeperature and precipitation (T_mean and sigma_T or P_mean and sigma_P, resp.).
 Alternatively to be controlled by mutable genes, traits can also be fixed.
-Additionally, individuals carry attributes which describe their bodymass, M, their age, A and their adaptation to the physical environment (fitness), F.
+Additionally, individuals carry attributes which describe their bodymass, M, [their age,] A and their adaptation to the abiotic environmental conditions (fitness), F_T and F_P.
 Furthermore, every individual carries a Boolean marker used to store whether a given individual has newly arrived to a grid cell or discriminate individuals from the rest of the community.
 
 The base rates for processes governed by the metabolic theory of ecology (Brown et al. 2004) - growth, reproduction, mortality -
@@ -43,21 +45,21 @@ Processes and updates are repeated every timestep, while each timestep can be co
 
 # 3. Process overview and scheduling
 
-In each discrete timestep each individual in each grid cell will (in no particular order unless otherwise stated) undergoes
+In each discrete timestep each individual in each grid cell will (in no particular order unless otherwise stated) undergoe
 the following processes:
 - (1) establishment,
-- (2) competition (individuals are sorted according to their fitness),
-- (3) density independent mortality,
+- (2) density independent mortality influenced by adaptation to temperature,
 - [disturbance]
 - (4) growth,
-- (5) competition (individuals are sorted according to their fitness),
+- (5) competition (individuals are sorted according to their adaptation to precipitation),
 - (6) reproduction
 - (7) mutation of offspring,
 - (8) filtering of unviable individuals,
 - [invasion]
 - (9) seed dispersal.
 
-[Separate, on patch level:] habitat change
+Afterwards the physical habitat of a grid cell might change.
+If that happens, all individuals within that cell are marked to undergo establishment again.
 
 Updates to individuals and thus the local communities happen instantaneously after a specific process has been executed
 (asynchronous updating).
@@ -67,7 +69,7 @@ Updates to individuals and thus the local communities happen instantaneously aft
 Basic principles.
 -----------------
 Metabolic theory of ecology (@submodel level).
-Adaptive and non-adaptive radiation/evolution. Submodel level, but geomorphological change @system level.
+Adaptive and non-adaptive radiation/evolution. Submodel level[, but geomorphological change @system level.]
 Sexual reproduction.
 Niche theory. Both at system and submodel level. Each individual carries unique ecological and/or functional traits,
 as well as preferences for their physical environments.
@@ -91,7 +93,7 @@ Learning.
 Prediction.
 -----------
 
-Sensing.
+Sensing. [?]
 --------
 Individuals sense directly the properties of their physical environment (e.g., temperature).
 
@@ -123,7 +125,9 @@ At the start and end of the simulation and at definable regular time intervals, 
 [Initialisation of grid cells]
 [How is input considered?]
 The initialisation step creates lineages with randomly chosen genetic and ecological trait values.
-Population size of a lineage is determined by the adult body size of individuals from a lineage.
+This encompasses choosing the number of genes for a lineage, the number of linkage units and the within genome variance of trait values.
+Trait with thus distributed trait values are the distributed randomly among the genes.
+Population (number of individuals) size of a lineage is determined by the adult body size of individuals from a lineage.
 At this point all individuals of a population are identical.
 [Individuals can have different size!]
 Values for ecological traits are then varied in each gene where a given trait is found, for all individuals of a lineage.
