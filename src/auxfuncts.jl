@@ -348,6 +348,29 @@ function findmate(patch::Patch, ind::Individual, traitnames::Array{String, 1})
     mates 
 end
 
+"""
+    findmate(ppoulation, individual, traitnames)
+
+Find a reproduction partner for the given individual in the given population.
+"""
+function findmate(population::AbstractArray{Individual, 1}, ind::Individual, traitnames::Array{String, 1})
+    indstate = ind.marked
+    ind.marked = true
+    mates = Individual[]
+    startidx = rand(eachindex(population))
+    mateidx = startidx
+    while true
+        mate = population[mateidx]
+        if !mate.marked # && iscompatible(mate, ind, traitnames)
+            push!(mates, mate)
+            break
+        end
+        mateidx += 1
+        mateidx > length(eachindex(population)) && (mateidx = 1)
+        mateidx == startidx && break
+    end
+    ind.marked = indstate
+    mates 
 end
 
 """
