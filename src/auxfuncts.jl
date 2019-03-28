@@ -323,11 +323,11 @@ function iscompatible(mate::Individual, ind::Individual, traitnames::Array{Strin
 end
 
 """
-    findposspartner(patch, individual, traitnames)
+    findmate(patch, individual, traitnames)
 
 Find a reproduction partner for the given individual in the given patch.
 """
-function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String, 1})
+function findmate(patch::Patch, ind::Individual, traitnames::Array{String, 1})
     indstate = ind.marked
     ind.marked = true
     posspartner = Individual[]
