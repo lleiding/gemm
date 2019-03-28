@@ -409,7 +409,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                 if noffs < 1
                     continue
                 end
-                partners = findposspartner(patch, ind, settings["traitnames"])
+                partners = findmate(patch, ind, settings["traitnames"])
                 length(partners) < 1 && continue
                 partner = partners[1]
                 parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
