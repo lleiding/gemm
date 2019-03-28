@@ -330,14 +330,14 @@ Find a reproduction partner for the given individual in the given patch.
 function findmate(patch::Patch, ind::Individual, traitnames::Array{String, 1})
     indstate = ind.marked
     ind.marked = true
-    posspartner = Individual[]
+    mates = Individual[]
     communityidxs = patch.whoiswho[ind.lineage]
     startidx = rand(1:length(communityidxs))
     mateidx = startidx
     while true
         mate = patch.community[communityidxs[mateidx]]
         if !mate.marked # && iscompatible(mate, ind, traitnames)
-            push!(posspartner, mate)
+            push!(mates, mate)
             break
         end
         mateidx += 1
@@ -345,7 +345,9 @@ function findmate(patch::Patch, ind::Individual, traitnames::Array{String, 1})
         mateidx == startidx && break
     end
     ind.marked = indstate
-    posspartner 
+    mates 
+end
+
 end
 
 """
