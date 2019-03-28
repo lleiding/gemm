@@ -349,7 +349,7 @@ function findmate(patch::Patch, ind::Individual, traitnames::Array{String, 1})
 end
 
 """
-    findmate(ppoulation, individual, traitnames)
+    findmate(population, individual, traitnames)
 
 Find a reproduction partner for the given individual in the given population.
 """
