@@ -364,8 +364,7 @@ one that is less adapted to the local precipitation levels.
 function compete!(patch::Patch)
     totalmass = sum(map(x -> x.size, patch.community))
     while totalmass >= patch.area # occupied area larger than available
-        firstind = rand(eachindex(patch.community))
-        secondind = rand(eachindex(patch.community))
+        firstind, secondind = rand(eachindex(patch.community), 2)
         firstind == secondind && length(eachindex(patch.community)) > 1 && continue
         if patch.community[firstind].precadaption < patch.community[secondind].precadaption
             totalmass -= patch.community[firstind].size
