@@ -47,7 +47,6 @@ mutable struct Individual
     lineage::String
     genome::Array{Chromosome, 1}
     traits::Dict{String, Float64}
-    age::Int
     marked::Bool # indicator whether individual is new to a patch (after dispersal or birth)
     precadaption::Float64 # adaption to precipitation
     tempadaption::Float64 # adaption to temperature

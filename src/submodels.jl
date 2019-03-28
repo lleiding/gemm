@@ -190,8 +190,6 @@ function survive!(patch::Patch, mortality::Float64)
             if rand() * patch.community[idx].tempadaption < dieprob
                 splice!(patch.community, idx)
                 continue
-            else
-                patch.community[idx].age += 1
             end
         end
         idx += 1
@@ -402,7 +400,7 @@ Reproduction of individuals in a patch.
 function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
     identifyAdults!(patch)
     for ind in patch.community
-        if !ind.marked && ind.age > 0
+        if !ind.marked
             if ind.size >= ind.traits["repsize"]
                 metaboffs = settings["fertility"] * ind.size^(-1/4) * exp(-act/(boltz*patch.temp))
                 noffs = rand(Poisson(metaboffs))

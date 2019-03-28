@@ -362,11 +362,10 @@ function createoffspring(noffs::Integer, ind::Individual, partner::Individual, t
         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
         genome = vcat(partnergenome,mothergenome)
         traits = gettraitdict(genome, traitnames)
-        age = 0
         marked = true
         fitness = 0.0
         newsize = ind.traits["seedsize"]
-        ind = Individual(ind.lineage, genome, traits, age, marked, fitness,
+        ind = Individual(ind.lineage, genome, traits, marked, fitness,
                          fitness, newsize, rand(Int32))
         push!(offspring, ind)
     end
@@ -563,7 +562,7 @@ function createind(settings::Dict{String, Any}, marked::Bool = false)
     else
         indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
     end
-    Individual(lineage, chromosomes, traitdict, 0, marked, 1.0, 1.0, indsize, id)
+    Individual(lineage, chromosomes, traitdict, marked, 1.0, 1.0, indsize, id)
 end
 
 """

@@ -48,15 +48,12 @@ function createpop(settings::Dict{String, Any})
         traitdict = gettraitdict(chromosomes, settings["traitnames"])
         if settings["indsize"] == "adult"
             indsize = traitdict["repsize"]
-            age = 1
         elseif settings["indsize"] == "seed"
             indsize = traitdict["seedsize"]
-            age = 0
         else
             indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
-            age = 1
         end
-        push!(population, Individual(lineage, chromosomes, traitdict, age, true, 1.0, 1.0, indsize, id))
+        push!(population, Individual(lineage, chromosomes, traitdict, true, 1.0, 1.0, indsize, id))
     end
     population
 end
