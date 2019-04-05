@@ -10,8 +10,11 @@ library(ggfortify)
 resultdir = "results"
 outdir = paste0(resultdir, "/", commandArgs()[length(commandArgs())])
 
+## Preferred output format (currently only used by ggplot graphs
+outformat = ".jpg" ## default: ".jpg", for publication: ".eps"
+
 ## The minimum number of cells an alien species must be in to be considered
-## invasive (default: 6)
+## invasive (default: 2)
 invasiveThreshold = 2
 
 ## D-Day and apocalypse
@@ -36,7 +39,7 @@ extractLineage = function(rundir, species, timestep=worldend)
     stats = read.table(paste0(rundir, "/", statFile[1]), sep="\t", header=T)
     if (timestep > 0) stats = subset(stats, time==timestep)
     lineageData = subset(stats, lineage==species)
-    write.csv(lineageData, paste0(rundir, "/", species, ".csv"))
+    write.csv(lineageData, paste0(rundir, "/", strsplit(rundir,"/")[[1]][2], "_", species, ".csv"))
 }
 
 ## Convert a lineage string into a (hopefully unique) colour hex
@@ -54,7 +57,8 @@ lineageColour = function(lineage) {
 analyseEstablishment = function(timestep=worldend) {
     print("Analysing invasion success")
     ## figure out how many replicates there are
-    reps = unique(sapply(list.files(resultdir), function(d) {strsplit(d, "_")[[1]][2]}))
+    getRep = function(d) {paste0(substr(strsplit(d, "_")[[1]][1],9,9), strsplit(d, "_")[[1]][2])}
+    reps = unique(sapply(list.files(resultdir), getRep))
     nrep = length(reps)
     ## create the results table
     results = array(dim=c(2,2,2,nrep+1,3), dimnames=list(temperature=c("T15", "T35"),
@@ -69,7 +73,7 @@ analyseEstablishment = function(timestep=worldend) {
             ## figure out the scenario
             specs = subset(collateSpeciesTable(dir), t==timestep)
             if (is.null(specs)) next
-            repl = strsplit(d, "_")[[1]][2]
+            repl = getRep(d)
             dist = strsplit(d, "_")[[1]][5]
             prop = strsplit(d, "_")[[1]][4]
             if (grepl("cold", d)) temp = "T15"
@@ -154,6 +158,62 @@ plotFactors = function(results, var="invasives") {
     dev.off()
 }
 
+## WARNING: Takes a *long* time to run!
+analyseFitness = function(recalculate=TRUE, outformat=".jpg") {
+    ## Compare the fitness values of natives, aliens, and invasives across all
+    ## runs and populations
+    print("Analysing fitness")
+    if (!recalculate && file.exists("fitness_results.dat"))
+        load("fitness_results.dat")
+    else {
+        ## Build a table containing every population's lineage, status, and fitness value
+        pops = data.frame()
+        for (d in list.files(resultdir)) {
+            dir = paste0(resultdir, "/", d)
+            if (!file.info(dir)$isdir) next
+            print(dir)
+            statFile = grep("stats_", list.files(dir), value=T)
+            stats = read.table(paste0(dir, "/", statFile[1]), sep="\t", header=T)
+            natives = unique(subset(stats, time==invasionstart)$lineage)
+            endpops = subset(subset(stats, time==worldend), adults>0)
+            for (i in 1:nrow(endpops)) {
+                s = endpops[i,]
+                if (s$adults == 0) next
+                ##FIXME If individuals have not undergone establishment yet, the adaptation values
+                ## are set to a default of 1 -> leading to "inverse" graph shapes
+                ## Solution: calculate adaptation explicitly
+                fitness = s$tempadaptionmed + s$precadaptionmed
+                if (s$lineage %in% natives) {
+                    status = "native"
+                } else {
+                    if (dim(subset(endpops, lineage==s$lineage))[1] < invasiveThreshold) {
+                        status = "alien"
+                    } else {
+                        status = "invasive"
+                    }
+                }
+                pops = rbind(pops, data.frame(run=d, lineage=as.character(s$lineage), status=status, fitness=fitness))
+            }
+        }
+        colnames(pops) = c("run", "lineage", "status", "fitness")
+        save(pops, file="fitness_results.dat")
+    }
+    ## Visualise this table as a violin plot    
+    p = ggplot(pops, aes(x=status, y=fitness, fill=status)) +
+        geom_violin(trim=FALSE) +
+        geom_boxplot(width=0.05) +
+        scale_x_discrete(limits=c("native", "invasive", "alien")) +
+        annotate(geom="text", x=1, y=2.5,
+                 label=paste(length(unique(subset(pops, status=="native")$lineage)), "species")) +
+        annotate(geom="text", x=2, y=2.5,
+                 label=paste(length(unique(subset(pops, status=="invasive")$lineage)), "species")) +
+        annotate(geom="text", x=3, y=2.5,
+                 label=paste(length(unique(subset(pops, status=="alien")$lineage)), "species")) +
+        labs(subtitle=paste("n", "=", dim(pops)[1], "populations"), y="population median fitness") +
+        theme(legend.position="none")
+    ggsave(file=paste0("fitness", outformat), height=4, width=5, units="in", dpi="print")
+}
+
 ### ANALYSE AN INDIVIDUAL RUN
 
 # Plot population size and diversity indices over time
@@ -195,30 +255,34 @@ plotDiversity = function(outdir, maxt=3000, logfile="diversity.log") {
     dev.off()
 }
 
-plotMap = function(data, timestep, simname) {
-    ##FIXME Make sure `alien` status is displayed the same each time, adjust legend, create custom mapping
-    ##XXX use lineageColour as in plotTraitPCA
+plotMap = function(data, timestep, simname, outformat=".jpg") {
     print(paste0("Plotting map ", simname, " at timestep ", timestep, "..."))
     if (is.null(data)) return()
     data$X = data$X + 1
     data$Y = data$Y + 1
     data$temp = data$temp - 273
-    m = ggplot(data, aes(X, Y))
-    ##FIXME Does not properly plot tiles that are unoccupied
+    colours = sapply(levels(data$lineage), lineageColour)
+    ##XXX Does not properly plot tiles that are unoccupied
     ## The problem is that unoccupied tiles do not appear in the model output
     ## data at all. Thus, analyse.R has no idea that they exist, or what temperature
     ## they have...
-    m + geom_tile(aes(fill = temp)) + labs(x="Longitude", y="Latitude") +
+    m = ggplot(data, aes(X, Y)) +
+        geom_tile(aes(fill = temp)) +
+        labs(x="Longitude", y="Latitude") +
         scale_fill_continuous(low="lightgrey", high="darkgrey") +
         annotate("rect", xmin=2.5, xmax=3.5, ymin=4.5, ymax=5.5, fill="green", alpha=0.3) +
-        annotate("text", x=3, y=5.5, label=paste("t =", timestep)) +
+        annotate("text", x=3, y=5.65, label=paste("time step:", timestep)) +
         geom_jitter(data = data, aes(size = abundance, color = lineage, shape = alien)) +
-        guides(colour=FALSE, shape=FALSE)
-    ggsave(file=paste0(resultdir, "/", simname, "/", simname, "_map_t", timestep, ".jpg"),
+        scale_colour_manual(values=colours) +
+        scale_shape_manual(values=c("TRUE"=17, "FALSE"=16)) +
+        guides(colour=FALSE, fill=FALSE,
+               shape=guide_legend(title="Non-native"),
+               size=guide_legend(title="Abundance"))
+    ggsave(file=paste0(resultdir, "/", simname, "/", simname, "_map_t", timestep, outformat),
            height=4, width=5, units="in", dpi="print")
 }
 
-plotTimeSeries = function(rundir, step) {
+plotTimeSeries = function(rundir, step, outformat) {
     data = collateSpeciesTable(rundir)
     ## figure out at which timepoints to create a map
     snapshots = seq(0, worldend, step)
@@ -227,13 +291,14 @@ plotTimeSeries = function(rundir, step) {
     if (!worldend %in% snapshots) snapshots = c(snapshots, worldend)
     ## plot the maps
     for (s in snapshots) {
-        plotMap(subset(data, t == s), s, strsplit(rundir, "/")[[1]][2])
+        plotMap(subset(data, t == s), s, strsplit(rundir, "/")[[1]][2], outformat)
     }
 }
 
 plotTraitPCA = function(outdir) {
     ## load data and extract the interesting bits
     ## TODO add  legend
+    ## TODO export to other formats
     print("Plotting PCA...")
     statFile = grep("stats_", list.files(outdir), value=T)
     stats = read.table(paste0(outdir, "/", statFile[1]), sep="\t", header=T)
@@ -263,7 +328,7 @@ plotTraitPCA = function(outdir) {
     
 visualizeRun = function(outdir, maxt=worldend) {
     plotDiversity(outdir,maxt)
-    plotTimeSeries(outdir, round(invasionstart/2))
+    plotTimeSeries(outdir, round(invasionstart/2), outformat)
     plotTraitPCA(outdir)
 }
     
@@ -279,6 +344,7 @@ analyseAll = function(plotRuns=TRUE,plotAll=TRUE,maxt=worldend,var="invasives") 
         }
         plotEstablishment(results)
         plotFactors(results,var)
+        analyseFitness(outformat)
     }
     if (plotRuns) {
         for (f in list.files(resultdir)) {
@@ -297,7 +363,7 @@ analyseAll = function(plotRuns=TRUE,plotAll=TRUE,maxt=worldend,var="invasives") 
 if (commandArgs()[length(commandArgs())] == "all") {
     outdir = sub("/all", "", outdir)
     analyseAll(TRUE,TRUE,worldend,"invasives")
-    ##analyseAll(FALSE,TRUE,worldend,"invasives")
+    ##analyseAll(FALSE, TRUE,worldend,"invasives")
     print("Done.")
 } else {
     # Otherwise, just look at the specified directory (or the default, if
