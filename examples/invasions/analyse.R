@@ -10,7 +10,7 @@ library(ggfortify)
 resultdir = "results"
 outdir = paste0(resultdir, "/", commandArgs()[length(commandArgs())])
 
-## Preferred output format (currently only used by ggplot graphs
+## Preferred output format
 outformat = ".jpg" ## default: ".jpg", for publication: ".eps"
 
 ## The minimum number of cells an alien species must be in to be considered
@@ -54,6 +54,7 @@ lineageColour = function(lineage) {
 
 ### ANALYSE THE WHOLE EXPERIMENT
 
+## WARNING: Takes a *long* time to run!
 analyseEstablishment = function(timestep=worldend) {
     print("Analysing invasion success")
     ## figure out how many replicates there are
@@ -114,7 +115,8 @@ analyseEstablishment = function(timestep=worldend) {
 plotEstablishment = function(results) {
     print("Plotting establishment matrices")
     for (d in dimnames(results)$diversity) {
-        jpeg(paste0(d,".jpg"), height=480, width=960, quality=100)
+        if (outformat == ".eps") { postscript(paste0(d,".eps"), height=4, width=8)
+        } else { jpeg(paste0(d,".jpg"), height=480, width=480, quality=100) }
         mppl = results[,,"1PP","avg",d]
         mpph = results[,,"10PP","avg",d]
         par(mfrow=c(1,2), cex=1.2)
@@ -136,11 +138,41 @@ plotEstablishment = function(results) {
     }
 }
 
+plotInvasives = function(results) {
+    print("Plotting invasion graphs")
+    nreps = length(dimnames(results)$replicates)-1
+    if (outformat == ".eps") { postscript("propagule_pressure.eps")
+    } else { jpeg("propagule_pressure.jpg", height=480, width=480, quality=100) }
+    barplot(c(sum(results[,,"1PP",1:nreps,"invasives"]),
+              sum(results[,,"10PP",1:nreps,"invasives"])),
+            col="lightblue", cex.lab=1.4, cex.axis=1.4, cex.names=1.4,
+            names.arg=c("1 individual/time step", "10 individuals/time step"),
+            ylab="Number of invasive species")
+    dev.off()
+    if (outformat == ".eps") { postscript("prod_dist.eps")
+    } else { jpeg("prod_dist.jpg", height=480, width=480, quality=100) }
+    scenarios = array(c(sum(results["T15","1DB",,1:nreps,"invasives"]),
+                        sum(results["T15","10DB",,1:nreps,"invasives"]),
+                        sum(results["T35","1DB",,1:nreps,"invasives"]),
+                        sum(results["T35","10DB",,1:nreps,"invasives"])),
+                      dim=c(2,2))
+    image(c(1, 10), c(15,35), scenarios,
+          col=rev(grey.colors(4)), yaxp=c(15,35,1), xaxp=c(1,10,1),
+          ylab="Temperature (°C)", xlab="Disturbance (%)",
+          cex.lab=1.4, cex.axis=1.4)
+    text(10,35,scenarios[2,2],col="blue",cex=4)
+    text(1,35,scenarios[1,2],col="blue",cex=4)
+    text(1,15,scenarios[1,1],col="blue",cex=4)
+    text(10,15,scenarios[2,1],col="blue",cex=4)
+    dev.off()
+}
+
 plotFactors = function(results, var="invasives") {
     ## Correlate each experimental factor with invasion success
     ## (`var` specifies whether to consider aliens (sensu lato) or invasives (sensu stricto))
     print("Plotting factor boxplots")
-    jpeg("factors.jpg",height=400, width=1200, quality=100)
+    if (outformat == ".eps") { postscript("factors.eps", height=4, width=12)
+    } else { jpeg("factors.jpg", height=400, width=1200, quality=100) }
     par(mfrow=c(1,3),cex=1.3)
     nrep = length(dimnames(results)$replicates) - 1
     templ = as.vector(results["T15",,,1:nrep,var])
@@ -216,7 +248,7 @@ analyseFitness = function(recalculate=TRUE, outformat=".jpg") {
 
 ### ANALYSE AN INDIVIDUAL RUN
 
-# Plot population size and diversity indices over time
+## Plot population size and diversity indices over time
 plotDiversity = function(outdir, maxt=3000, logfile="diversity.log") {
     simname = strsplit(outdir, "/")[[1]][2]
     logfile = paste(outdir, logfile, sep="/")
@@ -229,8 +261,13 @@ plotDiversity = function(outdir, maxt=3000, logfile="diversity.log") {
     data$lineages = data$lineages/10 #otherwise the Y axis is too big
     # Plot population sizes
     print("Plotting population development...")
-    jpeg(paste0(outdir, "/", simname, "_population.jpg"), quality=100, height=720,
-         width=maxt*(1300/maxt))
+    if (outformat == ".eps") {
+        postscript(paste0(outdir, "/", simname, "_population.eps"),
+                   height=6, width=round((maxt*(1300/maxt))/120))
+    } else {
+        jpeg(paste0(outdir, "/", simname, "_population.jpg"), quality=100,
+             height=720, width=maxt*(1300/maxt))
+    }
     par(cex=1.6)
     plot(data$population[1:maxt], xlab="Time", ylab="Population size",
          ylim=c(0, max(data$population)), col="red", type='l')
@@ -239,8 +276,13 @@ plotDiversity = function(outdir, maxt=3000, logfile="diversity.log") {
     # Plot diversity development
     print("Plotting diversity...")
     ymax = 3 #max(data$alpha, data$beta, data$gamma, data$freespace)
-    jpeg(paste0(outdir, "/", simname, "_diversity.jpg"), quality=100, height=720,
-         width=maxt*(1300/maxt))
+    if (outformat == ".eps") {
+        postscript(paste0(outdir, "/", simname, "_diversity.eps"),
+                   height=6, width=round((maxt*(1300/maxt))/120))
+    } else {
+        jpeg(paste0(outdir, "/", simname, "_diversity.jpg"), quality=100,
+             height=720, width=maxt*(1300/maxt))
+    }
     par(cex=1.6)
     plot(data$lineages[1:maxt], col="orange", type='l', lty=2, ylim=c(0,ymax),
          xlab="Time", ylab="Diversity")
@@ -255,7 +297,7 @@ plotDiversity = function(outdir, maxt=3000, logfile="diversity.log") {
     dev.off()
 }
 
-plotMap = function(data, timestep, simname, outformat=".jpg") {
+plotMap = function(data, timestep, simname) {
     print(paste0("Plotting map ", simname, " at timestep ", timestep, "..."))
     if (is.null(data)) return()
     data$X = data$X + 1
@@ -268,10 +310,9 @@ plotMap = function(data, timestep, simname, outformat=".jpg") {
     ## they have...
     m = ggplot(data, aes(X, Y)) +
         geom_tile(aes(fill = temp)) +
-        labs(x="Longitude", y="Latitude") +
+        labs(x="Longitude", y="Latitude", subtitle=paste("t =", timestep, "time steps")) +
         scale_fill_continuous(low="lightgrey", high="darkgrey") +
         annotate("rect", xmin=2.5, xmax=3.5, ymin=4.5, ymax=5.5, fill="green", alpha=0.3) +
-        annotate("text", x=3, y=5.65, label=paste("time step:", timestep)) +
         geom_jitter(data = data, aes(size = abundance, color = lineage, shape = alien)) +
         scale_colour_manual(values=colours) +
         scale_shape_manual(values=c("TRUE"=17, "FALSE"=16)) +
@@ -282,7 +323,7 @@ plotMap = function(data, timestep, simname, outformat=".jpg") {
            height=4, width=5, units="in", dpi="print")
 }
 
-plotTimeSeries = function(rundir, step, outformat) {
+plotTimeSeries = function(rundir, step) {
     data = collateSpeciesTable(rundir)
     ## figure out at which timepoints to create a map
     snapshots = seq(0, worldend, step)
@@ -291,7 +332,7 @@ plotTimeSeries = function(rundir, step, outformat) {
     if (!worldend %in% snapshots) snapshots = c(snapshots, worldend)
     ## plot the maps
     for (s in snapshots) {
-        plotMap(subset(data, t == s), s, strsplit(rundir, "/")[[1]][2], outformat)
+        plotMap(subset(data, t == s), s, strsplit(rundir, "/")[[1]][2])
     }
 }
 
@@ -319,8 +360,12 @@ plotTraitPCA = function(outdir) {
     colours = sapply(as.character(st$lineage), lineageColour)
     autoplot(model, colour=colours, shape=shapes, loadings=TRUE,
              loadings.colour="darkblue", loadings.label=TRUE, loadings.label.size=3)
-    ggsave(paste0(outdir, "/", strsplit(outdir, "/")[[1]][2], "_traits.jpg"),
-           height=6, width=9)
+    if (outformat == ".eps") {
+        outname = paste0(outdir, "/", strsplit(outdir, "/")[[1]][2], "_traits.eps")
+    } else {
+        outname = paste0(outdir, "/", strsplit(outdir, "/")[[1]][2], "_traits.jpg"),
+    }
+    ggsave(outname, height=6, width=9)
 }
 
 
@@ -328,7 +373,7 @@ plotTraitPCA = function(outdir) {
     
 visualizeRun = function(outdir, maxt=worldend) {
     plotDiversity(outdir,maxt)
-    plotTimeSeries(outdir, round(invasionstart/2), outformat)
+    plotTimeSeries(outdir, round(invasionstart/2))
     plotTraitPCA(outdir)
 }
     
@@ -343,8 +388,9 @@ analyseAll = function(plotRuns=TRUE,plotAll=TRUE,maxt=worldend,var="invasives") 
             save(results, file="experiment_results.dat")
         }
         plotEstablishment(results)
+        plotInvasives(results)
         plotFactors(results,var)
-        analyseFitness(outformat)
+        analyseFitness()
     }
     if (plotRuns) {
         for (f in list.files(resultdir)) {
