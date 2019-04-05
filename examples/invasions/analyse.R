@@ -191,45 +191,44 @@ plotFactors = function(results, var="invasives") {
 }
 
 ## WARNING: Takes a *long* time to run!
-analyseFitness = function(recalculate=TRUE, outformat=".jpg") {
+analyseFitness = function() {
     ## Compare the fitness values of natives, aliens, and invasives across all
     ## runs and populations
     print("Analysing fitness")
-    if (!recalculate && file.exists("fitness_results.dat"))
-        load("fitness_results.dat")
-    else {
-        ## Build a table containing every population's lineage, status, and fitness value
-        pops = data.frame()
-        for (d in list.files(resultdir)) {
-            dir = paste0(resultdir, "/", d)
-            if (!file.info(dir)$isdir) next
-            print(dir)
-            statFile = grep("stats_", list.files(dir), value=T)
-            stats = read.table(paste0(dir, "/", statFile[1]), sep="\t", header=T)
-            natives = unique(subset(stats, time==invasionstart)$lineage)
-            endpops = subset(subset(stats, time==worldend), adults>0)
-            for (i in 1:nrow(endpops)) {
-                s = endpops[i,]
-                if (s$adults == 0) next
-                ##FIXME If individuals have not undergone establishment yet, the adaptation values
-                ## are set to a default of 1 -> leading to "inverse" graph shapes
-                ## Solution: calculate adaptation explicitly
-                fitness = s$tempadaptionmed + s$precadaptionmed
-                if (s$lineage %in% natives) {
-                    status = "native"
+    ## Build a table containing every population's lineage, status, and fitness value
+    pops = data.frame()
+    for (d in list.files(resultdir)) {
+        dir = paste0(resultdir, "/", d)
+        if (!file.info(dir)$isdir) next
+        print(dir)
+        statFile = grep("stats_", list.files(dir), value=T)
+        stats = read.table(paste0(dir, "/", statFile[1]), sep="\t", header=T)
+        natives = unique(subset(stats, time==invasionstart)$lineage)
+        endpops = subset(subset(stats, time==worldend), adults>0)
+        for (i in 1:nrow(endpops)) {
+            s = endpops[i,]
+            if (s$adults == 0) next
+            ##FIXME If individuals have not undergone establishment yet, the adaptation values
+            ## are set to a default of 1 -> leading to "inverse" graph shapes
+            ## Solution: calculate adaptation explicitly
+            fitness = s$tempadaptionmed + s$precadaptionmed
+            if (s$lineage %in% natives) {
+                status = "native"
+            } else {
+                if (dim(subset(endpops, lineage==s$lineage))[1] < invasiveThreshold) {
+                    status = "alien"
                 } else {
-                    if (dim(subset(endpops, lineage==s$lineage))[1] < invasiveThreshold) {
-                        status = "alien"
-                    } else {
-                        status = "invasive"
-                    }
+                    status = "invasive"
                 }
-                pops = rbind(pops, data.frame(run=d, lineage=as.character(s$lineage), status=status, fitness=fitness))
             }
+            pops = rbind(pops, data.frame(run=d, lineage=as.character(s$lineage), status=status, fitness=fitness))
         }
-        colnames(pops) = c("run", "lineage", "status", "fitness")
-        save(pops, file="fitness_results.dat")
     }
+    colnames(pops) = c("run", "lineage", "status", "fitness")
+    return(pops)
+}
+
+plotFitness = function(pops) {
     ## Visualise this table as a violin plot    
     p = ggplot(pops, aes(x=status, y=fitness, fill=status)) +
         geom_violin(trim=FALSE) +
@@ -339,7 +338,6 @@ plotTimeSeries = function(rundir, step) {
 plotTraitPCA = function(outdir) {
     ## load data and extract the interesting bits
     ## TODO add  legend
-    ## TODO export to other formats
     print("Plotting PCA...")
     statFile = grep("stats_", list.files(outdir), value=T)
     stats = read.table(paste0(outdir, "/", statFile[1]), sep="\t", header=T)
@@ -363,7 +361,7 @@ plotTraitPCA = function(outdir) {
     if (outformat == ".eps") {
         outname = paste0(outdir, "/", strsplit(outdir, "/")[[1]][2], "_traits.eps")
     } else {
-        outname = paste0(outdir, "/", strsplit(outdir, "/")[[1]][2], "_traits.jpg"),
+        outname = paste0(outdir, "/", strsplit(outdir, "/")[[1]][2], "_traits.jpg")
     }
     ggsave(outname, height=6, width=9)
 }
@@ -379,18 +377,26 @@ visualizeRun = function(outdir, maxt=worldend) {
     
 analyseAll = function(plotRuns=TRUE,plotAll=TRUE,maxt=worldend,var="invasives") {
     if (plotAll) {
-        if (file.exists("experiment_results.dat")) {
-            print("Loading analysed results back from file")
-            load("experiment_results.dat")
+        if (file.exists("invasion_results.dat")) {
+            print("Loading analysed invasion results back from file")
+            load("invasion_results.dat")
         }
         else {
             results = analyseEstablishment(maxt)
-            save(results, file="experiment_results.dat")
+            save(results, file="invasion_results.dat")
         }
         plotEstablishment(results)
         plotInvasives(results)
         plotFactors(results,var)
-        analyseFitness()
+        if (file.exists("fitness_results.dat")) {
+            print("Loading analysed fitness results back from file")
+            load("fitness_results.dat")
+        }
+        else {
+            pops = analyseFitness()
+            save(pops, file="fitness_results.dat")
+        }
+        plotFitness(pops)
     }
     if (plotRuns) {
         for (f in list.files(resultdir)) {
