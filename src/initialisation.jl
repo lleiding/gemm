@@ -72,8 +72,7 @@ function genesis(settings::Dict{String, Any})
         popsize = length(population)
         # Check the cell capacity
         popmass = sum(map(x -> x.size, population))
-        settings["static"] ? overfill = 1 : overfill = 10
-        if totalmass + popmass > settings["cellsize"] * overfill # stop loop if cell is full
+        if totalmass + popmass > settings["cellsize"] * settings["overfill"] # stop loop if cell is full
             if totalmass >= settings["cellsize"] * 0.9 || occursin("single", settings["popsize"]) #make sure the cell is full enough
                 simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", settings, 'd') #DEBUG
                 break
