@@ -19,8 +19,8 @@ function createpop(settings::Dict{String, Any})
                         exp(-act / (boltz * 298.0)))
     elseif occursin("bodysize", settings["popsize"])
         # population size up to 25% of the maximum possible in this cell
-        quarterpopsize = Integer(floor((settings["cellsize"] / traitdict["repsize"]) / 4))
-        popsize = rand(2:quarterpopsize)
+        quarterpopsize = Integer(ceil((settings["cellsize"] / traitdict["repsize"]) / 4))
+        popsize = rand(1:quarterpopsize) + 1
     elseif occursin("minimal", settings["popsize"]) || popsize == 0
         popsize = 2 #Takes two to tangle ;-)
     else
