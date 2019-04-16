@@ -47,7 +47,7 @@ function defaultSettings()
         "propagule-pressure" => 0, # number of non-native individuals introduced per invasion event
         "quiet" => false, # don't write output to screen
         "raw" => true, # record raw data
-        "sdprec" => 0.0, # SD of precipiation change per time step
+        "sdprec" => 0.0, # SD of precipitation change per time step
         "sdtemp" => 0.0, # SD of temperature change per time step
         "seed" => 0, # for the RNG, seed = 0 -> random seed
         "smallgenelength" => 20,
