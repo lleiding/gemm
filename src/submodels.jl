@@ -408,7 +408,11 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                 end
                 population = view(patch.community, patch.whoiswho[ind.lineage])
                 partners = findmate(population, ind, settings["traitnames"])
-                length(partners) < 1 && continue
+                if length(partners) < 1 && rand() < ind.traits["selfing"]
+                    partners = [ind]
+                else
+                    continue
+                end
                 partner = partners[1]
                 parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
                 if parentmass <= 0
