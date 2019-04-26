@@ -372,7 +372,7 @@ function findmate(population::AbstractArray{Individual, 1}, ind::Individual, tra
     mateidx = startidx
     while true
         mate = population[mateidx]
-        if !mate.marked # && iscompatible(mate, ind, traitnames)
+        if !mate.marked  && iscompatible(mate, ind, traitnames)
             push!(mates, mate)
             break
         end
@@ -484,8 +484,10 @@ function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly.
             push!(traits, Trait(idx, rand() * settings["maxbreadth"]))
         elseif occursin("repsize", traitnames[idx])
             push!(traits, Trait(idx, repsize))
-        elseif occursin("reptol", traitnames[idx])
-            push!(traits, Trait(idx, settings["tolerance"])) # assortative mating might evolve
+        elseif occursin("reptol", traitnames[idx]) && settings["fixtol"]
+            push!(traits, Trait(idx, settings["tolerance"]))
+        elseif occursin("reptol", traitnames[idx]) && !settings["fixtol"]
+            push!(traits, Trait(idx, rand())) # assortative mating might evolve
         elseif occursin("seedsize", traitnames[idx])
             push!(traits, Trait(idx, seedsize))
         elseif occursin("tempopt", traitnames[idx])
