@@ -296,7 +296,7 @@ Compare two strings and return similarity.
 """
 function getseqsimilarity(indgene::AbstractString, mategene::AbstractString)
     basediffs = 0
-    for i in eachindex(indgene)
+    for i in eachindex(indgene) # this is actually faster than `sum(collect(indgene) .== collect(mategene))`
         try
             indgene[i] != mategene[i] && (basediffs += 1) # alternatively use bioinformatics tools
         catch # e.g., in case of differently long genes
