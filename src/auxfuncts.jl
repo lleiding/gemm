@@ -1,4 +1,4 @@
-# Subsidiary functions for GeMM
+# Auxilliary functions for GeMM
 
 """
     meiosis(genome, maternal)
@@ -9,7 +9,7 @@ gamete genome. (genome => array of chromosomes)
 function meiosis(genome::Array{Chromosome,1}, maternal::Bool) # TODO: include further dynamics, errors...
     firstset = findall(x -> x.maternal, genome)
     secondset = findall(x -> !x.maternal, genome)
-    length(firstset) != length(secondset) && return Chromosome[] # CAVE: more elegant solution...
+    length(firstset) != length(secondset) && return Chromosome[] # CAVEAT: more elegant solution...
     gameteidxs = []
     for i in eachindex(firstset)
         push!(gameteidxs, rand([firstset[i], secondset[i]]))
@@ -290,25 +290,11 @@ function identifyAdults!(patch::Patch)
 end
 
 """
-    iscompatible(mate, individual, traitnames)
+    getseqsimilarity(seqone, seqtwo)
 
-Check to see whether two individual organisms are reproductively compatible.
+Compare two strings and return similarity.
 """
-function iscompatible(mate::Individual, ind::Individual, traitnames::Array{String, 1})
-    compatidx = findfirst(x -> x == "compat", traitnames)
-    tolerance = ind.traits["reptol"]
-    indgene = ""
-    for chrm in ind.genome
-        for gene in chrm.genes
-            any(x -> x.nameindex == compatidx, gene.codes) && (indgene = num2seq(gene.sequence)) # use one compatibility gene randomly
-        end
-    end
-    mategene = ""
-    for chrm in mate.genome
-        for gene in chrm.genes
-            any(x -> x.nameindex == compatidx, gene.codes) && (mategene = num2seq(gene.sequence)) # use one compatibility gene randomly
-        end
-    end
+function getseqsimilarity(indgene::AbstractString, mategene::AbstractString)
     basediffs = 0
     for i in eachindex(indgene)
         try
@@ -318,8 +304,33 @@ function iscompatible(mate::Individual, ind::Individual, traitnames::Array{Strin
         end
     end
     seqidentity = 1 - (basediffs / length(indgene))
-    seqidentity < tolerance && return false
-    true
+end
+
+"""
+    getseq(genome, traitidx)
+
+Find and return the sequence of one gene that codes for the given trait `traitidx`.
+"""
+function getseq(genome::Array{Chromosome, 1}, traitidx::Integer)
+    for chrm in genome
+        for gene in chrm.genes
+            any(x -> x.nameindex == geneidx, gene.codes) && (seq = num2seq(gene.sequence)) # use one compatibility gene randomly
+        end
+    end
+    seq
+end
+
+"""
+    iscompatible(mate, individual, traitnames)
+
+Check to see whether two individual organisms are reproductively compatible.
+"""
+function iscompatible(mate::Individual, ind::Individual, traitnames::Array{String, 1})
+    compatidx = findfirst(x -> x == "compat", traitnames)
+    indgene = getseq(ind.genome, compatidx)
+    mategene = getseq(mate.genome, compatidx)
+    seqidentity = getseqsimilarity(indgene, mategene)
+    seqidentity >= ind.traits["reptol"]
 end
 
 """
@@ -336,7 +347,7 @@ function findmate(patch::Patch, ind::Individual, traitnames::Array{String, 1})
     mateidx = startidx
     while true
         mate = patch.community[communityidxs[mateidx]]
-        if !mate.marked # && iscompatible(mate, ind, traitnames)
+        if !mate.marked
             push!(mates, mate)
             break
         end
@@ -345,7 +356,7 @@ function findmate(patch::Patch, ind::Individual, traitnames::Array{String, 1})
         mateidx == startidx && break
     end
     ind.marked = indstate
-    mates 
+    mates
 end
 
 """
@@ -370,7 +381,7 @@ function findmate(population::AbstractArray{Individual, 1}, ind::Individual, tra
         mateidx == startidx && break
     end
     ind.marked = indstate
-    mates 
+    mates
 end
 
 """
