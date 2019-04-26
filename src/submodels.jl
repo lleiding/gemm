@@ -11,7 +11,7 @@ function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any}, locivar::
     settings["phylconstr"] * locivar == 0 && return
     for trait in traits
         traitname = settings["traitnames"][trait.nameindex]
-        occursin("reptol", traitname) && settings["fixtol"] && continue # MARK CAVE!
+        occursin("reptol", traitname) && settings["fixtol"] && continue
         oldvalue = trait.value
         occursin("tempopt", traitname) && (oldvalue -= 273)
         while oldvalue <= 0 # make sure sd of Normal dist != 0
@@ -33,7 +33,7 @@ end
 Mutate an individual's genome (sequence and traits) in place.
 """
 function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
-    muts = settings["mutationrate"] * exp(-act/(boltz*temp)) # settings["mutsperind"]?
+    muts = settings["mutationrate"] * exp(-act/(boltz*temp))
     nmuts = rand(Poisson(muts))
     nmuts == 0 && return
     chrmidcs = rand(eachindex(ind.genome), nmuts)
@@ -62,7 +62,7 @@ end
 """
     mutate!(patch, setting)
 
-Mutate all seedling individual's in a patch.
+Mutate all seed individuals in a patch.
 """
 function mutate!(patch::Patch, settings::Dict{String, Any})
     for ind in patch.seedbank
@@ -175,7 +175,7 @@ end
 """
     survive!(patch, mortality)
 
-Density independent survival of individuals in a patch. The actual mortality 
+Density independent survival of individuals in a patch. The actual mortality
 probability is calculated with a metabolic formula, modified by the passed `mortality`
 variable and an individual's temperature adaptation.
 """
@@ -254,11 +254,11 @@ let speciespool = Individual[]
             push!(speciespool, createind(settings))
         end
     end
-    
+
     """
         invade!(patch, pressure)
 
-    Select a given amount of individuals from the global species pool and add 
+    Select a given amount of individuals from the global species pool and add
     them to the patch.
     """
     function invade!(patch::Patch, pressure::Int)
@@ -295,7 +295,7 @@ function grow!(patch::Patch, growthrate::Float64)
         if !patch.community[idx].marked
             repsize = patch.community[idx].traits["repsize"]
             mass = patch.community[idx].size
-            if mass <= repsize # stop growth if reached repsize 
+            if mass <= repsize # stop growth if reached repsize
                 growth = growthrate * mass^(3/4) * exp(-act/(boltz*temp))
                 newmass = mass + growth
                 if newmass > 0 && mass > 0
@@ -443,11 +443,11 @@ function changetemp!(world::Array{Patch,1}, sdtemp::Float64)
     sdtemp == 0 && return
     deltaval = rand(Normal(0.0, sdtemp))
     for patch in world
-        patch.temp += deltaval 
+        patch.temp += deltaval
     end
     markthem!(world)
-end    
- 
+end
+
 """
     changeprec!(world, sdprec)
 
@@ -457,10 +457,10 @@ function changeprec!(world::Array{Patch,1}, sdprec::Float64)
     sdprec == 0 && return
     deltaval = rand(Normal(0.0, sdprec))
     for patch in world
-        patch.prec += deltaval 
+        patch.prec += deltaval
     end
     markthem!(world)
-end    
+end
 
 """
     changehabitat!(world, settings)
@@ -471,4 +471,4 @@ function changehabitat!(world::Array{Patch,1}, settings::Dict{String, Any})
     # TODO: record trajectory? input trajectory?
     changetemp!(world, settings["sdtemp"])
     changeprec!(world, settings["sdprec"])
-end    
+end
