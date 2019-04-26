@@ -347,7 +347,7 @@ function findmate(patch::Patch, ind::Individual, traitnames::Array{String, 1})
     mateidx = startidx
     while true
         mate = patch.community[communityidxs[mateidx]]
-        if !mate.marked
+        if !mate.marked && iscompatible(mate, ind, traitnames)
             push!(mates, mate)
             break
         end
