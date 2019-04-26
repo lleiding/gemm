@@ -18,7 +18,7 @@ function defaultSettings()
         "disturbance" => 0, # percentage of individuals killed per update per cell
         "fasta" => false, # record fasta data?
         "fertility" => exp(28.0), # global base reproduction rate 23.8 from Brown et al. 2004, alternatively 25.0, default 30.0
-        "fixtol" => true, 
+        "fixtol" => true,
         "global-species-pool" => 0, # size of the global species pool (invasion source)
         "growthrate" => exp(25.2), # global base growth/biomass production from Brown et al. 2004
         "indsize" => "seed", # initialize organisms as seed, adult or mixed
@@ -31,10 +31,10 @@ function defaultSettings()
         "maxloci" => 1, # maximum number of loci/copies per gene
         "maxrepsize" => 14.0, # maximal repsize in grams calculated as exp(maxrepsize) -> 1.2 t
         "maxseedsize" => 10.0, # maximal seedsize in grams calculated as exp(maxseedsize) -> 22 kg
-        "maxtemp" => 313.0, # max optimum temp in K 
+        "maxtemp" => 313.0, # max optimum temp in K
         "minrepsize" => 3.0, # minimal repsize in grams calculated as exp(minrepsize) -> 20 g
         "minseedsize" => -2.0, # minimal seedsize in grams calculated as exp(minseedsize) -> 0.14 g
-        "mintemp" => 273.0, # min optimum temp in K 
+        "mintemp" => 273.0, # min optimum temp in K
         "mortality" => exp(22), # global base mortality from Brown et al. 2004 is 26.3, but competition and dispersal introduce add. mort.
         "mutate" => true, # mutations occur
         "mutationrate" => 3.6e10, # one mutation per generation/individual, corrected for metabolic function
@@ -61,10 +61,10 @@ function defaultSettings()
                          "prectol",
                          "repsize",
                          "reptol",
+                         "selfing"
                          "seedsize",
                          "tempopt",
                          "temptol"], # minimal required traitnames
         "usebiggenes" => true
-    ) 
+    )
 end
-
