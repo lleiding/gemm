@@ -11,7 +11,7 @@ resultdir = "results"
 outdir = paste0(resultdir, "/", commandArgs()[length(commandArgs())])
 
 ## Preferred output format
-outformat = ".jpg" ## default: ".jpg", for publication: ".eps"
+outformat = ".eps" ## default: ".jpg", for publication: ".eps"
 
 ## The minimum number of cells an alien species must be in to be considered
 ## invasive (default: 2)
@@ -20,6 +20,8 @@ invasiveThreshold = 2
 ## D-Day and apocalypse
 invasionstart = 500
 worldend = 1500
+
+### AUXILIARY FUNCTIONS
 
 ## Read in the output file and figure out which lineages are native
 collateSpeciesTable = function(rundir)
@@ -115,25 +117,27 @@ analyseEstablishment = function(timestep=worldend) {
 plotEstablishment = function(results) {
     print("Plotting establishment matrices")
     for (d in dimnames(results)$diversity) {
-        if (outformat == ".eps") { postscript(paste0(d,".eps"), height=4, width=8)
-        } else { jpeg(paste0(d,".jpg"), height=480, width=480, quality=100) }
+        if (outformat == ".eps") {
+            setEPS()
+            postscript(paste0(d,".eps"), height=4, width=8)
+        } else { jpeg(paste0(d,".jpg"), height=480, width=960, quality=100) }
         mppl = results[,,"1PP","avg",d]
         mpph = results[,,"10PP","avg",d]
         par(mfrow=c(1,2), cex=1.2)
         cols = rev(grey.colors(4))
         image(c(15,35),c(1,10),mppl, col=cols,xaxp=c(15,35,1),yaxp=c(1,10,1),
-              xlab="Temperature (°C)",ylab="Disturbance (%)", main="Propagule pressure: 1")
-        text(15,1,round(mppl[1,1],2),col="blue",cex=3)
-        text(15,10,round(mppl[1,2],2),col="blue",cex=3)
-        text(35,1,round(mppl[2,1],2),col="blue",cex=3)
-        text(35,10,round(mppl[2,2],2),col="blue",cex=3)
+              xlab="Temperature (°C)",ylab="Disturbance (%)", sub="Propagule pressure: 1")
+        text(15,1,round(mppl[1,1],2),col="blue",cex=1.5)
+        text(15,10,round(mppl[1,2],2),col="blue",cex=1.5)
+        text(35,1,round(mppl[2,1],2),col="blue",cex=1.5)
+        text(35,10,round(mppl[2,2],2),col="blue",cex=1.5)
         image(c(15,35),c(1,10),mpph, col=cols,xaxp=c(15,35,1),yaxp=c(1,10,1),
               xlab="Temperature (°C)",ylab="Disturbance (%)",
-              main="Propagule pressure: 10")
-        text(15,1,round(mpph[1,1],2),col="blue",cex=3)
-        text(15,10,round(mpph[1,2],2),col="blue",cex=3)
-        text(35,1,round(mpph[2,1],2),col="blue",cex=3)
-        text(35,10,round(mpph[2,2],2),col="blue",cex=3)
+              sub="Propagule pressure: 10")
+        text(15,1,round(mpph[1,1],2),col="blue",cex=1.5)
+        text(15,10,round(mpph[1,2],2),col="blue",cex=1.5)
+        text(35,1,round(mpph[2,1],2),col="blue",cex=1.5)
+        text(35,10,round(mpph[2,2],2),col="blue",cex=1.5)
         dev.off()
     }
 }
@@ -141,7 +145,9 @@ plotEstablishment = function(results) {
 plotInvasives = function(results) {
     print("Plotting invasion graphs")
     nreps = length(dimnames(results)$replicates)-1
-    if (outformat == ".eps") { postscript("propagule_pressure.eps")
+    if (outformat == ".eps") {
+        setEPS()
+        postscript("propagule_pressure.eps")
     } else { jpeg("propagule_pressure.jpg", height=480, width=480, quality=100) }
     barplot(c(sum(results[,,"1PP",1:nreps,"invasives"]),
               sum(results[,,"10PP",1:nreps,"invasives"])),
@@ -149,7 +155,9 @@ plotInvasives = function(results) {
             names.arg=c("1 individual/time step", "10 individuals/time step"),
             ylab="Number of invasive species")
     dev.off()
-    if (outformat == ".eps") { postscript("prod_dist.eps")
+    if (outformat == ".eps") {
+        setEPS()
+        postscript("prod_dist.eps")
     } else { jpeg("prod_dist.jpg", height=480, width=480, quality=100) }
     scenarios = array(c(sum(results["T15","1DB",,1:nreps,"invasives"]),
                         sum(results["T15","10DB",,1:nreps,"invasives"]),
@@ -171,7 +179,9 @@ plotFactors = function(results, var="invasives") {
     ## Correlate each experimental factor with invasion success
     ## (`var` specifies whether to consider aliens (sensu lato) or invasives (sensu stricto))
     print("Plotting factor boxplots")
-    if (outformat == ".eps") { postscript("factors.eps", height=4, width=12)
+    if (outformat == ".eps") {
+        setEPS()
+        postscript("factors.eps", height=4, width=12)
     } else { jpeg("factors.jpg", height=400, width=1200, quality=100) }
     par(mfrow=c(1,3),cex=1.3)
     nrep = length(dimnames(results)$replicates) - 1
@@ -195,6 +205,12 @@ analyseFitness = function() {
     ## Compare the fitness values of natives, aliens, and invasives across all
     ## runs and populations
     print("Analysing fitness")
+    gauss = function(opt, tol, x) {
+        ## private function needed to calculate fitness
+        ## (copied from `auxfuncts.jl`)
+        a = 1 / (tol * sqrt(2 * pi))
+        return(a * exp(-(x-opt)^2/(2*tol^2)))
+    }
     ## Build a table containing every population's lineage, status, and fitness value
     pops = data.frame()
     for (d in list.files(resultdir)) {
@@ -211,7 +227,9 @@ analyseFitness = function() {
             ##FIXME If individuals have not undergone establishment yet, the adaptation values
             ## are set to a default of 1 -> leading to "inverse" graph shapes
             ## Solution: calculate adaptation explicitly
-            fitness = s$tempadaptionmed + s$precadaptionmed
+            ##fitness = s$tempadaptionmed + s$precadaptionmed
+            fitness = gauss(s$tempoptmed, s$temptolmed, s$temp) +
+                gauss(s$precoptmed, s$prectolmed, s$prec)
             if (s$lineage %in% natives) {
                 status = "native"
             } else {
@@ -229,16 +247,18 @@ analyseFitness = function() {
 }
 
 plotFitness = function(pops) {
-    ## Visualise this table as a violin plot    
+    ## Visualise this table as a violin plot
+    print("Plotting fitness violin graph")
     p = ggplot(pops, aes(x=status, y=fitness, fill=status)) +
-        geom_violin(trim=FALSE) +
+        coord_cartesian(ylim=c(0,2.1)) +
+        geom_violin(trim=FALSE) + ##trim=FALSE) +
         geom_boxplot(width=0.05) +
         scale_x_discrete(limits=c("native", "invasive", "alien")) +
-        annotate(geom="text", x=1, y=2.5,
+        annotate(geom="text", x=1, y=2.125,
                  label=paste(length(unique(subset(pops, status=="native")$lineage)), "species")) +
-        annotate(geom="text", x=2, y=2.5,
+        annotate(geom="text", x=2, y=2.125,
                  label=paste(length(unique(subset(pops, status=="invasive")$lineage)), "species")) +
-        annotate(geom="text", x=3, y=2.5,
+        annotate(geom="text", x=3, y=2.125,
                  label=paste(length(unique(subset(pops, status=="alien")$lineage)), "species")) +
         labs(subtitle=paste("n", "=", dim(pops)[1], "populations"), y="population median fitness") +
         theme(legend.position="none")
@@ -262,7 +282,8 @@ plotDiversity = function(outdir, maxt=3000, logfile="diversity.log") {
     print("Plotting population development...")
     if (outformat == ".eps") {
         postscript(paste0(outdir, "/", simname, "_population.eps"),
-                   height=6, width=round((maxt*(1300/maxt))/120))
+                   height=6, width=round((maxt*(1300/maxt))/120),
+                   horizontal=FALSE, onefile=FALSE, paper="special")
     } else {
         jpeg(paste0(outdir, "/", simname, "_population.jpg"), quality=100,
              height=720, width=maxt*(1300/maxt))
@@ -276,6 +297,7 @@ plotDiversity = function(outdir, maxt=3000, logfile="diversity.log") {
     print("Plotting diversity...")
     ymax = 3 #max(data$alpha, data$beta, data$gamma, data$freespace)
     if (outformat == ".eps") {
+        setEPS()
         postscript(paste0(outdir, "/", simname, "_diversity.eps"),
                    height=6, width=round((maxt*(1300/maxt))/120))
     } else {
@@ -311,6 +333,7 @@ plotMap = function(data, timestep, simname) {
         geom_tile(aes(fill = temp)) +
         labs(x="Longitude", y="Latitude", subtitle=paste("t =", timestep, "time steps")) +
         scale_fill_continuous(low="lightgrey", high="darkgrey") +
+        ##FIXME The green rectangle doesn't plot under EPS? -> because of the alpha?
         annotate("rect", xmin=2.5, xmax=3.5, ymin=4.5, ymax=5.5, fill="green", alpha=0.3) +
         geom_jitter(data = data, aes(size = abundance, color = lineage, shape = alien)) +
         scale_colour_manual(values=colours) +
