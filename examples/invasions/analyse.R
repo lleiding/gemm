@@ -4,6 +4,7 @@
 
 library(ggplot2)
 library(ggfortify)
+library(reshape2)
 
 ## The working directory may be specified via the commandline, otherwise it
 ## defaults to results/tests
@@ -67,7 +68,7 @@ analyseEstablishment = function(timestep=worldend) {
     results = array(dim=c(2,2,2,nrep+1,3), dimnames=list(temperature=c("T15", "T35"),
                                                          disturbance=c("1DB", "10DB"),
                                                          propagules=c("1PP", "10PP"),
-                                                         replicates=c(reps, "avg"),
+                                                         replicates=c(reps, "avg", "sum"),
                                                          diversity=c("natives", "aliens", "invasives")))
     for (d in list.files(resultdir)) {
         dir = paste0(resultdir, "/", d)
@@ -100,8 +101,8 @@ analyseEstablishment = function(timestep=worldend) {
             results[temp, dist, prop, repl,] = c(natives, aliens, invasives)
         }
     }
-    ##take the averages
     for (s in dimnames(results)$diversity) {
+        ##take the averages
         results["T35","1DB","1PP","avg",s] = mean(results["T35","1DB","1PP",1:nrep,s], na.rm=TRUE)
         results["T35","1DB","10PP","avg",s] = mean(results["T35","1DB","10PP",1:nrep,s], na.rm=TRUE)
         results["T35","10DB","1PP","avg",s] = mean(results["T35","10DB","1PP",1:nrep,s], na.rm=TRUE)
@@ -110,6 +111,15 @@ analyseEstablishment = function(timestep=worldend) {
         results["T15","1DB","10PP","avg",s] = mean(results["T15","1DB","10PP",1:nrep,s], na.rm=TRUE)
         results["T15","10DB","1PP","avg",s] = mean(results["T15","10DB","1PP",1:nrep,s], na.rm=TRUE)
         results["T15","10DB","10PP","avg",s] = mean(results["T15","10DB","10PP",1:nrep,s], na.rm=TRUE)
+        ## take the sums
+        results["T35","1DB","1PP","sum",s] = sum(results["T35","1DB","1PP",1:nrep,s], na.rm=TRUE)
+        results["T35","1DB","10PP","sum",s] = sum(results["T35","1DB","10PP",1:nrep,s], na.rm=TRUE)
+        results["T35","10DB","1PP","sum",s] = sum(results["T35","10DB","1PP",1:nrep,s], na.rm=TRUE)
+        results["T35","10DB","10PP","sum",s] = sum(results["T35","10DB","10PP",1:nrep,s], na.rm=TRUE)
+        results["T15","1DB","1PP","sum",s] = sum(results["T15","1DB","1PP",1:nrep,s], na.rm=TRUE)
+        results["T15","1DB","10PP","sum",s] = sum(results["T15","1DB","10PP",1:nrep,s], na.rm=TRUE)
+        results["T15","10DB","1PP","sum",s] = sum(results["T15","10DB","1PP",1:nrep,s], na.rm=TRUE)
+        results["T15","10DB","10PP","sum",s] = sum(results["T15","10DB","10PP",1:nrep,s], na.rm=TRUE)
     }
     return(results)
 }
@@ -175,7 +185,27 @@ plotInvasives = function(results) {
     dev.off()
 }
 
-plotFactors = function(results, var="invasives") {
+plotFactors = function(results) {
+    print("Plotting invasion factor graph")
+    res = melt(results[,,,"sum", "invasives"]) ## XXX needs data recalculation, otherwise use "avg"
+    ##res$value = round(res$value*60) #only if "avg" is used
+    levels(res$temperature) = c("Temperature: 15°C", "Temperature: 35°C")
+    levels(res$disturbance) = c("Disturbance: 1%", "Disturbance: 10%")
+    ggplot(res, aes(x=temperature, y=value)) +
+        facet_grid(disturbance~temperature, as.table=FALSE) +
+        geom_col(aes(x=propagules, y=value, fill=propagules),
+                 position="dodge", color="black",
+                 show.legend=FALSE) +
+        scale_y_continuous(name="Number of invasive species",
+                           limits=c(0, max(res$value)+1),
+                           breaks=seq(0, max(res$value)+1, 2)) +
+        scale_x_discrete(name="Propagule pressure per timestep", labels=c("1 individual", "10 individuals")) +
+        theme_classic(base_size=14)
+    ggsave(file=paste0("factors", outformat), height=4, width=5, units="in", dpi="print")
+}
+
+## Superceded by `plotInvasives` (gives a prettier and more informative graph)
+plotFactorsOld = function(results, var="invasives") {
     ## Correlate each experimental factor with invasion success
     ## (`var` specifies whether to consider aliens (sensu lato) or invasives (sensu stricto))
     print("Plotting factor boxplots")
@@ -249,10 +279,10 @@ analyseFitness = function() {
 plotFitness = function(pops) {
     ## Visualise this table as a violin plot
     print("Plotting fitness violin graph")
-    p = ggplot(pops, aes(x=status, y=fitness, fill=status)) +
+    ggplot(pops, aes(x=status, y=fitness, fill=status)) +
         coord_cartesian(ylim=c(0,2.1)) +
-        geom_violin(trim=FALSE) + ##trim=FALSE) +
-        geom_boxplot(width=0.05) +
+        geom_violin(trim=FALSE, show.legend=FALSE) +
+        geom_boxplot(width=0.05, show.legend=FALSE) +
         scale_x_discrete(limits=c("native", "invasive", "alien")) +
         annotate(geom="text", x=1, y=2.125,
                  label=paste(length(unique(subset(pops, status=="native")$lineage)), "species")) +
@@ -260,8 +290,9 @@ plotFitness = function(pops) {
                  label=paste(length(unique(subset(pops, status=="invasive")$lineage)), "species")) +
         annotate(geom="text", x=3, y=2.125,
                  label=paste(length(unique(subset(pops, status=="alien")$lineage)), "species")) +
-        labs(subtitle=paste("n", "=", dim(pops)[1], "populations"), y="population median fitness") +
-        theme(legend.position="none")
+        labs(subtitle=paste("n", "=", dim(pops)[1], "populations,", length(unique(pops$lineage)), "species"),
+             y="population median fitness") +
+        theme_classic()
     ggsave(file=paste0("fitness", outformat), height=4, width=5, units="in", dpi="print")
 }
 
