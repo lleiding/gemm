@@ -12,7 +12,7 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
     for t in 1:timesteps
         simlog("UPDATE $t", settings)
         # ecological processes
-        establish!(world, settings["nniches"], settings["static"])
+        phylo = establish!(world, settings["nniches"], settings["static"])
         survive!(world, settings)
         grow!(world, settings)
         compete!(world, settings["static"])
@@ -31,6 +31,9 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
         if settings["lineages"]
             recordstatistics(world, settings)
             recordlineages(world, settings, t)
+        end
+        if settings["writephylo"]
+            writephylo(phylo, settings, t)
         end
         if mod(t, settings["outfreq"]) == 0
             writedata(world, settings, t)

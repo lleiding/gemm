@@ -356,3 +356,24 @@ function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile=
         simlog("Invalid log category $category.", settings, 'w')
     end
 end
+
+"""
+    writephylo(phylo, settings, t)
+
+Write the phylogeny of local populations.
+Each node represents the entire population of individuals of a certain lineage in the same location.
+Output format is a comma-separated file with information on the branching time,
+the parent population and the offspring population
+"""
+function writephylo(phylo, settings, t)
+    phylo = t * "," .* phylo 
+    basename = "phylo"
+    basename = joinpath(settings["dest"], basename)
+    filename = basename * ".csv"
+    simlog("Writing phylo \"$filename\"", settings)
+    open(filename, "a") do file
+        for i in phylo
+            println(file, i)
+        end
+    end
+end
