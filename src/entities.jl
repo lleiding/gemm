@@ -55,7 +55,7 @@ mutable struct Individual
     parentpopulation::String
 end
 
-Patch(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id) =
+Individual(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id) =
     Patch(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id, lineage * ".x.y")
 
 """
