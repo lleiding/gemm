@@ -96,8 +96,8 @@ function checkviability!(community::Array{Individual, 1}, settings::Dict{String,
         community[idx].size <= 0 && (dead = true) && (reason *= "size ")
         any(collect(values(community[idx].traits)) .< 0) && (dead = true) && (reason *= "traitvalues ")
         community[idx].traits["repsize"] <= community[idx].traits["seedsize"] && (dead = true) && (reason *= "seed/rep ")
-        community[idx].tempadaption < 0 && (dead = true) && (reason *= "fitness ")
-        community[idx].precadaption < 0 && (dead = true) && (reason *= "fitness ")
+        community[idx].tempadaptation < 0 && (dead = true) && (reason *= "fitness ")
+        community[idx].precadaptation < 0 && (dead = true) && (reason *= "fitness ")
         !traitsexist(community[idx].traits, settings) && (dead = true) && (reason *= "missingtrait ")
         if dead
             simlog("Individual not viable: $reason. Being killed.", settings, 'w')
@@ -146,14 +146,14 @@ function establish!(patch::Patch, nniches::Int=1)
             fitness = gausscurve(opt, tol, temp, 0.0)
             fitness > 1 && (fitness = 1) # should be obsolete
             fitness < 0 && (fitness = 0) # should be obsolete
-            patch.community[idx].tempadaption = fitness
+            patch.community[idx].tempadaptation = fitness
             if nniches >= 2
                 opt = patch.community[idx].traits["precopt"]
                 tol = patch.community[idx].traits["prectol"]
                 fitness = gausscurve(opt, tol, patch.prec, 0.0)
                 fitness > 1 && (fitness = 1) # should be obsolete
                 fitness < 0 && (fitness = 0) # should be obsolete
-                patch.community[idx].precadaption = fitness
+                patch.community[idx].precadaptation = fitness
             end
             patch.community[idx].marked = false
         end
@@ -187,7 +187,7 @@ function survive!(patch::Patch, mortality::Float64)
             mass = patch.community[idx].size
             deathrate = mortality * mass^(-1/4) * exp(-act/(boltz*temp))
             dieprob = (1 - exp(-deathrate))
-            if rand() * patch.community[idx].tempadaption < dieprob
+            if rand() * patch.community[idx].tempadaptation < dieprob
                 splice!(patch.community, idx)
                 continue
             end
@@ -366,10 +366,10 @@ function compete!(patch::Patch)
     while totalmass >= patch.area # occupied area larger than available
         firstind, secondind = rand(eachindex(patch.community), 2)
         firstind == secondind && length(eachindex(patch.community)) > 1 && continue
-        if patch.community[firstind].precadaption < patch.community[secondind].precadaption
+        if patch.community[firstind].precadaptation < patch.community[secondind].precadaptation
             totalmass -= patch.community[firstind].size
             splice!(patch.community, firstind) # profiling: expensive!
-        elseif patch.community[firstind].precadaption > patch.community[secondind].precadaption
+        elseif patch.community[firstind].precadaptation > patch.community[secondind].precadaptation
             totalmass -= patch.community[secondind].size
             splice!(patch.community, secondind) # profiling: expensive!
         else
