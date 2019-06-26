@@ -131,7 +131,7 @@ end
 """
     establish!(patch, nniches)
 
-Establishment of individuals in patch `p`: Sets the adaption parameters (~fitness)
+Establishment of individuals in patch `p`: Sets the adaptation parameters (~fitness)
 according to an individual's adaptation to the niches of the surrounding environment.
 
 A maximum of two niches is currently supported.
@@ -139,6 +139,7 @@ A maximum of two niches is currently supported.
 function establish!(patch::Patch, nniches::Int=1)
     temp = patch.temp
     idx = 1
+    origins = String[]
     while idx <= size(patch.community,1)
         if patch.community[idx].marked
             opt = patch.community[idx].traits["tempopt"]
@@ -156,9 +157,12 @@ function establish!(patch::Patch, nniches::Int=1)
                 patch.community[idx].precadaptation = fitness
             end
             patch.community[idx].marked = false
+            push!(origins, patch.community[idx].parentpopulation * "," * patch.community[idx].linegae * "." * patch.location[1] * "." * patch.location[2])
+            patch.community[idx].parentpopulation = patch.community[idx].linegae * "." * patch.location[1] * "." * patch.location[2]
         end
         idx += 1
     end
+    unique!(origins)
 end
 
 """
@@ -167,9 +171,11 @@ end
 Carry out establishment for each patch in the world.
 """
 function establish!(world::Array{Patch,1}, nniches::Int=1, static::Bool = true)
+    allorigins = String[]
     for patch in world
-        (patch.isisland || !static) && establish!(patch, nniches) # pmap(!,patch) ???
+        (patch.isisland || !static) && append!(allorigins, establish!(patch, nniches)) # pmap(!,patch) ???
     end
+    allorigins
 end
 
 """

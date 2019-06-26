@@ -65,6 +65,7 @@ function defaultSettings()
                          "seedsize",
                          "tempopt",
                          "temptol"], # minimal required traitnames
-        "usebiggenes" => true
+        "usebiggenes" => true,
+        "writephylo" => false # whether to record the phylogeny
     )
 end
