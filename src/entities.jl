@@ -48,15 +48,15 @@ mutable struct Individual
     genome::Array{Chromosome, 1}
     traits::Dict{String, Float64}
     marked::Bool # indicator whether individual is new to a patch (after dispersal or birth)
-    precadaption::Float64 # adaption to precipitation
-    tempadaption::Float64 # adaption to temperature
+    precadaptation::Float64 # adaption to precipitation
+    tempadaptation::Float64 # adaption to temperature
     size::Float64 # body mass
     id::Int
     parentpopulation::String
 end
 
-Patch(lineage, genome, traits, marked, precadaption, tempadaption, size, id) =
-    Patch(lineage, genome, traits, marked, precadaption, tempadaption, size, id, lineage * ".x.y")
+Patch(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id) =
+    Patch(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id, lineage * ".x.y")
 
 """
 One of the core structs of the model, representing a one-hectare patch of ground.

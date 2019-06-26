@@ -23,8 +23,8 @@ function printheader(settings::Dict{String, Any}, io::IO = stdout, sep::String =
     print(io, "id", sep)
     print(io, "lineage", sep)
     print(io, "new", sep)
-    print(io, "tempadaption", sep)
-    print(io, "precadaption", sep)
+    print(io, "tempadaptation", sep)
+    print(io, "precadaptation", sep)
     print(io, "size", sep)
     print(io, "lnkgunits", sep)
     print(io, "ngenes", sep)
@@ -66,8 +66,8 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
             print(io, ind.id, sep)
             print(io, ind.lineage, sep)
             ind.marked ? print(io, 1, sep) : print(io, 0, sep)
-            print(io, ind.tempadaption, sep)
-            print(io, ind.precadaption, sep)
+            print(io, ind.tempadaptation, sep)
+            print(io, ind.precadaptation, sep)
             print(io, ind.size, sep)
             print(io, length(ind.genome), sep)
             print(io, sum(map(x -> length(x.genes), ind.genome)), sep)
@@ -266,7 +266,7 @@ for `printpopstats`.
 """
 function printpopheader(io::IO)
     print(io, "time", "\tx", "\ty", "\ttemp", "\tprec", "\tarea", "\tisisland")
-    print(io, "\tlineage", "\tjuveniles", "\tadults", "\tmaxsize", "\ttempadaptionmed", "\tprecadaptionmed")
+    print(io, "\tlineage", "\tjuveniles", "\tadults", "\tmaxsize", "\ttempadaptationmed", "\tprecadaptationmed")
     traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd", 
                    "ngenes", "nlnkgunits", "precopt", "precoptsd", "prectol", "prectolsd",
                    "repsize", "repsizesd", "reptol", "reptolsd", "seedsize", "seedsizesd",
@@ -302,8 +302,8 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
             population = patch.community[popidxs]
             adultidxs = findall(i -> i.size > i.traits["repsize"], patch.community[popidxs])
             print(io, "\t", population[1].lineage, "\t", length(popidxs) - length(adultidxs), "\t", length(adultidxs),
-                  "\t", maximum(map(i -> i.size, population)), "\t", median(map(i -> i.tempadaption, population)),
-                  "\t", median(map(i -> i.precadaption, population)))
+                  "\t", maximum(map(i -> i.size, population)), "\t", median(map(i -> i.tempadaptation, population)),
+                  "\t", median(map(i -> i.precadaptation, population)))
             poptraitdict = Dict{String, Array{Float64, 1}}()
             for traitname in traitnames
                 poptrait = map(i -> i.traits[traitname], population)
