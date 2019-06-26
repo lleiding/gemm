@@ -52,7 +52,11 @@ mutable struct Individual
     tempadaption::Float64 # adaption to temperature
     size::Float64 # body mass
     id::Int
+    parentpopulation::String
 end
+
+Patch(lineage, genome, traits, marked, precadaption, tempadaption, size, id) =
+    Patch(lineage, genome, traits, marked, precadaption, tempadaption, size, id, lineage * ".x.y")
 
 """
 One of the core structs of the model, representing a one-hectare patch of ground.
