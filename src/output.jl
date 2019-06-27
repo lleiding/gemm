@@ -194,7 +194,7 @@ is used for file name creation.
 """
 function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
     if settings["raw"]
-        basename = "s" * string(settings["seed"])
+        basename = "inds_s" * string(settings["seed"])
         basename = joinpath(settings["dest"], basename)
         filename = basename * ".tsv"
         simlog("Writing data \"$filename\"", settings)
@@ -203,7 +203,7 @@ function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep:
         end
     end
     if settings["stats"]
-        basename = "stats_s" * string(settings["seed"])
+        basename = "pops_s" * string(settings["seed"])
         basename = joinpath(settings["dest"], basename)
         filename = basename * ".tsv"
         simlog("Writing stats to \"$filename\"", settings)
@@ -212,6 +212,7 @@ function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep:
         end
     end
     if settings["fasta"]
+        basename = "seqs_s" * string(settings["seed"])
         filename = basename * ".fa"
         simlog("Writing fasta \"$filename\"", settings)
         open(filename, "a") do file
