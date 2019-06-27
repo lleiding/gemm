@@ -312,9 +312,10 @@ end
 Find and return the sequence of one gene that codes for the given trait `traitidx`.
 """
 function getseq(genome::Array{Chromosome, 1}, traitidx::Integer)
+    seq = ""
     for chrm in genome
         for gene in chrm.genes
-            any(x -> x.nameindex == geneidx, gene.codes) && (seq = num2seq(gene.sequence)) # use one compatibility gene randomly
+            any(x -> x.nameindex == traitidx, gene.codes) && (seq = num2seq(gene.sequence)) # use one compatibility gene randomly
         end
     end
     seq
