@@ -56,7 +56,7 @@ mutable struct Individual
 end
 
 Individual(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id) =
-    Patch(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id, lineage * ".x.y")
+    Individual(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id, lineage * ".x.y")
 
 """
 One of the core structs of the model, representing a one-hectare patch of ground.
