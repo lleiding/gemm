@@ -140,15 +140,15 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
         end
         if newpatch.initpop && settings["indsize"] != "seed"
             append!(newpatch.community, genesis(settings))
-        elseif newpatch.initpop && !newpatch.isisland && settings["static"]
-            append!(newpatch.seedbank, genesis(settings))
-            lineage = ""
-            for ind in newpatch.seedbank # store one sample individual for recording purposes
-                if ind.lineage != lineage
-                    push!(newpatch.community, ind)
-                    lineage = ind.lineage
-                end
-            end
+        # elseif newpatch.initpop && !newpatch.isisland && settings["static"]
+        #     append!(newpatch.seedbank, genesis(settings))
+        #     lineage = ""
+        #     for ind in newpatch.seedbank # store one sample individual for recording purposes
+        #         if ind.lineage != lineage
+        #             push!(newpatch.community, ind)
+        #             lineage = ind.lineage
+        #         end
+        #     end
         elseif newpatch.initpop
             append!(newpatch.seedbank, genesis(settings))
         end
