@@ -12,11 +12,11 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
     for t in 1:timesteps
         simlog("UPDATE $t", settings)
         # ecological processes
-        phylo = establish!(world, settings["nniches"], settings["static"])
+        establish!(world, settings["nniches"], settings["static"])
         survive!(world, settings)
         grow!(world, settings)
         compete!(world, settings["static"])
-        reproduce!(world, settings)
+        phylo = reproduce!(world, settings)
         if settings["mutate"]
             mutate!(world, settings)
         end

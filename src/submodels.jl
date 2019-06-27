@@ -139,7 +139,6 @@ A maximum of two niches is currently supported.
 function establish!(patch::Patch, nniches::Int=1)
     temp = patch.temp
     idx = 1
-    origins = String[]
     while idx <= size(patch.community,1)
         if patch.community[idx].marked
             opt = patch.community[idx].traits["tempopt"]
@@ -157,12 +156,9 @@ function establish!(patch::Patch, nniches::Int=1)
                 patch.community[idx].precadaptation = fitness
             end
             patch.community[idx].marked = false
-            push!(origins, string(patch.community[idx].parentpopulation, ",", patch.community[idx].lineage, ".", patch.location[1], ".", patch.location[2]))
-            patch.community[idx].parentpopulation = string(patch.community[idx].lineage, ".", patch.location[1], ".", patch.location[2])
         end
         idx += 1
     end
-    unique!(origins)
 end
 
 """
@@ -171,11 +167,9 @@ end
 Carry out establishment for each patch in the world.
 """
 function establish!(world::Array{Patch,1}, nniches::Int=1, static::Bool = true)
-    allorigins = String[]
     for patch in world
-        (patch.isisland || !static) && append!(allorigins, establish!(patch, nniches)) # pmap(!,patch) ???
+        (patch.isisland || !static) && establish!(patch, nniches) # pmap(!,patch) ???
     end
-    allorigins
 end
 
 """
@@ -403,6 +397,7 @@ end
 Reproduction of individuals in a patch.
 """
 function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
+    origins = String[]
     identifyAdults!(patch)
     for ind in patch.community
         if !ind.marked
@@ -426,11 +421,14 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                 else
                     ind.size = parentmass
                 end
+                push!(origins, string(ind.parentpopulation, ",", ind.lineage, ".", patch.location[1], ".", patch.location[2]))
+                ind.parentpopulation = string(ind.lineage, ".", patch.location[1], ".", patch.location[2])
                 append!(patch.seedbank, createoffspring(noffs, ind, partner, settings["traitnames"]))
             end
         end
     end
     simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
+    unique!(origins)
 end
 
 """
@@ -439,9 +437,11 @@ end
 Carry out reproduction on all patches.
 """
 function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
+    allorigins = String[]
     for patch in world
-        (patch.isisland || !settings["static"]) && reproduce!(patch, settings) # pmap(!,patch) ???
+        (patch.isisland || !settings["static"]) && append!(allorigins, reproduce!(patch, settings)) # pmap(!,patch) ???
     end
+    allorigins
 end
 
 """
