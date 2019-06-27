@@ -124,7 +124,7 @@ Check the viability of all individuals.
 """
 function checkviability!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
-        (patch.isisland || !settings["static"]) && checkviability!(patch, settings) # pmap(checkviability!,patch) ???
+        checkviability!(patch, settings) # pmap(checkviability!,patch) ???
     end
 end
 
