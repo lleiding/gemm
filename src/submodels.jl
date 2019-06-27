@@ -157,8 +157,8 @@ function establish!(patch::Patch, nniches::Int=1)
                 patch.community[idx].precadaptation = fitness
             end
             patch.community[idx].marked = false
-            push!(origins, patch.community[idx].parentpopulation * "," * patch.community[idx].lineage * "." * patch.location[1] * "." * patch.location[2])
-            patch.community[idx].parentpopulation = patch.community[idx].lineage * "." * patch.location[1] * "." * patch.location[2]
+            push!(origins, string(patch.community[idx].parentpopulation, ",", patch.community[idx].lineage, ".", patch.location[1], ".", patch.location[2]))
+            patch.community[idx].parentpopulation = string(patch.community[idx].lineage, ".", patch.location[1], ".", patch.location[2])
         end
         idx += 1
     end
