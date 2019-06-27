@@ -366,14 +366,13 @@ Output format is a comma-separated file with information on the branching time,
 the parent population and the offspring population
 """
 function writephylo(phylo, settings, t)
-    phylo = t * "," .* phylo 
     basename = "phylo"
     basename = joinpath(settings["dest"], basename)
     filename = basename * ".csv"
     simlog("Writing phylo \"$filename\"", settings)
     open(filename, "a") do file
         for i in phylo
-            println(file, i)
+            println(file, t, ",", i)
         end
     end
 end
