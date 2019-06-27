@@ -50,4 +50,24 @@
 47	6	4	isisland	temp=298	prec=6
 48	6	5	isisland	temp=298	prec=7
 49	6	6	isisland	temp=298	prec=8
+100	-50	-7	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	-6	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	-5	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	-4	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	-3	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	-2	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	-1	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	0	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	1	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	2	initpop		temp=303	prec=5 # mainland species source pool
 100	-50	3	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	4	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	5	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	6	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	7	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	8	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	9	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	10	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	11	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	12	initpop		temp=303	prec=5 # mainland species source pool
+100	-50	13	initpop		temp=303	prec=5 # mainland species source pool
