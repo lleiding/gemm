@@ -194,26 +194,27 @@ is used for file name creation.
 """
 function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
     if settings["raw"]
-        basename = "inds_s" * string(settings["seed"])
-        basename = joinpath(settings["dest"], basename)
-        filename = basename * ".tsv"
+        filename = "inds_s" * string(settings["seed"])
+        filename = joinpath(settings["dest"], filename)
+        filename = filename * ".tsv"
         simlog("Writing data \"$filename\"", settings)
         open(filename, "a") do file
             dumpinds(world, settings, timestep, file)
         end
     end
     if settings["stats"]
-        basename = "pops_s" * string(settings["seed"])
-        basename = joinpath(settings["dest"], basename)
-        filename = basename * ".tsv"
+        filename = "pops_s" * string(settings["seed"])
+        filename = joinpath(settings["dest"], filename)
+        filename = filename * ".tsv"
         simlog("Writing stats to \"$filename\"", settings)
         open(filename, "a") do file
             printpopstats(file, world, settings, timestep)
         end
     end
     if settings["fasta"]
-        basename = "seqs_s" * string(settings["seed"])
-        filename = basename * ".fa"
+        filename = "seqs_s" * string(settings["seed"])
+        filename = joinpath(settings["dest"], filename)
+        filename = filename * ".fa"
         simlog("Writing fasta \"$filename\"", settings)
         open(filename, "a") do file
             makefasta(world, settings, file, settings["static"] && timestep > 1)
