@@ -128,7 +128,7 @@ If the output directory already includes files, create a new
 directory by appending a counter.
 """
 function setupdatadir(settings::Dict{String, Any})
-    if isdir(settings["dest"]) # && !isempty(readdir(settings["dest"])) ## prevent mixing up of ouptut data from parallel sims
+    if isdir(settings["dest"]) # && !isempty(readdir(settings["dest"])) ## prevent mixing up of output data from parallel sims
         replicate = split(settings["dest"], "_")[end]
         if all(isnumeric, replicate)
             replicate = parse(UInt8, replicate) + 1 # throw an error if replicate > 255
@@ -268,15 +268,13 @@ for `printpopstats`.
 """
 function printpopheader(io::IO)
     print(io, "time", "\tx", "\ty", "\ttemp", "\tprec", "\tarea", "\tisisland")
-    print(io, "\tlineage", "\tjuveniles", "\tadults", "\tmaxsize", "\ttempadaptationmed", "\tprecadaptationmed")
+    print(io, "\tlineage", "\tjuveniles", "\tadults", "\ttempadaptationmean", "\tprecadaptationmean")
     traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd", 
                    "ngenes", "nlnkgunits", "precopt", "precoptsd", "prectol", "prectolsd",
                    "repsize", "repsizesd", "reptol", "reptolsd", "seedsize", "seedsizesd",
                    "tempopt", "tempoptsd", "temptol", "temptolsd"]
     for traitname in traitnames
-        print(io, "\t", traitname, "min")
-        print(io, "\t", traitname, "max")
-        print(io, "\t", traitname, "med")
+        print(io, "\t", traitname, "mean")
         print(io, "\t", traitname, "std")
     end
     print(io, "\treplicate", "\tconf")
@@ -304,14 +302,12 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
             population = patch.community[popidxs]
             adultidxs = findall(i -> i.size > i.traits["repsize"], patch.community[popidxs])
             print(io, "\t", population[1].lineage, "\t", length(popidxs) - length(adultidxs), "\t", length(adultidxs),
-                  "\t", maximum(map(i -> i.size, population)), "\t", median(map(i -> i.tempadaptation, population)),
-                  "\t", median(map(i -> i.precadaptation, population)))
+                  "\t", mean(skipmissing(map(i -> i.tempadaptation, population))),
+                  "\t", mean(skipmissing(map(i -> i.precadaptation, population))))
             poptraitdict = Dict{String, Array{Float64, 1}}()
             for traitname in traitnames
                 poptrait = map(i -> i.traits[traitname], population)
-                print(io, "\t", minimum(poptrait))
-                print(io, "\t", maximum(poptrait))
-                print(io, "\t", median(poptrait))
+                print(io, "\t", mean(skipmissing(poptrait)))
                 print(io, "\t", std(skipmissing(poptrait))) # CAVEAT: this returns NaN if only one individual
             end
             print(io, "\t", settings["seed"], "\t", settings["config"])
