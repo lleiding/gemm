@@ -17,6 +17,7 @@ function runsim(config::String = "", seed::Integer = 0, prerun::Bool = false)
         settings["phylo"] = false
         settings["fasta"] = false
         settings["raw"] = false
+        settings["stats"] = false
         settings["quiet"] = true
         settings["static"] = false
         settings["seed"] = 1

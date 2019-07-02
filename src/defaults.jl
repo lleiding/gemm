@@ -39,7 +39,7 @@ function defaultSettings()
         "mutate" => true, # mutations occur
         "mutationrate" => 3.6e10, # one mutation per generation/individual, corrected for metabolic function
         "nniches" => 2, # number of environmental niches (max. 3)
-        "outfreq" => 100, # output frequency
+        "outfreq" => 10, # output frequency
         "overfill" => 1.0, # how much to overfill grid cells beyond their capacity
         "phylconstr" => 0.1, # phylogenetic constraint during mutation and inter-loci variation. scales trait value as sd.
         "popsize" => "metabolic", # initialisation algorithm: metabolic/bodysize/minimal/single

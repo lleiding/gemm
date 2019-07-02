@@ -124,29 +124,19 @@ end
     setupdatadir(dir)
 
 Creates the output directory and copies relevant files into it.
-If the output directory already includes files, create a new
-directory by appending a counter.
 """
 function setupdatadir(settings::Dict{String, Any})
-    if isdir(settings["dest"]) # && !isempty(readdir(settings["dest"])) ## prevent mixing up of output data from parallel sims
-        replicate = split(settings["dest"], "_")[end]
-        if all(isnumeric, replicate)
-            replicate = parse(UInt8, replicate) + 1 # throw an error if replicate > 255
-            settings["dest"] = string(split(settings["dest"], "_")[1:(end-1)]...) * "_" * string(replicate)
-        else
-            replicate = 1
-            settings["dest"] = string(settings["dest"], "_", replicate)
-        end
-        setupdatadir(settings)
+    if isdir(settings["dest"])
+        @warn "$(settings["dest"]) exists. Continuing anyway. Overwriting of files possible."
     else
         mkpath(settings["dest"])
-        simlog("Setting up output directory $(settings["dest"])", settings)
-        writesettings(settings)
-        if haskey(settings, "maps")
-            for m in settings["maps"]
-                isempty(m) && continue
-                cp(m, joinpath(settings["dest"], basename(m)), force = true) # most likely replicates with same parameters
-            end
+    end
+    simlog("Setting up output directory $(settings["dest"])", settings)
+    writesettings(settings)
+    if haskey(settings, "maps")
+        for m in settings["maps"]
+            isempty(m) && continue
+            cp(m, joinpath(settings["dest"], basename(m)), force = true) # most likely replicates with same parameters
         end
     end
 end
