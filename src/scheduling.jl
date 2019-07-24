@@ -16,7 +16,7 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
         survive!(world, settings)
         grow!(world, settings)
         compete!(world, settings["static"])
-        phylo = reproduce!(world, settings)
+        reproduce!(world, settings)
         if settings["mutate"]
             mutate!(world, settings)
         end
@@ -31,9 +31,6 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
         if settings["lineages"]
             recordstatistics(world, settings)
             recordlineages(world, settings, t)
-        end
-        if settings["writephylo"]
-            writephylo(phylo, settings, t)
         end
         if mod(t, settings["outfreq"]) == 0 && any([settings["fasta"], settings["raw"], settings["stats"]])
             writedata(world, settings, t)

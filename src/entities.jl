@@ -52,7 +52,7 @@ mutable struct Individual
     tempadaptation::Float64 # adaption to temperature
     size::Float64 # body mass
     id::Int
-    parentpopulation::String
+    originid::Int
 end
 
 Individual(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id) =

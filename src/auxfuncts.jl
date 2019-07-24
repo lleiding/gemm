@@ -403,7 +403,7 @@ function createoffspring(noffs::Integer, ind::Individual, partner::Individual, t
         fitness = 0.0
         newsize = ind.traits["seedsize"]
         ind = Individual(ind.lineage, genome, traits, marked, fitness,
-                         fitness, newsize, rand(Int32), ind.parentpopulation)
+                         fitness, newsize, rand(Int32), ind.originid)
         push!(offspring, ind)
     end
     offspring
