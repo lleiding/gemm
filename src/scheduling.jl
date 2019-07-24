@@ -34,6 +34,7 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
         end
         if mod(t, settings["outfreq"]) == 0 && any([settings["fasta"], settings["raw"], settings["stats"]])
             writedata(world, settings, t)
+            updateorigin!(world)
         end
     end
 end

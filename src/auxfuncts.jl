@@ -658,3 +658,44 @@ function markthem!(world::Array{Patch, 1})
         markthem!(habitat)
     end
 end
+
+"""
+    updateorigin!(ind)
+
+Update the origin ID for an individual.
+"""
+function updateorigin!(ind::Individual)
+    ind.originid = ind.id
+end
+
+"""
+    updateorigin!(community)
+
+Update the origin ID for all individuals in a community.
+"""
+function updateorigin!(community::Array{Individual, 1})
+    for ind in community
+        updateorigin!(ind)
+    end
+end
+
+"""
+    updateorigin!(patch)
+
+Update the origin ID for all individuals in a patch.
+"""
+function updateorigin!(habitat::Patch)
+    updateorigin!(habitat.community)
+end
+
+"""
+    updateorigin!(world)
+
+Update the origin ID for all individuals in a community.
+"""
+function updateorigin!(world::Array{Patch, 1}))
+    for patch in world
+        updateorigin!(patch)
+    end
+end
+    
