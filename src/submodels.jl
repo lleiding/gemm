@@ -397,7 +397,6 @@ end
 Reproduction of individuals in a patch.
 """
 function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
-    origins = String[]
     identifyAdults!(patch)
     for ind in patch.community
         if !ind.marked
@@ -421,14 +420,11 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
                 else
                     ind.size = parentmass
                 end
-                push!(origins, string(ind.parentpopulation, ",", ind.lineage, ".", patch.location[1], ".", patch.location[2]))
-                ind.parentpopulation = string(ind.lineage, ".", patch.location[1], ".", patch.location[2])
                 append!(patch.seedbank, createoffspring(noffs, ind, partner, settings["traitnames"]))
             end
         end
     end
     simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
-    unique!(origins)
 end
 
 """
