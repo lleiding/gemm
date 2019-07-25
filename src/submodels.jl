@@ -433,11 +433,9 @@ end
 Carry out reproduction on all patches.
 """
 function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
-    allorigins = String[]
     for patch in world
-        (patch.isisland || !settings["static"]) && append!(allorigins, reproduce!(patch, settings)) # pmap(!,patch) ???
+        (patch.isisland || !settings["static"]) && reproduce!(patch, settings) # pmap(!,patch) ???
     end
-    allorigins
 end
 
 """
