@@ -693,7 +693,7 @@ end
 
 Update the origin ID for all individuals in a community.
 """
-function updateorigin!(world::Array{Patch, 1}))
+function updateorigin!(world::Array{Patch, 1})
     for patch in world
         updateorigin!(patch)
     end
