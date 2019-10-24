@@ -521,10 +521,7 @@ function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String,
         if trait.nameindex == compatidx
             continue
         end
-        ncodinggenes = rand(Poisson(1))
-        while ncodinggenes < 1  # make sure every trait is coded by at least 1 gene
-            ncodinggenes = rand(Poisson(1))
-        end
+        ncodinggenes = rand(Geometric(1 - settings["degpleiotropy"]))
         codinggenes = rand(genes,ncodinggenes)
         for gene in codinggenes
             push!(gene.codes,trait)
