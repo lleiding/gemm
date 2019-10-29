@@ -43,7 +43,7 @@ function createpop(settings::Dict{String, Any})
     population = Individual[]
     for i in 1:popsize
         id = rand(Int32)
-        chromosomes = deepcopy(chromosomes)
+        chromosomes = deepcopy(chromosomes) # FIXME?: this is potentially very slow!
         varyalleles!(chromosomes, settings, locivar)
         traitdict = gettraitdict(chromosomes, settings["traitnames"])
         if settings["indsize"] == "adult"
@@ -51,7 +51,7 @@ function createpop(settings::Dict{String, Any})
         elseif settings["indsize"] == "seed"
             indsize = traitdict["seedsize"]
         else
-            indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
+            indsize = traitdict["seedsize"] + rand() * (traitdict["repsize"] - traitdict["seedsize"]) # CAVEAT: sizes uniformally distributed?
         end
         push!(population, Individual(lineage, chromosomes, traitdict, true, 1.0, 1.0, indsize, id, id))
     end

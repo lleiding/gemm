@@ -98,8 +98,8 @@ function checkviability!(community::Array{Individual, 1}, settings::Dict{String,
         community[idx].traits["repsize"] <= community[idx].traits["seedsize"] && (dead = true) && (reason *= "seed/rep ")
         community[idx].tempadaptation < 0 && (dead = true) && (reason *= "fitness ")
         community[idx].precadaptation < 0 && (dead = true) && (reason *= "fitness ")
-        community[idx].selfing > 1 && (dead = true) && (reason *= "selfing ")
-        community[idx].reptol > 1 && (dead = true) && (reason *= "reptol ")
+        community[idx].traits["selfing"] > 1 && (dead = true) && (reason *= "selfing ")
+        community[idx].traits["reptol"] > 1 && (dead = true) && (reason *= "reptol ")
         !traitsexist(community[idx].traits, settings) && (dead = true) && (reason *= "missingtrait ")
         if dead
             simlog("Individual not viable: $reason. Being killed.", settings, 'w')
