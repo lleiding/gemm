@@ -1,12 +1,14 @@
+# GeMM
+
 This is the Genome explicit Metacommunity Model
 
-# System requirements
+## System requirements
 
 The model has successfully been tested on various Linux machines (64 bit), running Arch Linux and Ubuntu with kernel versions between 4.15.0 and 5.3.7.
 You need to have `git` and `julia` 1.0.1 installed (https://julialang.org/downloads/), including packages `Distributions` (v"0.16.4"), and `ArgParse` (v"0.6.1").
 Newer versions should work as well.
 
-# Installation guide
+## Installation guide
 
 Download and extract julia from https://julialang.org/downloads/.
 Enter the created directory and run
@@ -39,7 +41,7 @@ julia rungemmparallell.jl -c ""
 
 to test if it works.
 
-# Demo
+## Demo
 
 To run an example experiment in a landscape with two environmental gradients to test the effect of temporal environmental variation, run
 
@@ -57,11 +59,11 @@ Optionally, the model outputs several log files (`diversity.log`, `lineages.log`
 
 Depending on the machine (number of parellel processes, i.e., computing cores), the simulations can take up to several days to complete.
 
-# Instructions for use
+## Instructions for use
 
 To design your own experiments, you need to provide two files.
 
-## Map file(s)
+### Map file(s)
 
 The map file contains the information to define a simulation arena.
 A single integer value at the top sets the number of years the arena should run for.
@@ -84,7 +86,7 @@ community at simulation initialisation.
 
 An experiment can pass through a series of map files to e.g. simulate environmental change or geomorphological dynamics.
 
-## Configuration file
+### Configuration file
 
 The configuration contains all custom parameters values that may be tweaked to fit one's experimental setup.
 Paramaters are defined in a whitespace separated, key-value fashion: `<key> <value>`.
@@ -98,12 +100,12 @@ maps <mapfile[,mapfile2,...]>
 
 For passing more than one map file, separate file names with commas and no white space, e.g. `map1.map,map2.map`.
 
-# Model description
+## Model description
 
 The  model  description follows  the  ODD  (Overview,  Design  concepts, Details)  protocol  (Grimm  et  al.,  2006; 2010:
 https://doi.org/10.1016/j.ecolmodel.2006.04.023 https://doi.org/10.1016/j.ecolmodel.2010.08.019)
 
-## 1. Purpose
+### 1. Purpose
 
 This model is designed to simulate a (meta-)community of plant-like individuals.
 For this, the model considers factors and processes across genetic, population and ecological levels.
@@ -111,7 +113,7 @@ The model is able to produce several patterns across genetic, individual, popula
 including adaptation and speciation through divergence of populations.
 Thus, the model expands from basic principles to richer representation of real-world scenarios.
 
-## 2. Entities, state variables and scales
+### 2. Entities, state variables and scales
 
 Individuals (plant-like) are the basic entity in the model.
 Each individual carries a diploid set of one or more linkage units, which in turn are comprised of genes.
@@ -143,7 +145,7 @@ Additional patterns or summary statistics may be calculated based on these indiv
 
 Processes and updates are repeated every timestep, while each timestep can be considered as one year.
 
-## 3. Process overview and scheduling
+### 3. Process overview and scheduling
 
 In each discrete timestep each individual in each grid cell will (in no particular order unless otherwise stated) undergoe
 the following processes:
@@ -164,10 +166,10 @@ If that happens, all individuals within that cell are marked to undergo establis
 Updates to individuals and thus the local communities happen instantaneously after a specific process has been executed
 (asynchronous updating).
 
-## 4. Design concepts
+### 4. Design concepts
 
-Basic principles.
------------------
+#### Basic principles.
+
 Metabolic theory of ecology (@submodel level).
 Adaptive and non-adaptive radiation/evolution. Submodel level[, but geomorphological change @system level.]
 Sexual reproduction.
@@ -175,51 +177,48 @@ Niche theory. Both at system and submodel level. Each individual carries unique 
 as well as preferences for their physical environments.
 Resource/energy limitation (carrying capacity). System level property, but invoked at submodel level.
 
-Emergence.
-----------
+#### Emergence.
+
 Species/Populations/ecotypes. Only constrained via genetic properties.
 Community trait composition. Interplay of physical properties (environment, geographical properties) and within community
 (competition strength via reproduction, growth, etc.).
 Species numbers, endemics, speciation rate.
 
-Adaption. (+Objectives.)
-------------------------
+#### Adaption. (+Objectives.)
+
 See entities. Traits follow evolution: a trait changes its value randomly within a given phylogenetic constraint.
 The success of the change (fitness) emerges as the result of adaption to the physical environment and the reproductive success of an individual over its competitors.
 
-Learning.
----------
+#### Learning.
 
-Prediction.
------------
+#### Prediction.
 
-Sensing. [?]
---------
-Individuals sense directly the properties of their physical environment (e.g., temperature).
+#### Sensing.
 
-Interaction.
-------------
+Individuals are directly affected by the properties of their physical environment (e.g., temperature).
+
+#### Interaction.
+
 Individuals directly interact when sexually reproducing. However, they are not affected themself by this interaction.
 Instead, the interaction aims solely at determining the genotype of their offspring.
 Additionally, competition for resource/energy/space between individuals represents indirect interaction.
 
-Stochasticity.
---------------
+#### Stochasticity.
+
 Most of the submodels are carried out by all elegible individuals.
 Some submodels (Survival, Competition, Mutation and Dispersal), however, happen with particular probabilities.
 In these cases, execution of submodels is decided at random, taking into account individual characteristics, such as body size, fitness, genome size, or dispersal abilities.
 All decisions inside all of the submodels are stochastic (e.g., number of offspring) to maintain variability and relax assumptions.
 
-Collectives.
-------------
+#### Collectives.
 
-Observation.
-------------
+#### Observation.
+
 At the start and end of the simulation and at definable regular time intervals, the properties of all individuals
 (including the properties of their locations) are recorded and written to files.
 
 
-## 5. Initialisation
+### 5. Initialisation
 
 The initialisation step creates lineages with randomly chosen genetic and ecological trait values in each grid cell that is designated to receive an initial community.
 This encompasses choosing the number of genes for a lineage, the number of linkage units and the within genome variance of trait values.
@@ -233,7 +232,7 @@ Thus created populations are added to a grid cell's community until the addition
 Whether a grid cell receives an initial community depends on the map definition.
 At the end of initialisation each of the thus populated grid cells holds one or more different populations, each from a separate lineage.
 
-## 6. Input
+### 6. Input
 
 At the start of a simulation user defined parameters are read, containing also a definition of the simulation arena (map definition).
 This definition is provided in a separate plain text file.
@@ -293,9 +292,9 @@ Other optional parameters can be set in a separate configuration file and pertai
 If a parameter value is not specified by the user, the default value for that parameter set in the simulation code is assumed.
 
 
-## 7. Submodels
+### 7. Submodels
 
-### Establishment.
+#### Establishment.
 Whenever an individual is new to a grid cell (by recent birth, dispersal event or environmental change [TODO]), their physical niche preferences
 are compared with the actual niche properties, e.g. the temperature, T, of the present grid cell.
 The individual fitness parameter, F, is set according to the deviation from the optimum value considering the niche breadth
@@ -305,13 +304,13 @@ F = a * exp(-(T - T_mean)^2 / (2 * sigma_T^2)) )
 with a = 1 / (sigma_T * sqrt(2 * pi))
 ```
 
-### Competition.
+#### Competition.
 Individuals are sorted according to fitness (low to high).
 If the sum of the community's bodymass exceed the available space, individuals will be removed from the local community starting with the least fit individual with high probability
 (following a geometric distribution).
 Once total bodymass is below carrying capacity, the procedure terminates.
 
-### Growth.
+#### Growth.
 Given an individual has undergone establishment,
 an individual changes its size (M + delta_M)
 following the metabolic theory and the global base growth rate, b_0:
@@ -323,7 +322,7 @@ In case this change results in zero or negative body mass,
 the individual is removed from the community.
 
 
-### Density independent mortality/Survival.
+#### Density independent mortality/Survival.
 An individual is removed from the local community with a probability `p_mort` depending on its size `M` and a global base
 mortality rate `b_mort`:
 ```
@@ -331,7 +330,7 @@ mortality rate `b_mort`:
 ```
 If the individual survives, its age increases by one.
 
-### Reproduction and mutation.
+#### Reproduction and mutation.
 All individuals that have grown to or beyond their individual reproduction sizes may reproduce.
 The number of offspring is randomly drawn following a Poisson distribution with mean N determined by the individual's
 size `M` and a global base offspring number `N_0`:
@@ -351,7 +350,7 @@ with the standard deviation the product of sigma_l (phylogenetic constraint) and
 The new individuals' trait values are then calculated as the means of all alleles and
 the individuals added to the community, with their size set to the initial bodymass (seed size).
 
-### Dispersal.
+#### Dispersal.
 After reproduction and mutation, each offspring individual may disperse.
 For each of these, a new location (i.e. x and y coordinates) is drawn randomly following a logistic distribution with mean and shape parameters (which controls long-distance-dispersal)
 taken from the individual's traits. 
@@ -360,7 +359,7 @@ The removal happens even when there is no destination grid cell to be found.
 Special attention is paid when the destination grid cell is of island type, while the origin is on the mainland and the simulation runs in static mode.
 In this case the dispersing individual is copied to the new destination instead of moved.
 
-### Habitat change
+#### Habitat change
 If enabled, both environmental habitat parameters - temperature and precipitation -
 change values throughout the simulation arena.
 The amount and direction of change is the same for all grid cells across the landscape.
@@ -369,7 +368,7 @@ The change is randomly drawn from a Normal distribution with the current value a
 and a user defined standard deviation.
 
 
-## Output/Calculation
+### Output/Calculation
 The main simulation data output is stored in two separate formats.
 The first is a table containg data characterising the individuals.
 Each line represents on individual.
