@@ -61,7 +61,7 @@ function defaultSettings()
                          "prectol",
                          "repsize",
                          "reptol",
-                         "selfing"
+                         "selfing",
                          "seedsize",
                          "tempopt",
                          "temptol"], # minimal required traitnames
