@@ -100,6 +100,17 @@ maps <mapfile[,mapfile2,...]>
 
 For passing more than one map file, separate file names with commas and no white space, e.g. `map1.map,map2.map`.
 
+### Run an experiment
+
+To parallely run several replicates of a given experiment definition, run
+
+```
+julia -p <NPROCS> rungemmparallel.jl -s <SEED> -n <NREPS> -c <CONFIG>
+```
+
+while `<NPROCS>` = number of cores, `<SEED>` = integer value to set a random seed, `<NREPS>` = number of replicates and
+`<CONFIG>` the configuration file.
+
 ## Model description
 
 The  model  description follows  the  ODD  (Overview,  Design  concepts, Details)  protocol  (Grimm  et  al.,  2006; 2010:
