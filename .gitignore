@@ -8,3 +8,7 @@ slurm*.out
 *.jpg
 default*.conf
 old_results/
+data/
+analyse.R
+experiment.py
+run.sh

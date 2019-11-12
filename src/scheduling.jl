@@ -14,7 +14,6 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
         # ecological processes
         establish!(world, settings["nniches"], settings["static"])
         survive!(world, settings)
-        disturb!(world, settings)
         grow!(world, settings)
         compete!(world, settings["static"])
         reproduce!(world, settings)
@@ -22,6 +21,7 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
             mutate!(world, settings)
         end
         if 0 < settings["burn-in"] < t
+            disturb!(world, settings)
             invade!(world, settings)
         end
         disperse!(world, settings["static"])

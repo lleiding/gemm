@@ -1,4 +1,4 @@
-# Subsidiary functions for GeMM
+# Auxilliary functions for GeMM
 
 """
     meiosis(genome, maternal)
@@ -9,7 +9,7 @@ gamete genome. (genome => array of chromosomes)
 function meiosis(genome::Array{Chromosome,1}, maternal::Bool) # TODO: include further dynamics, errors...
     firstset = findall(x -> x.maternal, genome)
     secondset = findall(x -> !x.maternal, genome)
-    length(firstset) != length(secondset) && return Chromosome[] # CAVE: more elegant solution...
+    length(firstset) != length(secondset) && return Chromosome[] # CAVEAT: more elegant solution...
     gameteidxs = []
     for i in eachindex(firstset)
         push!(gameteidxs, rand([firstset[i], secondset[i]]))
@@ -27,7 +27,7 @@ end
 Take an array of traits and return the mean value of the indexed trait.
 """
 function getmeantraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
-    mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+    mean(skipmissing(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
 end
 
 """
@@ -36,7 +36,11 @@ end
 Take an array of traits and return the standard deviation of the indexed trait.
 """
 function getstdtraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
-    std(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+    if length(traits) <= 1
+        0.0
+    else
+        std(skipmissing(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
+    end
 end
 
 """
@@ -75,7 +79,7 @@ function gettraitdict(genes::Array{AbstractGene, 1}, traitnames::Array{String, 1
     end
     traitdict = Dict{String, Float64}()
     for traitidx in unique(map(x -> x.nameindex, traits))
-        traitdict[traitnames[traitidx]] = mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+        traitdict[traitnames[traitidx]] = mean(skipmissing(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
     end
     traitdict
 end
@@ -89,7 +93,7 @@ function gettraitdict(traits::Array{Trait, 1}, traitnames::Array{String, 1})
     traitdict = Dict{String, Float64}()
     for traitidx in unique(map(x -> x.nameindex, traits))
         #XXX Why do we use traitnames here?
-        traitdict[traitnames[traitidx]] = mean(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits)))
+        traitdict[traitnames[traitidx]] = mean(skipmissing(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
     end
     traitdict
 end
@@ -133,8 +137,6 @@ end
 Calculate the value of the Gauss function ("bell curve") at point x; with
 a being the maximum height of the curve, b the position of the curve center and
 c the standard deviation ("width").
-
-XXX This should be replaced with calls to Normal() from the Distributions package.
 """
 function gausscurve(b, c, x, a = 1.0)
     if c != 0 && a != 1.0
@@ -288,27 +290,13 @@ function identifyAdults!(patch::Patch)
 end
 
 """
-    iscompatible(mate, individual, traitnames)
+    getseqsimilarity(seqone, seqtwo)
 
-Check to see whether two individual organisms are reproductively compatible.
+Compare two strings and return similarity.
 """
-function iscompatible(mate::Individual, ind::Individual, traitnames::Array{String, 1})
-    compatidx = findfirst(x -> x == "compat", traitnames)
-    tolerance = ind.traits["reptol"]
-    indgene = ""
-    for chrm in ind.genome
-        for gene in chrm.genes
-            any(x -> x.nameindex == compatidx, gene.codes) && (indgene = num2seq(gene.sequence)) # use one compatibility gene randomly
-        end
-    end
-    mategene = ""
-    for chrm in mate.genome
-        for gene in chrm.genes
-            any(x -> x.nameindex == compatidx, gene.codes) && (mategene = num2seq(gene.sequence)) # use one compatibility gene randomly
-        end
-    end
+function getseqsimilarity(indgene::AbstractString, mategene::AbstractString)
     basediffs = 0
-    for i in eachindex(indgene)
+    for i in eachindex(indgene) # this is actually faster than `sum(collect(indgene) .== collect(mategene))`
         try
             indgene[i] != mategene[i] && (basediffs += 1) # alternatively use bioinformatics tools
         catch # e.g., in case of differently long genes
@@ -316,26 +304,52 @@ function iscompatible(mate::Individual, ind::Individual, traitnames::Array{Strin
         end
     end
     seqidentity = 1 - (basediffs / length(indgene))
-    seqidentity < tolerance && return false
-    true
 end
 
 """
-    findposspartner(patch, individual, traitnames)
+    getseq(genome, traitidx)
+
+Find and return the sequence of one gene that codes for the given trait `traitidx`.
+"""
+function getseq(genome::Array{Chromosome, 1}, traitidx::Integer)
+    seq = ""
+    for chrm in genome
+        for gene in chrm.genes
+            any(x -> x.nameindex == traitidx, gene.codes) && (seq = num2seq(gene.sequence)) # use one compatibility gene randomly
+        end
+    end
+    seq
+end
+
+"""
+    iscompatible(mate, individual, traitnames)
+
+Check to see whether two individual organisms are reproductively compatible.
+"""
+function iscompatible(mate::Individual, ind::Individual, traitnames::Array{String, 1})
+    compatidx = findfirst(x -> x == "compat", traitnames)
+    indgene = getseq(ind.genome, compatidx)
+    mategene = getseq(mate.genome, compatidx)
+    seqidentity = getseqsimilarity(indgene, mategene)
+    seqidentity >= ind.traits["reptol"]
+end
+
+"""
+    findmate(patch, individual, traitnames)
 
 Find a reproduction partner for the given individual in the given patch.
 """
-function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String, 1})
+function findmate(patch::Patch, ind::Individual, traitnames::Array{String, 1})
     indstate = ind.marked
     ind.marked = true
-    posspartner = Individual[]
+    mates = Individual[]
     communityidxs = patch.whoiswho[ind.lineage]
     startidx = rand(1:length(communityidxs))
     mateidx = startidx
     while true
         mate = patch.community[communityidxs[mateidx]]
-        if !mate.marked # && iscompatible(mate, ind, traitnames)
-            push!(posspartner, mate)
+        if !mate.marked && iscompatible(mate, ind, traitnames)
+            push!(mates, mate)
             break
         end
         mateidx += 1
@@ -343,7 +357,32 @@ function findposspartner(patch::Patch, ind::Individual, traitnames::Array{String
         mateidx == startidx && break
     end
     ind.marked = indstate
-    posspartner 
+    mates
+end
+
+"""
+    findmate(population, individual, traitnames)
+
+Find a reproduction partner for the given individual in the given population.
+"""
+function findmate(population::AbstractArray{Individual, 1}, ind::Individual, traitnames::Array{String, 1})
+    indstate = ind.marked
+    ind.marked = true
+    mates = Individual[]
+    startidx = rand(eachindex(population))
+    mateidx = startidx
+    while true
+        mate = population[mateidx]
+        if !mate.marked  && iscompatible(mate, ind, traitnames)
+            push!(mates, mate)
+            break
+        end
+        mateidx += 1
+        mateidx > length(eachindex(population)) && (mateidx = 1)
+        mateidx == startidx && break
+    end
+    ind.marked = indstate
+    mates
 end
 
 """
@@ -360,11 +399,10 @@ function createoffspring(noffs::Integer, ind::Individual, partner::Individual, t
         (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
         genome = vcat(partnergenome,mothergenome)
         traits = gettraitdict(genome, traitnames)
-        age = 0
         marked = true
         fitness = 0.0
         newsize = ind.traits["seedsize"]
-        ind = Individual(ind.lineage, genome, traits, age, marked, fitness,
+        ind = Individual(ind.lineage, genome, traits, marked, fitness,
                          fitness, newsize, rand(Int32))
         push!(offspring, ind)
     end
@@ -447,8 +485,10 @@ function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly.
             push!(traits, Trait(idx, rand() * settings["maxbreadth"]))
         elseif occursin("repsize", traitnames[idx])
             push!(traits, Trait(idx, repsize))
-        elseif occursin("reptol", traitnames[idx])
-            push!(traits, Trait(idx, settings["tolerance"])) # assortative mating might evolve
+        elseif occursin("reptol", traitnames[idx]) && settings["fixtol"]
+            push!(traits, Trait(idx, settings["tolerance"]))
+        elseif occursin("reptol", traitnames[idx]) && !settings["fixtol"]
+            push!(traits, Trait(idx, rand())) # assortative mating might evolve
         elseif occursin("seedsize", traitnames[idx])
             push!(traits, Trait(idx, seedsize))
         elseif occursin("tempopt", traitnames[idx])
@@ -551,6 +591,7 @@ function createind(settings::Dict{String, Any}, marked::Bool = false)
         nchrms = randchrms
     end
     chromosomes = createchrms(nchrms, genes)
+    locivar = rand() #XXX Is this legit? Don't quite understand `locivar` yet...
     varyalleles!(chromosomes, settings, locivar)
     traitdict = gettraitdict(chromosomes, settings["traitnames"])
     if settings["indsize"] == "adult"
@@ -560,7 +601,7 @@ function createind(settings::Dict{String, Any}, marked::Bool = false)
     else
         indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
     end
-    Individual(lineage, chromosomes, traitdict, 0, marked, 1.0, 1.0, indsize, id)
+    Individual(lineage, chromosomes, traitdict, marked, 1.0, 1.0, indsize, id)
 end
 
 """

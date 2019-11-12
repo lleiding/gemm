@@ -7,7 +7,7 @@ Create a new, random individual and replicates it a certain number of times
 (depending on metabolic variables) to create a new population of organisms.
 Returns an array of individuals.
 
-XXX Why does this not interface with auxfuncts/createind()?
+FIXME Why does this not interface with auxfuncts/createind()?
 """
 function createpop(settings::Dict{String, Any})
     traits = createtraits(settings)
@@ -19,8 +19,8 @@ function createpop(settings::Dict{String, Any})
                         exp(-act / (boltz * 298.0)))
     elseif occursin("bodysize", settings["popsize"])
         # population size up to 25% of the maximum possible in this cell
-        quarterpopsize = Integer(floor((settings["cellsize"] / traitdict["repsize"]) / 4))
-        popsize = rand(2:quarterpopsize)
+        quarterpopsize = Integer(ceil((settings["cellsize"] / traitdict["repsize"]) / 4))
+        popsize = rand(1:quarterpopsize) + 1
     elseif occursin("minimal", settings["popsize"]) || popsize == 0
         popsize = 2 #Takes two to tangle ;-)
     else
@@ -48,15 +48,12 @@ function createpop(settings::Dict{String, Any})
         traitdict = gettraitdict(chromosomes, settings["traitnames"])
         if settings["indsize"] == "adult"
             indsize = traitdict["repsize"]
-            age = 1
         elseif settings["indsize"] == "seed"
             indsize = traitdict["seedsize"]
-            age = 0
         else
             indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
-            age = 1
         end
-        push!(population, Individual(lineage, chromosomes, traitdict, age, true, 1.0, 1.0, indsize, id))
+        push!(population, Individual(lineage, chromosomes, traitdict, true, 1.0, 1.0, indsize, id))
     end
     population
 end
@@ -75,8 +72,7 @@ function genesis(settings::Dict{String, Any})
         popsize = length(population)
         # Check the cell capacity
         popmass = sum(map(x -> x.size, population))
-        settings["static"] ? overfill = 1 : overfill = 10
-        if totalmass + popmass > settings["cellsize"] * overfill # stop loop if cell is full
+        if totalmass + popmass > settings["cellsize"] * settings["overfill"] # stop loop if cell is full
             if totalmass >= settings["cellsize"] * 0.9 || occursin("single", settings["popsize"]) #make sure the cell is full enough
                 simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", settings, 'd') #DEBUG
                 break
@@ -169,8 +165,9 @@ Reinitialise the world from another parsed map file. Works analogously to
 `createworld`. Intended for use in scenarios where the model world changes
 during a run (e.g. through global warming or island growth).
 """
-function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},cellsize::Float64)
+function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, settings::Dict{String, Any})
     #TODO: add functionality to remove patches!
+    cellsize = settings["cellsize"]
     simlog("Updating world...", settings)
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
@@ -202,10 +199,10 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
             elseif length(varval) < 2
                 val = true # if no value is specified, assume 'true'
             else
-                val = parse(varval[2])
+                val = Meta.parse(varval[2])
             end
             # check for correct type and modify the new patch
-            vartype = typeof(eval(parse("newpatch."*var)))
+            vartype = typeof(eval(Meta.parse("newpatch."*var)))
             if !isa(val, vartype)
                 try
                     val = convert(vartype, val)
@@ -214,7 +211,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1},c
                     continue
                 end
             end
-            eval(parse("newpatch."*string(var)*" = $val"))
+            eval(Meta.parse("newpatch."*string(var)*" = $val"))
         end
         if marked
             push!(world, newpatch)

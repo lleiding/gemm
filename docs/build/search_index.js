@@ -13,11 +13,35 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "Introduction",
     "category": "section",
-    "text": "This is the documentation for the Island Speciation Model, a.k.a. Genetically explicit Metacommunity Model (GeMM). (Yeah, we\'re still working on the name...)The aim of this model is to create a virtual island ecosystem that can be used to explore ecological and evolutionary hypotheses in silico. It is genetically and spatially explicit, with discrete space and time.This documentation is generated from the source code using Julia\'s inbuilt Documenter module. It is sorted first by functionality, second by source code file.Last updated: 2019-01-17 (commit e4149d1)  "
+    "text": "This is the documentation for the Island Speciation Model, a.k.a. Genetically explicit Metacommunity Model (GeMM). (Yeah, we\'re still working on the name...)The aim of this model is to create a virtual island ecosystem that can be used to explore ecological and evolutionary hypotheses in silico. It is genetically and spatially explicit, with discrete space and time.This documentation is generated from the source code using Julia\'s inbuilt Documenter module. It is sorted first by functionality, second by source code file."
 },
 
 {
-    "location": "model/#",
+    "location": "#GeMM.rungemm",
+    "page": "Introduction",
+    "title": "GeMM.rungemm",
+    "category": "function",
+    "text": "rungemm(config, seed)\n\nWrapper for runsim() Runs a simulation using configuration file config, random seed seed and other settings provided via commandline, configuration file or the defaults. Performs a pre-compilation run first.\n\n\n\n\n\n"
+},
+
+{
+    "location": "#GeMM.runsim",
+    "page": "Introduction",
+    "title": "GeMM.runsim",
+    "category": "function",
+    "text": "runsim(config, seed, prerun)\n\nPerforms a simulation run using configuration file config, random seed seed and other settings provided via commandline, configuration file or the defaults. prerun toggles a pre-compilation run\n\n\n\n\n\n"
+},
+
+{
+    "location": "#Running-the-model-1",
+    "page": "Introduction",
+    "title": "Running the model",
+    "category": "section",
+    "text": "The functions in the run_simulation.jl file are used to start a simulation run:Modules = [GeMM]\nPages = [\"run_simulation.jl\"]rungemmparallel.jl bundles these for quick access. From the commandline, call:> julia -p <cores> rungemmparallel.jl -c <configs>where <cores> is the number of processors you want to make available to Julia (one processor per simulation max), and <configs> is a comma-separated list of configuration files that are to be processed.Last updated: 2019-02-15 (commit b06bbf5)  "
+},
+
+{
+    "location": "model/index.html#",
     "page": "Main Model",
     "title": "Main Model",
     "category": "page",
@@ -25,7 +49,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#Main-Model-1",
+    "location": "model/index.html#Main-Model-1",
     "page": "Main Model",
     "title": "Main Model",
     "category": "section",
@@ -33,15 +57,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.Patch",
-    "page": "Main Model",
-    "title": "GeMM.Patch",
-    "category": "type",
-    "text": "One of the core structs of the model, representing a one-hectare patch of ground.\n\n\n\n\n\n"
-},
-
-{
-    "location": "model/#GeMM.AbstractGene",
+    "location": "model/index.html#GeMM.AbstractGene",
     "page": "Main Model",
     "title": "GeMM.AbstractGene",
     "category": "type",
@@ -49,7 +65,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.BigGene",
+    "location": "model/index.html#GeMM.BigGene",
     "page": "Main Model",
     "title": "GeMM.BigGene",
     "category": "type",
@@ -57,7 +73,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.Chromosome",
+    "location": "model/index.html#GeMM.Chromosome",
     "page": "Main Model",
     "title": "GeMM.Chromosome",
     "category": "type",
@@ -65,7 +81,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.Gene",
+    "location": "model/index.html#GeMM.Gene",
     "page": "Main Model",
     "title": "GeMM.Gene",
     "category": "type",
@@ -73,7 +89,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.Individual",
+    "location": "model/index.html#GeMM.Individual",
     "page": "Main Model",
     "title": "GeMM.Individual",
     "category": "type",
@@ -81,7 +97,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.Trait",
+    "location": "model/index.html#GeMM.Patch",
+    "page": "Main Model",
+    "title": "GeMM.Patch",
+    "category": "type",
+    "text": "One of the core structs of the model, representing a one-hectare patch of ground.\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/index.html#GeMM.Trait",
     "page": "Main Model",
     "title": "GeMM.Trait",
     "category": "type",
@@ -89,7 +113,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#entities.jl-1",
+    "location": "model/index.html#entities.jl-1",
     "page": "Main Model",
     "title": "entities.jl",
     "category": "section",
@@ -97,7 +121,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.createworld-Tuple{Array{Array{String,1},1},Dict{String,Any}}",
+    "location": "model/index.html#GeMM.createpop-Tuple{Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.createpop",
+    "category": "method",
+    "text": "createpop(settings)\n\nCreate a new, random individual and replicates it a certain number of times (depending on metabolic variables) to create a new population of organisms. Returns an array of individuals.\n\nFIXME Why does this not interface with auxfuncts/createind()?\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/index.html#GeMM.createworld-Tuple{Array{Array{String,1},1},Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.createworld",
     "category": "method",
@@ -105,23 +137,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.updateworld!-Tuple{Array{Patch,1},Array{Array{String,1},1},Float64}",
-    "page": "Main Model",
-    "title": "GeMM.updateworld!",
-    "category": "method",
-    "text": "updateworld!(world, maptable, cellsize)\n\nReinitialise the world from another parsed map file. Works analogously to  createworld. Intended for use in scenarios where the model world changes during a run (e.g. through global warming or island growth).\n\n\n\n\n\n"
-},
-
-{
-    "location": "model/#GeMM.createpop-Tuple{Dict{String,Any}}",
-    "page": "Main Model",
-    "title": "GeMM.createpop",
-    "category": "method",
-    "text": "createpop(settings)\n\nCreate a new, random individual and replicates it a certain number of times (depending on metabolic variables) to create a new population of organisms. Returns an array of individuals.\n\nXXX Why does this not interface with auxfuncts/createind()?\n\n\n\n\n\n"
-},
-
-{
-    "location": "model/#GeMM.genesis-Tuple{Dict{String,Any}}",
+    "location": "model/index.html#GeMM.genesis-Tuple{Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.genesis",
     "category": "method",
@@ -129,7 +145,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#initialisation.jl-1",
+    "location": "model/index.html#GeMM.updateworld!-Tuple{Array{GeMM.Patch,1},Array{Array{String,1},1},Dict{String,Any}}",
+    "page": "Main Model",
+    "title": "GeMM.updateworld!",
+    "category": "method",
+    "text": "updateworld!(world, maptable, cellsize)\n\nReinitialise the world from another parsed map file. Works analogously to  createworld. Intended for use in scenarios where the model world changes during a run (e.g. through global warming or island growth).\n\n\n\n\n\n"
+},
+
+{
+    "location": "model/index.html#initialisation.jl-1",
     "page": "Main Model",
     "title": "initialisation.jl",
     "category": "section",
@@ -137,7 +161,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.changehabitat!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "location": "model/index.html#GeMM.changehabitat!-Tuple{Array{GeMM.Patch,1},Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.changehabitat!",
     "category": "method",
@@ -145,7 +169,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.changeprec!-Tuple{Array{Patch,1},Float64}",
+    "location": "model/index.html#GeMM.changeprec!-Tuple{Array{GeMM.Patch,1},Float64}",
     "page": "Main Model",
     "title": "GeMM.changeprec!",
     "category": "method",
@@ -153,7 +177,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.changetemp!-Tuple{Array{Patch,1},Float64}",
+    "location": "model/index.html#GeMM.changetemp!-Tuple{Array{GeMM.Patch,1},Float64}",
     "page": "Main Model",
     "title": "GeMM.changetemp!",
     "category": "method",
@@ -161,7 +185,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.checkviability!-Tuple{Array{GeMM.Individual,1},Dict{String,Any}}",
+    "location": "model/index.html#GeMM.checkviability!-Tuple{Array{GeMM.Individual,1},Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.checkviability!",
     "category": "method",
@@ -169,7 +193,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.checkviability!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "location": "model/index.html#GeMM.checkviability!-Tuple{Array{GeMM.Patch,1},Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.checkviability!",
     "category": "method",
@@ -177,7 +201,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.checkviability!-Tuple{Patch,Dict{String,Any}}",
+    "location": "model/index.html#GeMM.checkviability!-Tuple{GeMM.Patch,Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.checkviability!",
     "category": "method",
@@ -185,7 +209,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.compete!",
+    "location": "model/index.html#GeMM.compete!",
     "page": "Main Model",
     "title": "GeMM.compete!",
     "category": "function",
@@ -193,7 +217,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.compete!-Tuple{Patch}",
+    "location": "model/index.html#GeMM.compete!-Tuple{GeMM.Patch}",
     "page": "Main Model",
     "title": "GeMM.compete!",
     "category": "method",
@@ -201,7 +225,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.disperse!",
+    "location": "model/index.html#GeMM.disperse!",
     "page": "Main Model",
     "title": "GeMM.disperse!",
     "category": "function",
@@ -209,7 +233,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.disturb!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "location": "model/index.html#GeMM.disturb!-Tuple{Array{GeMM.Patch,1},Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.disturb!",
     "category": "method",
@@ -217,7 +241,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.disturb!-Tuple{Patch,Int64}",
+    "location": "model/index.html#GeMM.disturb!-Tuple{GeMM.Patch,Int64}",
     "page": "Main Model",
     "title": "GeMM.disturb!",
     "category": "method",
@@ -225,7 +249,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.establish!",
+    "location": "model/index.html#GeMM.establish!",
     "page": "Main Model",
     "title": "GeMM.establish!",
     "category": "function",
@@ -233,7 +257,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.establish!",
+    "location": "model/index.html#GeMM.establish!",
     "page": "Main Model",
     "title": "GeMM.establish!",
     "category": "function",
@@ -241,7 +265,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.grow!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "location": "model/index.html#GeMM.grow!-Tuple{Array{GeMM.Patch,1},Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.grow!",
     "category": "method",
@@ -249,7 +273,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.grow!-Tuple{Patch,Float64}",
+    "location": "model/index.html#GeMM.grow!-Tuple{GeMM.Patch,Float64}",
     "page": "Main Model",
     "title": "GeMM.grow!",
     "category": "method",
@@ -257,15 +281,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.mutate!",
+    "location": "model/index.html#GeMM.mutate!",
     "page": "Main Model",
     "title": "GeMM.mutate!",
     "category": "function",
-    "text": "mutate!(traits, settings, locivar)\n\nLoop over an array of traits, mutating each value in place along a normal distribution.\n\nXXX what does locivar do?\n\n\n\n\n\n"
+    "text": "mutate!(traits, settings, locivar)\n\nLoop over an array of traits, mutating each value in place along a normal distribution. locivar can be used to scale the variance of the normal distribution used to draw new trait values (together with settings[phylconstr]).\n\n\n\n\n\n"
 },
 
 {
-    "location": "model/#GeMM.mutate!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "location": "model/index.html#GeMM.mutate!-Tuple{Array{GeMM.Patch,1},Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.mutate!",
     "category": "method",
@@ -273,7 +297,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.mutate!-Tuple{GeMM.Individual,Float64,Dict{String,Any}}",
+    "location": "model/index.html#GeMM.mutate!-Tuple{GeMM.Individual,Float64,Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.mutate!",
     "category": "method",
@@ -281,7 +305,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.mutate!-Tuple{Patch,Dict{String,Any}}",
+    "location": "model/index.html#GeMM.mutate!-Tuple{GeMM.Patch,Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.mutate!",
     "category": "method",
@@ -289,7 +313,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.reproduce!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "location": "model/index.html#GeMM.reproduce!-Tuple{Array{GeMM.Patch,1},Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.reproduce!",
     "category": "method",
@@ -297,7 +321,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.reproduce!-Tuple{Patch,Dict{String,Any}}",
+    "location": "model/index.html#GeMM.reproduce!-Tuple{GeMM.Patch,Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.reproduce!",
     "category": "method",
@@ -305,7 +329,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.survive!-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "location": "model/index.html#GeMM.survive!-Tuple{Array{GeMM.Patch,1},Dict{String,Any}}",
     "page": "Main Model",
     "title": "GeMM.survive!",
     "category": "method",
@@ -313,7 +337,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.survive!-Tuple{Patch,Float64}",
+    "location": "model/index.html#GeMM.survive!-Tuple{GeMM.Patch,Float64}",
     "page": "Main Model",
     "title": "GeMM.survive!",
     "category": "method",
@@ -321,7 +345,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#submodels.jl-1",
+    "location": "model/index.html#submodels.jl-1",
     "page": "Main Model",
     "title": "submodels.jl",
     "category": "section",
@@ -329,7 +353,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#GeMM.simulate!",
+    "location": "model/index.html#GeMM.simulate!",
     "page": "Main Model",
     "title": "GeMM.simulate!",
     "category": "function",
@@ -337,7 +361,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "model/#scheduling.jl-1",
+    "location": "model/index.html#scheduling.jl-1",
     "page": "Main Model",
     "title": "scheduling.jl",
     "category": "section",
@@ -345,7 +369,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#",
+    "location": "io/index.html#",
     "page": "Input, Output, and Settings",
     "title": "Input, Output, and Settings",
     "category": "page",
@@ -353,7 +377,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#Input,-Output,-and-Settings-1",
+    "location": "io/index.html#Input,-Output,-and-Settings-1",
     "page": "Input, Output, and Settings",
     "title": "Input, Output, and Settings",
     "category": "section",
@@ -361,7 +385,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#constants.jl-1",
+    "location": "io/index.html#constants.jl-1",
     "page": "Input, Output, and Settings",
     "title": "constants.jl",
     "category": "section",
@@ -369,7 +393,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#GeMM.defaultSettings-Tuple{}",
+    "location": "io/index.html#GeMM.defaultSettings-Tuple{}",
     "page": "Input, Output, and Settings",
     "title": "GeMM.defaultSettings",
     "category": "method",
@@ -377,7 +401,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#defaults.jl-1",
+    "location": "io/index.html#defaults.jl-1",
     "page": "Input, Output, and Settings",
     "title": "defaults.jl",
     "category": "section",
@@ -385,23 +409,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#GeMM.getsettings-Tuple{}",
-    "page": "Input, Output, and Settings",
-    "title": "GeMM.getsettings",
-    "category": "method",
-    "text": "getsettings()\n\nCombines all configuration options to produce a single settings dict. Order of precedence: commandline parameters - config file - default values\n\n\n\n\n\n"
-},
-
-{
-    "location": "io/#GeMM.readmapfile-Tuple{String,Dict{String,Any}}",
-    "page": "Input, Output, and Settings",
-    "title": "GeMM.readmapfile",
-    "category": "method",
-    "text": "readmapfile(mapfilename, settings)\n\nParse a map file and return the number of timesteps this map is to be used for (first line of the file) and the patch definitions. The latter is used by createworld and updateworld!.\n\n\n\n\n\n"
-},
-
-{
-    "location": "io/#GeMM.basicparser-Tuple{String}",
+    "location": "io/index.html#GeMM.basicparser-Tuple{String}",
     "page": "Input, Output, and Settings",
     "title": "GeMM.basicparser",
     "category": "method",
@@ -409,7 +417,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#GeMM.parsecommandline-Tuple{}",
+    "location": "io/index.html#GeMM.getsettings",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.getsettings",
+    "category": "function",
+    "text": "getsettings()\n\nCombines all configuration options to produce a single settings dict. Order of precedence: commandline parameters - config file - default values\n\n\n\n\n\n"
+},
+
+{
+    "location": "io/index.html#GeMM.parsecommandline-Tuple{}",
     "page": "Input, Output, and Settings",
     "title": "GeMM.parsecommandline",
     "category": "method",
@@ -417,7 +433,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#GeMM.parseconfig-Tuple{String}",
+    "location": "io/index.html#GeMM.parseconfig-Tuple{String}",
     "page": "Input, Output, and Settings",
     "title": "GeMM.parseconfig",
     "category": "method",
@@ -425,7 +441,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#input.jl-1",
+    "location": "io/index.html#GeMM.readmapfile-Tuple{String,Dict{String,Any}}",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.readmapfile",
+    "category": "method",
+    "text": "readmapfile(mapfilename, settings)\n\nParse a map file and return the number of timesteps this map is to be used for (first line of the file) and the patch definitions. The latter is used by createworld and updateworld!.\n\n\n\n\n\n"
+},
+
+{
+    "location": "io/index.html#input.jl-1",
     "page": "Input, Output, and Settings",
     "title": "input.jl",
     "category": "section",
@@ -433,23 +457,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#GeMM.setupdatadir-Tuple{Dict{String,Any}}",
-    "page": "Input, Output, and Settings",
-    "title": "GeMM.setupdatadir",
-    "category": "method",
-    "text": "setupdatadir(dir)\n\nCreates the output directory and copies relevant files into it. If the output directory already includes files, create a new directory by appending a counter.\n\n\n\n\n\n"
-},
-
-{
-    "location": "io/#GeMM.writedata-Tuple{Array{Patch,1},Dict{String,Any},Int64}",
-    "page": "Input, Output, and Settings",
-    "title": "GeMM.writedata",
-    "category": "method",
-    "text": "writedata(world, settings, timestep)\n\nWrites simulation output from world to separate table and fasta files. (Which data is recorded depends on the settings.) timestep and setting information is used for file name creation.\n\n\n\n\n\n"
-},
-
-{
-    "location": "io/#GeMM.dumpinds",
+    "location": "io/index.html#GeMM.dumpinds",
     "page": "Input, Output, and Settings",
     "title": "GeMM.dumpinds",
     "category": "function",
@@ -457,7 +465,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#GeMM.makefasta",
+    "location": "io/index.html#GeMM.makefasta",
     "page": "Input, Output, and Settings",
     "title": "GeMM.makefasta",
     "category": "function",
@@ -465,7 +473,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#GeMM.printheader",
+    "location": "io/index.html#GeMM.printheader",
     "page": "Input, Output, and Settings",
     "title": "GeMM.printheader",
     "category": "function",
@@ -473,7 +481,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#GeMM.printpopheader-Tuple{IO}",
+    "location": "io/index.html#GeMM.printpopheader-Tuple{IO}",
     "page": "Input, Output, and Settings",
     "title": "GeMM.printpopheader",
     "category": "method",
@@ -481,7 +489,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#GeMM.printpopstats-Tuple{IO,Array{Patch,1},Dict{String,Any},Integer}",
+    "location": "io/index.html#GeMM.printpopstats-Tuple{IO,Array{GeMM.Patch,1},Dict{String,Any},Integer}",
     "page": "Input, Output, and Settings",
     "title": "GeMM.printpopstats",
     "category": "method",
@@ -489,7 +497,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#GeMM.recordlineages-Tuple{Array{Patch,1},Dict{String,Any},Int64}",
+    "location": "io/index.html#GeMM.recordlineages-Tuple{Array{GeMM.Patch,1},Dict{String,Any},Int64}",
     "page": "Input, Output, and Settings",
     "title": "GeMM.recordlineages",
     "category": "method",
@@ -497,7 +505,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#GeMM.recordstatistics-Tuple{Array{Patch,1},Dict{String,Any}}",
+    "location": "io/index.html#GeMM.recordstatistics-Tuple{Array{GeMM.Patch,1},Dict{String,Any}}",
     "page": "Input, Output, and Settings",
     "title": "GeMM.recordstatistics",
     "category": "method",
@@ -505,15 +513,31 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#GeMM.simlog",
+    "location": "io/index.html#GeMM.setupdatadir-Tuple{Dict{String,Any}}",
     "page": "Input, Output, and Settings",
-    "title": "GeMM.simlog",
-    "category": "function",
-    "text": "simlog(msg, settings, category)\n\nWrite a log message to STDOUT/STDERR and the specified logfile  (if logging is turned on in the settings).\n\nCategories: d (debug), i (information, default), w (warn), e (error)\n\n\n\n\n\n"
+    "title": "GeMM.setupdatadir",
+    "category": "method",
+    "text": "setupdatadir(dir)\n\nCreates the output directory and copies relevant files into it. If the output directory already includes files, create a new directory by appending a counter.\n\n\n\n\n\n"
 },
 
 {
-    "location": "io/#GeMM.writesettings-Tuple{Dict{String,Any}}",
+    "location": "io/index.html#GeMM.simlog",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.simlog",
+    "category": "function",
+    "text": "simlog(msg, settings, category, logfile, onlylog)\n\nWrite a log message to STDOUT/STDERR and the specified logfile  (if logging is turned on in the settings).\n\nCategories: d (debug), i (information, default), w (warn), e (error)\n\nIf logfile is the empty string (default: \"simulation.log\"), the message will  only be printed to the screen. If onlylog is true (default: false), the message is not printed to screen but only to the log.\n\n\n\n\n\n"
+},
+
+{
+    "location": "io/index.html#GeMM.writedata-Tuple{Array{GeMM.Patch,1},Dict{String,Any},Int64}",
+    "page": "Input, Output, and Settings",
+    "title": "GeMM.writedata",
+    "category": "method",
+    "text": "writedata(world, settings, timestep)\n\nWrites simulation output from world to separate table and fasta files. (Which data is recorded depends on the settings.) timestep and setting information is used for file name creation.\n\n\n\n\n\n"
+},
+
+{
+    "location": "io/index.html#GeMM.writesettings-Tuple{Dict{String,Any}}",
     "page": "Input, Output, and Settings",
     "title": "GeMM.writesettings",
     "category": "method",
@@ -521,7 +545,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "io/#output.jl-1",
+    "location": "io/index.html#output.jl-1",
     "page": "Input, Output, and Settings",
     "title": "output.jl",
     "category": "section",
@@ -529,7 +553,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#",
+    "location": "aux/index.html#",
     "page": "Internal functions",
     "title": "Internal functions",
     "category": "page",
@@ -537,7 +561,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#Internal-functions-1",
+    "location": "aux/index.html#Internal-functions-1",
     "page": "Internal functions",
     "title": "Internal functions",
     "category": "section",
@@ -545,7 +569,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.checkborderconditions-Tuple{Array{Patch,1},Int64,Int64}",
+    "location": "aux/index.html#GeMM.checkborderconditions-Tuple{Array{GeMM.Patch,1},Int64,Int64}",
     "page": "Internal functions",
     "title": "GeMM.checkborderconditions",
     "category": "method",
@@ -553,7 +577,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.createchrms-Tuple{Int64,Array{GeMM.AbstractGene,1}}",
+    "location": "aux/index.html#GeMM.createchrms-Tuple{Int64,Array{GeMM.AbstractGene,1}}",
     "page": "Internal functions",
     "title": "GeMM.createchrms",
     "category": "method",
@@ -561,7 +585,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.creategenes-Tuple{Int64,Array{GeMM.Trait,1},Dict{String,Any}}",
+    "location": "aux/index.html#GeMM.creategenes-Tuple{Int64,Array{GeMM.Trait,1},Dict{String,Any}}",
     "page": "Internal functions",
     "title": "GeMM.creategenes",
     "category": "method",
@@ -569,7 +593,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.createind",
+    "location": "aux/index.html#GeMM.createind",
     "page": "Internal functions",
     "title": "GeMM.createind",
     "category": "function",
@@ -577,7 +601,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.createoffspring-Tuple{Integer,GeMM.Individual,GeMM.Individual,Array{String,1}}",
+    "location": "aux/index.html#GeMM.createoffspring-Tuple{Integer,GeMM.Individual,GeMM.Individual,Array{String,1}}",
     "page": "Internal functions",
     "title": "GeMM.createoffspring",
     "category": "method",
@@ -585,7 +609,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.createtraits-Tuple{Dict{String,Any}}",
+    "location": "aux/index.html#GeMM.createtraits-Tuple{Dict{String,Any}}",
     "page": "Internal functions",
     "title": "GeMM.createtraits",
     "category": "method",
@@ -593,7 +617,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.diversity-Tuple{Array{Patch,1}}",
+    "location": "aux/index.html#GeMM.diversity-Tuple{Array{GeMM.Patch,1}}",
     "page": "Internal functions",
     "title": "GeMM.diversity",
     "category": "method",
@@ -601,7 +625,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.findisland-Tuple{Array{Patch,1}}",
+    "location": "aux/index.html#GeMM.findisland-Tuple{Array{GeMM.Patch,1}}",
     "page": "Internal functions",
     "title": "GeMM.findisland",
     "category": "method",
@@ -609,7 +633,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.findposspartner-Tuple{Patch,GeMM.Individual,Array{String,1}}",
+    "location": "aux/index.html#GeMM.findposspartner-Tuple{GeMM.Patch,GeMM.Individual,Array{String,1}}",
     "page": "Internal functions",
     "title": "GeMM.findposspartner",
     "category": "method",
@@ -617,7 +641,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.freespace-Tuple{Array{Patch,1}}",
+    "location": "aux/index.html#GeMM.freespace-Tuple{Array{GeMM.Patch,1}}",
     "page": "Internal functions",
     "title": "GeMM.freespace",
     "category": "method",
@@ -625,15 +649,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.gausscurve",
+    "location": "aux/index.html#GeMM.gausscurve",
     "page": "Internal functions",
     "title": "GeMM.gausscurve",
     "category": "function",
-    "text": "gausscurve(b, c, x, a=1.0)\n\nCalculate the value of the Gauss function (\"bell curve\") at point x; with a being the maximum height of the curve, b the position of the curve center and c the standard deviation (\"width\").\n\nXXX This should be replaced with calls to Normal() from the Distributions package.\n\n\n\n\n\n"
+    "text": "gausscurve(b, c, x, a=1.0)\n\nCalculate the value of the Gauss function (\"bell curve\") at point x; with a being the maximum height of the curve, b the position of the curve center and c the standard deviation (\"width\").\n\n\n\n\n\n"
 },
 
 {
-    "location": "aux/#GeMM.getmeantraitvalue-Tuple{Array{GeMM.Trait,1},Integer}",
+    "location": "aux/index.html#GeMM.getmeantraitvalue-Tuple{Array{GeMM.Trait,1},Integer}",
     "page": "Internal functions",
     "title": "GeMM.getmeantraitvalue",
     "category": "method",
@@ -641,7 +665,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.getstdtraitvalue-Tuple{Array{GeMM.Trait,1},Integer}",
+    "location": "aux/index.html#GeMM.getstdtraitvalue-Tuple{Array{GeMM.Trait,1},Integer}",
     "page": "Internal functions",
     "title": "GeMM.getstdtraitvalue",
     "category": "method",
@@ -649,7 +673,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.gettraitdict-Tuple{Array{GeMM.AbstractGene,1},Array{String,1}}",
+    "location": "aux/index.html#GeMM.gettraitdict-Tuple{Array{GeMM.AbstractGene,1},Array{String,1}}",
     "page": "Internal functions",
     "title": "GeMM.gettraitdict",
     "category": "method",
@@ -657,7 +681,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.gettraitdict-Tuple{Array{GeMM.Chromosome,1},Array{String,1}}",
+    "location": "aux/index.html#GeMM.gettraitdict-Tuple{Array{GeMM.Chromosome,1},Array{String,1}}",
     "page": "Internal functions",
     "title": "GeMM.gettraitdict",
     "category": "method",
@@ -665,7 +689,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.gettraitdict-Tuple{Array{GeMM.Trait,1},Array{String,1}}",
+    "location": "aux/index.html#GeMM.gettraitdict-Tuple{Array{GeMM.Trait,1},Array{String,1}}",
     "page": "Internal functions",
     "title": "GeMM.gettraitdict",
     "category": "method",
@@ -673,7 +697,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.identifyAdults!-Tuple{Patch}",
+    "location": "aux/index.html#GeMM.identifyAdults!-Tuple{GeMM.Patch}",
     "page": "Internal functions",
     "title": "GeMM.identifyAdults!",
     "category": "method",
@@ -681,7 +705,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.iscompatible-Tuple{GeMM.Individual,GeMM.Individual,Array{String,1}}",
+    "location": "aux/index.html#GeMM.iscompatible-Tuple{GeMM.Individual,GeMM.Individual,Array{String,1}}",
     "page": "Internal functions",
     "title": "GeMM.iscompatible",
     "category": "method",
@@ -689,7 +713,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.markthem!-Tuple{Array{GeMM.Individual,1}}",
+    "location": "aux/index.html#GeMM.markthem!-Tuple{Array{GeMM.Individual,1}}",
     "page": "Internal functions",
     "title": "GeMM.markthem!",
     "category": "method",
@@ -697,7 +721,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.markthem!-Tuple{Array{Patch,1}}",
+    "location": "aux/index.html#GeMM.markthem!-Tuple{Array{GeMM.Patch,1}}",
     "page": "Internal functions",
     "title": "GeMM.markthem!",
     "category": "method",
@@ -705,7 +729,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.markthem!-Tuple{Patch}",
+    "location": "aux/index.html#GeMM.markthem!-Tuple{GeMM.Patch}",
     "page": "Internal functions",
     "title": "GeMM.markthem!",
     "category": "method",
@@ -713,7 +737,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.meiosis-Tuple{Array{GeMM.Chromosome,1},Bool}",
+    "location": "aux/index.html#GeMM.meiosis-Tuple{Array{GeMM.Chromosome,1},Bool}",
     "page": "Internal functions",
     "title": "GeMM.meiosis",
     "category": "method",
@@ -721,7 +745,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.num2seq-Tuple{Integer}",
+    "location": "aux/index.html#GeMM.num2seq-Tuple{Integer}",
     "page": "Internal functions",
     "title": "GeMM.num2seq",
     "category": "method",
@@ -729,7 +753,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.seq2bignum-Tuple{String}",
+    "location": "aux/index.html#GeMM.seq2bignum-Tuple{String}",
     "page": "Internal functions",
     "title": "GeMM.seq2bignum",
     "category": "method",
@@ -737,7 +761,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.seq2num-Tuple{String}",
+    "location": "aux/index.html#GeMM.seq2num-Tuple{String}",
     "page": "Internal functions",
     "title": "GeMM.seq2num",
     "category": "method",
@@ -745,7 +769,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.traitsexist-Tuple{Dict{String,Float64},Dict{String,Any}}",
+    "location": "aux/index.html#GeMM.traitsexist-Tuple{Dict{String,Float64},Dict{String,Any}}",
     "page": "Internal functions",
     "title": "GeMM.traitsexist",
     "category": "method",
@@ -753,7 +777,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.traitsexist-Tuple{GeMM.Individual,Dict{String,Any}}",
+    "location": "aux/index.html#GeMM.traitsexist-Tuple{GeMM.Individual,Dict{String,Any}}",
     "page": "Internal functions",
     "title": "GeMM.traitsexist",
     "category": "method",
@@ -761,7 +785,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.varyalleles!-Tuple{Array{GeMM.AbstractGene,1},Dict{String,Any},Float64}",
+    "location": "aux/index.html#GeMM.varyalleles!-Tuple{Array{GeMM.AbstractGene,1},Dict{String,Any},Float64}",
     "page": "Internal functions",
     "title": "GeMM.varyalleles!",
     "category": "method",
@@ -769,7 +793,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#GeMM.varyalleles!-Tuple{Array{GeMM.Chromosome,1},Dict{String,Any},Float64}",
+    "location": "aux/index.html#GeMM.varyalleles!-Tuple{Array{GeMM.Chromosome,1},Dict{String,Any},Float64}",
     "page": "Internal functions",
     "title": "GeMM.varyalleles!",
     "category": "method",
@@ -777,7 +801,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "aux/#auxfuncts.jl-1",
+    "location": "aux/index.html#auxfuncts.jl-1",
     "page": "Internal functions",
     "title": "auxfuncts.jl",
     "category": "section",

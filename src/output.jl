@@ -22,7 +22,6 @@ function printheader(settings::Dict{String, Any}, io::IO = stdout, sep::String =
     print(io, "initpop", sep)
     print(io, "id", sep)
     print(io, "lineage", sep)
-    print(io, "age", sep)
     print(io, "new", sep)
     print(io, "tempadaption", sep)
     print(io, "precadaption", sep)
@@ -66,7 +65,6 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
             patch.initpop ? print(io, 1, sep) : print(io, 0, sep)
             print(io, ind.id, sep)
             print(io, ind.lineage, sep)
-            print(io, ind.age, sep)
             ind.marked ? print(io, 1, sep) : print(io, 0, sep)
             print(io, ind.tempadaption, sep)
             print(io, ind.precadaption, sep)
@@ -97,7 +95,7 @@ function makefasta(world::Array{Patch, 1}, settings::Dict{String, Any}, io::IO =
         (onlyisland && !patch.isisland) && continue
         lineage = ""
         for ind in patch.community
-            (!patch.isisland && ind.lineage == lineage) && continue # only one individual per species on mainland
+            (!patch.isisland && settings["static"] && ind.lineage == lineage) && continue # only one individual per species on mainland
             chrmno = 0
             for chrm in ind.genome
                 chrmno += 1
@@ -106,14 +104,13 @@ function makefasta(world::Array{Patch, 1}, settings::Dict{String, Any}, io::IO =
                     geneno += 1
                     traits = ""
                     if length(gene.codes) == 0
-                        traits *= "neutral"
+                        traits *= ","
                     else
                         for trait in gene.codes
                             traits *= string(settings["traitnames"][trait.nameindex]) * ":" * string(trait.value) * ","
                         end
                     end
-                    header = ">"*string(ind.id)*sep*"x"*string(patch.location[1])*sep*"y"*string(patch.location[2])
-                    header *= sep*ind.lineage*sep*"c"*string(chrmno)*sep*"g"*string(geneno)*sep*traits
+                    header = ">" * ind.lineage * sep * string(ind.id) * sep * string(chrmno) * sep * string(geneno) * sep * traits
                     println(io, header)
                     println(io, num2seq(gene.sequence))
                 end
@@ -147,7 +144,8 @@ function setupdatadir(settings::Dict{String, Any})
         writesettings(settings)
         if haskey(settings, "maps")
             for m in settings["maps"]
-                cp(m, joinpath(settings["dest"], m), force = true) # most likely replicates with same parameters
+                isempty(m) && continue
+                cp(m, joinpath(settings["dest"], basename(m)), force = true) # most likely replicates with same parameters
             end
         end
     end
@@ -161,7 +159,12 @@ Creates a config file that can be used for future replicate runs.
 Also records a time stamp and the current git commit.
 """
 function writesettings(settings::Dict{String, Any})
-    open(joinpath(settings["dest"], settings["config"]), "w") do f
+    if isempty(basename(settings["config"]))
+        settingspath = "settings.conf"
+    else
+        settingspath = basename(settings["config"])
+    end
+    open(joinpath(settings["dest"], settingspath), "w") do f
         println(f, "#\n# --- Island speciation model settings ---")
         println(f, "# This file was generated automatically.")
         println(f, "# Simulation run on $(Dates.format(Dates.now(), "d u Y HH:MM:SS"))")
@@ -263,7 +266,7 @@ for `printpopstats`.
 """
 function printpopheader(io::IO)
     print(io, "time\t", "x\t", "y\t", "temp\t", "prec\t", "area\t", "isisland")
-    print(io, "\tlineage", "\tjuveniles", "\tadults", "\tmaxage", "\tmaxsize", "\ttempadaptionmed", "\tprecadaptionmed")
+    print(io, "\tlineage", "\tjuveniles", "\tadults", "\tmaxsize", "\ttempadaptionmed", "\tprecadaptionmed")
     traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd", 
                    "ngenes", "nlnkgunits", "precopt", "precoptsd", "prectol", "prectolsd",
                    "repsize", "repsizesd", "reptol", "reptolsd", "seedsize", "seedsizesd",
@@ -299,15 +302,15 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
             population = patch.community[popidxs]
             adultidxs = findall(i -> i.size > i.traits["repsize"], patch.community[popidxs])
             print(io, "\t", population[1].lineage, "\t", length(popidxs) - length(adultidxs), "\t", length(adultidxs), "\t",
-                  maximum(map(i -> i.age, population)), "\t", maximum(map(i -> i.size, population)),
-                  "\t", median(map(i -> i.tempadaption, population)), "\t", median(map(i -> i.precadaption, population)))
+                  "\t", maximum(map(i -> i.size, population)), "\t", median(map(i -> i.tempadaption, population)),
+                  "\t", median(map(i -> i.precadaption, population)))
             poptraitdict = Dict{String, Array{Float64, 1}}()
             for traitname in traitnames
                 poptrait = map(i -> i.traits[traitname], population)
                 print(io, "\t", minimum(poptrait))
                 print(io, "\t", maximum(poptrait))
                 print(io, "\t", median(poptrait))
-                print(io, "\t", std(skipmissing(poptrait)))
+                print(io, "\t", std(skipmissing(poptrait))) # CAVEAT: this returns NaN if only one individual
             end
             print(io, "\t", settings["seed"], "\t", settings["config"])
             println(io)
@@ -316,12 +319,16 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
 end
 
 """
-    simlog(msg, settings, category)
+    simlog(msg, settings, category, logfile, onlylog)
 
 Write a log message to STDOUT/STDERR and the specified logfile 
 (if logging is turned on in the settings).
 
 Categories: `d` (debug), `i` (information, default), `w` (warn), `e` (error)
+
+If `logfile` is the empty string (default: "simulation.log"), the message will 
+only be printed to the screen. If `onlylog` is true (default: false), the
+message is not printed to screen but only to the log.
 """
 function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile="simulation.log", onlylog=false)
     (isa(category, String) && length(category) == 1) && (category = category[1])
@@ -330,7 +337,7 @@ function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile=
             tostderr ? iostr = stderr : iostr = stdout
             println(iostr, msg)
         end
-        if settings["logging"]
+        if settings["logging"] && length(logfile) > 0
             open(joinpath(settings["dest"], logfile), "a") do f
                 println(f, msg)
             end

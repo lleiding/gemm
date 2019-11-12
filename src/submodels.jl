@@ -4,14 +4,14 @@
     mutate!(traits, settings, locivar)
 
 Loop over an array of traits, mutating each value in place along a normal distribution.
-
-XXX what does locivar do?
+`locivar` can be used to scale the variance of the normal distribution used to draw new
+trait values (together with `settings[phylconstr]`).
 """
 function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any}, locivar::Float64 = 1.0)
     settings["phylconstr"] * locivar == 0 && return
     for trait in traits
         traitname = settings["traitnames"][trait.nameindex]
-        occursin("reptol", traitname) && settings["fixtol"] && continue # MARK CAVE!
+        occursin("reptol", traitname) && settings["fixtol"] && continue
         oldvalue = trait.value
         occursin("tempopt", traitname) && (oldvalue -= 273)
         while oldvalue <= 0 # make sure sd of Normal dist != 0
@@ -33,7 +33,7 @@ end
 Mutate an individual's genome (sequence and traits) in place.
 """
 function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
-    muts = settings["mutationrate"] * exp(-act/(boltz*temp)) # settings["mutsperind"]?
+    muts = settings["mutationrate"] * exp(-act/(boltz*temp))
     nmuts = rand(Poisson(muts))
     nmuts == 0 && return
     chrmidcs = rand(eachindex(ind.genome), nmuts)
@@ -62,7 +62,7 @@ end
 """
     mutate!(patch, setting)
 
-Mutate all seedling individual's in a patch.
+Mutate all seed individuals in a patch.
 """
 function mutate!(patch::Patch, settings::Dict{String, Any})
     for ind in patch.seedbank
@@ -141,7 +141,6 @@ function establish!(patch::Patch, nniches::Int=1)
     idx = 1
     while idx <= size(patch.community,1)
         if patch.community[idx].marked
-            #XXX what does the `marked` do?
             opt = patch.community[idx].traits["tempopt"]
             tol = patch.community[idx].traits["temptol"]
             fitness = gausscurve(opt, tol, temp, 0.0)
@@ -176,7 +175,7 @@ end
 """
     survive!(patch, mortality)
 
-Density independent survival of individuals in a patch. The actual mortality 
+Density independent survival of individuals in a patch. The actual mortality
 probability is calculated with a metabolic formula, modified by the passed `mortality`
 variable and an individual's temperature adaptation.
 """
@@ -191,8 +190,6 @@ function survive!(patch::Patch, mortality::Float64)
             if rand() * patch.community[idx].tempadaption < dieprob
                 splice!(patch.community, idx)
                 continue
-            else
-                patch.community[idx].age += 1
             end
         end
         idx += 1
@@ -257,11 +254,11 @@ let speciespool = Individual[]
             push!(speciespool, createind(settings))
         end
     end
-    
+
     """
         invade!(patch, pressure)
 
-    Select a given amount of individuals from the global species pool and add 
+    Select a given amount of individuals from the global species pool and add
     them to the patch.
     """
     function invade!(patch::Patch, pressure::Int)
@@ -298,7 +295,7 @@ function grow!(patch::Patch, growthrate::Float64)
         if !patch.community[idx].marked
             repsize = patch.community[idx].traits["repsize"]
             mass = patch.community[idx].size
-            if mass <= repsize # stop growth if reached repsize 
+            if mass <= repsize # stop growth if reached repsize
                 growth = growthrate * mass^(3/4) * exp(-act/(boltz*temp))
                 newmass = mass + growth
                 if newmass > 0 && mass > 0
@@ -367,10 +364,8 @@ one that is less adapted to the local precipitation levels.
 function compete!(patch::Patch)
     totalmass = sum(map(x -> x.size, patch.community))
     while totalmass >= patch.area # occupied area larger than available
-        firstind = rand(eachindex(patch.community))
-        secondind = rand(eachindex(patch.community))
-        #XXX what does this next line do?
-        firstind == secondind && length(rand(eachindex(patch.community))) > 1 && continue
+        firstind, secondind = rand(eachindex(patch.community), 2)
+        firstind == secondind && length(eachindex(patch.community)) > 1 && continue
         if patch.community[firstind].precadaption < patch.community[secondind].precadaption
             totalmass -= patch.community[firstind].size
             splice!(patch.community, firstind) # profiling: expensive!
@@ -404,15 +399,20 @@ Reproduction of individuals in a patch.
 function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
     identifyAdults!(patch)
     for ind in patch.community
-        if !ind.marked && ind.age > 0
+        if !ind.marked
             if ind.size >= ind.traits["repsize"]
                 metaboffs = settings["fertility"] * ind.size^(-1/4) * exp(-act/(boltz*patch.temp))
                 noffs = rand(Poisson(metaboffs))
                 if noffs < 1
                     continue
                 end
-                partners = findposspartner(patch, ind, settings["traitnames"])
-                length(partners) < 1 && continue
+                population = view(patch.community, patch.whoiswho[ind.lineage])
+                partners = findmate(population, ind, settings["traitnames"])
+                if length(partners) < 1 && rand() < ind.traits["selfing"]
+                    partners = [ind]
+                else
+                    continue
+                end
                 partner = partners[1]
                 parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
                 if parentmass <= 0
@@ -447,11 +447,11 @@ function changetemp!(world::Array{Patch,1}, sdtemp::Float64)
     sdtemp == 0 && return
     deltaval = rand(Normal(0.0, sdtemp))
     for patch in world
-        patch.temp += deltaval 
+        patch.temp += deltaval
     end
     markthem!(world)
-end    
- 
+end
+
 """
     changeprec!(world, sdprec)
 
@@ -461,10 +461,10 @@ function changeprec!(world::Array{Patch,1}, sdprec::Float64)
     sdprec == 0 && return
     deltaval = rand(Normal(0.0, sdprec))
     for patch in world
-        patch.prec += deltaval 
+        patch.prec += deltaval
     end
     markthem!(world)
-end    
+end
 
 """
     changehabitat!(world, settings)
@@ -475,4 +475,4 @@ function changehabitat!(world::Array{Patch,1}, settings::Dict{String, Any})
     # TODO: record trajectory? input trajectory?
     changetemp!(world, settings["sdtemp"])
     changeprec!(world, settings["sdprec"])
-end    
+end

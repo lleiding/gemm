@@ -6,19 +6,27 @@
 Combines all configuration options to produce a single settings dict.
 Order of precedence: commandline parameters - config file - default values
 """
-function getsettings()
+function getsettings(configfile::String = "", seed::Integer = 0)
     defaults = defaultSettings()
-    commandline = parsecommandline()
-    if isfile(commandline["config"])
+    commandline = parsecommandline() # deprecate?
+    if !isempty(configfile) && isfile(configfile)
+        configs = parseconfig(configfile)
+        commandline["config"] = configfile
+    elseif haskey(commandline, "config") && isfile(commandline["config"])
         configs = parseconfig(commandline["config"])
     else
         configs = Dict{String, Any}()
     end
+    seed != 0 && (commandline["seed"] = seed)
     settings = merge(defaults, configs, commandline)
+    if settings["dest"] == defaults["dest"]
+        settings["dest"] = settings["dest"] * "_" * join(split(basename(settings["config"]), ".")) * "_" * string(settings["seed"])
+    end
     if settings["seed"] == 0
-        settings["seed"] = abs(rand(Int32))
+        settings["seed"] = abs(rand(RandomDevice(), Int32))
     end
     settings["maps"] = map(x -> String(x), split(settings["maps"], ","))
+    map!(x -> joinpath(dirname(settings["config"]), x), settings["maps"], settings["maps"])
     if isa(settings["traitnames"], String)
         settings["traitnames"] = map(x -> String(x), split(settings["traitnames"], ","))
     end
@@ -125,19 +133,21 @@ function parseconfig(configfilename::String)
     defaults = defaultSettings()
     for c in config
         if length(c) != 2
-            simlog("Bad config file syntax: $c", settings, 'w')
+            simlog("Bad config file syntax: $c", settings, 'w', "")
         elseif c[1] in keys(defaults)
             value = c[2]
             if !(typeof(defaults[c[1]]) <: AbstractString)
                 try
                     value = parse(typeof(defaults[c[1]]), c[2]) # or Meta.parse with the old functionality
                 catch
-                    simlog("$(c[1]) not of type $(typeof(defaults[c[1]])).", settings, 'w')
+                    simlog("$(c[1]) not of type $(typeof(defaults[c[1]])).",
+                           settings, 'w', "")
                 end
             end
             settings[c[1]] = value
         else
-            simlog(c[1]*" is not a recognized parameter!", settings, 'w') # XXX maybe parse anyway
+            # XXX maybe parse anyway
+            simlog(c[1]*" is not a recognized parameter!", settings, 'w', "")
         end
     end
     settings
@@ -152,12 +162,18 @@ Parse a map file and return the number of timesteps this map is to be used for
 """
 function readmapfile(mapfilename::String, settings::Dict{String, Any})
     simlog("Reading map file $mapfilename.", settings)
-    mapfile = basicparser(mapfilename)
-    timesteps = parse(Int, mapfile[1][1])
-    if length(mapfile[1]) != 1 || !isa(timesteps, Integer)
-        timesteps = 1000
-        simlog("Invalid timestep information in the mapfile. Setting timesteps to 1000.", settings, 'w')
+    if isfile(mapfilename)
+        maptable = basicparser(mapfilename)
+        timesteps = parse(Int, maptable[1][1])
+        if length(maptable[1]) != 1 || !isa(timesteps, Integer)
+            timesteps = 10
+            simlog("Invalid timestep information in the mapfile. Setting timesteps to 10.", settings, 'w')
+        end
+    else
+        simlog("No map definition file provided. Assuming a two-cell world for 10 time steps.", settings, 'w')
+        timesteps = 10
+        maptable = [["",""], ["1", "1", "1", "initpop"], ["2", "2", "1"]]
     end
-    return timesteps,mapfile[2:end]
+    return timesteps,maptable[2:end]
 end
 

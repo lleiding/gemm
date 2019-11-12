@@ -1,9 +1,9 @@
 # Genome explicit Metacommunity Model - GeMM
 #
-# Ludwig Leidinger 2018
-# <l.leidinger@gmx.net>
+# Ludwig Leidinger <l.leidinger@gmx.net>, Daniel Vedder <daniel.vedder@stud-mail.uni-wuerzburg.de> 2019
 #
-# contains all custom types and functions necessary for eco-evo-env speciation island model
+# Contains all custom types and functions necessary for an individual based, genome and niche explicit,
+# eco-evo-env Metacommunity model. 
 
 module GeMM
 
@@ -17,17 +17,7 @@ using
 
 
 export
-    # types:
-    Patch,
-    # functions:
-    createworld,
-    defaultSettings,
-    getsettings,
-    readmapfile,
-    setupdatadir,
-    simulate!,
-    updateworld!,
-    writedata
+    rungemm
 
 
 include("defaults.jl")
@@ -48,5 +38,6 @@ include("submodels.jl")
 
 include("scheduling.jl")
 
+include("run_simulation.jl")
 
 end
