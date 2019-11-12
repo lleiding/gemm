@@ -46,10 +46,10 @@ to test if it works.
 To run an example experiment in a landscape with two environmental gradients to test the effect of temporal environmental variation, run
 
 ```
-julia -p 40 rungemmparallel.jl -s 1 -n 20 -c examples/gradient/static.conf,examples/gradient/variable.conf
+julia -p 40 rungemmparallel.jl -s 1 -n 20 -c examples/gradient/sg,examples/gradient/sgv
 ```
 
-This executes 40 parallel simulations, 20 for each of the scenarios defined in the configuration files (`examples/gradient/static.conf` and `examples/gradient/variable.conf`).
+This executes 40 parallel simulations, 20 for each of the scenarios defined in the configuration files (`examples/gradient/sg` and `examples/gradient/sgv`).
 
 Each of the simulations creates its own output directory of the format date-configfilename-replicate.
 These folders configuration files with the exact configuration the respective simulation was run on (`*.conf`),
