@@ -4,7 +4,7 @@
 
 *** Get seeds of runs with both scenarios completed
     
- #+BEGIN_SRC shell
+ #+BEGIN_SRC sh :tangle analysis.sh
  tail -n 1 2019-0*_sg*/*tsv | grep -E '^1000' | cut -f 103 | sort | uniq -c | grep -vw 1 > twothree 
  #+END_SRC
 
@@ -12,7 +12,7 @@
 
 **** packages
 
-     #+BEGIN_SRC R
+     #+BEGIN_SRC R :tangle analysis.R
      ## install.packages("picante", dependencies = TRUE)
      library(picante) ##provides both library(vegan) and library(ape) ade4?
      ## install.packages("lme4")
@@ -40,8 +40,8 @@
 #+END_SRC
 
 **** load data
- #+BEGIN_SRC R
-
+ #+BEGIN_SRC R :tangle analysis.R
+## make sure you have run the shell code to produce the file `twothree` with all completed replicates
  tworuns = read_table("twothree", col_names=c("nruns", "seed"))
  allfiles = Sys.glob("2019-0*/stats*tsv")
  mytworesults = allfiles[grep(paste(tworuns$seed, collapse="|"), allfiles)]
@@ -68,7 +68,7 @@
  #+END_SRC
 
 **** data preparation
- #+BEGIN_SRC R
+ #+BEGIN_SRC R :tangle analysis.R
  tworesults = tworesults %>% mutate(species = paste0(scenario, ".", lineage)) %>% #select(-contains("seedsize")) %>%  # seedsize is similar between scenarios + correlated/somewhat redundant with repsize
      rename(mean_dispersal_distance = dispmean, 
             long_distance_dispersal = dispshape, 
@@ -100,7 +100,7 @@
 *** All traits and levels
 **** produce maps of richness and species with abundances:
 
-  #+BEGIN_SRC R
+  #+BEGIN_SRC R :tangle analysis.R
       ## static plot over all replicates:
       all = tworesults %>% rename(Environment = scenario) %>% filter(time == 500) %>% group_by(x, y, Environment) %>%
           summarize(`Richness (n.spp.)` = length(unique(lineage)) / length(unique(replicate)), `Adult biomass (g)` = mean(adult_body_size), `Number of genes` = mean(number_of_genes)) %>%
@@ -172,7 +172,7 @@ Indication of local adaptation?
 300-1000: local adaptation
 (all in stable environments)
 
-  #+BEGIN_SRC R
+  #+BEGIN_SRC R :tangle analysis.R
 
     lclrich = tworesults %>% filter(time>=50) %>% group_by(time, x, y, scenario, replicate) %>% summarize(alpha_diversity = length(unique(lineage))) %>%
         ungroup %>% group_by(time, scenario, replicate) %>% summarize_at(vars(alpha_diversity), mean) %>%
@@ -242,7 +242,7 @@ Indication of local adaptation?
   #+END_SRC
 
 **** Species numbers
-#+BEGIN_SRC R
+#+BEGIN_SRC R :tangle analysis.R
  lineagevec = tworesults %>% filter(time==500) %>% select(scenario, lineage)
   sharedspecies = intersect(lineagevec[lineagevec$scenario=="static",]$lineage, lineagevec[lineagevec$scenario=="variable",]$lineage)
   staticspecies = setdiff(lineagevec[lineagevec$scenario=="static",]$lineage, lineagevec[lineagevec$scenario=="variable",]$lineage)
@@ -269,7 +269,7 @@ Indication of local adaptation?
      seedsize and repsize are highly correlated -> reduce and omit one?
 
 ***** PCA with pooled scenarios
-      #+BEGIN_SRC R
+      #+BEGIN_SRC R :tangle analysis.R
       mainendtraits = tworesults %>% filter(time == 500) %>%
           rename(Environment = scenario) %>%
           dplyr::select(Environment, mean_dispersal_distance, number_of_genes, precipitation_tolerance,
@@ -295,7 +295,7 @@ Indication of local adaptation?
 **** linear mixed effects model
 ***** Simulation end
       
-      #+BEGIN_SRC R
+      #+BEGIN_SRC R :tangle analysis.R
         ## prepare data:
         myendresults = tworesults %>% filter((time == 0 & scenario == "static") | time == 500) %>% #mutate(shared=as.factor(ifelse(lineage %in% sharedspecies, "shared", "unique"))) %>%
             mutate_at(vars(contains("tolerance"), contains("size"), contains("gene"), contains("dispersal")), function(x) log(x + 1)) %>%
@@ -386,7 +386,7 @@ Indication of local adaptation?
 
 **** Number of replicates
 
-  #+BEGIN_SRC R
+  #+BEGIN_SRC R :tangle analysis.R
 
   reps = tworesults$replicate %>% unique() %>% sample()
   tsteps = seq(800,1000,50)
