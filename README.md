@@ -1,7 +1,7 @@
 # GeMM
 
 This is the Genome explicit Metacommunity Model, an individual-based model for
-ecological experiments.
+eco-evolutionary experiments.
 
 This README covers installation and basic usage of the software. For a detailed 
 documentation of the biological side of the model, read `ODD.md`.
