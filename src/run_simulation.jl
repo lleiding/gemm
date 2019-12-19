@@ -15,7 +15,7 @@ function runsim(config::String = "", seed::Integer = 0, prerun::Bool = false)
         settings["popsize"] = "metabolic"
         settings["maps"] = [""]
         settings["phylo"] = false
-        settings["fasta"] = false
+        settings["fasta"] = "off"
         settings["raw"] = false
         settings["stats"] = false
         settings["quiet"] = true
