@@ -113,8 +113,10 @@ function makefasta(world::Array{Patch, 1}, settings::Dict{String, Any}, io::IO =
                         end
                     end
                     header = ">" * ind.lineage * sep * string(ind.id) * sep * string(chrmno) * sep * string(geneno) * sep * traits
-                    println(io, header)
-                    println(io, num2seq(gene.sequence))
+                    if (settings["fasta"] == "compat" && occursin("compat", header)) || settings["fasta"] != "compat"
+                        println(io, header)
+                        println(io, num2seq(gene.sequence))
+                    end
                 end
             end
             lineage = ind.lineage
@@ -203,7 +205,7 @@ function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep:
             printpopstats(file, world, settings, timestep)
         end
     end
-    if settings["fasta"]
+    if settings["fasta"] != "off"
         filename = "seqs_s" * string(settings["seed"])
         filename = joinpath(settings["dest"], filename)
         filename = filename * ".fa"
