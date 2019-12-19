@@ -48,10 +48,12 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
         #XXX Sometimes, this only dumps three or four individuals, with a population of >10⁴!
         # (Should be fixed)
         (onlyisland && !patch.isisland) && continue
-        lineage = ""
-        for ind in patch.community
-            # only one individual per species on a static mainland (should be the case anyway)
-            (!patch.isisland && settings["static"] && ind.lineage == lineage) && continue
+        if !patch.isisland && settings["static"]
+            community = patch.seedbank
+        else
+            community = patch.community
+        end            
+        for ind in community
             print(io, timestep, sep)
             print(io, patch.id, sep)
             print(io, patch.location[1], sep)
@@ -81,7 +83,6 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
                 end
             end
             println(io)
-            lineage = ind.lineage
         end
     end
 end
@@ -95,8 +96,13 @@ WARNING: this produces *very* large files!
 function makefasta(world::Array{Patch, 1}, settings::Dict{String, Any}, io::IO = stdout, onlyisland::Bool = false, sep::String = "_")
     for patch in world
         (onlyisland && !patch.isisland) && continue
+        if !patch.isisland && settings["static"]
+            community = patch.seedbank
+        else
+            community = patch.community
+        end            
         lineage = ""
-        for ind in patch.community
+        for ind in community
             (!patch.isisland && settings["static"] && ind.lineage == lineage) && continue # only one individual per species on mainland
             chrmno = 0
             for chrm in ind.genome
