@@ -27,20 +27,21 @@ def print_map(xlen, ylen, landtype, xpos, ypos, ident, isol, precon):
             temp += tempstep
             for y in range(ypos, ypos + ylen):
                 ident += 1
-                print(ident, " ", x, " ", y, " ", "temp=", temp, " ", landtype, " ", "nichea=", prec, sep = '')
+                print(ident, " ", x, " ", y, " ", "temp=", temp, " ", "prec=", prec, " ", "initpot", sep = '')
                 prec += precstep
     else:
         landtype = "isisland"
         temp = 298
-        tempstep = 3 # CAVE!
+        tempstep = 1
+        precstep = 1
         for x in range(xpos, xpos + xlen):
-            prec = 0
+            prec = 1
             for y in range(ypos, ypos + ylen):
                 ident += 1
                 mindist = min([abs(x - xpos), abs(y - ypos), abs(xpos + xlen - x - 1), abs(ypos + ylen - y - 1)])
                 localtemp = temp - mindist * tempstep
                 isolated = "isolated" if random.random() < isol else ""
-                print(ident, " ", x, " ", y, " ", "temp=", localtemp, " ", landtype, " ", isolated, " ", "nichea=", prec, sep ='')
+                print(ident, " ", x, " ", y, " ", "temp=", localtemp, " ", "prec=", prec, " ", landtype, " ", isolated, sep ='')
                 prec += precstep
     print()
 
@@ -74,7 +75,7 @@ def print_all():
     parser.add_argument("-p", "--precipitation", action = "store_true", default = False,
                         help = "turns on additional environment niche")
     parser.add_argument("--nodummy", action = "store_true", default = False,
-                        help = "turns off creation of dummy island")
+                        help = "turns off creation of dummy island. A dummy island ensures there is ocean.")
     args = parser.parse_args()
     if args.time > 0:
         print("# timesteps:")
