@@ -1,134 +1,89 @@
+# timesteps:
 1000000
 
-#id	x	y	type	temp	prec
-1 0 0 temp=298 isisland  prec=1
-2 0 1 temp=298 isisland  prec=2.0
-3 0 2 temp=298 isisland  prec=3.0
-4 0 3 temp=298 isisland  prec=4.0
-5 0 4 temp=298 isisland  prec=5.0
-6 0 5 temp=298 isisland  prec=6.0
-7 0 6 temp=298 isisland  prec=7.0
-8 0 7 temp=298 isisland  prec=8.0
-9 0 8 temp=298 isisland  prec=9.0
-10 0 9 temp=298 isisland  prec=10.0
-11 1 0 temp=298 isisland  prec=1
-12 1 1 temp=297 isisland  prec=2.0
-13 1 2 temp=297 isisland  prec=3.0
-14 1 3 temp=297 isisland  prec=4.0
-15 1 4 temp=297 isisland  prec=5.0
-16 1 5 temp=297 isisland  prec=6.0
-17 1 6 temp=297 isisland  prec=7.0
-18 1 7 temp=297 isisland  prec=8.0
-19 1 8 temp=297 isisland  prec=9.0
-20 1 9 temp=298 isisland  prec=10.0
-21 2 0 temp=298 isisland  prec=1
-22 2 1 temp=297 isisland  prec=2.0
-23 2 2 temp=296 isisland  prec=3.0
-24 2 3 temp=296 isisland  prec=4.0
-25 2 4 temp=296 isisland  prec=5.0
-26 2 5 temp=296 isisland  prec=6.0
-27 2 6 temp=296 isisland  prec=7.0
-28 2 7 temp=296 isisland  prec=8.0
-29 2 8 temp=297 isisland  prec=9.0
-30 2 9 temp=298 isisland  prec=10.0
-31 3 0 temp=298 isisland  prec=1
-32 3 1 temp=297 isisland  prec=2.0
-33 3 2 temp=296 isisland  prec=3.0
-34 3 3 temp=295 isisland  prec=4.0
-35 3 4 temp=295 isisland  prec=5.0
-36 3 5 temp=295 isisland  prec=6.0
-37 3 6 temp=295 isisland  prec=7.0
-38 3 7 temp=296 isisland  prec=8.0
-39 3 8 temp=297 isisland  prec=9.0
-40 3 9 temp=298 isisland  prec=10.0
-41 4 0 temp=298 isisland  prec=1
-42 4 1 temp=297 isisland  prec=2.0
-43 4 2 temp=296 isisland  prec=3.0
-44 4 3 temp=295 isisland  prec=4.0
-45 4 4 temp=294 isisland  prec=5.0
-46 4 5 temp=294 isisland  prec=6.0
-47 4 6 temp=295 isisland  prec=7.0
-48 4 7 temp=296 isisland  prec=8.0
-49 4 8 temp=297 isisland  prec=9.0
-50 4 9 temp=298 isisland  prec=10.0
-51 5 0 temp=298 isisland  prec=1
-52 5 1 temp=297 isisland  prec=2.0
-53 5 2 temp=296 isisland  prec=3.0
-54 5 3 temp=295 isisland  prec=4.0
-55 5 4 temp=294 isisland  prec=5.0
-56 5 5 temp=294 isisland  prec=6.0
-57 5 6 temp=295 isisland  prec=7.0
-58 5 7 temp=296 isisland  prec=8.0
-59 5 8 temp=297 isisland  prec=9.0
-60 5 9 temp=298 isisland  prec=10.0
-61 6 0 temp=298 isisland  prec=1
-62 6 1 temp=297 isisland  prec=2.0
-63 6 2 temp=296 isisland  prec=3.0
-64 6 3 temp=295 isisland  prec=4.0
-65 6 4 temp=295 isisland  prec=5.0
-66 6 5 temp=295 isisland  prec=6.0
-67 6 6 temp=295 isisland  prec=7.0
-68 6 7 temp=296 isisland  prec=8.0
-69 6 8 temp=297 isisland  prec=9.0
-70 6 9 temp=298 isisland  prec=10.0
-71 7 0 temp=298 isisland  prec=1
-72 7 1 temp=297 isisland  prec=2.0
-73 7 2 temp=296 isisland  prec=3.0
-74 7 3 temp=296 isisland  prec=4.0
-75 7 4 temp=296 isisland  prec=5.0
-76 7 5 temp=296 isisland  prec=6.0
-77 7 6 temp=296 isisland  prec=7.0
-78 7 7 temp=296 isisland  prec=8.0
-79 7 8 temp=297 isisland  prec=9.0
-80 7 9 temp=298 isisland  prec=10.0
-81 8 0 temp=298 isisland  prec=1
-82 8 1 temp=297 isisland  prec=2.0
-83 8 2 temp=297 isisland  prec=3.0
-84 8 3 temp=297 isisland  prec=4.0
-85 8 4 temp=297 isisland  prec=5.0
-86 8 5 temp=297 isisland  prec=6.0
-87 8 6 temp=297 isisland  prec=7.0
-88 8 7 temp=297 isisland  prec=8.0
-89 8 8 temp=297 isisland  prec=9.0
-90 8 9 temp=298 isisland  prec=10.0
-91 9 0 temp=298 isisland  prec=1
-92 9 1 temp=298 isisland  prec=2.0
-93 9 2 temp=298 isisland  prec=3.0
-94 9 3 temp=298 isisland  prec=4.0
-95 9 4 temp=298 isisland  prec=5.0
-96 9 5 temp=298 isisland  prec=6.0
-97 9 6 temp=298 isisland  prec=7.0
-98 9 7 temp=298 isisland  prec=8.0
-99 9 8 temp=298 isisland  prec=9.0
-100 9 9 temp=298 isisland  prec=10.0
-999	-100	-10	initpop		temp=303	prec=5 # mainland species source pool
-1000	-100	-9	initpop		temp=303	prec=5 # mainland species source pool
-1001	-100	-8	initpop		temp=303	prec=5 # mainland species source pool
-1002	-100	-7	initpop		temp=303	prec=5 # mainland species source pool
-1003	-100	-6	initpop		temp=303	prec=5 # mainland species source pool
-1004	-100	-5	initpop		temp=303	prec=5 # mainland species source pool
-1005	-100	-4	initpop		temp=303	prec=5 # mainland species source pool
-1006	-100	-3	initpop		temp=303	prec=5 # mainland species source pool
-1007	-100	-2	initpop		temp=303	prec=5 # mainland species source pool
-1008	-100	-1	initpop		temp=303	prec=5 # mainland species source pool
-1009	-100	0	initpop		temp=303	prec=5 # mainland species source pool
-1010	-100	1	initpop		temp=303	prec=5 # mainland species source pool
-1011	-100	2	initpop		temp=303	prec=5 # mainland species source pool
-1012	-100	3	initpop		temp=303	prec=5 # mainland species source pool
-1013	-100	4	initpop		temp=303	prec=5 # mainland species source pool
-1014	-100	5	initpop		temp=303	prec=5 # mainland species source pool
-1015	-100	6	initpop		temp=303	prec=5 # mainland species source pool
-1016	-100	7	initpop		temp=303	prec=5 # mainland species source pool
-1017	-100	8	initpop		temp=303	prec=5 # mainland species source pool
-1018	-100	9	initpop		temp=303	prec=5 # mainland species source pool
-1019	-100	10	initpop		temp=303	prec=5 # mainland species source pool
-1020	-100	11	initpop		temp=303	prec=5 # mainland species source pool
-1021	-100	12	initpop		temp=303	prec=5 # mainland species source pool
-1022	-100	13	initpop		temp=303	prec=5 # mainland species source pool
-1023	-100	14	initpop		temp=303	prec=5 # mainland species source pool
-1024	-100	15	initpop		temp=303	prec=5 # mainland species source pool
-1025	-100	16	initpop		temp=303	prec=5 # mainland species source pool
-1026	-100	17	initpop		temp=303	prec=5 # mainland species source pool
-1027	-100	28	initpop		temp=303	prec=5 # mainland species source pool
-1028	-100	29	initpop		temp=303	prec=5 # mainland species source pool
-1029	-100	30	initpop		temp=303	prec=5 # mainland species source pool
+# island :
+1 0 0 temp=298 prec=1 isisland 
+2 0 1 temp=298 prec=2 isisland 
+3 0 2 temp=298 prec=3 isisland 
+4 0 3 temp=298 prec=4 isisland 
+5 0 4 temp=298 prec=5 isisland 
+6 0 5 temp=298 prec=6 isisland 
+7 0 6 temp=298 prec=7 isisland 
+8 0 7 temp=298 prec=8 isisland 
+9 0 8 temp=298 prec=9 isisland 
+10 1 0 temp=298 prec=1 isisland 
+11 1 1 temp=297 prec=2 isisland 
+12 1 2 temp=297 prec=3 isisland 
+13 1 3 temp=297 prec=4 isisland 
+14 1 4 temp=297 prec=5 isisland 
+15 1 5 temp=297 prec=6 isisland 
+16 1 6 temp=297 prec=7 isisland 
+17 1 7 temp=297 prec=8 isisland 
+18 1 8 temp=298 prec=9 isisland 
+19 2 0 temp=298 prec=1 isisland 
+20 2 1 temp=297 prec=2 isisland 
+21 2 2 temp=296 prec=3 isisland 
+22 2 3 temp=296 prec=4 isisland 
+23 2 4 temp=296 prec=5 isisland 
+24 2 5 temp=296 prec=6 isisland 
+25 2 6 temp=296 prec=7 isisland 
+26 2 7 temp=297 prec=8 isisland 
+27 2 8 temp=298 prec=9 isisland 
+28 3 0 temp=298 prec=1 isisland 
+29 3 1 temp=297 prec=2 isisland 
+30 3 2 temp=296 prec=3 isisland 
+31 3 3 temp=295 prec=4 isisland 
+32 3 4 temp=295 prec=5 isisland 
+33 3 5 temp=295 prec=6 isisland 
+34 3 6 temp=296 prec=7 isisland 
+35 3 7 temp=297 prec=8 isisland 
+36 3 8 temp=298 prec=9 isisland 
+37 4 0 temp=298 prec=1 isisland 
+38 4 1 temp=297 prec=2 isisland 
+39 4 2 temp=296 prec=3 isisland 
+40 4 3 temp=295 prec=4 isisland 
+41 4 4 temp=294 prec=5 isisland 
+42 4 5 temp=295 prec=6 isisland 
+43 4 6 temp=296 prec=7 isisland 
+44 4 7 temp=297 prec=8 isisland 
+45 4 8 temp=298 prec=9 isisland 
+46 5 0 temp=298 prec=1 isisland 
+47 5 1 temp=297 prec=2 isisland 
+48 5 2 temp=296 prec=3 isisland 
+49 5 3 temp=295 prec=4 isisland 
+50 5 4 temp=295 prec=5 isisland 
+51 5 5 temp=295 prec=6 isisland 
+52 5 6 temp=296 prec=7 isisland 
+53 5 7 temp=297 prec=8 isisland 
+54 5 8 temp=298 prec=9 isisland 
+55 6 0 temp=298 prec=1 isisland 
+56 6 1 temp=297 prec=2 isisland 
+57 6 2 temp=296 prec=3 isisland 
+58 6 3 temp=296 prec=4 isisland 
+59 6 4 temp=296 prec=5 isisland 
+60 6 5 temp=296 prec=6 isisland 
+61 6 6 temp=296 prec=7 isisland 
+62 6 7 temp=297 prec=8 isisland 
+63 6 8 temp=298 prec=9 isisland 
+64 7 0 temp=298 prec=1 isisland 
+65 7 1 temp=297 prec=2 isisland 
+66 7 2 temp=297 prec=3 isisland 
+67 7 3 temp=297 prec=4 isisland 
+68 7 4 temp=297 prec=5 isisland 
+69 7 5 temp=297 prec=6 isisland 
+70 7 6 temp=297 prec=7 isisland 
+71 7 7 temp=297 prec=8 isisland 
+72 7 8 temp=298 prec=9 isisland 
+73 8 0 temp=298 prec=1 isisland 
+74 8 1 temp=298 prec=2 isisland 
+75 8 2 temp=298 prec=3 isisland 
+76 8 3 temp=298 prec=4 isisland 
+77 8 4 temp=298 prec=5 isisland 
+78 8 5 temp=298 prec=6 isisland 
+79 8 6 temp=298 prec=7 isisland 
+80 8 7 temp=298 prec=8 isisland 
+81 8 8 temp=298 prec=9 isisland 
+
+# continent :
+1000 108 4 temp=303 prec=0 initpot
+
