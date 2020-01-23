@@ -1,0 +1,502 @@
+* Analyses scripts for island diversification experiments
+
+** prepare data files
+
+*** filter compatibility sequences
+    two methods of sorting sequences according to header information: awk and sed
+    sed feels faster
+
+ #+BEGIN_SRC sh 
+ ## awk "/compat/{print;getline;print}" 2019-07-02_islsimconfig_7/seqs_s7.fa > 2019-07-02_islsimconfig_7/compats.fa
+ for i in ../../2019-12-06_islsim_*/seqs_s[0-9].fa ; do sed -n "/compat/{N;p}" $i > ${i%.fa}_compats.fa done
+							
+ for i in ../../2019-10-29_islsim_*/seqs_s[0-9][0-9].fa ; do sed -n "/compat/{N;p}" $i > ${i%.fa}_compats.fa done
+#+END_SRC
+
+ #+RESULTS:
+
+ make sequences unique
+
+#+BEGIN_SRC sh
+ for i in ../../2019-06-28_islsim_*/*compats.fa ; do
+     sed -e '/^>/s/$/@/' -e 's/^>/#/' $i |\
+	 tr -d '\n' | tr "#" "\n" | tr "@" "\t" |\
+	 sort -u -f -k 2  |\
+	 sed -e 's/^/>/' -e 's/\t/\n/' |\
+	 grep -Ev '^\s*$|^>\s*$' > ${i%compats.fa}uniq.fa
+ done
+ #+END_SRC
+
+** R analyses
+*** Packages
+
+We use an anaconda environment that provides most of the packages.
+Using environments alleviates common dependency issues.
+
+Some packages are not supplied by anaconda though and we need to install them in our R environment:
+
+ #+BEGIN_SRC R
+   install.packages("dispRity")
+   install.packages("paleotree")
+   install.packages("lmerTest") # TODO: try including this in conda environment!
+ #+END_SRC
+
+ #+RESULTS:
+
+Note that trying to install some of the above packages' dependencies via conda leads to conflicts, while it works directly in R.
+
+Now, we can load the packages.
+
+#+BEGIN_SRC R
+ library(picante) ## provides both library(vegan) and library(ape) ade4?
+ ## library(corrplot)
+ library(cowplot) # arrange ggplots in a grid
+ ## library(cluster)
+ ## library(fpc) # additional cluster analysis functionalities
+ library(factoextra) # additional ordination visualisation
+ library(FactoMineR) # additional ordination methods
+ library(dispRity) # calculates various measures of disparity of e.g. species w/ multivariate trait data CAVEAT: conflicts with paleotree
+## library(matrixStats) # rowSds etc.
+## library(geometry) # for convex hulls etc.
+ library(paleotree)
+ library(foreach)
+ library(doParallel)
+ library(tidyverse)
+ library(lme4)
+ library(lmerTest)
+ theme_set(theme_classic()) ## or theme_linedraw?
+#+END_SRC
+*** set up parallel computing
+#+BEGIN_SRC R
+max_cores <- detectCores() - 1
+registerDoParallel(16)
+#+END_SRC
+*** Custom functions
+
+#+BEGIN_SRC R
+read_indfiles = function(path = "", pattern = "", suffix = "") {
+    indfiles = Sys.glob(paste0(path, pattern, suffix))
+    rawinds = tibble()
+    for (filepath in indfiles) {
+      inds = read_tsv(filepath)
+      inds$replicate = as.numeric(strsplit(strsplit(filepath, ".tsv")[[1]], "_s")[[1]][2])
+      rawinds = bind_rows(rawinds, inds)
+    }
+    rawinds$lineageid = paste(rawinds$lineage, rawinds$id, sep="_")
+    rawinds %>% select(-starts_with("X")) # most likely empty columns due to superfluous separators
+}
+
+read_seqfiles = function(path = "", pattern = "", suffix = "") { ## path, pattern and suffix might be combined
+    seqfiles = Sys.glob(paste0(path, pattern, suffix))
+    for (filepath in seqfiles) {
+        if (which(seqfiles == filepath) == 1) {
+            seqs = read.dna(file = filepath, format="fasta")
+        } else {
+            newseq = read.dna(file=filepath, format="fasta")
+            if (length(newseq[1, ]) >= 100) seqs = rbind(seqs, newseq)
+        }
+    }
+    seqs
+}
+
+reducetips = function(seqs, ntips = 10000){ #this reduces tips to a maximum of 10000 to prevent the vector allocation error
+    if(length(seqs[,1]) > ntips){                                                                                                                                                  
+        inds = sample(1:length(seqs[,1]), ntips)                                                                                                                                   
+        seqs = seqs[inds,]
+    }
+    seqs
+}
+
+mkphylos = function(allseqs, rawinds, minimumtips = 3, spboundary = 0.05){
+  seqlins = strsplit(dimnames(allseqs)[[1]], "_") %>% lapply(function(x) x[1]) %>% unlist %>% unique %>% gsub(">", "", .)
+  allphylos = foreach(lineage = seqlins) %dopar% {
+    linseqs = allseqs[grep(lineage, dimnames(allseqs)[[1]]),]
+    dimnames(linseqs)[[1]] = strsplit(dimnames(linseqs)[[1]], "_") %>% lapply(function(x) paste(x[1], x[2], sep = "_")) %>% unlist
+    linseqs = linseqs[!duplicated(dimnames(linseqs)[[1]]),]
+    if (length(linseqs[,1]) >= minimumtips) {
+      linseqs = reducetips(linseqs)
+      dists = dist.dna(linseqs, model = "raw") # raw better fitting than either F81 or JC69
+      tre = hclust(dists, method = "ward.D2")
+      ## medreptol = rawinds %>% filter(lineage==lineage) %>% select(reptol) %>% as_vector %>% median
+      tre$height <- round(tre$height, 6) # work-around 'height' component of 'tree' is not sorted (increasingly) error
+      grps = cutree(tre, h = spboundary) # which height? constant (e.g. 2 base pairs difference) or species-specific?
+      ## how to decide what tips to drop when spanning large time scales?
+      species = drop.tip(as.phylo(tre), names(grps[duplicated(grps)]))
+      times = rawinds %>% filter(lineage==!!lineage) %>% select(time, lineageid) %>%
+        inner_join(tibble(lineageid = names(grps), grps = grps), by = "lineageid") %>% 
+        group_by(grps) %>% summarize(FAD=min(time), LAD=max(time)) %>%
+        inner_join(tibble(lineageid = names(grps), grps = grps), by = "grps")
+      times = times %>% filter(lineageid %in% species$tip.label) %>% as.data.frame
+      rownames(times) = times$lineageid
+      times = times %>% select(-lineageid, -grps)
+      if (nrow(times) >= minimumtips) {
+                                        #times = times[times$FAD!=max(times$FAD),] # do not use the very last time step - simu could have crashed
+        extantseqs = linseqs[dimnames(linseqs)[[1]] %in% rawinds$lineageid[rawinds$lineage==lineage & rawinds$time==max(times$FAD)],] #FIXME! ?
+        extant = NULL
+        if (length(extantseqs[,1]) >= 2) {
+          extantdists = dist.dna(extantseqs, model = "raw")
+          extanttre = hclust(extantdists, method = "ward.D2")
+          extanttre$height <- round(extanttre$height, 6)
+          extantgrps = cutree(extanttre, h = spboundary)
+          extant = drop.tip(as.phylo(extanttre), names(extantgrps[duplicated(extantgrps)]))
+        }
+        times = abs(times - 1000000) # fixed subtraction for comparability
+        timed = timePaleoPhy(species, times, vartime=499, type="basic") ## default is "basic". "mbl" increases zero-length branches.
+        list(tree=tre, species=species, timed=timed, extant=extant)
+      }
+    }
+  }
+  names(allphylos) = seqlins
+  allphylos[!sapply(allphylos, is.null)]
+}
+
+gettimedspp = function(phylos, inds) {
+  timeddiv = foreach(i = 1:length(phylos)) %dopar% {
+    steplength = inds %>% filter(lineage == names(phylos[1])) %>% select(time) %>% unlist %>% sort %>% unique %>% diff %>% min
+    as_tibble(phyloDiv(phylos[[i]]$timed, int.length = steplength, plot = FALSE))
+  }
+  names(timeddiv) = names(phylos)
+  timeddiv
+}
+
+plot_phylos = function(allphylos, rawinds, basename = "all_timed_trees", minimumtips = 5, spboundary = 0.05){
+    pdf(paste0(basename, minimumtips, "mintips", "-", spboundary, "spbnd", ".pdf"))
+    for(i in 1:length(allphylos)) {
+      phyloDiv(allphylos[[i]]$timed)
+      linkage = rawinds %>% filter(lineage == names(allphylos[i])) %>% select(lnkgunits, ngenes) %>% unique %>%
+        mutate(linkage = ngenes/lnkgunits) %>% select(linkage)
+      title(main=paste(names(allphylos[i]), linkage[1]))
+      if (!is.null(allphylos[[i]]$extant)) plot(allphylos[[i]]$extant)
+    }
+    dev.off()
+}
+
+gettimemaxspp = function(timedspp, inds, filtermonospp = TRUE) {
+  timemaxspp = tibble(
+    lineage = names(timedspp),
+    maxspp = sapply(timedspp, function(x) max(x$int.div)),
+    timetomaxspp = sapply(timedspp, function(x) x$int.start[which.max(x$int.div)] - min(x$int.start)),
+    )
+  timemaxspp = inds %>% group_by(lineage) %>% select_if(is.numeric) %>% summarize_all(mean) %>%
+    select(lineage, lnkgunits, ngenes) %>% mutate(linkage = ngenes / lnkgunits) %>%
+    left_join(timemaxspp, by = "lineage")
+  if (filtermonospp == TRUE) {
+    timemaxspp %>% filter(maxspp > 1)
+  } else {
+    timemaxspp
+  }
+}
+
+#+END_SRC
+
+*** aggregate data
+
+**** Using custom functions and parallelisation
+
+#+BEGIN_SRC R
+setwd("/gaia5/storage/ecomod/ludwig/hpc/islspecmod/examples/islandradiation/")
+
+full.inds = read_indfiles(path = "../../2019-10-29_islsim_", pattern = "full*/inds*", suffix = ".tsv")
+none.inds = read_indfiles("../../2019-10-29_islsim_", "none*/inds*", ".tsv")
+full.seqs = read_seqfiles(path = "../../2019-10-29_islsim_", pattern = "full*/", suffix = "*compats.fa")
+none.seqs = read_seqfiles("../../2019-10-29_islsim_", "none*/", "*compats.fa")
+rand.inds = read_indfiles("../../2019-12-19_islsimconfig", "*/inds*", ".tsv") # CAVEAT: different run!
+rand.seqs = read_seqfiles("../../2019-12-19_islsimconfig", "*/", "*.fa") #"../../2019-12-06_islsimconfig", "*/", "*compats.fa") # CAVEAT: different run!
+
+full.phylos = mkphylos(full.seqs, full.inds)
+none.phylos = mkphylos(none.seqs, none.inds)
+
+full.timedspp = gettimedspp(full.phylos, full.inds)
+none.timedspp = gettimedspp(none.phylos, none.inds)
+
+rand.phylos = mkphylos(rand.seqs, rand.inds)
+rand.timedspp = gettimedspp(rand.phylos, rand.inds)
+
+full.maxspp = full.inds %>% group_by(lineage, lnkgunits) %>% filter(time == min(time)) %>% select(-(time:originid)) %>%
+  select(-new, -contains("adaptation"), -ngenes, -compat) %>% select_if(is.numeric) %>%
+  summarize_all(mean) %>% right_join(gettimemaxspp(full.timedspp, full.inds), by = c("lineage", "lnkgunits")) %>%
+  ungroup
+none.maxspp = none.inds %>% group_by(lineage, lnkgunits) %>% filter(time == min(time)) %>% select(-(time:originid)) %>%
+  select(-new, -contains("adaptation"), -ngenes, -compat) %>% select_if(is.numeric) %>%
+  summarize_all(mean) %>% right_join(gettimemaxspp(none.timedspp, none.inds), by = c("lineage", "lnkgunits"))
+rand.maxspp = rand.inds %>% group_by(lineage, lnkgunits) %>% filter(time == min(time)) %>% select(-(time:originid)) %>%
+  select(-new, -contains("adaptation"), -ngenes, -compat) %>% select_if(is.numeric) %>%
+  summarize_all(mean) %>% right_join(gettimemaxspp(rand.timedspp, rand.inds), by = c("lineage", "lnkgunits"))
+
+rand.maxspp %>% ungroup %>% select(maxspp, timetomaxspp, dispmean, dispshape, precopt, prectol,
+                                   repsize, reptol, linkage, selfing, seedsize, tempopt, temptol,
+                                   ngenes) %>% mutate_all(function(x) log(x+1)) %>% as.list %>%
+                              lapply(shapiro.test)
+
+#cor(bind_rows(full.maxspp[, -1], none.maxspp[, -1]))
+#cor(rand.maxspp[, -1])
+
+#pdf("corgenspp.pdf", width = 20, height = 20)
+#pairs(bind_rows(full.maxspp[, -1], none.maxspp[, -1]))
+#pairs(rand.maxspp[, -1])
+#dev.off()
+
+## lmem not usable because each lineage exclusive to the scenarios
+
+summary(lm(maxspp ~ timetomaxspp + dispmean + dispshape + precopt + prectol + repsize + reptol + linkage +
+             selfing + seedsize + tempopt + temptol + ngenes, data = bind_rows(rand.maxspp, none.maxspp, full.maxspp
+                                                                                           ) %>% ungroup %>% mutate(lineage = as.factor(lineage))))
+summary(lm(timetomaxspp ~ maxspp + dispmean + dispshape + precopt + prectol + repsize + reptol + linkage +
+             selfing + seedsize + tempopt + temptol + ngenes, data = bind_rows(rand.maxspp, none.maxspp, full.maxspp
+                                                                                           )))
+summary(lm(maxspp ~ timetomaxspp + linkage + ngenes, data = bind_rows(rand.maxspp, none.maxspp, full.maxspp)))
+summary(lm(timetomaxspp ~ maxspp + linkage + ngenes, data = bind_rows(rand.maxspp, none.maxspp, full.maxspp)))
+
+bind_rows(rand.maxspp#, none.maxspp, full.maxspp
+          ) %>%
+    gather(ngenes, linkage, key = GeneticTrait, value = Value) %>%
+    gather(maxspp, timetomaxspp, key = Metric, value = Response) %>%
+    ggplot(aes(Value, Response)) + geom_point() +
+    facet_grid(Metric ~ GeneticTrait, scales = "free")
+ggsave("plot.pdf", height=5, width=6)
+
+plot_phylos(full.phylos, full.inds, "full_timed_trees")
+plot_phylos(none.phylos, none.inds, "none_timed_trees")
+plot_phylos(rand.phylos, rand.inds, "rand_timed_trees")
+
+#+END_SRC
+
+**** Older code
+
+#+BEGIN_SRC R
+confs = c("islsim_fullconf", "islsim_noneconf", "islsim_config")
+
+allfiles = Sys.glob("../../2019-10-29_islsim*/pops*tsv")
+
+rawresults = tibble()
+for (filepath in allfiles) {
+    rawresults = bind_rows(rawresults, read_tsv(filepath))
+}
+
+repstable = rawresults %>% filter(time>=20000) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
+triplereps = which(rowSums(repstable) == 3) %>% names %>% as.numeric
+pops = rawresults %>% filter(replicate %in% triplereps)
+
+repstable = rawresults %>% filter(time>=50000, conf!="examples/islandradiation/islsim.config") %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
+doublereps = which(rowSums(repstable) == 2) %>% names %>% as.numeric
+pops = rawresults %>% filter(replicate %in% doublereps)
+
+pops = pops %>% filter(time%%1000==0, time <= 100000, conf!="examples/islandradiation/islsim.config") %>%
+    select(-area, -contains("compat"), -contains("adaptation")) %>%
+    mutate(linkage_degree=ngenesmean/nlnkgunitsmean) %>%
+    select(-contains("lnkgunits")) %>%
+    na.omit()
+
+## get lineages with abundances >= 1000:
+lin1000 = which(table(rawinds$lineage)>=1000) %>% names
+inds = rawinds %>% select(-X31) %>% filter(lineage %in% lin1000)
+extlin = inds %>% filter(time==120000) %>% select(lineage) %>% unique %>% unlist %>% as.character
+rawresults %>% filter(time==120000, lineage %in% extlin) %>% select(conf, replicate) %>% unique
+
+uniqinds = strsplit(dimnames(allseqs)[[1]], "_") %>% lapply(function(x) x[2]) %>% unlist %>% duplicated
+allindids = strsplit(dimnames(allseqs)[[1]], "_") %>% lapply(function(x) x[2]) %>% unlist %>% as.numeric
+linids = strsplit(dimnames(allseqs)[[1]], "_") %>% lapply(function(x) paste(x[1:2], collapse="_")) %>% unlist
+allseqs = allseqs[!uniqinds,]
+
+
+pdf("../timedphylo.pdf")
+phyloDiv(allphylos$`0heK3m`$timed)
+dev.off()
+
+##TODO: number of tips at respective last time bin
+phylostats = tibble()
+for(i in 1:length(allphylos)){
+    diversity = phyloDiv(allphylos[[i]]$timed, plot=FALSE) %>% as.tibble
+    timerange = max(diversity$int.start) - min(diversity$int.end)
+    extantspp = max(diversity$int.div[diversity$int.end == min(diversity$int.end)])
+    linkage = rawinds %>% filter(lineage == names(allphylos[i])) %>% select(lnkgunits, ngenes) %>%
+        mutate(linkage = ngenes/lnkgunits) %>% select(linkage)
+    linkage = linkage[1,1] %>% unlist
+    size = rawinds %>% filter(lineage == names(allphylos[i])) %>% select(reptol) %>%
+        unlist %>% mean
+    ngenes = rawinds %>% filter(lineage == names(allphylos[i])) %>% select(ngenes)
+    ngenes = ngenes[1,1] %>% unlist
+    allphylos[[i]] = c(allphylos[[i]], list(diversity=diversity)) # FIX
+    phylostats = bind_rows(phylostats, tibble(lineage = names(allphylos[i]),
+                                              maxdiv = max(diversity$int.div),
+                                              sddiv = sd(diversity$int.div),
+                                              meandiv = max(diversity$int.div),
+                                              ngenes = ngenes,
+                                              linkage = linkage,
+                                              timerange = timerange,
+                                              extantspp = extantspp,
+                                              size = size
+                                              ))
+}
+phylostats = write_tsv(phylostats, path = paste0("phylostats", minimumtips, "-", spboundary, ".tsv"))
+
+phylostats = read_tsv("phylostats.tsv")
+
+lnksp = phylostats %>% ggplot(aes(linkage, maxdiv, color = size)) + geom_point(size=5) + scale_color_viridis_c(trans="log10") + theme_classic(base_size=24) + labs(color = "Body size") + xlab("Genetic linkage") + ylab("Maximum number of evolving species")
+ggsave(filename="../linkagespecies.pdf", lnksp, width=16, height=8)
+
+phyloDiv(allphylos$I2EMMY$timed)
+#plot(allphylos$`3D2rd7`$extant)
+
+sum(allindids %in% extinds)
+inds %>% filter(id %in% allindids) %>% select(time) %>% table
+inds %>% filter(time==79100) %>% select(lineage) %>% table %>% which.max %>% names
+extinds = inds %>% filter(time==79100, lineage=="k9yBad") %>% select(id) %>% unlist %>% as.numeric
+extlinids = inds %>% filter(time==79100, lineage=="k9yBad") %>% select(lineage, id) %>% mutate(linid=paste(lineage, id, sep="_")) %>% select(linid) %>% c()
+extseqs = allseqs[linids %in% extlinids[[1]],]
+
+##get most abundant lineages:
+full7.abulin = strsplit(dimnames(full7.allseqs)[[1]], "_") %>% lapply(function(x) x[1]) %>% unlist %>% table %>% which.max %>% names
+seqs = full7.allseqs[grep(full7.abulin, dimnames(full7.allseqs)[[1]]),]
+
+extdists = dist.dna(extseqs, model = "F81")
+exttre = hclust(extdists, method = "ward.D2")
+
+medreptol = rawresults %>% filter(lineage=="k9yBad") %>% select(reptolmean) %>% as_vector %>% median
+medreptol=0.05
+grps = cutree(tre, h = medreptol)
+table(grps)
+plot(as.phylo(tre), show.tip.label=F)
+
+#+END_SRC
+*** Phylogenetic analyses
+
+**** identify abundant lineages on islands
+ #+BEGIN_SRC R
+abundantlins = rawresults %>% filter(conf=="examples/islandradiation/islsim.config") %>% group_by(lineage, time, replicate) %>% summarize_at(vars(adults), sum) %>%
+    filter(adults > 1) %>% ungroup() %>% select(lineage) %>% unique %>% unlist
+ #+END_SRC
+
+**** ...and filter those from population and individual data
+#+BEGIN_SRC R
+abundantlins.pop = rawresults %>% filter(lineage %in% abundantlins)
+abundantlins.inds = rawinds %>% filter(lineage %in% abundantlins)
+#+END_SRC
+
+**** filter sequences
+
+*** Algorithm for creating phylogenies
+
+#+BEGIN_SRC R
+
+getphylo = function(individual_data, sequences){
+    times = sort(unique(individual_data$time), decreasing = TRUE) # do this forward or backwards?
+    lineages = unique(individual_data$lineage)
+    for (time in times){
+        lineages = unique(individual_data$lineage)
+        for (lineage in lineages){
+            ids = individual_data %>% filter(time == time, lineage == lineage) %>% select(id) # TODO select more info to get unique individuals specific to scenario and replicate
+            distances = dist.dna(sequences)
+            tree = hclust(distances)
+            species = cutree()
+        
+    }
+    phylo
+}
+
+
+#+END_SRC
+*** single results
+**** Loading and sorting data
+
+***** Population data
+
+   #+BEGIN_SRC R
+   allfiles = Sys.glob("../../2019-07-25_islsim*/pops*tsv") # 02
+
+   rawresults = tibble()
+   for (filepath in allfiles) {
+       rawresults = bind_rows(rawresults, read_tsv(filepath))
+   }
+
+   repstable = rawresults %>% filter(time>=20000) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
+   triplereps = which(rowSums(repstable) == 3) %>% names %>% as.numeric
+   pops = rawresults %>% filter(replicate %in% triplereps)
+
+   repstable = rawresults %>% filter(time>=50000, conf!="examples/islandradiation/islsim.config") %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
+   doublereps = which(rowSums(repstable) == 2) %>% names %>% as.numeric
+   pops = rawresults %>% filter(replicate %in% doublereps)
+
+   pops = pops %>% filter(time%%1000==0, time <= 100000, conf!="examples/islandradiation/islsim.config") %>%
+       select(-area, -contains("compat"), -contains("adaptation")) %>%
+       mutate(linkage_degree=ngenesmean/nlnkgunitsmean) %>%
+       select(-contains("lnkgunits")) %>%
+       na.omit()
+
+   write_csv(pops, "pops1000t.csv")
+   #+END_SRC
+
+***** Individual data
+
+ #+BEGIN_SRC R
+   indfiles = Sys.glob("../../2019-07-25_islsim*/inds*tsv")
+   #indfiles = unique(grep(paste(paste0("s", doublereps), collapse="|"), indfiles, value=TRUE))
+   #indfiles = unique(grep(paste(c("full", "none"), collapse="|"), indfiles, value=TRUE))
+   rawinds = tibble()
+   for (filepath in indfiles) {
+       rawinds = bind_rows(rawinds, read_tsv(filepath))
+   }
+   rawinds$lineageid = paste(rawinds$lineage, rawinds$id, sep="_")
+   rawinds = rawinds %>% select(-starts_with("X"))
+
+   ## get lineages with abundances >= 1000:
+   lin1000 = which(table(rawinds$lineage)>=1000) %>% names
+   inds = rawinds %>% select(-starts_with("X")) %>% filter(lineage %in% lin1000)
+   
+   extinds = inds %>% filter(time==120000) %>% select(id) %>% unlist %>% as.numeric
+   extlin = inds %>% filter(time==120000) %>% select(lineage) %>% unique %>% unlist %>% as.character
+   rawresults %>% filter(time==120000, lineage %in% extlin) %>% select(conf, replicate) %>% unique
+   sum(full7.indids %in% extinds)
+ #+END_SRC
+
+***** Sequences
+
+   #+BEGIN_SRC R
+   full7.allseqs = read.dna(file="../../2019-07-02_islsim_fullconf_7/compatsuniq.fa", format="fasta")
+   full7.uniqinds = strsplit(dimnames(full7.allseqs)[[1]], "_") %>% lapply(function(x) x[2]) %>% unlist %>% duplicated
+   full7.indids = strsplit(dimnames(full7.allseqs)[[1]], "_") %>% lapply(function(x) x[2]) %>% unlist %>% as.numeric
+   full7.seqs = full7.allseqs[!full7.uniqinds,]
+   ##get most abundant lineage:
+   full7.abulin = strsplit(dimnames(full7.allseqs)[[1]], "_") %>% lapply(function(x) x[1]) %>% unlist %>% table %>% which.max %>% names
+   seqs = full7.allseqs[grep(full7.abulin, dimnames(full7.allseqs)[[1]]),]
+   ##only unique individuals:
+   uniqinds = strsplit(dimnames(seqs)[[1]], "_") %>% lapply(function(x) x[2]) %>% unlist %>% duplicated
+   indids = strsplit(dimnames(seqs)[[1]], "_") %>% lapply(function(x) x[2]) %>% unlist %>% as.numeric
+   seqs = seqs[!uniqinds,]
+   if(length(dimnames(seqs)[[1]]) > 40000){
+       inds = sample(1:length(dimnames(seqs)[[1]]), 40000)
+       ##    world = world[inds,]
+       seqs = seqs[inds,]
+   }
+   dists = dist.dna(seqs, model = "F81")
+   tre = hclust(dists, method = "ward.D2")
+   tre$height <- round(tre$height, 6) # work-around 'height' component of 'tree' is not sorted (increasingly) error
+   medreptol = rawresults %>% filter(lineage==full7.abulin) %>% select(reptolmean) %>% as_vector %>% mean
+   medreptol = 0.02
+   grps = cutree(tre, h = medreptol)
+   table(grps)
+   plot(as.phylo(tre), show.tip.label=F)
+   #+END_SRC
+
+***** integrate data
+
+  #+BEGIN_SRC R
+  inds %>% filter(id %in% indids) %>% group_by(id) %>% filter(time == max(time)) %>% right_join(bind_cols(grp = grps, id = indids), by = "id") %>%
+      ggplot(aes(time, grps, group=grps)) + geom_point() + geom_line()
+
+  inds %>% filter(id %in% indids) %>% group_by(id) %>% filter(time == max(time)) %>% right_join(bind_cols(grp = grps, id = indids), by = "id") %>%
+      ggplot(aes(x=time)) + geom_density()
+  #+END_SRC
+
+**** paleotree
+
+ #+BEGIN_SRC R
+ timeData = bind_cols(FAD = abs(max(inds$time) - inds$time) + 1,
+                      LAD = abs(max(inds$time) - inds$time),
+                      id = inds$id)
+ timeData = timeData %>% right_join(bind_cols(tips=names(grps), id = indids), by = "id") %>% group_by(id) %>% filter(LAD == min(LAD))
+ rownames(timeData) = timeData$tips
+ timephylo = timePaleoPhy(as.phylo(tre), timeData)#, type = "equal", vartime = 10)
+ phyloDiv(timephylo)
+ #+END_SRC
+
