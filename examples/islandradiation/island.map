@@ -85,5 +85,5 @@
 81 8 8 temp=298 prec=9 isisland 
 
 # continent :
-1000 108 4 temp=303 prec=0 initpot
+1000 108 4 temp=298 prec=5 initpop
 
