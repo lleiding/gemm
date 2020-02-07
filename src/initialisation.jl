@@ -30,13 +30,13 @@ function createpop(settings::Dict{String, Any})
     ngenes = rand(1:settings["maxloci"]) * length(settings["traitnames"])
     ngenes < 1 && (ngenes = 1)
     genes = creategenes(ngenes, traits, settings)
-    randchrms = rand(1:length(genes))
     if settings["linkage"] == "none"
         nchrms = length(genes)
     elseif settings["linkage"] == "full"
         nchrms = 1
     else
-        nchrms = randchrms
+        linkage = rand(1:length(genes))
+        nchrms = Integer(round(ngenes/linkage))
     end
     chromosomes = createchrms(nchrms, genes)
     locivar = rand()
