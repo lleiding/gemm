@@ -265,7 +265,7 @@ Print a list of property names to the given IO stream. This is a helper function
 for `printpopstats`.
 """
 function printpopheader(io::IO)
-    print(io, "time\t", "x\t", "y\t", "temp\t", "prec\t", "area\t", "isisland")
+    print(io, "time", "\tx", "\ty", "\ttemp", "\tprec", "\tarea", "\tisisland")
     print(io, "\tlineage", "\tjuveniles", "\tadults", "\tmaxsize", "\ttempadaptionmed", "\tprecadaptionmed")
     traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd", 
                    "ngenes", "nlnkgunits", "precopt", "precoptsd", "prectol", "prectolsd",
@@ -301,7 +301,7 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
             popidxs = findall(i -> i.lineage == lineage, patch.community)
             population = patch.community[popidxs]
             adultidxs = findall(i -> i.size > i.traits["repsize"], patch.community[popidxs])
-            print(io, "\t", population[1].lineage, "\t", length(popidxs) - length(adultidxs), "\t", length(adultidxs), "\t",
+            print(io, "\t", population[1].lineage, "\t", length(popidxs) - length(adultidxs), "\t", length(adultidxs),
                   "\t", maximum(map(i -> i.size, population)), "\t", median(map(i -> i.tempadaption, population)),
                   "\t", median(map(i -> i.precadaption, population)))
             poptraitdict = Dict{String, Array{Float64, 1}}()
