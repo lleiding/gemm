@@ -87,16 +87,16 @@ read_indfiles = function(path = "", pattern = "", suffix = "") {
 }
 
 read_seqfiles = function(path = "", pattern = "", suffix = "") { ## path, pattern and suffix might be combined
-    seqfiles = Sys.glob(paste0(path, pattern, suffix))
-    for (filepath in seqfiles) {
-        if (which(seqfiles == filepath) == 1) {
-            seqs = read.dna(file = filepath, format="fasta")
-        } else {
-            newseq = read.dna(file=filepath, format="fasta")
-            if (length(newseq[1, ]) >= 100) seqs = rbind(seqs, newseq)
-        }
-    }
-    seqs
+  seqfiles = Sys.glob(paste0(path, pattern, suffix))
+  seqs = foreach (filepath = seqfiles, .combine = rbind) %dopar% {
+    ## if (which(seqfiles == filepath) == 1) {
+    ##       seqs = read.dna(file = filepath, format="fasta")
+    ##   } else {
+    newseq = read.dna(file=filepath, format="fasta")
+    ##         if (length(newseq[1, ]) >= 100) seqs = rbind(seqs, newseq)
+    ## }
+  }
+  seqs
 }
 
 reducetips = function(seqs, ntips = 10000){ #this reduces tips to a maximum of 10000 to prevent the vector allocation error
@@ -125,7 +125,7 @@ mkphylos = function(allseqs, rawinds, minimumtips = 3, spboundary = 0.05){
       times = rawinds %>% filter(lineage==!!lineage) %>% select(time, lineageid) %>%
         inner_join(tibble(lineageid = names(grps), grps = grps), by = "lineageid") %>% 
         group_by(grps) %>% summarize(FAD=min(time), LAD=max(time)) %>%
-        inner_join(tibble(lineageid = names(grps), grps = grps), by = "grps")
+        inner_join(tibble(lineageid = names(grps), grps = grps), by = "grps") # tip labels are `lineageid`s, not the species id, i.e. `grp`
       times = times %>% filter(lineageid %in% species$tip.label) %>% as.data.frame
       rownames(times) = times$lineageid
       times = times %>% select(-lineageid, -grps)
@@ -200,49 +200,64 @@ full.inds = read_indfiles(path = "../../2019-10-29_islsim_", pattern = "full*/in
 none.inds = read_indfiles("../../2019-10-29_islsim_", "none*/inds*", ".tsv")
 full.seqs = read_seqfiles(path = "../../2019-10-29_islsim_", pattern = "full*/", suffix = "*compats.fa")
 none.seqs = read_seqfiles("../../2019-10-29_islsim_", "none*/", "*compats.fa")
-rand.inds = read_indfiles("../../2019-12-19_islsimconfig", "*/inds*", ".tsv") # CAVEAT: different run!
-rand.seqs = read_seqfiles("../../2019-12-19_islsimconfig", "*/", "*.fa") #"../../2019-12-06_islsimconfig", "*/", "*compats.fa") # CAVEAT: different run!
+rand.inds = read_indfiles("../../2020-01-27_islsimconfig", "*/inds*", ".tsv") # CAVEAT: different run!
+rand.seqs = read_seqfiles("../../2020-01-27_islsimconfig", "*/", "*.fa") #"../../2019-12-06_islsimconfig", "*/", "*compats.fa") # CAVEAT: different run!
 
-full.phylos = mkphylos(full.seqs, full.inds)
-none.phylos = mkphylos(none.seqs, none.inds)
+#full.phylos = mkphylos(full.seqs, full.inds)
+#none.phylos = mkphylos(none.seqs, none.inds)
 
-full.timedspp = gettimedspp(full.phylos, full.inds)
-none.timedspp = gettimedspp(none.phylos, none.inds)
+#full.timedspp = gettimedspp(full.phylos, full.inds)
+#none.timedspp = gettimedspp(none.phylos, none.inds)
 
 rand.phylos = mkphylos(rand.seqs, rand.inds)
 rand.timedspp = gettimedspp(rand.phylos, rand.inds)
 
-full.maxspp = full.inds %>% group_by(lineage, lnkgunits) %>% filter(time == min(time)) %>% select(-(time:originid)) %>%
-  select(-new, -contains("adaptation"), -ngenes, -compat) %>% select_if(is.numeric) %>%
-  summarize_all(mean) %>% right_join(gettimemaxspp(full.timedspp, full.inds), by = c("lineage", "lnkgunits")) %>%
-  ungroup
-none.maxspp = none.inds %>% group_by(lineage, lnkgunits) %>% filter(time == min(time)) %>% select(-(time:originid)) %>%
-  select(-new, -contains("adaptation"), -ngenes, -compat) %>% select_if(is.numeric) %>%
-  summarize_all(mean) %>% right_join(gettimemaxspp(none.timedspp, none.inds), by = c("lineage", "lnkgunits"))
+#full.maxspp = full.inds %>% group_by(lineage, lnkgunits) %>% filter(time == min(time)) %>% select(-(time:originid)) %>%
+#  select(-new, -contains("adaptation"), -ngenes, -compat) %>% select_if(is.numeric) %>%
+#  summarize_all(mean) %>% right_join(gettimemaxspp(full.timedspp, full.inds), by = c("lineage", "lnkgunits")) %>%
+#  ungroup
+#none.maxspp = none.inds %>% group_by(lineage, lnkgunits) %>% filter(time == min(time)) %>% select(-(time:originid)) %>%
+#  select(-new, -contains("adaptation"), -ngenes, -compat) %>% select_if(is.numeric) %>%
+#  summarize_all(mean) %>% right_join(gettimemaxspp(none.timedspp, none.inds), by = c("lineage", "lnkgunits"))
 rand.maxspp = rand.inds %>% group_by(lineage, lnkgunits) %>% filter(time == min(time)) %>% select(-(time:originid)) %>%
   select(-new, -contains("adaptation"), -ngenes, -compat) %>% select_if(is.numeric) %>%
   summarize_all(mean) %>% right_join(gettimemaxspp(rand.timedspp, rand.inds), by = c("lineage", "lnkgunits"))
+
+
+## some traits increase in normality with log(x+1) transformation
+## TODO: do qqplots for skewness etc. and identify which traits need transformation!
+
+pdf("qqplots.pdf")
+bind_rows(rand.maxspp, none.maxspp, full.maxspp) %>% ungroup %>% select(dispmean, dispshape, precopt, prectol,
+                                   repsize, reptol, linkage, selfing, seedsize, tempopt, temptol,
+                                   ngenes) %>% #mutate_all(function(x) log(x+1)) %>%
+  as.list %>% lapply(qqnorm)
+dev.off()
 
 rand.maxspp %>% ungroup %>% select(maxspp, timetomaxspp, dispmean, dispshape, precopt, prectol,
                                    repsize, reptol, linkage, selfing, seedsize, tempopt, temptol,
                                    ngenes) %>% mutate_all(function(x) log(x+1)) %>% as.list %>%
                               lapply(shapiro.test)
 
-#cor(bind_rows(full.maxspp[, -1], none.maxspp[, -1]))
-#cor(rand.maxspp[, -1])
+rtp = rand.maxspp %>% gather("trait", "value", lnkgunits:linkage) %>% mutate_at(vars(timetomaxspp), log10) %>%
+gather("response", "number", maxspp:timetomaxspp) %>%
+  ggplot(aes(value, number, color = lineage)) + geom_point() + facet_grid(response ~ trait, scales="free") + theme_bw()
+ggsave("pairs_rand_maxspp.pdf", rtp, width = 16, height = 4)
+##cor(bind_rows(full.maxspp[, -1], none.maxspp[, -1]))
+##cor(rand.maxspp[, -1])
 
-#pdf("corgenspp.pdf", width = 20, height = 20)
-#pairs(bind_rows(full.maxspp[, -1], none.maxspp[, -1]))
-#pairs(rand.maxspp[, -1])
-#dev.off()
+##pdf("corgenspp.pdf", width = 20, height = 20)
+##pairs(bind_rows(full.maxspp[, -1], none.maxspp[, -1]))
+##pairs(rand.maxspp[, -1])
+##dev.off()
 
 ## lmem not usable because each lineage exclusive to the scenarios
 
 summary(lm(maxspp ~ timetomaxspp + dispmean + dispshape + precopt + prectol + repsize + reptol + linkage +
-             selfing + seedsize + tempopt + temptol + ngenes, data = bind_rows(rand.maxspp, none.maxspp, full.maxspp
+             selfing + seedsize + tempopt + temptol + ngenes, data = bind_rows(rand.maxspp#, none.maxspp, full.maxspp
                                                                                            ) %>% ungroup %>% mutate(lineage = as.factor(lineage))))
 summary(lm(timetomaxspp ~ maxspp + dispmean + dispshape + precopt + prectol + repsize + reptol + linkage +
-             selfing + seedsize + tempopt + temptol + ngenes, data = bind_rows(rand.maxspp, none.maxspp, full.maxspp
+             selfing + seedsize + tempopt + temptol + ngenes, data = bind_rows(rand.maxspp#, none.maxspp, full.maxspp
                                                                                            )))
 summary(lm(maxspp ~ timetomaxspp + linkage + ngenes, data = bind_rows(rand.maxspp, none.maxspp, full.maxspp)))
 summary(lm(timetomaxspp ~ maxspp + linkage + ngenes, data = bind_rows(rand.maxspp, none.maxspp, full.maxspp)))
