@@ -25,11 +25,12 @@ function runsim(config::String = "", seed::Integer = 0, prerun::Bool = false)
     !prerun && setupdatadir(settings)
     world = Patch[]
     for i in 1:length(settings["maps"])
+        i == 1 ? (timeoffset = 0) : (timeoffset = timesteps)
         timesteps, maptable = readmapfile(settings["maps"][i], settings)
         i == 1 && (world = createworld(maptable, settings))
-        i > 1 && updateworld!(world,maptable, settings)
-        !prerun && writedata(world, settings, 0)
-        simulate!(world, settings, timesteps)
+        i > 1 && updateworld!(world, maptable, settings)
+        !prerun && writedata(world, settings, timeoffset)
+        simulate!(world, settings, timesteps, timeoffset)
     end
     world
 end
