@@ -42,11 +42,11 @@ end
 Wrapper for `runsim()`
 Runs a simulation using configuration file `config`, random seed `seed`
 and other settings provided via commandline, configuration file or the defaults.
-Performs a pre-compilation run first.
+I specified, performs a pre-compilation run first.
 """
-function rungemm(config::String = "", seed::Integer = 0)
+function rungemm(config::String = "", seed::Integer = 0, prerun::Bool = false)
     # compilation run:
-    runsim("", 1, true)
+    prerun && runsim("", 1, true)
     # run intended simulation:
     @time world = runsim(config, seed)
 end
