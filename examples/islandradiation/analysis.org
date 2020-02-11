@@ -140,9 +140,9 @@ mksptree = function(tre, grps){
 }  
 
 mkphylos = function(allseqs, rawinds, minimumtips = 3, spboundary = 0.05){
-  seqlins = strsplit(dimnames(allseqs)[[1]], "_") %>% lapply(function(x) x[1]) %>% unlist %>% unique %>% gsub(">", "", .)
-  allphylos = foreach(lineage = seqlins) %dopar% {
-    linseqs = allseqs[grep(lineage, dimnames(allseqs)[[1]]),]
+  seqlins = strsplit(dimnames(allseqs)[[1]], "_") %>% lapply(function(x) x[1]) %>% unlist #%>% unique %>% gsub(">", "", .)
+  allphylos = foreach(lineage = unique(seqlins)) %dopar% {
+    linseqs = allseqs[seqlins == lineage,]
     dimnames(linseqs)[[1]] = strsplit(dimnames(linseqs)[[1]], "_") %>% lapply(function(x) paste(x[1], x[2], sep = "_")) %>% unlist
     linseqs = linseqs[!duplicated(dimnames(linseqs)[[1]]),]
     if (length(linseqs[,1]) >= minimumtips) {
