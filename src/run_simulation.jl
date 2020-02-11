@@ -24,8 +24,9 @@ function runsim(config::String = "", seed::Integer = 0, prerun::Bool = false)
     Random.seed!(settings["seed"])
     !prerun && setupdatadir(settings)
     world = Patch[]
+    timesteps = 0
     for i in 1:length(settings["maps"])
-        i == 1 ? (timeoffset = 0) : (timeoffset = timesteps)
+        timeoffset = timesteps
         timesteps, maptable = readmapfile(settings["maps"][i], settings)
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world, maptable, settings)
