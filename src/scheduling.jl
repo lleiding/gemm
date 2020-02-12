@@ -9,7 +9,7 @@ the scheduling for all submodels and output functions.
 function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps::Int=1000, timeoffset::Int = 0)
     simlog("Starting simulation.", settings)
     checkviability!(world, settings)
-    for t in (timeoffset + 1):timesteps
+    for t in (timeoffset + 1):(timeoffset + timesteps)
         simlog("UPDATE $t", settings)
         # ecological processes
         establish!(world, settings["nniches"], settings["static"])
