@@ -163,12 +163,12 @@ end
 
 Reinitialise the world from another parsed map file. Works analogously to 
 `createworld`. Intended for use in scenarios where the model world changes
-during a run (e.g. through global warming or island growth).
+during a run (e.g. through global warming or island ontogeny).
 """
 function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, settings::Dict{String, Any})
-    #TODO: add functionality to remove patches!
     cellsize = settings["cellsize"]
     simlog("Updating world...", settings)
+    allids = Int[]
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
                             Each line must contain patch information with at least \n
@@ -177,6 +177,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, 
                             \t - an integer y coordinate, \n
                             separated by a whitespace character (<ID> <x> <y>).")
         id = parse(Int, entry[1])
+        push!(allids, id)
         xcord = parse(Int, entry[2])
         ycord = parse(Int, entry[3])
         # XXX the 'global' here is a hack so that I can use eval() later on
@@ -187,6 +188,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, 
             global newpatch = Patch(id, (xcord, ycord), cellsize)
         else
             marked = false
+            world[idx[1]].location = (xcord, ycord)
             global newpatch = world[idx[1]]
         end
         # parse other parameter options
@@ -218,5 +220,6 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, 
             global newpatch = nothing #clear memory
         end
     end
+    filter!(x -> x.id in allids, world)
     world
 end
