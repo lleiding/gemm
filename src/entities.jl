@@ -54,9 +54,6 @@ mutable struct Individual
     id::Int
 end
 
-Individual(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id) =
-    Individual(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id)
-
 """
 One of the core structs of the model, representing a one-hectare patch of ground.
 """
