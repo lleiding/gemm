@@ -52,11 +52,10 @@ mutable struct Individual
     tempadaptation::Float64 # adaption to temperature
     size::Float64 # body mass
     id::Int
-    originid::Int
 end
 
 Individual(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id) =
-    Individual(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id, id)
+    Individual(lineage, genome, traits, marked, precadaptation, tempadaptation, size, id)
 
 """
 One of the core structs of the model, representing a one-hectare patch of ground.
