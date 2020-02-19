@@ -45,7 +45,7 @@ function defaultSettings()
         "phylconstr" => 0.1, # phylogenetic constraint during mutation and inter-loci variation. scales trait value as sd.
         "popsize" => "metabolic", # initialisation algorithm: metabolic/bodysize/minimal/single
         "precrange" => 10.0, # range from 0 for precipitation optimum
-        "propagule-pressure" => 0, # number of non-native individuals introduced per invasion event
+        "propagule-pressure" => 0.0, # number of non-native individuals introduced per invasion event
         "quiet" => false, # don't write output to screen
         "raw" => true, # record raw data
         "sdprec" => 0.0, # SD of precipitation change per time step

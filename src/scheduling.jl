@@ -20,9 +20,13 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
         if settings["mutate"]
             mutate!(world, settings)
         end
-        if 0 < settings["burn-in"] < t
+        if 0 < settings["burn-in"] <= t
             disturb!(world, settings)
-            invade!(world, settings)
+            if settings["global-species-pool"] != 0
+                invade!(world, settings)
+            else
+                invade!(world, settings["propagule-pressure"])
+            end
         end
         disperse!(world, settings["static"])
         checkviability!(world, settings)

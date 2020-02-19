@@ -655,3 +655,17 @@ function markthem!(world::Array{Patch, 1})
         markthem!(habitat)
     end
 end
+
+"""
+    getspeciespool(world)
+
+Compiles individuals from source cells across the world as one 
+species pool. Source cells are designated by the `static` marker.
+"""
+function getspeciespool(world::Array{Patch, 1})
+    speciespool = Individual[]
+    for patch in world
+        !patch.isisland && append!(speciespool, patch.seedbank)
+    end
+    speciespool
+end

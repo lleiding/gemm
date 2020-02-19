@@ -243,6 +243,7 @@ function disturb!(world::Array{Patch,1}, settings::Dict{String, Any})
     end
 end
 
+# TODO: harmonize invade methods!
 let speciespool = Individual[]
     # TODO: `speciespool` should be part of the `world` object holding all grid cells
     """
@@ -269,6 +270,21 @@ let speciespool = Individual[]
     end
 
     """
+        invade!(patch, pressure)
+
+    Select a given amount of individuals from the global species pool and add
+    them to the patch.
+    """
+    function invade!(patch::Patch, pressure::Float64)
+        if pressure < 1
+            pressure = rand() < pressure ? 1 : 0)
+        else
+            pressure = Integer(round(pressure))
+        end
+        invade!(patch, pressure)
+    end
+
+    """
         invade!(world, settings)
 
     Introduce non-native species from the species pool to all patches marked
@@ -281,6 +297,47 @@ let speciespool = Individual[]
         for patch in world
             patch.invasible && invade!(patch, settings["propagule-pressure"])
         end
+    end
+end
+
+"""
+    invade!(patch, speciespool, pressure)
+
+Select a given amount of individuals from the species pool and add
+them to the patch.
+"""
+function invade!(patch::Patch, speciespool::Array{Individual, 1}, pressure::Int)
+    pressure == 0 && return
+    invaders = deepcopy(rand(speciespool, pressure))
+    append!(patch.community, invaders)
+end
+
+"""
+    invade!(patch, speciespool, pressure)
+
+Select a given amount of individuals from the species pool and add
+them to the patch.
+"""
+function invade!(patch::Patch, speciespool::Array{Individual, 1}, pressure::Float64)
+        if pressure < 1
+            pressure = rand() < pressure ? 1 : 0)
+        else
+            pressure = Integer(round(pressure))
+        end
+        invade!(patch, speciespool, pressure)
+end
+
+"""
+    invade!(world, pressure)
+
+Introduce non-native species from the species pool to all patches marked
+as invasible.
+"""
+function invade!(world::Array{Patch,1}, pressure::Number)
+    pressure == 0 && return
+    speciespool = getspeciespool(world)
+    for patch in world
+        patch.invasible && invade!(patch, speciespool, pressure)
     end
 end
 
