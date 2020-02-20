@@ -269,7 +269,7 @@ function printpopheader(io::IO)
     print(io, "\tlineage", "\tjuveniles", "\tadults", "\ttempadaptationmean", "\tprecadaptationmean")
     traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd", 
                    "ngenes", "nlnkgunits", "precopt", "precoptsd", "prectol", "prectolsd",
-                   "repsize", "repsizesd", "reptol", "reptolsd", "seedsize", "seedsizesd",
+                   "repsize", "repsizesd", "seqsimilarity", "seqsimilaritysd", "seedsize", "seedsizesd",
                    "tempopt", "tempoptsd", "temptol", "temptolsd"]
     for traitname in traitnames
         print(io, "\t", traitname, "mean")
@@ -289,7 +289,7 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
     timestep == 0 && printpopheader(io)
     traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd", 
                    "ngenes", "nlnkgunits", "precopt", "precoptsd", "prectol", "prectolsd",
-                   "repsize", "repsizesd", "reptol", "reptolsd", "seedsize", "seedsizesd",
+                   "repsize", "repsizesd", "seqsimilarity", "seqsimilaritysd", "seedsize", "seedsizesd",
                    "tempopt", "tempoptsd", "temptol", "temptolsd"]
     for patch in world
         lineages = unique(map(i -> i.lineage, patch.community))

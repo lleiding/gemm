@@ -331,7 +331,7 @@ function iscompatible(mate::Individual, ind::Individual, traitnames::Array{Strin
     indgene = getseq(ind.genome, compatidx)
     mategene = getseq(mate.genome, compatidx)
     seqidentity = getseqsimilarity(indgene, mategene)
-    seqidentity >= ind.traits["reptol"]
+    seqidentity >= ind.traits["seqsimilarity"]
 end
 
 """
@@ -485,9 +485,9 @@ function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly.
             push!(traits, Trait(idx, rand() * settings["maxbreadth"]))
         elseif occursin("repsize", traitnames[idx])
             push!(traits, Trait(idx, repsize))
-        elseif occursin("reptol", traitnames[idx]) && settings["fixtol"]
+        elseif occursin("seqsimilarity", traitnames[idx]) && settings["fixtol"]
             push!(traits, Trait(idx, settings["tolerance"]))
-        elseif occursin("reptol", traitnames[idx]) && !settings["fixtol"]
+        elseif occursin("seqsimilarity", traitnames[idx]) && !settings["fixtol"]
             push!(traits, Trait(idx, rand())) # assortative mating might evolve
         elseif occursin("seedsize", traitnames[idx])
             push!(traits, Trait(idx, seedsize))

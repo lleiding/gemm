@@ -61,7 +61,7 @@ function defaultSettings()
                          "precopt",
                          "prectol",
                          "repsize",
-                         "reptol",
+                         "seqsimilarity",
                          "selfing",
                          "seedsize",
                          "tempopt",

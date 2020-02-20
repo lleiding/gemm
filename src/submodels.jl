@@ -11,7 +11,7 @@ function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any}, locivar::
     settings["phylconstr"] * locivar == 0 && return
     for trait in traits
         traitname = settings["traitnames"][trait.nameindex]
-        occursin("reptol", traitname) && settings["fixtol"] && continue
+        occursin("seqsimilarity", traitname) && settings["fixtol"] && continue
         oldvalue = trait.value
         occursin("tempopt", traitname) && (oldvalue -= 273)
         while oldvalue <= 0 # make sure sd of Normal dist != 0
@@ -99,7 +99,7 @@ function checkviability!(community::Array{Individual, 1}, settings::Dict{String,
         community[idx].tempadaptation < 0 && (dead = true) && (reason *= "fitness ")
         community[idx].precadaptation < 0 && (dead = true) && (reason *= "fitness ")
         community[idx].traits["selfing"] > 1 && (dead = true) && (reason *= "selfing ")
-        community[idx].traits["reptol"] > 1 && (dead = true) && (reason *= "reptol ")
+        community[idx].traits["seqsimilarity"] > 1 && (dead = true) && (reason *= "seqsimilarity ")
         !traitsexist(community[idx].traits, settings) && (dead = true) && (reason *= "missingtrait ")
         if dead
             simlog("Individual not viable: $reason. Being killed.", settings, 'w')
