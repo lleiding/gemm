@@ -320,7 +320,7 @@ them to the patch.
 """
 function invade!(patch::Patch, speciespool::Array{Individual, 1}, pressure::Float64)
         if pressure < 1
-            pressure = rand() < pressure ? 1 : 0)
+            pressure = rand() < pressure ? 1 : 0
         else
             pressure = Integer(round(pressure))
         end
