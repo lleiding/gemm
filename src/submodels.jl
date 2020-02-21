@@ -277,7 +277,7 @@ let speciespool = Individual[]
     """
     function invade!(patch::Patch, pressure::Float64)
         if pressure < 1
-            pressure = rand() < pressure ? 1 : 0)
+            pressure = rand() < pressure ? 1 : 0
         else
             pressure = Integer(round(pressure))
         end
