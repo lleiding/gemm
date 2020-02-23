@@ -71,6 +71,7 @@ Now, we can load the packages.
 max_cores <- detectCores() - 1
 registerDoParallel(16)
 #+END_SRC
+
 *** Custom functions
 
 #+BEGIN_SRC R
@@ -141,11 +142,18 @@ mksptree = function(tre, grps){
 
 mkphylos = function(allseqs, rawinds, minimumtips = 3, spboundary = 0.05){
   seqlins = strsplit(dimnames(allseqs)[[1]], "_") %>% lapply(function(x) x[1]) %>% unlist #%>% unique %>% gsub(">", "", .)
-  allphylos = foreach(lineage = unique(seqlins)) %dopar% {
+  colids = rawinds %>% filter(time == 0) %>% select(lineageid) %>% unlist
+  founderlins = rawinds %>% filter(!(lineageid %in% colids)) %>% select(lineage) %>% unique %>% unlist
+  allphylos = foreach(lineage = unique(seqlins[seqlins %in% founderlins])) %dopar% {
     linseqs = allseqs[seqlins == lineage,]
     dimnames(linseqs)[[1]] = strsplit(dimnames(linseqs)[[1]], "_") %>% lapply(function(x) paste(x[1], x[2], sep = "_")) %>% unlist
     linseqs = linseqs[!duplicated(dimnames(linseqs)[[1]]),]
     if (length(linseqs[,1]) >= minimumtips) {
+      if (spboundary == "actual") {
+        spboundary = rawinds %>% filter(time == 0, lineage == !!lineage) %>%
+          select(reptol) %>% min ## colonizing mainland individual able to reintegrate into island population
+        spboundary = 1 - spboundary
+      }
       tre = gettree(linseqs)
       grps = inferspecies(tre, spboundary)
       species = mksptree(tre, grps)
@@ -161,7 +169,7 @@ mkphylos = function(allseqs, rawinds, minimumtips = 3, spboundary = 0.05){
       extanttree = gettree(extantseqs)
       extant = mksptree(extanttree, inferspecies(extanttree, spboundary))
       times = abs(times - 1000000) # fixed subtraction for comparability
-      if (nrow(times) > 1) {
+      if (nrow(times) > 1 & length(species$tip.labels) >= minimumtips) {
         timed = timePaleoPhy(species, times, vartime=499, type="basic") ## default is "basic". "mbl" increases zero-length branches.
       } else {
         timed = times
@@ -169,7 +177,7 @@ mkphylos = function(allseqs, rawinds, minimumtips = 3, spboundary = 0.05){
       list(tree=tre, species=species, timed=timed, extant=extant)
     }
   }
-  names(allphylos) = seqlins
+  names(allphylos) = unique(seqlins[seqlins %in% founderlins])
   allphylos[!sapply(allphylos, is.null)]
 }
 
@@ -186,25 +194,30 @@ gettimedspp = function(phylos, inds) {
   timeddiv
 }
 
-plot_phylos = function(allphylos, rawinds, basename = "all_timed_trees", minimumtips = 5, spboundary = 0.05){
+plot_phylos = function(allphylos, rawinds, basename = "all_timed_trees", minimumtips = 3, spboundary = 0.05){
     pdf(paste0(basename, minimumtips, "mintips", "-", spboundary, "spbnd", ".pdf"))
     for(i in 1:length(allphylos)) {
-      phyloDiv(allphylos[[i]]$timed)
-      linkage = rawinds %>% filter(lineage == names(allphylos[i])) %>% select(lnkgunits, ngenes) %>% unique %>%
-        mutate(linkage = ngenes/lnkgunits) %>% select(linkage)
-      title(main=paste(names(allphylos[i]), linkage[1]))
-      if (!is.null(allphylos[[i]]$extant)) plot(allphylos[[i]]$extant)
+      if (names(phylos[[i]]$timed)[1] != "FAD") {
+        phyloDiv(allphylos[[i]]$timed)
+        linkage = rawinds %>% filter(lineage == names(allphylos[i])) %>% select(lnkgunits, ngenes) %>% unique %>%
+          mutate(linkage = ngenes/lnkgunits) %>% select(linkage)
+        title(main=paste(names(allphylos[i]), linkage[1]))
+        if (!is.null(allphylos[[i]]$extant)) plot(allphylos[[i]]$extant)
+      }
     }
     dev.off()
 }
 
-gettimemaxspp = function(timedspp, inds, filtermonospp = TRUE) {
+gettimemaxspp = function(timedspp, inds, filtermonospp = FALSE) {
   timemaxspp = tibble(
     lineage = names(timedspp),
     maxspp = sapply(timedspp, function(x) max(x$int.div)),
-    timetomaxspp = sapply(timedspp, function(x) x$int.start[which.max(x$int.div)] - min(x$int.start)),
+    timetomaxspp = sapply(timedspp, function(x) ifelse(max(x$int.div) > 1,
+                                                       max(x$int.start) - x$int.start[which.max(x$int.div)], ## Times are reverse: present is 0
+                                                       NA)),
     )
-  timemaxspp = inds %>% group_by(lineage) %>% select_if(is.numeric) %>% summarize_all(mean) %>%
+  timemaxspp = inds %>% filter(lineage %in% names(timedspp)) %>% group_by(lineage) %>%
+    select_if(is.numeric) %>% summarize_all(mean) %>%
     select(lineage, lnkgunits, ngenes) %>% mutate(linkage = ngenes / lnkgunits) %>%
     left_join(timemaxspp, by = "lineage")
   if (filtermonospp == TRUE) {
@@ -214,11 +227,23 @@ gettimemaxspp = function(timedspp, inds, filtermonospp = TRUE) {
   }
 }
 
+getmaxspp = function(inds, timedspp) {
+  colids = inds %>% filter(time == 0) %>% select(lineageid) %>% unlist
+  founderlins = inds %>% filter(!(lineageid %in% colids)) %>% select(lineage) %>% unique %>% unlist
+  maxspp = inds %>% filter(lineage %in% founderlins) %>% group_by(lineage, lnkgunits) %>%
+    filter(time == max(time) | time == min(time)) %>% mutate(Phase = ifelse(time == max(time), "terminal", "initial")) %>% select(-(time:originid)) %>%
+    group_by(lineage, lnkgunits, Phase) %>%  select(-new, -contains("adaptation"), -ngenes, -compat) %>% select_if(is.numeric) %>%
+    summarize_all(mean) %>% right_join(gettimemaxspp(timedspp, inds, FALSE), by = c("lineage", "lnkgunits")) %>%
+    mutate(`Category/phase` = paste(ifelse(maxspp > 1, "diverged", "monospecific"), Phase), diverged = ifelse(maxspp > 1, 1, 0)) %>%
+    ungroup() %>% mutate_at(vars(repsize, seedsize), function(x) log(x + 1))
+  maxspp
+}
+
 #+END_SRC
 
 *** aggregate data
 
-**** Using custom functions and parallelisation
+**** Using custom functions and parallelisation to prepare data structure
 
 #+BEGIN_SRC R
 setwd("/gaia5/storage/ecomod/ludwig/hpc/islspecmod/examples/islandradiation/")
@@ -227,29 +252,145 @@ full.inds = read_indfiles(path = "../../2019-10-29_islsim_", pattern = "full*/in
 none.inds = read_indfiles("../../2019-10-29_islsim_", "none*/inds*", ".tsv")
 full.seqs = read_seqfiles(path = "../../2019-10-29_islsim_", pattern = "full*/", suffix = "*compats.fa")
 none.seqs = read_seqfiles("../../2019-10-29_islsim_", "none*/", "*compats.fa")
-rand.inds = read_indfiles("../../2020-02-07_islsimconfig", "*/inds*", ".tsv") # CAVEAT: different run!
-rand.seqs = read_seqfiles("../../2020-02-07_islsimconfig", "*/", "*.fa") #"../../2019-12-06_islsimconfig", "*/", "*compats.fa") # CAVEAT: different run!
+rand.inds = read_indfiles("../../2020-02-*_islsimconfig", "*/inds*", ".tsv")
+rand.seqs = read_seqfiles("../../2020-02-*_islsimconfig", "*/", "*.fa")
 
-#full.phylos = mkphylos(full.seqs, full.inds)
-#none.phylos = mkphylos(none.seqs, none.inds)
+full.phylos = mkphylos(full.seqs, full.inds, spboundary = "actual")
+none.phylos = mkphylos(none.seqs, none.inds, spboundary = "actual")
 
-#full.timedspp = gettimedspp(full.phylos, full.inds)
-#none.timedspp = gettimedspp(none.phylos, none.inds)
+full.timedspp = gettimedspp(full.phylos, full.inds)
+none.timedspp = gettimedspp(none.phylos, none.inds)
 
-rand.phylos = mkphylos(rand.seqs, rand.inds)
+rand.phylos = mkphylos(rand.seqs, rand.inds, spboundary = "actual")
 rand.timedspp = gettimedspp(rand.phylos, rand.inds)
 
-#full.maxspp = full.inds %>% group_by(lineage, lnkgunits) %>% filter(time == min(time)) %>% select(-(time:originid)) %>%
-#  select(-new, -contains("adaptation"), -ngenes, -compat) %>% select_if(is.numeric) %>%
-#  summarize_all(mean) %>% right_join(gettimemaxspp(full.timedspp, full.inds), by = c("lineage", "lnkgunits")) %>%
-#  ungroup
-#none.maxspp = none.inds %>% group_by(lineage, lnkgunits) %>% filter(time == min(time)) %>% select(-(time:originid)) %>%
-#  select(-new, -contains("adaptation"), -ngenes, -compat) %>% select_if(is.numeric) %>%
-#  summarize_all(mean) %>% right_join(gettimemaxspp(none.timedspp, none.inds), by = c("lineage", "lnkgunits"))
-rand.maxspp = rand.inds %>% group_by(lineage, lnkgunits) %>% filter(time == min(time)) %>% select(-(time:originid)) %>%
-  select(-new, -contains("adaptation"), -ngenes, -compat) %>% select_if(is.numeric) %>%
-  summarize_all(mean) %>% right_join(gettimemaxspp(rand.timedspp, rand.inds), by = c("lineage", "lnkgunits"))
+rand.maxspp = getmaxspp(rand.inds, rand.timedspp)
+none.maxspp = getmaxspp(none.inds, none.timedspp)
+full.maxspp = getmaxspp(full.inds, full.timedspp)
 
+#+END_SRC
+
+**** Plot stuff
+#+BEGIN_SRC R
+rtp = bind_rows(none.maxspp) %>% gather("trait", "value", dispmean:linkage, -replicate) %>% mutate_at(vars(timetomaxspp), log10) %>%
+  gather("response", "number", maxspp:timetomaxspp) %>%
+  ggplot(aes(value, number, color = Phase)) + geom_point() + facet_grid(response ~ trait, scales="free") + theme_bw()
+ggsave("pairs_none_maxspp_cols.pdf", rtp, width = 16, height = 4)
+##cor(bind_rows(full.maxspp[, -1], none.maxspp[, -1]))
+##cor(rand.maxspp[, -1])
+
+##pdf("corgenspp.pdf", width = 20, height = 20)
+##pairs(bind_rows(full.maxspp[, -1], none.maxspp[, -1]))
+##pairs(rand.maxspp[, -1])
+##dev.off()
+
+rlmsp = rand.maxspp %>% filter(diverged == 1, Phase == "terminal") %>% select(reptol, linkage, maxspp) %>%
+  ggplot(aes(reptol, maxspp, color = linkage)) + geom_point() + scale_color_viridis_c()
+ggsave("reptol_linkage_maxspp_rand.pdf", rlmsp)
+
+
+plot_phylos(full.phylos, full.inds, "full_timed_trees")
+plot_phylos(none.phylos, none.inds, "none_timed_trees")
+plot_phylos(rand.phylos, rand.inds, "rand_timed_trees")
+
+#+END_SRC
+**** Traits over time
+
+#+BEGIN_SRC R
+ttp = rand.inds %>% filter(!(lineageid %in% colids)) %>%
+  mutate(linkage = ngenes/lnkgunits) %>%
+  select(time, lineage, linkage, lnkgunits, ngenes, reptol, selfing, seedsize,
+         repsize, dispmean, dispshape, prectol, temptol) %>%
+  mutate_at(vars(repsize, seedsize), function(x) log(x + 1)) %>%
+  group_by(time, lineage) %>% summarize_all(mean) %>%
+  gather(linkage:temptol, key = Trait, value = `Trait value`) %>%
+  ggplot(aes(time, `Trait value`, color = lineage)) +
+  geom_line() + facet_wrap(. ~ Trait, scales="free")
+ggsave("traits_time_all.pdf", ttp, height = 6, width = 12)
+#+END_SRC
+
+**** Traits distribution
+
+#+BEGIN_SRC R
+tdp = full.maxspp %>% #mutate_at(vars(dispmean:linkage, -replicate), function(x) scale(x, center = FALSE)) %>%
+  group_by(`Category/phase`, lineage) %>%
+  gather(dispmean:temptol, ngenes:linkage, key = Trait, value = `Trait value`) %>%
+  ggplot(aes(`Category/phase`, `Trait value`, fill = `Category/phase`)) +
+  geom_violin() + geom_boxplot(width = 0.3) + facet_wrap(. ~ Trait, scales="free") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_viridis_d()
+ggsave("traits_distribution_full.pdf", tdp, height = 8, width = 12)
+#+END_SRC
+
+**** PCA
+
+#+BEGIN_SRC R
+endpca = prcomp(rand.maxspp[,-c(1:4,15,18:21)], scale=T)
+endpcaviz = fviz_pca_biplot(endpca, geom.ind="point", fill.ind=rand.maxspp$`Category/phase`,
+                            pointsize=1, pointshape=21, addEllipses = TRUE) + #, ellipse.alpha=0.1, ellipse.type = "convex") +
+    theme_bw() + scale_fill_viridis_d("Divergence") + scale_colour_viridis_d("Divergence")
+ggsave("pca_maintraits_all.pdf", endpcaviz, width=6, height=4)
+pdf("pca_maintraits_eigen.pdf")
+corrplot(endpca$rotation)
+dev.off()
+## nice clustering with PCA was with final trait syndrome!
+
+endpca = prcomp(none.maxspp[,-c(1:4,15,17:21)] %>% filter_all(all_vars(!is.na(.))), scale=T)
+endpcaviz = fviz_pca_biplot(endpca, geom.ind="point", fill.ind=none.maxspp[,-c(1:4,15,17:19,21)] %>% filter_all(all_vars(!is.na(.))) %>% select(`Category/phase`) %>% unlist,
+                            pointsize=1, pointshape=21, addEllipses = TRUE) + #, ellipse.alpha=0.1, ellipse.type = "convex") +
+    theme_bw() + scale_fill_viridis_d("Divergence") + scale_colour_viridis_d("Divergence")
+ggsave("pca_maintraits_none.pdf", endpcaviz, width=6, height=4)
+pdf("pca_maintraits_eigen.pdf")
+corrplot(endpca$rotation)
+dev.off()
+
+#+END_SRC
+
+**** Lineage-rank plots
+
+#+BEGIN_SRC R
+lrp = rand.maxspp %>% ungroup %>% filter(Phase == "initial") %>% ggplot(aes(reorder(lineage, -maxspp), maxspp)) +
+  geom_bar(stat = "identity") + xlab("Lineage") + ylab("Maximum number of species") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggsave("lineage_rank.pdf", lrp)
+#+END_SRC
+
+**** Clustering
+
+#+BEGIN_SRC R
+rand.kmeans = rand.maxspp %>% filter(Phase == "initial") %>% select(dispmean:linkage, diverged, -replicate) %>% kmeans(centers = 3, nstart = 25)
+clp = fviz_cluster(rand.kmeans, data = rand.maxspp %>% select(dispmean:linkage, diverged, -replicate))
+ggsave("kmeans.pdf", clp)
+#+END_SRC
+
+**** models
+#+BEGIN_SRC R
+## lmem not usable because each lineage exclusive to the scenarios
+
+anova(glmer(diverged ~ dispshape + repsize + reptol + prectol + temptol +
+              selfing + seedsize + ngenes + (1|replicate), family = binomial, data = bind_rows(rand.maxspp#, none.maxspp, full.maxspp
+                                                                                               ) %>% filter(Phase == "initial") %>%
+                                                                                mutate(lineage = as.factor(lineage)) %>%
+                                                                                mutate_at(vars(dispmean:linkage, -replicate), scale)))
+anova(lm(maxspp ~ dispmean + dispshape + repsize + reptol + linkage + prectol + temptol +
+             selfing + seedsize + ngenes, data = bind_rows(rand.maxspp#, none.maxspp, full.maxspp
+                                                                                           ) %>% ungroup %>% mutate(lineage = as.factor(lineage))))
+anova(lm(maxspp ~ temptol * prectol + reptol +
+             selfing + ngenes + linkage, data = bind_rows(rand.maxspp#, none.maxspp, full.maxspp
+                                                                                           ) %>% ungroup %>% mutate(lineage = as.factor(lineage))))
+anova(lm(timetomaxspp ~ dispmean + dispshape + precopt + prectol + repsize + reptol + linkage +
+             selfing + seedsize + tempopt + temptol + ngenes, data = bind_rows(rand.maxspp#, none.maxspp, full.maxspp
+                                                                                           )))
+aov(lm(timetomaxspp ~ dispshape + prectol + repsize + linkage +
+             selfing + seedsize + tempopt + temptol + ngenes, data = bind_rows(rand.maxspp#, none.maxspp, full.maxspp
+                                                                                           )))
+summary(lm(maxspp ~ timetomaxspp + linkage + ngenes, data = bind_rows(rand.maxspp, none.maxspp, full.maxspp)))
+summary(lm(timetomaxspp ~ maxspp + linkage + ngenes, data = bind_rows(rand.maxspp, none.maxspp, full.maxspp)))
+
+#+END_SRC
+**** check normality
+
+#+BEGIN_SRC R
 
 ## some traits increase in normality with log(x+1) transformation
 ## TODO: do qqplots for skewness etc. and identify which traits need transformation!
@@ -266,279 +407,4 @@ rand.maxspp %>% ungroup %>% select(maxspp, timetomaxspp, dispmean, dispshape, pr
                                    ngenes) %>% mutate_all(function(x) log(x+1)) %>% as.list %>%
                               lapply(shapiro.test)
 
-rtp = rand.maxspp %>% gather("trait", "value", lnkgunits:linkage, -linkage) %>% mutate_at(vars(timetomaxspp), log10) %>%
-gather("response", "number", maxspp:timetomaxspp) %>%
-  ggplot(aes(value, number, color = linkage)) + geom_point() + facet_grid(response ~ trait, scales="free") + theme_bw()
-ggsave("pairs_rand_maxspp.pdf", rtp, width = 16, height = 4)
-##cor(bind_rows(full.maxspp[, -1], none.maxspp[, -1]))
-##cor(rand.maxspp[, -1])
-
-##pdf("corgenspp.pdf", width = 20, height = 20)
-##pairs(bind_rows(full.maxspp[, -1], none.maxspp[, -1]))
-##pairs(rand.maxspp[, -1])
-##dev.off()
-
-## lmem not usable because each lineage exclusive to the scenarios
-
-summary(lm(maxspp ~ timetomaxspp + dispmean + dispshape + precopt + prectol + repsize + reptol + linkage +
-             selfing + seedsize + tempopt + temptol + ngenes, data = bind_rows(rand.maxspp#, none.maxspp, full.maxspp
-                                                                                           ) %>% ungroup %>% mutate(lineage = as.factor(lineage))))
-summary(lm(timetomaxspp ~ maxspp + dispmean + dispshape + precopt + prectol + repsize + reptol + linkage +
-             selfing + seedsize + tempopt + temptol + ngenes, data = bind_rows(rand.maxspp#, none.maxspp, full.maxspp
-                                                                                           )))
-summary(lm(maxspp ~ timetomaxspp + linkage + ngenes, data = bind_rows(rand.maxspp, none.maxspp, full.maxspp)))
-summary(lm(timetomaxspp ~ maxspp + linkage + ngenes, data = bind_rows(rand.maxspp, none.maxspp, full.maxspp)))
-
-bind_rows(rand.maxspp#, none.maxspp, full.maxspp
-          ) %>%
-    gather(ngenes, linkage, key = GeneticTrait, value = Value) %>%
-    gather(maxspp, timetomaxspp, key = Metric, value = Response) %>%
-    ggplot(aes(Value, Response)) + geom_point() +
-    facet_grid(Metric ~ GeneticTrait, scales = "free")
-ggsave("plot.pdf", height=5, width=6)
-
-plot_phylos(full.phylos, full.inds, "full_timed_trees")
-plot_phylos(none.phylos, none.inds, "none_timed_trees")
-plot_phylos(rand.phylos, rand.inds, "rand_timed_trees")
-
 #+END_SRC
-
-**** Older code
-
-#+BEGIN_SRC R
-confs = c("islsim_fullconf", "islsim_noneconf", "islsim_config")
-
-allfiles = Sys.glob("../../2019-10-29_islsim*/pops*tsv")
-
-rawresults = tibble()
-for (filepath in allfiles) {
-    rawresults = bind_rows(rawresults, read_tsv(filepath))
-}
-
-repstable = rawresults %>% filter(time>=20000) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
-triplereps = which(rowSums(repstable) == 3) %>% names %>% as.numeric
-pops = rawresults %>% filter(replicate %in% triplereps)
-
-repstable = rawresults %>% filter(time>=50000, conf!="examples/islandradiation/islsim.config") %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
-doublereps = which(rowSums(repstable) == 2) %>% names %>% as.numeric
-pops = rawresults %>% filter(replicate %in% doublereps)
-
-pops = pops %>% filter(time%%1000==0, time <= 100000, conf!="examples/islandradiation/islsim.config") %>%
-    select(-area, -contains("compat"), -contains("adaptation")) %>%
-    mutate(linkage_degree=ngenesmean/nlnkgunitsmean) %>%
-    select(-contains("lnkgunits")) %>%
-    na.omit()
-
-## get lineages with abundances >= 1000:
-lin1000 = which(table(rawinds$lineage)>=1000) %>% names
-inds = rawinds %>% select(-X31) %>% filter(lineage %in% lin1000)
-extlin = inds %>% filter(time==120000) %>% select(lineage) %>% unique %>% unlist %>% as.character
-rawresults %>% filter(time==120000, lineage %in% extlin) %>% select(conf, replicate) %>% unique
-
-uniqinds = strsplit(dimnames(allseqs)[[1]], "_") %>% lapply(function(x) x[2]) %>% unlist %>% duplicated
-allindids = strsplit(dimnames(allseqs)[[1]], "_") %>% lapply(function(x) x[2]) %>% unlist %>% as.numeric
-linids = strsplit(dimnames(allseqs)[[1]], "_") %>% lapply(function(x) paste(x[1:2], collapse="_")) %>% unlist
-allseqs = allseqs[!uniqinds,]
-
-
-pdf("../timedphylo.pdf")
-phyloDiv(allphylos$`0heK3m`$timed)
-dev.off()
-
-##TODO: number of tips at respective last time bin
-phylostats = tibble()
-for(i in 1:length(allphylos)){
-    diversity = phyloDiv(allphylos[[i]]$timed, plot=FALSE) %>% as.tibble
-    timerange = max(diversity$int.start) - min(diversity$int.end)
-    extantspp = max(diversity$int.div[diversity$int.end == min(diversity$int.end)])
-    linkage = rawinds %>% filter(lineage == names(allphylos[i])) %>% select(lnkgunits, ngenes) %>%
-        mutate(linkage = ngenes/lnkgunits) %>% select(linkage)
-    linkage = linkage[1,1] %>% unlist
-    size = rawinds %>% filter(lineage == names(allphylos[i])) %>% select(reptol) %>%
-        unlist %>% mean
-    ngenes = rawinds %>% filter(lineage == names(allphylos[i])) %>% select(ngenes)
-    ngenes = ngenes[1,1] %>% unlist
-    allphylos[[i]] = c(allphylos[[i]], list(diversity=diversity)) # FIX
-    phylostats = bind_rows(phylostats, tibble(lineage = names(allphylos[i]),
-                                              maxdiv = max(diversity$int.div),
-                                              sddiv = sd(diversity$int.div),
-                                              meandiv = max(diversity$int.div),
-                                              ngenes = ngenes,
-                                              linkage = linkage,
-                                              timerange = timerange,
-                                              extantspp = extantspp,
-                                              size = size
-                                              ))
-}
-phylostats = write_tsv(phylostats, path = paste0("phylostats", minimumtips, "-", spboundary, ".tsv"))
-
-phylostats = read_tsv("phylostats.tsv")
-
-lnksp = phylostats %>% ggplot(aes(linkage, maxdiv, color = size)) + geom_point(size=5) + scale_color_viridis_c(trans="log10") + theme_classic(base_size=24) + labs(color = "Body size") + xlab("Genetic linkage") + ylab("Maximum number of evolving species")
-ggsave(filename="../linkagespecies.pdf", lnksp, width=16, height=8)
-
-phyloDiv(allphylos$I2EMMY$timed)
-#plot(allphylos$`3D2rd7`$extant)
-
-sum(allindids %in% extinds)
-inds %>% filter(id %in% allindids) %>% select(time) %>% table
-inds %>% filter(time==79100) %>% select(lineage) %>% table %>% which.max %>% names
-extinds = inds %>% filter(time==79100, lineage=="k9yBad") %>% select(id) %>% unlist %>% as.numeric
-extlinids = inds %>% filter(time==79100, lineage=="k9yBad") %>% select(lineage, id) %>% mutate(linid=paste(lineage, id, sep="_")) %>% select(linid) %>% c()
-extseqs = allseqs[linids %in% extlinids[[1]],]
-
-##get most abundant lineages:
-full7.abulin = strsplit(dimnames(full7.allseqs)[[1]], "_") %>% lapply(function(x) x[1]) %>% unlist %>% table %>% which.max %>% names
-seqs = full7.allseqs[grep(full7.abulin, dimnames(full7.allseqs)[[1]]),]
-
-extdists = dist.dna(extseqs, model = "F81")
-exttre = hclust(extdists, method = "ward.D2")
-
-medreptol = rawresults %>% filter(lineage=="k9yBad") %>% select(reptolmean) %>% as_vector %>% median
-medreptol=0.05
-grps = cutree(tre, h = medreptol)
-table(grps)
-plot(as.phylo(tre), show.tip.label=F)
-
-#+END_SRC
-*** Phylogenetic analyses
-
-**** identify abundant lineages on islands
- #+BEGIN_SRC R
-abundantlins = rawresults %>% filter(conf=="examples/islandradiation/islsim.config") %>% group_by(lineage, time, replicate) %>% summarize_at(vars(adults), sum) %>%
-    filter(adults > 1) %>% ungroup() %>% select(lineage) %>% unique %>% unlist
- #+END_SRC
-
-**** ...and filter those from population and individual data
-#+BEGIN_SRC R
-abundantlins.pop = rawresults %>% filter(lineage %in% abundantlins)
-abundantlins.inds = rawinds %>% filter(lineage %in% abundantlins)
-#+END_SRC
-
-**** filter sequences
-
-*** Algorithm for creating phylogenies
-
-#+BEGIN_SRC R
-
-getphylo = function(individual_data, sequences){
-    times = sort(unique(individual_data$time), decreasing = TRUE) # do this forward or backwards?
-    lineages = unique(individual_data$lineage)
-    for (time in times){
-        lineages = unique(individual_data$lineage)
-        for (lineage in lineages){
-            ids = individual_data %>% filter(time == time, lineage == lineage) %>% select(id) # TODO select more info to get unique individuals specific to scenario and replicate
-            distances = dist.dna(sequences)
-            tree = hclust(distances)
-            species = cutree()
-        
-    }
-    phylo
-}
-
-
-#+END_SRC
-*** single results
-**** Loading and sorting data
-
-***** Population data
-
-   #+BEGIN_SRC R
-   allfiles = Sys.glob("../../2019-07-25_islsim*/pops*tsv") # 02
-
-   rawresults = tibble()
-   for (filepath in allfiles) {
-       rawresults = bind_rows(rawresults, read_tsv(filepath))
-   }
-
-   repstable = rawresults %>% filter(time>=20000) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
-   triplereps = which(rowSums(repstable) == 3) %>% names %>% as.numeric
-   pops = rawresults %>% filter(replicate %in% triplereps)
-
-   repstable = rawresults %>% filter(time>=50000, conf!="examples/islandradiation/islsim.config") %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
-   doublereps = which(rowSums(repstable) == 2) %>% names %>% as.numeric
-   pops = rawresults %>% filter(replicate %in% doublereps)
-
-   pops = pops %>% filter(time%%1000==0, time <= 100000, conf!="examples/islandradiation/islsim.config") %>%
-       select(-area, -contains("compat"), -contains("adaptation")) %>%
-       mutate(linkage_degree=ngenesmean/nlnkgunitsmean) %>%
-       select(-contains("lnkgunits")) %>%
-       na.omit()
-
-   write_csv(pops, "pops1000t.csv")
-   #+END_SRC
-
-***** Individual data
-
- #+BEGIN_SRC R
-   indfiles = Sys.glob("../../2019-07-25_islsim*/inds*tsv")
-   #indfiles = unique(grep(paste(paste0("s", doublereps), collapse="|"), indfiles, value=TRUE))
-   #indfiles = unique(grep(paste(c("full", "none"), collapse="|"), indfiles, value=TRUE))
-   rawinds = tibble()
-   for (filepath in indfiles) {
-       rawinds = bind_rows(rawinds, read_tsv(filepath))
-   }
-   rawinds$lineageid = paste(rawinds$lineage, rawinds$id, sep="_")
-   rawinds = rawinds %>% select(-starts_with("X"))
-
-   ## get lineages with abundances >= 1000:
-   lin1000 = which(table(rawinds$lineage)>=1000) %>% names
-   inds = rawinds %>% select(-starts_with("X")) %>% filter(lineage %in% lin1000)
-   
-   extinds = inds %>% filter(time==120000) %>% select(id) %>% unlist %>% as.numeric
-   extlin = inds %>% filter(time==120000) %>% select(lineage) %>% unique %>% unlist %>% as.character
-   rawresults %>% filter(time==120000, lineage %in% extlin) %>% select(conf, replicate) %>% unique
-   sum(full7.indids %in% extinds)
- #+END_SRC
-
-***** Sequences
-
-   #+BEGIN_SRC R
-   full7.allseqs = read.dna(file="../../2019-07-02_islsim_fullconf_7/compatsuniq.fa", format="fasta")
-   full7.uniqinds = strsplit(dimnames(full7.allseqs)[[1]], "_") %>% lapply(function(x) x[2]) %>% unlist %>% duplicated
-   full7.indids = strsplit(dimnames(full7.allseqs)[[1]], "_") %>% lapply(function(x) x[2]) %>% unlist %>% as.numeric
-   full7.seqs = full7.allseqs[!full7.uniqinds,]
-   ##get most abundant lineage:
-   full7.abulin = strsplit(dimnames(full7.allseqs)[[1]], "_") %>% lapply(function(x) x[1]) %>% unlist %>% table %>% which.max %>% names
-   seqs = full7.allseqs[grep(full7.abulin, dimnames(full7.allseqs)[[1]]),]
-   ##only unique individuals:
-   uniqinds = strsplit(dimnames(seqs)[[1]], "_") %>% lapply(function(x) x[2]) %>% unlist %>% duplicated
-   indids = strsplit(dimnames(seqs)[[1]], "_") %>% lapply(function(x) x[2]) %>% unlist %>% as.numeric
-   seqs = seqs[!uniqinds,]
-   if(length(dimnames(seqs)[[1]]) > 40000){
-       inds = sample(1:length(dimnames(seqs)[[1]]), 40000)
-       ##    world = world[inds,]
-       seqs = seqs[inds,]
-   }
-   dists = dist.dna(seqs, model = "F81")
-   tre = hclust(dists, method = "ward.D2")
-   tre$height <- round(tre$height, 6) # work-around 'height' component of 'tree' is not sorted (increasingly) error
-   medreptol = rawresults %>% filter(lineage==full7.abulin) %>% select(reptolmean) %>% as_vector %>% mean
-   medreptol = 0.02
-   grps = cutree(tre, h = medreptol)
-   table(grps)
-   plot(as.phylo(tre), show.tip.label=F)
-   #+END_SRC
-
-***** integrate data
-
-  #+BEGIN_SRC R
-  inds %>% filter(id %in% indids) %>% group_by(id) %>% filter(time == max(time)) %>% right_join(bind_cols(grp = grps, id = indids), by = "id") %>%
-      ggplot(aes(time, grps, group=grps)) + geom_point() + geom_line()
-
-  inds %>% filter(id %in% indids) %>% group_by(id) %>% filter(time == max(time)) %>% right_join(bind_cols(grp = grps, id = indids), by = "id") %>%
-      ggplot(aes(x=time)) + geom_density()
-  #+END_SRC
-
-**** paleotree
-
- #+BEGIN_SRC R
- timeData = bind_cols(FAD = abs(max(inds$time) - inds$time) + 1,
-                      LAD = abs(max(inds$time) - inds$time),
-                      id = inds$id)
- timeData = timeData %>% right_join(bind_cols(tips=names(grps), id = indids), by = "id") %>% group_by(id) %>% filter(LAD == min(LAD))
- rownames(timeData) = timeData$tips
- timephylo = timePaleoPhy(as.phylo(tre), timeData)#, type = "equal", vartime = 10)
- phyloDiv(timephylo)
- #+END_SRC
-
