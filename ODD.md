@@ -265,6 +265,17 @@ Changes to temperature and precipiation happen independently from one another.
 The change is randomly drawn from a Normal distribution with the current value as the mean
 and a user defined standard deviation.
 
+### Disturbance
+If enabled, a set percentage (determined by the `disturbance` setting) of individuals in
+each cell is killed each turn, regardless of species or individual properties.
+Disturbance only begins after the `burn-in` period.
+
+### Invasion
+If enabled, a global species pool is initialised with `global-species-pool` random 
+species. After the `burn-in` period, `propagule-pressure` individuals from this pool
+are randomly selected and copied to the simulation arena's point of entry (multiple
+selection of the same species per turn is possible).
+
 
 ## Output/Calculation
 The main simulation data output is stored in two separate formats.
