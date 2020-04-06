@@ -4,8 +4,8 @@ CurrentModule = GeMM
 
 # Introduction
 
-This is the documentation for the Island Speciation Model, a.k.a. Genetically
-explicit Metacommunity Model (GeMM). *(Yeah, we're still working on the name...)*
+This is the documentation for the Genetically explicit Metacommunity Model (GeMM),
+a.k.a. Island Speciation Model.
 
 The aim of this model is to create a virtual island ecosystem that can be used to
 explore ecological and evolutionary hypotheses *in silico*. It is genetically
@@ -34,4 +34,4 @@ where `<cores>` is the number of processors you want to make available to Julia
 (one processor per simulation max), and `<configs>` is a comma-separated list of
 configuration files that are to be processed.
 
-*Last updated: 2019-02-15 (commit b06bbf5)*  
+*Last updated: 2020-03-30 (commit 796fc71)*  
