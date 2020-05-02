@@ -1,0 +1,569 @@
+* Analysis of GeMM gradient experiments
+  
+** Preparation work
+
+*** Get seeds of runs with both scenarios completed
+    
+ #+BEGIN_SRC shell
+# tail -n 1 2019-0*_sg*/*tsv | grep -E '^1000' | cut -f 103 | sort | uniq -c | grep -w 2 > twocomplete
+# tail -n 1 2019-0*_sg*/*tsv | grep -E '^1000' | cut -f 103 | sort | uniq -c | grep -w 3 > threecomplete
+ tail -n 1 2019-0*_sg*/*tsv | grep -E '^1000' | cut -f 103 | sort | uniq -c | grep -vw 1 > twothree 
+ #+END_SRC
+
+ #+RESULTS:
+
+*** load completed runs in R
+    
+ #+BEGIN_SRC R
+ ##install.packages("picante")
+ library(picante) ## provides both library(vegan) and library(ape) ade4?
+ ##install.packages("zetadiv")
+ library(zetadiv) ## new method for estimating species turnover
+ ##install.packages("multcomp")
+ library(multcomp) #for Herberich test
+ library(sandwich) #for Herberich test
+ ##install.packages("foreach")
+ library(foreach)
+ ##install.packages("tidyverse")
+ library(tidyverse)
+ ##install.packages("factoextra")
+ library(factoextra)
+ ##install.packages("dispRity")
+ library(dispRity) # calculates various measuresof disparity of e.g. species w/ multivariate trait data
+ completedruns = read_table("threecomplete", col_names=c("nruns", "seed"))
+ tworuns = read_table("twothree", col_names=c("nruns", "seed"))
+ allfiles = Sys.glob("2019-0*/stats*tsv")
+ ##myresults = allfiles[grep(paste(completedruns$seed, collapse="|"), allfiles)]
+ mytworesults = allfiles[grep(paste(tworuns$seed, collapse="|"), allfiles)]
+  
+ rawresults = tibble()
+ for (filepath in mytworesults) {
+   if(length(grep("_sg_", filepath)) == 1 | length(grep("_sgv_", filepath)) == 1) rawresults = bind_rows(rawresults, read_tsv(filepath))
+ }
+ repstable = rawresults %>% filter(x==1, y==1, time==1000) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
+ doublereps = which(rowSums(repstable) == 2) %>% names %>% as.numeric
+ rawresults = rawresults %>% filter(replicate %in% doublereps)
+ 
+ tworesults = rawresults %>%
+   select(-ngenesmin, -ngenesmax, -ngenesstd, -area, -contains("compat"),
+          -contains("reptol"), -contains("adaption")) %>%
+   mutate(linkage_degree=ngenesmed/nlnkgunitsmed,
+          scenario=ifelse(conf=="sg", "static", "variable")) %>%
+   select(-contains("lnkgunits"), -conf) %>%
+   mutate(mintemprange=tempoptmin-temptolmax, maxtemprange=tempoptmax+temptolmax,
+          minprecrange=precoptmin-prectolmax, maxprecrange=precoptmax+prectolmax) %>%
+   select(-ends_with("min"), -ends_with("max"), -ends_with("sdstd")) %>% na.omit()
+ names(tworesults) = names(tworesults) %>% gsub("std", "_pop._var.", .) %>% gsub("sdmed", "_gen._var.", .)  %>% gsub("med", "", .) 
+ #+END_SRC
+
+ #+RESULTS:
+
+**** TODO make community, trait and environmental matrices!
+
+** main analysis
+
+*** data preparation
+#+BEGIN_SRC R
+
+endresults = tworesults %>% select(-(x:maxsize), -replicate, -ends_with("range")) %>%
+  filter(time == 800) %>% select(scenario, everything(), -time) %>% #mutate_at(vars(contains("size"), linkage_degree), log) %>%
+  na.omit()
+
+#+END_SRC
+*** produce maps of richness and species with abundances:
+ #+BEGIN_SRC R
+     for (seed in completedruns$seed) {
+         d = allresults %>% group_by(time, x, y, conf, replicate) %>% summarize(richness = length(unique(lineage))) %>% filter(replicate == seed)
+         g = d %>% ggplot(aes(x,y)) + geom_tile(aes(fill=richness)) + coord_fixed() + facet_grid(time~conf) + scale_fill_viridis_c(trans = "log") + theme_minimal()
+         ggsave(paste0("map_s", seed, ".pdf"), g, width=4, height=16)
+     }
+
+     for (seed in completedruns$seed) {
+         d = allresults %>% filter(replicate == seed, time >= 150) %>% mutate(abundance = juveniles+adults)
+         g = d %>% ggplot(aes(x,y)) + geom_tile(aes(fill=temp)) + coord_fixed() +
+             geom_point(aes(color=lineage, size=abundance), position=position_dodge(0.8)) + scale_size_area(max_size=4) + #, trans="log") +
+                 facet_grid(time~conf) + scale_fill_gradient(low="grey50", high="grey100") + scale_color_brewer(palette="Paired") + theme_minimal()
+         ggsave(paste0("species_s", seed, ".pdf"), g, width=6, height=16)
+     }
+
+     for (seed in completedruns$seed) {
+         d = allresults %>% filter(replicate == seed, time >= 150)
+         g = d %>% ggplot(aes(x,y)) + geom_tile(aes(fill=temp)) + coord_fixed() +
+             geom_point(aes(color=lineage, size=adults), position=position_dodge(0.8)) + scale_size_area(max_size=4) + #, trans="log") +
+                 facet_grid(time~conf) + scale_fill_gradient(low="grey50", high="grey100") + scale_color_brewer(palette="Paired") + theme_minimal()
+         ggsave(paste0("adults_s", seed, ".pdf"), g, width=6, height=16)
+     }
+ #+END_SRC
+
+*** biodiversity patterns
+This is quite messy data: zigzag lines and richness only integers up to ~5.
+ #+BEGIN_SRC R
+# onlylineages = tworesults %>% mutate(abundance = juveniles + adults) %>% select(time, x, y, conf, replicate, lineage, abundance) %>% spread(key=lineage, value=abundance, fill=0)#%>% group_by(time, x, y, conf, replicate)
+
+locsp = tworesults %>% filter(time>=100) %>% group_by(time, x, y, scenario, replicate) %>% na.omit() %>% summarize(richness = length(unique(lineage))) %>%
+#     mutate(replicate=as.factor(replicate)) %>%
+     ggplot(aes(time, richness, color=scenario)) + stat_summary(fun.y = mean, geom="line", size=1) + stat_summary(fun.data=Hmisc::mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_classic()
+ ggsave(paste0("localrichness_over_time", ".pdf"), locsp, width=6, height=4)
+
+tworesults %>% filter(time>=100) %>% filter(conf!="sglv") %>% select(-x, -y) %>% mutate(conf=as.factor(conf)) %>% group_by(time, conf, replicate) %>% summarize(richness = length(unique(lineage))) %>%
+     mutate(replicate=as.factor(replicate)) %>%
+     ggplot(aes(time, richness, color=conf)) + stat_summary(fun.y = mean, geom="line", size=1) + stat_summary(fun.data=Hmisc::mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_minimal()
+ ggsave(paste0("totalrichness_over_time", ".pdf"), width=6, height=4)
+
+ tworesults %>% filter(time>=100) %>% select(-x, -y) %>% mutate(scenario=as.factor(scenario)) %>%
+     group_by(time, scenario, replicate) %>% summarize(richness = length(unique(lineage))) %>%
+     mutate(replicate=as.factor(replicate)) %>%
+     ggplot(aes(time, richness, color=scenario, group=interaction(scenario,replicate))) + geom_line() + scale_color_viridis_d() + theme_minimal()
+ #ggsave(paste0("totalrichness_over_time_lines", ".pdf"), width=6, height=4)
+
+ tworesults %>% filter(time>=100) %>% filter(conf!="sglv") %>% select(-x, -y) %>%
+     mutate(replicate=as.factor(replicate), conf=as.factor(conf)) %>%
+     mutate(population_structure=juveniles/adults) %>% group_by(time, conf, replicate) %>%
+     ggplot(aes(time, population_structure, color=conf)) + stat_summary(fun.y = mean, geom="line", size=1) + stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_minimal()
+ ggsave(paste0("popstruct_over_time", ".pdf"), width=6, height=4)
+
+ tworesults %>% filter(time>=100) %>% select(-x, -y) %>% #mutate(scenario=as.factor(scenario), replicate=as.factor(replicate)) %>%
+     group_by(time, scenario, replicate) %>% 
+     mutate(population_structure=juveniles/adults) %>% summarize_at(vars(population_structure), median) %>%
+     ggplot(aes(time, population_structure, color=scenario, group=interaction(scenario,replicate))) + geom_line() + scale_color_viridis_d() + theme_minimal()
+ #ggsave(paste0("totalrichness_over_time_lines", ".pdf"), width=6, height=4)
+
+ myenv = tworesults %>% group_by(time, conf, replicate) %>% select(temp, prec) %>% unique() %>% ungroup()
+ myspecs = tworesults %>% group_by(time, conf, replicate, lineage) %>% select(ends_with("range")) %>%
+     summarize(minprecrange=min(minprecrange), maxprecrange=max(maxprecrange),
+               mintemprange=min(mintemprange), maxtemprange=max(maxtemprange)) %>% mutate(rangefilling=0) %>% ungroup()
+ myspecs = myspecs %>% inner_join(myenv) %>% mutate(habitable = temp>=mintemprange & temp<=maxtemprange & prec>=minprecrange & prec<=maxprecrange) %>%
+     group_by(time, conf, replicate, lineage) %>% select(habitable) %>% summarise(rangefilling=sum(habitable)/length(habitable)) %>% ungroup()
+ myspecs %>% filter(conf!="sglv") %>% mutate(replicate=as.factor(replicate), conf=as.factor(conf)) %>% group_by(time, conf, replicate) %>%
+     ggplot(aes(time, rangefilling, color=conf)) + stat_summary(fun.y = mean, geom="line", size=1) + stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_minimal()
+ ggsave(paste0("rangefilling_over_time", ".pdf"), width=6, height=4)
+
+ mybeta = tibble(time=numeric(), conf=character(), replicate=numeric(), betadiv=numeric(), zetadiv=numeric(), zetasd=numeric())
+ for (ts in unique(tworesults$time)) for (cf in unique(tworesults$conf)) for (r in unique(tworesults$replicate)) {
+     mycom = tworesults %>% filter(time==ts, conf==cf, replicate==r) %>% mutate(abundance=juveniles+adults) %>% group_by(x, y) %>% select(abundance, lineage) %>% spread(key=lineage, value=abundance, fill=0) %>% ungroup() %>% select(-x, -y)
+     if(nrow(mycom > 0)) {
+         betadiv = betadiver(mycom, "w")
+         zetadiver = Zeta.order.ex(mycom, sd.correct=F, rescale = T) # it can be set to FALSE if the sampling is exhaustive, for example in case of a continuous regular grid covering the whole study area.
+     } else {
+         betadiv = NA
+         zetadiver = list(zeta.val = NA, zeta.val.sd = NA)
+     }
+     mybeta = bind_rows(mybeta, list(time=ts, conf=cf, replicate=r, betadiv=mean(betadiv), zetadiv=zetadiver$zeta.val[1], zetasd=zetadiver$zeta.val.sd[1]))
+ }
+
+ mybeta %>% filter(time>=100) %>% ggplot(aes(time, betadiv, color=conf)) + stat_summary(fun.y = mean, geom="line", size=1) + stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_minimal()
+ ggsave(paste0("betadiv_over_time", ".pdf"), width=6, height=4)
+ 
+ lineagevec = tworesults %>% filter(time==800) %>% filter(conf!="sglv") %>% select(conf, lineage)
+ sharedspecies = intersect(lineagevec[lineagevec$scenario="static",]$lineage, lineagevec[lineagevec$scenario=="variable",]$lineage)
+ staticspecies = setdiff(lineagevec[lineagevec$scenario="static",]$lineage, lineagevec[lineagevec$scenario=="variable",]$lineage)
+ variablespecies = setdiff(lineagevec[lineagevec$scenario=="variable",]$lineage, lineagevec[lineagevec$scenario="static",]$lineage)
+ c(length(unique(lineagevec[lineagevec$scenario="static",]$lineage)), length(unique(lineagevec[lineagevec$scenario=="variable",]$lineage)))
+ summary(is.element(unique(lineagevec[lineagevec$scenario="static",]$lineage), unique(lineagevec[lineagevec$scenario=="variable",]$lineage)))
+ summary(is.element(unique(lineagevec[lineagevec$scenario=="variable",]$lineage), unique(lineagevec[lineagevec$scenario="static",]$lineage)))
+ #+END_SRC
+
+*** Community analyses
+    :PROPERTIES:
+    :CUSTOM_ID: community-analyses
+    :END:
+
+  =spread= considers all lineages over all time steps, replicates and
+  scenarios. Maybe filter beforehand.
+
+  #+BEGIN_SRC R
+      compre = tworesults %>% filter(time==100) %>% mutate(abundance=juveniles+adults) %>% select(conf, replicate, lineage, abundance) %>% group_by(conf, replicate, lineage) %>% summarize_all(sum) %>% ungroup() %>% spread(key=lineage, value=abundance, fill=0)
+      comend = tworesults %>% filter(time==750) %>% mutate(abundance=juveniles+adults) %>% select(conf, replicate, lineage, abundance) %>% group_by(conf, replicate, lineage) %>% summarize_all(sum) %>% ungroup() %>% spread(key=lineage, value=abundance, fill=0)
+
+      diversity(compre[,-c(1:2)])
+  #+END_SRC
+  
+#+BEGIN_SRC R
+      plot(radfit(comend[,-c(1:2)]), order.by=comend$replicate)
+  #+END_SRC
+
+  #+CAPTION: plot of chunk unnamed-chunk-6
+  [[file:figure/unnamed-chunk-6-1.png]]
+
+  #+BEGIN_SRC R
+      autoplot(prcomp(compre[,-c(1,2)], scale=T), data=compre, colour='conf', alpha=.5)
+  #+END_SRC
+
+  #+CAPTION: plot of chunk unnamed-chunk-6
+  [[file:figure/unnamed-chunk-6-2.png]]
+
+  #+BEGIN_SRC R
+      comjuvpre = allresults %>% filter(time==250) %>% mutate(population=paste0(lineage, x, y)) %>% group_by(conf, replicate) %>% spread(key=lineage, value=juveniles, fill=0)
+      comadpre = allresults %>% filter(time==250) %>% mutate(population=paste0(lineage, x, y)) %>% group_by(conf, replicate) %>% spread(key=lineage, value=adults)
+
+      comjuvend = allresults %>% filter(time==1000) %>% mutate(population=paste0(lineage, x, y)) %>% group_by(conf, replicate) %>% spread(key=lineage, value=juveniles)
+      comadend = allresults %>% filter(time==1000) %>% mutate(population=paste0(lineage, x, y)) %>% group_by(conf, replicate) %>% spread(key=lineage, value=adults)
+
+      comenv = allresults %>% select(time, x, y, temp, prec, conf, replicate) %>% group_by(time, x, y, conf, replicate) %>% summarize(temp=unique(temp), prec=unique(prec))
+      comspec = allresults %>% filter(time==750) %>% select(-time) %>% group_by(conf, replicate, lineage) %>% summarize(temp=unique(temp), prec=unique(prec))
+  #+END_SRC
+
+*** Correlations between traits and scenario:
+    :PROPERTIES:
+    :CUSTOM_ID: correlations-between-traits-and-scenario
+    :END:
+
+  #+BEGIN_SRC R
+      mycorr = allresults %>% filter(time >= 800) %>% select_if(is.numeric) %>% cor
+      dimnames(mycorr)[[1]][78]
+      as.tibble(mycorr[-78,78]) %>% rownames_to_column() %>% filter(abs(value)>=0.1) %>% ggplot(aes(rowname,value,fill=value)) + geom_col() + scale_fill_viridis_c() + theme_minimal() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+      allresults %>% filter(time==0, scenario="static") %>% select(ends_with("med"), linkage_degree) %>% pairs()
+      savePlot("pairst0.png")
+      allresults %>% filter(time==200) %>% mutate(conf=as.factor(conf)) %>% select(ends_with("med"), linkage_degree, conf) %>% pairs()
+      savePlot("pairst200.png")
+  #+END_SRC
+
+*** Distribution of trait data between scenarios
+
+  #+BEGIN_SRC R
+  tb = tworesults %>% filter(time==800) %>% mutate_at(vars(contains("size"), linkage_degree), log) %>%
+      select(scenario, dispmean:dispshape_gen._var., precopt:linkage_degree, ngenes,
+             -variation, -replicate) %>%
+      gather(dispmean:ngenes, key=trait, value=value, factor_key=T) %>% 
+      ggplot(aes(scenario, value, color=scenario)) + geom_boxplot(notch=TRUE, outlier.shape = NA, fill="grey90") +
+      stat_summary(fun.y=mean,geom="errorbar", color="red", aes(ymax = ..y.., ymin = ..y..)) +
+      geom_jitter(width = 0.1, alpha=0.3) + facet_wrap(.~trait, scales="free") + theme_fira() + scale_color_fira()
+  ggsave("traitboxes_allsp_end.pdf", tb, width=16, height=8)
+
+tbvals = tworesults %>% filter(time==800) %>% mutate_at(vars(contains("size"), linkage_degree), log) %>%
+      select(scenario, prectol, linkage_degree, ngenes,
+             -variation, -replicate) %>%
+      gather(prectol:ngenes, key=trait, value=value, factor_key=T) %>% 
+      ggplot(aes(scenario, value, color=scenario)) + geom_boxplot(notch=TRUE, outlier.shape = NA, fill="grey90") +
+      stat_summary(fun.y=mean,geom="errorbar", color="red", aes(ymax = ..y.., ymin = ..y..)) +
+      geom_jitter(width = 0.1, alpha=0.3) + facet_wrap(.~trait, scales="free") + theme_fira() + scale_color_fira()
+  ggsave("traitboxes_values_end.pdf", tbvals, width=8, height=3)
+  
+tbdists = tworesults %>% filter(time==800) %>% mutate_at(vars(contains("size"), linkage_degree), log) %>%
+      select(scenario, contains("precopt"),
+             -variation, -replicate) %>%
+      gather(contains("precopt"), key=trait, value=value, factor_key=T) %>% 
+      ggplot(aes(scenario, value, color=scenario)) + geom_boxplot(notch=TRUE, outlier.shape = NA, fill="grey90") +
+      stat_summary(fun.y=mean,geom="errorbar", color="red", aes(ymax = ..y.., ymin = ..y..)) +
+      geom_jitter(width = 0.1, alpha=0.3) + facet_wrap(.~trait, scales="free") + theme_fira() + scale_color_fira()
+  ggsave("traitboxes_dists_end.pdf", tbdists, width=8, height=3)
+  
+  tworesults %>% filter(time==800) %>% mutate_at(vars(contains("size"), linkage_degree), log) %>% select(variation, dispmeanmed:linkage_degree) %>%
+      select(-replicate, -conf) %>% select(variation, ends_with("std")) %>%
+      gather(-variation, key=trait, value=value) %>% mutate(variation=as.factor(variation)) %>% 
+      ggplot(aes(variation, value, color=variation)) + geom_boxplot(notch=TRUE, outlier.shape = NA, fill="grey90") +
+      geom_jitter(width = 0.1, alpha=0.3) + facet_wrap(.~trait, scales="free") + scale_color_viridis_d(option="cividis")
+  ggsave("traitboxes_allsp_intraspec_end.pdf", width=9, height=6)
+  
+  tworesults %>% filter(time==800) %>% mutate_at(vars(contains("size"), linkage_degree), log) %>% select(variation, dispmeanmed:linkage_degree) %>%
+      select(-replicate, -conf) %>% select(variation, ends_with("sdmed")) %>%
+      gather(-variation, key=trait, value=value) %>% mutate(variation=as.factor(variation)) %>% 
+      ggplot(aes(variation, value, color=variation)) + geom_boxplot(notch=TRUE, outlier.shape = NA, fill="grey90") +
+      geom_jitter(width = 0.1, alpha=0.3) + facet_wrap(.~trait, scales="free") + scale_color_viridis_d(option="cividis")
+  ggsave("traitboxes_allsp_intragen_end.pdf", width=9, height=6)
+  
+      traitresults = allresults %>% filter(time >= 800) %>%
+          gather(adults, juveniles, linkage_degree, contains("min"), contains("med"), contains("std"), contains("max"), key=trait, value=value)
+
+      ## violins:
+      traitresults %>% ggplot(aes(conf, value, fill=conf)) + geom_violin() + facet_wrap(~trait, scales="free") +
+          scale_fill_viridis_d() + theme_minimal() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+      ## density:
+      traitresults %>% ggplot(aes(value, fill=conf)) + geom_density(alpha=0.8) + facet_wrap(~trait, scales="free") +
+          scale_fill_viridis_d() + theme_minimal() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+      ## boxplots:
+      traitresults %>% ggplot(aes(conf, value, fill=conf)) + geom_boxplot(notch=TRUE) + facet_wrap(~trait, scales="free") +
+          scale_fill_viridis_d(option="plasma") + theme_minimal() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+      surviving = allresults %>% filter(time>=800) %>% mutate(species=paste(lineage,conf,replicate, sep="_")) %>% select(species) %>% unique
+      surviving = c(surviving)[[1]]
+      survivinglineages = allresults %>% filter(time==0) %>% mutate(species=paste(lineage,conf,replicate, sep="_")) %>%
+          filter(species %in% surviving) %>% select(-species)
+      survivinglineages %>% gather(adults, juveniles, linkage_degree, contains("min"), contains("med"), contains("std"), contains("max"), key=trait, value=value) %>%
+          ggplot(aes(conf, value, fill=conf)) + geom_boxplot(notch=TRUE) + facet_wrap(~trait, scales="free") +
+          scale_fill_viridis_d() + theme_minimal() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  #+END_SRC
+*** Ordinations:
+    Caveat: time consuming computations!
+    
+    #+BEGIN_SRC R
+    endpca = prcomp(endresults[,-1], scale=T)
+    fviz_pca_var(endpca, geom.ind="point")
+    pca = autoplot(endpca, data=endresults, loadings=T, loadings.label=T, alpha=1, colour='scenario') + scale_color_viridis_d() + theme_minimal()
+    ggsave("pca_t800_alltraits.pdf", pca, width=9, height=6)
+
+    mynmds = metaMDS(endresults[,-1])
+
+    sharedendresults = tworesults %>% mutate(variation = (scenario=="variable")*1) %>% select(-adults, -juveniles, -maxage, -maxsize) %>% filter(time == 800, lineage %in% sharedspecies) %>%
+        select(variation, lineage, ends_with("med")) %>% select_if(function(x){!any(is.na(x))}) %>%
+        mutate(variation=as.factor(variation))
+    sharedendpca = prcomp(sharedendresults[,-c(1,2)], scale = T)
+    autoplot(sharedendpca, data=sharedendresults, loadings=T, loadings.label=T, alpha=0.5, colour='lineage', shape='variation') + theme_minimal()
+    ggsave("pca_sharedspecs_t800.pdf", width=16, height=9)
+
+    traitendresults = endresults %>% select(-variation) %>% select(-(x:prec))
+
+    startendresults = allresults %>% select(-adults, -juveniles, -maxage, -maxsize) %>% filter(time==0 | time==200 | time >=800) %>%
+        select_if(is.numeric) %>% select_if(function(x){!any(is.na(x))}) %>% select(-variation) %>% select(-(x:prec))
+
+    afterburninresults = allresults %>% select(-adults, -juveniles, -maxage, -maxsize) %>% filter(time==200 | time >=900, conf == "sg") %>%
+        select_if(is.numeric) %>% select_if(function(x){!any(is.na(x))}) %>% select(-variation) %>% select(-(x:prec))
+    afterburninpca = prcomp(afterburninresults[, -1], scale = T)
+    autoplot(afterburninpca, data=afterburninresults, colour='time', loadings=T, loadings.label=T, alpha=0.3) + scale_color_viridis_c() + theme_minimal()
+    ggsave("pca_novar_t200_t900.pdf", width=16, height=9)
+    
+    startpca = prcomp(startendresults[,-1], scale = T)
+    autoplot(startpca, data=allresults[allresults$time==0|allresults$time==200|allresults$time>=800,], colour='time', loadings=T, loadings.label=T, alpha=0.3, shape='conf') + scale_color_viridis_c() + theme_minimal()
+    ggsave("pca_var_novar_startend.pdf", width=16, height=9)
+    autoplot(startpca, data=allresults[allresults$time==0|allresults$time>=800,], colour='time', loadings=T, loadings.label=T, alpha=0.3, shape='conf') + scale_color_viridis_c() + theme_minimal() + coord_cartesian(xlim=c(-0.003,0.003), ylim=c(-0.01,0.005))
+    ggsave("pca_var_novar_startend_zoom.pdf", width=16, height=9)
+    
+    mydudi = dudi.pca(traitendresults[,-1], scale=T, nf=2, scannf = FALSE)
+                                        #autoplot(mydudi, data=traitendresults, colour='variation', loadings=T, loadings.label=T) + scale_color_viridis_c() + theme_minimal()
+    
+                                        #biplot(mydudi, col=ifelse(traitendresults$variation==1,"orange","violet"))
+    
+    ## mynmds = allresults %>% select(-contains("size"), -adults, -juveniles) %>% filter(time == 500) %>%
+    ##     mutate(variation=(scenario=="variable")*1) %>% select_if(is.numeric) %>% select_if(function(x){!any(is.na(x))}) %>%
+    ##     select(replicate, variation, ends_with("med")) %>% metaMDS()
+    ## plot(mynmds)
+    
+    ccadata = allresults %>% filter(time == 500) %>%
+        mutate(variation=(scenario=="variable")*1) %>% select_if(is.numeric) %>% select_if(function(x){!any(is.na(x))}) %>%
+        select(replicate, variation, ends_with("med"))
+    mycca = ccadata %>% cca()
+                                        #plot(mycca)
+                                        #plot(envfit(mycca, ccadata))
+    #+END_SRC
+    
+*** Herberich test
+
+**** Simulation initial state
+
+  #+BEGIN_SRC R
+  initresults = survivinglineages %>% select(-maxage, -maxsize) %>% select_if(is.numeric) %>%
+      select_if(function(x){!any(is.na(x))}) %>% mutate(variation=as.factor(variation))
+  traitnames = initresults %>% select(dispmeanmin:linkage_degree, -variation) %>% names() 
+
+  inittraits_glht = foreach(trait=traitnames) %dopar% {
+      initmod = aov(get(trait)~variation, data=initresults)
+      initmod_glht = glht(initmod, mcp(variation="Tukey"), vcov=vcovHC)
+  }
+  names(inittraits_glht) = traitnames
+
+  lapply(inittraits_glht, summary)
+  #+END_SRC
+
+  #+BEGIN_SRC R
+  endresults = tworesults %>% filter(time==1000) %>% select(-maxage, -maxsize) %>% select_if(is.numeric) %>%
+      select_if(function(x){!any(is.na(x))}) %>% mutate(variation=as.factor(variation))
+  traitnames = endresults %>% select(dispmeanmin:linkage_degree, -variation) %>% names() 
+  endtraits_glht = foreach(trait=traitnames) %do% {
+      endmod = aov(get(trait)~variation, data=endresults)
+      endmod_glht = glht(endmod, mcp(variation="Tukey"), vcov=vcovHC)
+  }
+  names(endtraits_glht) = traitnames
+  lapply(endtraits_glht, summary)
+  #+END_SRC
+
+**** Simulation end
+
+     #+BEGIN_SRC R
+     myendresults = tworesults %>% mutate(variation=as.factor(variation)) %>% na.omit()
+     traitnames = myendresults %>% select(dispmeanmed:linkage_degree, -variation, -conf) %>% names() 
+
+     endtraits_glht = foreach(trait=traitnames) %do% {
+         endmod = aov(get(trait)~variation, data=myendresults)
+         endmod_glht = glht(endmod, mcp(variation="Tukey"), vcov=vcovHC)
+     }
+     names(endtraits_glht) = traitnames
+
+     lapply(endtraits_glht, summary)
+     #+END_SRC
+
+**** Shared and unique species
+
+#+BEGIN_SRC R
+## shared species at simulation end
+sharedspresults = tworesults %>% filter(lineage %in% c(sharedspecies)) %>% select(-adults, -juveniles, -maxage, -maxsize, -replicate) %>% filter(time == 800) %>% select_if(is.numeric) %>%
+        select_if(function(x){!any(is.na(x))}) %>% mutate(variation=as.factor(variation))
+      sharedsptraitnames = sharedspresults %>% select(dispmeanmed:linkage_degree, -variation) %>% names() 
+      sharedsptraits_glht = foreach(trait=sharedsptraitnames) %do% {
+          endmod = aov(get(trait)~variation, data=scale(sharedspresults))
+          endmod_glht = glht(endmod, mcp(variation="Tukey"), vcov=vcovHC)
+      }
+      names(sharedsptraits_glht) = sharedsptraitnames
+
+      lapply(sharedsptraits_glht, summary)
+      sharedspresults %>% mutate_at(vars(contains("size"), linkage_degree), log) %>% select(variation, dispmeanmed:linkage_degree) %>%
+          gather(dispmeanmed:linkage_degree, key=trait, value=value) %>%
+          ggplot(aes(variation, value, color=variation)) + geom_boxplot(notch=TRUE, outlier.shape = NA, fill="grey90") +
+          geom_jitter(width = 0.1, alpha=0.3) + facet_wrap(.~trait, scales="free") + scale_color_viridis_d(option="cividis")
+      ggsave("traitboxes_shared_end.pdf", width=18, height=12)
+
+## unique species at simulation start
+      uniqspresults = tworesults %>% filter(time==0, ((lineage %in% staticspecies) & variation==0) |
+                                                     ((lineage %in% variablespecies) & variation==1)) %>%
+          select(-adults, -juveniles, -maxage, -maxsize, -replicate) %>% select_if(is.numeric) %>% select_if(function(x){!any(is.na(x))}) %>%
+          mutate(variation=as.factor(variation))
+      uniqsptraitnames = uniqspresults %>% select(ends_with("med"), ends_with("std"), -ends_with("sdstd"),
+                                                  linkage_degree) %>% names() 
+      uniqsptraits_glht = foreach(trait=uniqsptraitnames) %do% {
+          endmod = aov(get(trait)~variation, data=uniqspresults)
+          endmod_glht = glht(endmod, mcp(variation="Tukey"), vcov=vcovHC)
+      }
+      names(uniqsptraits_glht) = uniqsptraitnames
+
+      lapply(uniqsptraits_glht, summary)
+      uniqspresults %>% mutate_at(vars(contains("size"), linkage_degree), log) %>% select(variation, dispmeanmed:linkage_degree) %>%
+          gather(dispmeanmed:linkage_degree, key=trait, value=value) %>%
+          ggplot(aes(variation, value, color=variation)) + geom_boxplot(notch=TRUE, outlier.shape = NA, fill="grey90") +
+          geom_jitter(width = 0.1, alpha=0.3) + facet_wrap(.~trait, scales="free") + scale_color_viridis_d(option="cividis")
+      ggsave("traitboxes_uniq_start.pdf", width=18, height=12)
+
+## unique species at simulation end
+      uniqspendresults = tworesults %>% filter(time==800, ((lineage %in% staticspecies) & variation==0) |
+                                                     ((lineage %in% variablespecies) & variation==1)) %>%
+          select(-adults, -juveniles, -maxage, -maxsize, -replicate) %>% select_if(is.numeric) %>% select_if(function(x){!any(is.na(x))}) %>%
+          mutate(variation=as.factor(variation))
+      uniqspendtraitnames = uniqspendresults %>% select(ends_with("med"), ends_with("std"), -ends_with("sdstd"),
+                                                  linkage_degree) %>% names() 
+      uniqspendtraits_glht = foreach(trait=uniqspendtraitnames) %do% {
+          endmod = aov(get(trait)~variation, data=uniqspendresults)
+          endmod_glht = glht(endmod, mcp(variation="Tukey"), vcov=vcovHC)
+      }
+      names(uniqspendtraits_glht) = uniqspendtraitnames
+
+      lapply(uniqspendtraits_glht, summary)
+      uniqspendresults %>% mutate_at(vars(contains("size"), linkage_degree), log) %>% select(variation, dispmeanmed:linkage_degree) %>%
+          gather(dispmeanmed:linkage_degree, key=trait, value=value) %>%
+          ggplot(aes(variation, value, color=variation)) + geom_boxplot(notch=TRUE, outlier.shape = NA, fill="grey90") +
+          geom_jitter(width = 0.1, alpha=0.3) + facet_wrap(.~trait, scales="free") + scale_color_viridis_d(option="cividis")
+      ggsave("traitboxes_uniq_end.pdf", width=18, height=12)
+
+#+END_SRC
+
+*** Cluster analysis
+taken from https://www.statmethods.net/advstats/cluster.html
+
+#+BEGIN_SRC R
+library(fpc)
+
+mywholedata = tworesults %>% mutate(variation = (scenario=="variable")*1) %>% select(-adults, -juveniles, -maxage, -maxsize) %>% filter(time == 800, lineage %in% sharedspecies) %>%
+    select(variation, ends_with("med")) %>% select_if(function(x){!any(is.na(x))})
+## mydata <- na.omit(mydata) # listwise deletion of missing
+mydata <- scale(mywholedata[,-1]) # standardize variables
+fit = pamk(mydata)
+mydata = as.tibble(mydata)
+mycluster = bind_cols(variation=as.factor(mywholedata$variation), mydata, cluster=as.factor((fit$pamobject)$cluster))
+mypca = prcomp(mydata)
+
+autoplot(mypca, data=mycluster, loadings=T, loadings.label=T, colour='cluster', shape='variation', size=4) + scale_color_brewer(palette="Spectral") + theme_minimal()
+
+#+END_SRC
+
+*** Distribution of environmental variables
+    :PROPERTIES:
+    :CUSTOM_ID: distribution-of-environmental-variables
+    :END:
+
+ slight tendency of variable scenarios to higher/lower temps/precs
+ (median, solid, and mean, dashed, lines)
+
+ #+BEGIN_SRC R
+     results.stats = allresults %>% group_by(conf) %>% summarize(meantemp=mean(temp, na.rm=T), meanprec=mean(prec, na.rm=T),
+								 medtemp=median(temp, na.rm=T), medprec=median(prec, na.rm=T))
+     allresults %>% ggplot(aes(x=temp, fill=conf)) + geom_density(alpha=0.8) +
+	 geom_vline(data=results.stats,aes(color=conf, xintercept=meantemp), size=2, linetype="dashed") +
+	 geom_vline(data=results.stats,aes(color=conf, xintercept=medtemp), size=2) +
+	 scale_fill_viridis_d() + scale_color_viridis_d() + theme_minimal()
+ #+END_SRC
+
+ #+CAPTION: plot of chunk unnamed-chunk-10
+ [[file:figure/unnamed-chunk-10-1.png]]
+
+ #+BEGIN_SRC R
+     allresults %>% ggplot(aes(x=prec, fill=conf)) + geom_density(alpha=0.8) +
+	 geom_vline(data=results.stats,aes(color=conf, xintercept=meanprec), size=2, linetype="dashed") +
+	 geom_vline(data=results.stats,aes(color=conf, xintercept=medprec), size=2) +
+	 scale_fill_viridis_d() + scale_color_viridis_d() + theme_minimal()
+ #+END_SRC
+
+ #+CAPTION: plot of chunk unnamed-chunk-10
+ [[file:figure/unnamed-chunk-10-2.png]]
+
+*** Number of scenarios, timesteps
+
+ #+BEGIN_SRC R
+     reps = tworesults$replicate %>% unique()
+     tsteps = seq(800,1000,50)
+     anavar = tibble()
+     for (nreps in seq(10, length(table(tworesults$replicate)), 10)) {
+	 for (ntsteps in 1:length(tsteps)) {
+	     temp.res = tworesults %>% select(-variation) %>% filter(time %in% tsteps[1:ntsteps], replicate %in% reps[1:nreps]) %>%
+		 filter(scenario=="variable")
+	     mypca = temp.res %>% select(-ends_with("sdmin")) %>%
+		 select(-(x:prec), -adults, -juveniles, -maxage, -maxsize, -time, -replicate) %>%
+		 select_if(is.numeric) %>% select_if(function(x){!any(is.na(x))}) %>% prcomp(scale=T)
+	     anavar = bind_rows(anavar, c(n_replicates=nreps, n_timesteps = ntsteps, PC=mypca$sdev))
+	 }
+     }
+
+     pcasds = anavar %>% gather(contains("PC"), key=component, value=standard_deviation, factor_key=T) %>%
+	 ggplot(aes(n_timesteps, standard_deviation)) + geom_line(aes(color=as.factor(n_replicates))) +
+       facet_wrap(.~component, scales="free_y") + scale_color_viridis_d() + theme_minimal()
+     ggsave("pcasd_t800_timesteps_replicates.pdf", pcasds, width=12, height=8)
+ #+END_SRC
+
+ #+CAPTION: plot of chunk unnamed-chunk-11
+ [[file:figure/unnamed-chunk-11-1.png]]
+
+ #+BEGIN_SRC R
+     #autoplot(mypca, data=temp.res, loadings=T, loadings.label=T, colour='replicate') + theme_minimal() + scale_color_distiller(palette="Spectral")
+ #+END_SRC
+* Graph visualisation
+
+** coexistence matrices
+
+#+BEGIN_SRC R
+for (t in c(200, 500, 800)) {
+    for (sc in c("sg", "sgv")) {
+        coocmat = tworesults %>% mutate(site=paste0(x, ".", y, ":", replicate), abundance=adults+juveniles) %>% select(conf, time, site, lineage, abundance) %>%
+            filter(time==t, conf==sc) %>% select(site, lineage) %>% table %>% crossprod
+        diag(coocmat) = 0
+        write.csv(coocmat, paste0("graphs/", sc, "_", t, "_species_cooccurrence.csv"))
+    }
+}
+#+END_SRC
+
+** trait similarities
+
+#+BEGIN_SRC R
+
+for (t in c(100, 800)) {
+    for (trait in c("ngenesmed", "sgv")) {
+        distmat = tworesults %>% select(lineage, get(trait)) %>%
+             %>% crossprod
+        diag(coocmat) = 0
+        write.csv(coocmat, paste0("graphs/", sc, "_", t, "_species_cooccurrence.csv"))
+    }
+}
+tworesults %>% filter(time==800) %>% select(precoptsdmed) %>% dist %>% as.matrix %>% as.tibble
+
+                                        #mutate(population=paste(x, y, lineage, sep="_")) %>%
+
+#+END_SRC
+
+* Notes and open questions
+
+How to quantify inter- vs. intraspecific variability? Which traits, which metrics (min/max etc.), ... ? 
+
+How to identify clusters AND associated traits/variables?
+
+reduce traits to `select(ends_with("sdmax"), ends_with("med"), ends_with("std"), -ends_with("sdmed"), -ends_with("sdstd"), linkage_degree)`?
+or `select(ends_with("med"), ends_with("std"), -ends_with("sdstd"), linkage_degree)`?
+
+after initialisation species occur in several locations -> pseudoreplication? average first? only analyse middle patch?
+or is success also a trait/signal?
+
+Herberich tests means ("Estimate"), but medians and variances of traits tell a different story (mean linkage lower @var, median higher)
+=> use Herberich only for testing for difference, and discuss actual trait values?
