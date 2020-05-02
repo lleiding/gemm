@@ -64,6 +64,8 @@ Now, we can load the packages.
  library(tidyverse)
  library(lme4)
  library(lmerTest)
+ library(sandwich)
+ library(multcomp) ## caveat: mvtnorm conflicts with dispRity/geiger
  theme_set(theme_classic()) ## or theme_linedraw?
 #+END_SRC
 *** set up parallel computing
@@ -84,7 +86,7 @@ read_indfiles = function(path = "", pattern = "", suffix = "") {
       rawinds = bind_rows(rawinds, inds)
     }
     rawinds$lineageid = paste(rawinds$lineage, rawinds$id, sep="_")
-    rawinds %>% select(-starts_with("X")) # most likely empty columns due to superfluous separators
+    rawinds %>% select(-starts_with("X", ignore.case = FALSE)) # most likely empty columns due to superfluous separators
 }
 
 read_seqfiles = function(path = "", pattern = "", suffix = "") { ## path, pattern and suffix might be combined
@@ -108,9 +110,9 @@ reducetips = function(seqs, ntips = 10000){ #this reduces tips to a maximum of 1
     seqs
 }
 
-gettree = function(linseqs){
+gettree = function(linseqs, maxtips = 10000){
   if (length(linseqs[,1]) > 1) {
-    linseqs = reducetips(linseqs)
+    linseqs = reducetips(linseqs, maxtips)
     dists = dist.dna(linseqs, model = "raw") # raw better fitting than either F81 or JC69
     tre = hclust(dists, method = "ward.D2")
     tre$height <- round(tre$height, 6) # work-around 'height' component of 'tree' is not sorted (increasingly) error
@@ -140,21 +142,30 @@ mksptree = function(tre, grps){
   }
 }  
 
-mkphylos = function(allseqs, rawinds, minimumtips = 3, spboundary = 0.05){
-  seqlins = strsplit(dimnames(allseqs)[[1]], "_") %>% lapply(function(x) x[1]) %>% unlist #%>% unique %>% gsub(">", "", .)
+filterseqs = function(linseqs, rawinds, lineage) {
+##    linseqs = allseqs[seqlins == lineage,]
+    dimnames(linseqs)[[1]] = strsplit(dimnames(linseqs)[[1]], "_") %>% lapply(function(x) paste(x[1], x[2], sep = "_")) %>% unlist ## assumes correct sequences are already filtered
+    linseqs = linseqs[!duplicated(dimnames(linseqs)[[1]]),]
+    adlts = rawinds %>% filter(lineage == !!lineage, size >= repsize) %>%
+      group_by(lineageid) %>% select(time) %>% filter(time == max(time)) %>%
+      ungroup %>% select(lineageid) %>% unlist
+    linseqs = linseqs[dimnames(linseqs)[[1]] %in% adlts,]
+    linseqs
+}  
+
+mkphylos = function(allseqs, rawinds, minimumtips = 3, maxtips = 30000, spboundary = 0.05){
+##  seqlins = strsplit(dimnames(allseqs)[[1]], "_") %>% lapply(function(x) x[1]) %>% unlist #%>% unique %>% gsub(">", "", .)
   colids = rawinds %>% filter(time == 0) %>% select(lineageid) %>% unlist
   founderlins = rawinds %>% filter(!(lineageid %in% colids)) %>% select(lineage) %>% unique %>% unlist
-  allphylos = foreach(lineage = unique(seqlins[seqlins %in% founderlins])) %dopar% {
-    linseqs = allseqs[seqlins == lineage,]
-    dimnames(linseqs)[[1]] = strsplit(dimnames(linseqs)[[1]], "_") %>% lapply(function(x) paste(x[1], x[2], sep = "_")) %>% unlist
-    linseqs = linseqs[!duplicated(dimnames(linseqs)[[1]]),]
+  allphylos = foreach(lineage = founderlins) %dopar% { ##unique(seqlins[seqlins %in% founderlins])) %dopar% {
+    linseqs = filterseqs(allseqs, rawinds, lineage)
     if (length(linseqs[,1]) >= minimumtips) {
       if (spboundary == "actual") {
         spboundary = rawinds %>% filter(time == 0, lineage == !!lineage) %>%
           select(reptol) %>% min ## colonizing mainland individual able to reintegrate into island population
         spboundary = 1 - spboundary
       }
-      tre = gettree(linseqs)
+      tre = gettree(linseqs, maxtips)
       grps = inferspecies(tre, spboundary)
       species = mksptree(tre, grps)
       times = rawinds %>% filter(lineage==!!lineage, time != 0) %>% select(time, lineageid) %>%
@@ -174,10 +185,10 @@ mkphylos = function(allseqs, rawinds, minimumtips = 3, spboundary = 0.05){
       } else {
         timed = times
       }
-      list(tree=tre, species=species, timed=timed, extant=extant)
+      list(tree=tre, grps=grps, species=species, timed=timed, extant=extant)
     }
   }
-  names(allphylos) = unique(seqlins[seqlins %in% founderlins])
+  names(allphylos) = founderlins ##unique(seqlins[seqlins %in% founderlins])
   allphylos[!sapply(allphylos, is.null)]
 }
 
@@ -212,6 +223,10 @@ gettimemaxspp = function(timedspp, inds, filtermonospp = FALSE) {
   timemaxspp = tibble(
     lineage = names(timedspp),
     maxspp = sapply(timedspp, function(x) max(x$int.div)),
+    medianspp = sapply(timedspp, function(x) median(x$int.div)),
+    timetofirstclad = sapply(timedspp, function(x) ifelse(max(x$int.div) > 1,
+                                                       max(x$int.start) - max(x$int.start[x$int.div > 1]), ## Times are reverse: present is 0
+                                                       NA)),
     timetomaxspp = sapply(timedspp, function(x) ifelse(max(x$int.div) > 1,
                                                        max(x$int.start) - x$int.start[which.max(x$int.div)], ## Times are reverse: present is 0
                                                        NA)),
@@ -230,7 +245,7 @@ gettimemaxspp = function(timedspp, inds, filtermonospp = FALSE) {
 getmaxspp = function(inds, timedspp) {
   colids = inds %>% filter(time == 0) %>% select(lineageid) %>% unlist
   founderlins = inds %>% filter(!(lineageid %in% colids)) %>% select(lineage) %>% unique %>% unlist
-  maxspp = inds %>% filter(lineage %in% founderlins) %>% group_by(lineage, lnkgunits) %>% filter(time > 0) %>%
+  maxspp = inds %>% filter(lineage %in% founderlins) %>% group_by(lineage, lnkgunits) %>% ## initial state of species is of highest interest!
     filter(time == max(time) | time == min(time)) %>% mutate(Phase = ifelse(time == max(time), "terminal", "initial")) %>% select(-(time:originid)) %>%
     group_by(lineage, lnkgunits, Phase) %>%  select(-new, -contains("adaptation"), -ngenes, -compat) %>% select_if(is.numeric) %>%
     summarize_all(mean) %>% right_join(gettimemaxspp(timedspp, inds, FALSE), by = c("lineage", "lnkgunits")) %>%
@@ -262,21 +277,57 @@ none.timedspp = gettimedspp(none.phylos, none.inds)
 rand.inds = read_indfiles("../../2020-02-*_islsimconfig", "*/inds*", ".tsv")
 rand.seqs = read_seqfiles("../../2020-02-*_islsimconfig", "*/", "*.fa")
 
-rand.phylos = mkphylos(rand.seqs, rand.inds, spboundary = "actual")
-rand.timedspp = gettimedspp(rand.phylos, rand.inds)
+rand.incomplete = rand.inds %>% group_by(replicate) %>% select(time) %>% summarize_all(max) %>% ungroup %>% filter(time <= 850000) %>% select(replicate) %>% unlist
+rand.compl = rand.inds %>% group_by(replicate) %>% select(time) %>% ungroup %>% filter(time >= 750000) %>% select(replicate) %>% unlist %>% unique
 
-rand.maxspp = getmaxspp(rand.inds, rand.timedspp)
-none.maxspp = getmaxspp(none.inds, none.timedspp)
-full.maxspp = getmaxspp(full.inds, full.timedspp)
+rand.phylos = mkphylos(rand.seqs, rand.inds %>% filter(replicate %in% rand.compl, time <=750000), spboundary = "actual")
+rand.timedspp = gettimedspp(rand.phylos, rand.inds %>% filter(replicate %in% rand.compl, time <=750000))
 
+rand.maxspp = getmaxspp(rand.inds %>% filter(replicate %in% rand.compl, time <=750000), rand.timedspp)
+
+none.compl = none.inds %>% group_by(replicate) %>% select(time) %>% ungroup %>% filter(time >= 700000) %>% select(replicate) %>% unlist %>% unique
+full.compl = full.inds %>% group_by(replicate) %>% select(time) %>% ungroup %>% filter(time >= 700000) %>% select(replicate) %>% unlist %>% unique
+none.phylos = mkphylos(none.seqs, none.inds %>% filter(replicate %in% none.compl, time <=700000), spboundary = "actual")
+none.timedspp = gettimedspp(none.phylos, none.inds %>% filter(replicate %in% none.compl, time <=700000))
+none.maxspp = getmaxspp(none.inds %>% filter(replicate %in% none.compl, time <=700000), none.timedspp)
+full.phylos = mkphylos(full.seqs, full.inds %>% filter(replicate %in% full.compl, time <=700000), spboundary = "actual")
+full.timedspp = gettimedspp(full.phylos, full.inds %>% filter(replicate %in% full.compl, time <=700000))
+full.maxspp = getmaxspp(full.inds %>% filter(replicate %in% full.compl, time <=700000), full.timedspp)
+
+rand.phylos05 = mkphylos(rand.seqs, rand.inds %>% filter(replicate %in% rand.compl, time <=750000), spboundary = 0.05)
+rand.timedspp05 = gettimedspp(rand.phylos05, rand.inds %>% filter(replicate %in% rand.compl, time <=750000))
+rand.maxspp05 = getmaxspp(rand.inds %>% filter(replicate %in% rand.compl, time <=750000), rand.timedspp05)
+
+rand.maxspp = rand.maxspp %>% right_join(tibble(lineage = names(rand.phylos), totalspp = sapply(rand.phylos, function(x) max(x$grps))), by = "lineage")
+rand.maxspp$tempdiff = abs(rand.maxspp$tempopt - 298)
 #+END_SRC
 
 **** Plot stuff
 #+BEGIN_SRC R
-rtp = bind_rows(rand.maxspp) %>% gather("trait", "value", dispmean:linkage, -replicate) %>% mutate_at(vars(timetomaxspp), log10) %>%
-  gather("response", "number", maxspp:timetomaxspp) %>%
-  ggplot(aes(value, number, color = Phase)) + geom_point() + facet_grid(response ~ trait, scales="free") + theme_bw()
-ggsave("pairs_rand_maxspp_cols.pdf", rtp, width = 16, height = 4)
+rtp = bind_rows(rand.maxspp) %>% filter(Phase == "initial") %>%
+  rename(`Mean dispersal distance` = dispmean,
+         `Long-distance dispersal` = dispshape,
+         `Precipitation optimum` = precopt,
+         `Precipitation tolerance` = prectol,
+         `Adult biomass (g), log(x+1)` = repsize,
+         `Strength of reproductive barrier` = reptol,
+         `Propensity to selfing` = selfing,
+         `Seed biomass (g), log(x+1)` = seedsize,
+         `Temperature optimum` = tempopt,
+         `Temperature tolerance` = temptol,
+         `Number of genes` = ngenes,
+         `Linkage` = linkage
+         ) %>% ## gather("Trait", "Trait value", `Mean dispersal distance`:`Linkage`, -replicate) %>% mutate_at(vars(timetomaxspp), log10) %>%
+  gather("Trait", "Trait value", `Long-distance dispersal`, `Propensity to selfing`, `Temperature optimum`, `Linkage`) %>% mutate_at(vars(timetomaxspp), log10) %>%
+  mutate(diverged = ifelse(diverged == 1, "diverged", "monospecific")) %>%
+  ## gather("response", "number", maxspp:timetomaxspp, totalspp) %>%
+  ggplot(aes(`Trait value`, maxspp, color = diverged)) + geom_point() + facet_grid(. ~ `Trait`, scales="free") + theme_classic() + scale_color_viridis_d("Lineage divergence") + ylab("Maximum number of species")
+ggsave("pairs_rand_maxspp_750k.pdf", rtp, width = 8, height = 2.5)
+
+rtp = bind_rows(rand.maxspp) %>% gather("trait", "value", dispmean:linkage, -replicate) %>% 
+  gather("response", "number", medianspp:timetofirstclad) %>%
+  ggplot(aes(value, number, color = Phase)) + geom_point() + facet_grid(response ~ trait, scales="free") + theme_bw() + scale_color_viridis_d()
+ggsave("pairs_rand_medianspp_750k.pdf", rtp, width = 16, height = 4)
 ##cor(bind_rows(full.maxspp[, -1], none.maxspp[, -1]))
 ##cor(rand.maxspp[, -1])
 
@@ -284,6 +335,10 @@ ggsave("pairs_rand_maxspp_cols.pdf", rtp, width = 16, height = 4)
 ##pairs(bind_rows(full.maxspp[, -1], none.maxspp[, -1]))
 ##pairs(rand.maxspp[, -1])
 ##dev.off()
+
+##plot number of colonizations/divergences per replicate:
+##prefp = rand.maxspp %>% filter(Phase == "terminal") %>% select(replicate, `Category/phase`) %>%
+##  ggplot(aes())
 
 rlmsp = rand.maxspp %>% filter(diverged == 1, Phase == "terminal") %>% select(reptol, linkage, maxspp) %>%
   ggplot(aes(reptol, maxspp, color = linkage)) + geom_point() + scale_color_viridis_c()
@@ -301,6 +356,18 @@ rlmsp = rand.maxspp %>% filter(Phase == "initial") %>% select(selfing, dispshape
   ggplot(aes(selfing, maxspp, color = dispshape, size = ngenes)) + geom_point() + scale_color_viridis_c()
 ggsave("selfing_dispshape_initial_maxspp_rand.pdf", rlmsp)
 
+rlmsp = rand.maxspp %>% filter(Phase == "initial") %>% select(selfing, linkage, maxspp, temptol) %>%
+  ggplot(aes(selfing, linkage, color = maxspp)) + geom_point() + scale_color_viridis_c()
+ggsave("selfing_linkage_initial_maxspp_rand.pdf", rlmsp)
+
+rlmsp = rand.maxspp %>% filter(Phase == "initial") %>% select(selfing, linkage, maxspp, temptol) %>%
+  ggplot(aes(selfing, temptol, color = maxspp)) + geom_point() + scale_color_viridis_c()
+ggsave("selfing_temptol_initial_maxspp_rand.pdf", rlmsp)
+
+rlmsp = rand.maxspp %>% filter(Phase == "initial") %>% select(selfing, linkage, maxspp, temptol) %>%
+  ggplot(aes(selfing, linkage, color = temptol, size = maxspp)) + geom_point() + scale_color_viridis_c()
+ggsave("selfing_linkage_temptol_initial_maxspp_rand.pdf", rlmsp)
+
 
 plot_phylos(full.phylos, full.inds, "full_timed_trees")
 plot_phylos(none.phylos, none.inds, "none_timed_trees")
@@ -310,7 +377,7 @@ plot_phylos(rand.phylos, rand.inds, "rand_timed_trees")
 **** Traits over time
 
 #+BEGIN_SRC R
-ttp = rand.inds %>% filter(!(lineageid %in% colids)) %>%
+ttp = rand.inds %>% filter(!(lineageid %in% colids)) %>% filter(!(replicate %in% rand.incomplete)) %>% 
   mutate(linkage = ngenes/lnkgunits) %>%
   select(time, lineage, linkage, lnkgunits, ngenes, reptol, selfing, seedsize,
          repsize, dispmean, dispshape, prectol, temptol) %>%
@@ -319,20 +386,51 @@ ttp = rand.inds %>% filter(!(lineageid %in% colids)) %>%
   gather(linkage:temptol, key = Trait, value = `Trait value`) %>%
   ggplot(aes(time, `Trait value`, color = lineage)) +
   geom_line() + facet_wrap(. ~ Trait, scales="free")
-ggsave("traits_time_all.pdf", ttp, height = 6, width = 12)
+ggsave("traits_time_all_compl.pdf", ttp, height = 6, width = 12)
+
+ttp = rand.inds %>% filter(lineage %in% rand.maxspp$lineage[rand.maxspp$diverged == 1]) %>%
+  mutate(linkage = ngenes/lnkgunits) %>%
+  select(time, lineage, linkage, lnkgunits, ngenes, reptol, selfing, seedsize,
+         repsize, dispmean, dispshape, prectol, temptol, precopt, tempopt) %>%
+  mutate_at(vars(repsize, seedsize), function(x) log(x + 1)) %>%
+  group_by(time, lineage) %>% 
+  gather(linkage:tempopt, key = Trait, value = `Trait value`) %>%
+  ggplot(aes(time, `Trait value`, color = lineage)) +
+  stat_summary(aes(color=lineage), fun.y = mean, geom="line", size=1) +
+  stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) +
+  facet_wrap(. ~ Trait, scales="free")
+ggsave("traits_time_lineages.pdf", ttp, height = 6, width = 12)
+
+rand.inds %>% filter(lineage %in% rand.maxspp$lineage[rand.maxspp$diverged == 1]) %>%
+  select(lineage, replicate) %>% unique
+
+
 #+END_SRC
 
 **** Traits distribution
 
 #+BEGIN_SRC R
-tdp = rand.maxspp %>% #mutate_at(vars(dispmean:linkage, -replicate), function(x) scale(x, center = FALSE)) %>%
-  group_by(`Category/phase`, lineage) %>%
-  gather(dispmean:temptol, ngenes:linkage, key = Trait, value = `Trait value`) %>%
-  ggplot(aes(`Category/phase`, `Trait value`, fill = `Category/phase`)) +
-  geom_violin() + geom_boxplot(width = 0.3) + facet_wrap(. ~ Trait, scales="free") +
+tdp = rand.maxspp %>% # filter(!(replicate %in% rand.incomplete)) %>% #mutate_at(vars(dispmean:linkage, -replicate), function(x) scale(x, center = FALSE)) %>%
+  mutate(diverged = ifelse(diverged == 1, "diverged", "monospecific")) %>%
+  rename(`Mean dispersal distance` = dispmean,
+         `Long-distance dispersal` = dispshape,
+         `Precipitation optimum` = precopt,
+         `Precipitation tolerance` = prectol,
+         `Adult biomass (g), log(x+1)` = repsize,
+         `Strength of reproductive barrier` = reptol,
+         `Propensity to selfing` = selfing,
+         `Seed biomass (g), log(x+1)` = seedsize,
+         `Temperature optimum` = tempopt,
+         `Temperature tolerance` = temptol
+         ) %>% group_by(Phase, lineage) %>%
+  gather(`Mean dispersal distance`:`Temperature tolerance`, key = Trait, value = `Trait value`) %>%
+  ggplot(aes(`Phase`, `Trait value`, fill = `diverged`)) +
+  geom_violin() + geom_boxplot(width = 0.3, position = position_dodge(0.9)) +
+  facet_wrap(. ~ Trait, scales="free") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  scale_fill_viridis_d()
-ggsave("traits_distribution_rand.pdf", tdp, height = 8, width = 12)
+  scale_fill_viridis_d("Lineage divergence") +
+  theme(legend.position=c(.55, .08), legend.justification=c(0, 0))
+ggsave("traits_distribution_rand_750k.pdf", tdp, height = 6, width = 9)
 
 tdp = bind_rows(none.maxspp, full.maxspp) %>% #mutate_at(vars(dispmean:linkage, -replicate), function(x) scale(x, center = FALSE)) %>%
   group_by(`Category/phase`, lineage) %>%
@@ -347,11 +445,39 @@ ggsave("traits_distribution_full_none.pdf", tdp, height = 8, width = 12)
 **** PCA
 
 #+BEGIN_SRC R
-endpca = prcomp(rand.maxspp[,-c(1:4,15,18:21)], scale=T)
-endpcaviz = fviz_pca_biplot(endpca, geom.ind="point", fill.ind=rand.maxspp$`Category/phase`,
+endpca = prcomp(rand.maxspp %>% rename(`Mean dispersal distance` = dispmean,
+         `Long-distance dispersal` = dispshape,
+         `Precipitation optimum` = precopt,
+         `Precipitation tolerance` = prectol,
+         `Adult biomass (g), log(x+1)` = repsize,
+         `Strength of reproductive barrier` = reptol,
+         `Propensity to selfing` = selfing,
+         `Seed biomass (g), log(x+1)` = seedsize,
+         `Temperature optimum` = tempopt,
+         `Temperature tolerance` = temptol,
+         `Number of genes` = ngenes,
+         `Linkage` = linkage
+         ) %>% filter(Phase == "initial") %>% select(-c(1:4,15,18:25)), scale=T)
+endpcaviz = fviz_pca_biplot(endpca, geom.ind="point", fill.ind=rand.maxspp %>% filter(Phase == "initial") %>% mutate(diverged = ifelse(diverged == 1, "diverged", "monospecific")) %>% select(diverged) %>% unlist,
+                            pointsize=1, pointshape=21, addEllipses = TRUE, repel = TRUE, title = "", labelsize = 3) + #, ellipse.alpha=0.1, ellipse.type = "convex") +
+  theme_bw() + scale_fill_viridis_d("Divergence") + scale_colour_viridis_d("Divergence") +
+  xlab("Principal component 1 (21.2%)") + ylab("Principal component 2 (19.1%)") 
+ggsave("pca_maintraits_750k.pdf", endpcaviz, width=6, height=4.5)
+
+indpca = prcomp(rand.inds %>% filter(lineage %in% rand.maxspp$lineage, time > 0) %>%
+                group_by(lineage) %>% filter(time == min(time)) %>%
+                mutate(linkage = ngenes / lnkgunits) %>% ungroup %>%
+                select(ngenes:temptol, linkage), scale=T)
+endpcaviz = fviz_pca_biplot(indpca, geom.ind="point", fill.ind = rand.inds %>%
+                                                        filter(lineage %in% rand.maxspp$lineage, time > 0) %>%
+                                                        group_by(lineage) %>% filter(time == min(time)) %>%
+                                                        inner_join(rand.maxspp %>% filter(Phase == "initial") %>%
+                                                                   select(lineage, diverged), by = "lineage") %>%
+                                                        ungroup %>% select(diverged) %>% unlist %>% as.factor(),
                             pointsize=1, pointshape=21, addEllipses = TRUE) + #, ellipse.alpha=0.1, ellipse.type = "convex") +
     theme_bw() + scale_fill_viridis_d("Divergence") + scale_colour_viridis_d("Divergence")
-ggsave("pca_maintraits_all.pdf", endpcaviz, width=6, height=4)
+ggsave("pca_maintraits_individuals.pdf", endpcaviz, width=6, height=4)
+
 pdf("pca_maintraits_eigen.pdf")
 corrplot(endpca$rotation)
 dev.off()
@@ -371,10 +497,10 @@ dev.off()
 **** Lineage-rank plots
 
 #+BEGIN_SRC R
-lrp = rand.maxspp %>% ungroup %>% filter(Phase == "initial") %>% ggplot(aes(reorder(lineage, -maxspp), maxspp)) +
+lrp = rand.maxspp %>% filter(Phase == "initial") %>% ggplot(aes(reorder(lineage, -maxspp), maxspp)) +
   geom_bar(stat = "identity") + xlab("Lineage") + ylab("Maximum number of species") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggsave("lineage_rank.pdf", lrp)
+ggsave("lineage_rank_compl.pdf", lrp, width = 5, height = 4)
 #+END_SRC
 
 **** Clustering
@@ -390,11 +516,106 @@ ggsave("kmeans.pdf", clp)
 ## lmem not usable because each lineage exclusive to the scenarios
 ## full model:
 
-anova(glmer(diverged ~ dispmean + dispshape + reptol + repsize + prectol + linkage +
+fullgenmod = glm(diverged ~ dispshape + repsize + linkage 
+                   , data = rand.maxspp %>%
+                       filter(Phase == "initial"), binomial)
+summary(fullgenmod)
+
+fullmod = lm(maxspp ~ dispshape + reptol + repsize + linkage + tempopt +
+                selfing + temptol, data = rand.maxspp %>%
+                                                         filter(Phase == "initial"))#, diverged == 1))
+summary(fullmod)
+
+fullmod = lm(totalspp ~ dispmean + dispshape + reptol + precopt 
+           , data = rand.maxspp %>%
+               filter(Phase == "initial"))
+summary(fullmod)
+
+fullgenmod = glm(diverged ~ dispshape + linkage + tempopt +
+                   selfing, data = rand.maxspp %>%
+                              filter(Phase == "initial"), binomial)
+summary(fullgenmod)
+
+redgenmod = glm(diverged ~ dispshape + linkage +
+                  temptol, data = rand.maxspp %>%
+                             filter(Phase == "initial"))
+summary(redgenmod)
+dtldp = rand.maxspp %>% filter(Phase == "initial") %>% rename(Linkage = linkage) %>%
+  mutate(diverged = ifelse(diverged == 1, "diverged", "monospecific")) %>%
+  ggplot(aes(dispshape, temptol, size = Linkage, color = diverged)) + geom_point() +
+  scale_color_viridis_d("Lineage divergence") + theme_classic() + xlab("Long distance dispersal") +
+  ylab("Temperature tolerance") + theme(legend.position=c(1, 1), legend.justification=c(1,1)) +
+  theme(legend.background = element_blank(),
+        legend.box.background = element_rect(colour = "black"))
+ggsave("dispshape_temptol_linkage_diverged.pdf", dtldp, width = 5, height = 5)
+
+fullmod = lm(maxspp ~ dispmean + dispshape + reptol + repsize + prectol + linkage +
+               selfing + ngenes + temptol + tempopt + precopt + seedsize, data = rand.maxspp %>%
+                                                                            filter(Phase == "initial", diverged == 1))
+redmod = lm(maxspp ~ dispshape + reptol + repsize + prectol + linkage +
+               selfing + ngenes + temptol + seedsize, data = rand.maxspp %>%
+              filter(Phase == "initial", diverged == 1))
+summary(redmod)
+dmp = rand.maxspp %>% filter(Phase == "initial") %>% rename(Linkage = linkage) %>%
+  mutate(diverged = ifelse(diverged == 1, "diverged", "monospecific")) %>%
+  ggplot(aes(dispshape, maxspp)) + geom_point() +
+  theme_classic() + xlab("Long distance dispersal") +
+  ylab("Maximum species richness per lineage")
+ggsave("dispshape_maxspp.pdf", dmp, width = 5, height = 5)
+
+
+fullmodtimeclad = lm(timetofirstclad ~ dispmean + dispshape + reptol + repsize + prectol + linkage +
+                       selfing + ngenes + temptol + tempopt + precopt + seedsize, data = rand.maxspp %>%
+                                                                               filter(Phase == "initial", diverged == 1))
+redmodtimeclad = lm(timetofirstclad ~ dispshape + reptol +
+                      ngenes + temptol, data = rand.maxspp %>%
+                                          filter(Phase == "initial", diverged == 1))
+summary(redmodtimeclad)
+
+fullmodtimemax = lm(timetomaxspp ~ dispmean + dispshape + reptol + repsize + prectol + linkage +
+                  selfing + ngenes + temptol + tempopt + precopt + seedsize, data = rand.maxspp %>%
+                                                                               filter(Phase == "initial", diverged == 1))
+redmodtimemax = lm(timetomaxspp ~ dispshape +
+                     temptol, data = rand.maxspp %>%
+                                                                               filter(Phase == "initial", diverged == 1))
+summary(redmodtimemax)
+
+fullmixmodtime = lmer(timetofirstclad ~ dispmean + dispshape + reptol + repsize + prectol + linkage +
+                        selfing + ngenes + temptol + seedsize + (1|replicate), data = rand.maxspp %>%
+                                                                                 filter(Phase == "initial", diverged >= 1))
+
+redmixmod = lmer(maxspp ~ dispshape + linkage +
+                selfing + ngenes + temptol + (1|replicate), data = rand.maxspp %>%
+                                                                                             filter(Phase == "initial"))
+anova(redmixmod)
+anova(fullmixmod, redmixmod)
+
+summary(fullgenmixmod)
+anova(fullgenmixmod)
+summary(fullmixmod)
+anova(fullmixmod)
+
+anova(glmer()## %>%
+      ##mutate_at(vars(dispmean:linkage, -replicate), scale)))
+summary(glmer(diverged ~ dispmean + dispshape + reptol + repsize + prectol + linkage +
                 selfing + ngenes + temptol + tempopt + precopt + seedsize + (1|replicate), family = binomial, data = rand.maxspp %>%
-                                                                       filter(Phase == "initial"))) %>%
-                                                                       mutate_at(vars(dispmean:linkage, -replicate), scale)))
-##reduced model:
+                                                                       filter(Phase == "initial")))
+
+summary(glm(diverged ~ dispmean + dispshape + reptol + repsize + prectol + linkage +
+                selfing + ngenes + temptol + seedsize,
+              family = binomial, data = rand.maxspp %>%
+                                   filter(Phase == "initial", !(replicate %in% rand.incomplete))))
+
+anova(glm(diverged ~ dispmean + dispshape + reptol + repsize + prectol + linkage +
+                selfing + ngenes + temptol + seedsize,
+              family = binomial, data = rand.maxspp %>%
+                                   filter(Phase == "initial", !(replicate %in% rand.incomplete))))
+
+##reduced model (backwards elimination: selfing, reptol, repsize, precopt, tempopt, dispmean, seedsize, prectol, ngenes, temptol):
+
+summary(glmer(diverged ~ dispshape + linkage +
+                (1|replicate), family = binomial, data = rand.maxspp %>%
+                                                                       filter(Phase == "initial", !(replicate %in% rand.incomplete))))## %>%
 
 anova(glmer(diverged ~ dispshape + reptol + prectol + linkage +
                 selfing + ngenes + (1|replicate), family = binomial, data = rand.maxspp %>%
@@ -402,8 +623,8 @@ anova(glmer(diverged ~ dispshape + reptol + prectol + linkage +
                                                                        mutate_at(vars(dispmean:linkage, -replicate), scale)))
 
 summary(glmer(diverged ~ dispshape + reptol + prectol + linkage +
-                selfing + ngenes + (1|replicate), family = binomial, data = rand.maxspp %>%
-                                                                       filter(Phase == "initial") %>%
+                (1|replicate), family = binomial, data = rand.maxspp %>%
+                                                                       filter(Phase == "initial", !(replicate %in% rand.incomplete))))## %>%
                                                                        mutate_at(vars(dispmean:linkage, -replicate), scale)))
 anova(glmer(diverged ~ dispshape + reptol + prectol + linkage +
                 selfing + ngenes + (1|replicate), family = binomial, data = rand.maxspp %>%
@@ -430,6 +651,56 @@ summary(lm(maxspp ~ timetomaxspp + linkage + ngenes, data = bind_rows(rand.maxsp
 summary(lm(timetomaxspp ~ maxspp + linkage + ngenes, data = bind_rows(rand.maxspp, none.maxspp, full.maxspp)))
 
 #+END_SRC
+**** Herberich
+#+BEGIN_SRC R
+mod = aov(diverged ~ dispmean + dispshape + reptol + repsize + prectol + linkage + precopt + tempopt +
+                selfing + ngenes + temptol + seedsize, data = rand.maxspp %>%
+                                                         filter(Phase == "initial"))
+
+mod = aov(dispshape ~ diverged,
+          data = rand.maxspp %>%
+            filter(Phase == "initial") %>% mutate(diverged = as.factor(diverged)))
+mod.glht = glht(mod, mcp(diverged = "Tukey"), vcov = vcovHC)
+summary(mod.glht)
+
+mod = aov(linkage ~ diverged,
+          data = rand.maxspp %>%
+            filter(Phase == "initial") %>% mutate(diverged = as.factor(diverged)))
+mod.glht = glht(mod, mcp(diverged = "Tukey"), vcov = vcovHC)
+summary(mod.glht)
+
+mod = aov(selfing ~ diverged,
+          data = rand.maxspp %>%
+            filter(Phase == "initial") %>% mutate(diverged = as.factor(diverged)))
+mod.glht = glht(mod, mcp(diverged = "Tukey"), vcov = vcovHC)
+summary(mod.glht)
+
+mod = aov(tempopt ~ diverged,
+          data = rand.maxspp %>%
+            filter(Phase == "initial") %>% mutate(diverged = as.factor(diverged)))
+mod.glht = glht(mod, mcp(diverged = "Tukey"), vcov = vcovHC)
+summary(mod.glht)
+#+END_SRC
+
+#+BEGIN_SRC R
+
+mod = aov(ngenes ~ group,
+          data = rand.maxspp %>%
+            mutate(group = as.factor(`Category/phase`)))
+mod.glht = glht(mod, mcp(group = "Tukey"), vcov = vcovHC)
+summary(mod.glht)
+
+
+#+END_SRC
+**** [#B] GAMs
+doesn't work:  Model has more coefficients than data
+#+BEGIN_SRC R
+rand.gam = mgcv::gam(diverged ~ s(dispshape, bs = "ps", sp=0.6) +
+                       s(linkage, bs = "ps", sp=0.6) + s(selfing, bs = "ps", sp=0.6) + s(ngenes, bs = "ps", sp=0.6),
+                     data = rand.maxspp %>%
+                       filter(Phase == "initial"),
+                     method="REML")
+#+END_SRC
 **** check normality
 
 #+BEGIN_SRC R
@@ -448,5 +719,15 @@ rand.maxspp %>% ungroup %>% select(maxspp, timetomaxspp, dispmean, dispshape, pr
                                    repsize, reptol, linkage, selfing, seedsize, tempopt, temptol,
                                    ngenes) %>% mutate_all(function(x) log(x+1)) %>% as.list %>%
                               lapply(shapiro.test)
+
+#+END_SRC
+*** Individual-level data
+
+#+BEGIN_SRC R
+atp = rand.inds %>% filter(lineage %in% rand.maxspp$lineage, time <= 750000) %>%
+  group_by(lineage, time) %>% summarize(Abundance = length(patch_no)) %>% ungroup %>%
+  group_by(lineage) %>% select(Abundance) %>% summary
+  ggplot(aes(time, Abundance)) + geom_line()
+ggsave("Abundances_over_time.pdf", atp)
 
 #+END_SRC
