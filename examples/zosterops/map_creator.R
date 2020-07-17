@@ -12,6 +12,7 @@ library(rgdal)
 library(raster)
 library(RStoolbox)
 library(ggplot2)
+library(rayshader)
 
 elevation_file = "taita_elevation.tif"
 forest_file = "taita_forest_cover.tif"
@@ -47,7 +48,7 @@ loadData = function(el_file=elevation_file, fo_file=forest_file, script=TRUE)
 ## Take in two rasters (elevation and forest cover) and create a 2D map image
 visualiseMap = function(elevation, forest, out=image_output_file)
 {
-    ggplot(data=forest) +
+    gg = ggplot(data=forest) +
         geom_raster(aes(fill=taita_forest_cover, x=x, y=y)) +
         geom_contour(data=elevation, binwidth=200, colour="gray30",
                      aes(x=x, y=y, z=taita_elevation)) +
@@ -62,7 +63,19 @@ visualiseMap = function(elevation, forest, out=image_output_file)
 ## Take in two rasters (elevation and forest cover) and create a 3D map image
 visualise3DMap = function(elevation, forest, out=image_output_file)
 {
-    #TODO create 3D map with rayshader
+    el_matrix = raster_to_matrix(elevation)
+    fo_matrix = raster_to_matrix(forest)
+    amb_shade = ambient_shade(el_matrix)
+    ray_shade = ray_shade(el_matrix)
+    hillshade = sphere_shade(el_matrix, texture="imhof1")
+    hillshade = add_shadow(add_shadow(hillshade, ray_shade), amb_shade)
+    plot_3d(hillshade, el_matrix, zscale=30)
+    ##TODO add overlay with forest data
+    render_camera(-30,30,0.6)
+    render_scalebar(limits=c(0,1,2), label_unit="km") #XXX doesn't work?
+    render_compass()
+    render_snapshot("taita_hills_3D.png", title_color="white", title_bar_color="darkgreen",
+                    title_text="TAITA HILLS, KENYA | Digital Elevation Model | USGS SRTM ")
 }
 
 ## Take in two rasters (elevation and forest cover) and create a GeMM map file
