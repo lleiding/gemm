@@ -18,7 +18,7 @@ Get configuration file(s), random seed and number of replicates from the command
 """
 function parseexperiments()
     s = ArgParseSettings()
-    @add_arg_table! s begin
+    @add_arg_table s begin
         "--config", "-c"
             help = "list of configuration files, comma separated"
             arg_type = String
