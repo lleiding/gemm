@@ -60,6 +60,7 @@ function defaultSettings()
         "traitnames" => ["compat",
                          "dispmean",
                          "dispshape",
+                         "numpollen",
                          "precopt",
                          "prectol",
                          "repsize",

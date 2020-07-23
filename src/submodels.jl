@@ -430,13 +430,53 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactoriz
 end
 
 """
+    reproduce!(patch, settings)
+
+Reproduction of individuals in a patch.
+"""
+function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
+    identifyAdults!(patch)
+    for ind in patch.community
+        if !ind.marked
+            if ind.size >= ind.traits["repsize"]
+                metaboffs = settings["fertility"] * ind.size^(-1/4) * exp(-act/(boltz*patch.temp))
+                noffs = rand(Poisson(metaboffs))
+                if noffs < 1
+                    continue
+                end
+                population = view(patch.community, patch.whoiswho[ind.lineage])
+                partners = findmate(population, ind, settings["traitnames"])
+                if length(partners) < 1 && rand() < ind.traits["selfing"]
+                    partners = [ind]
+                else
+                    continue
+                end
+                partner = partners[1]
+                parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
+                if parentmass <= 0
+                    continue
+                else
+                    ind.size = parentmass
+                end
+                append!(patch.seedbank, createoffspring(noffs, ind, partner, settings["traitnames"]))
+            end
+        end
+    end
+    simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
+end
+
+"""
     reproduce!(world, settings)
 
 Carry out reproduction on all patches.
 """
 function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
-    for patch in world
+    if settings["globalmating"]
+        
+    else
+        for patch in world
         (patch.isisland || !settings["static"]) && reproduce!(patch, settings) # pmap(!,patch) ???
+        end
     end
 end
 
