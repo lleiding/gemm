@@ -18,10 +18,11 @@ elevation_file = "taita_elevation.tif"
 forest_file = "taita_forest_cover.tif"
 
 image_output_file = "taita_map.jpg"
+image_3D_output_file = "taita_hills_3D"
 map_output_file = "taita_hills.map"
 
 ## Read in the GeoTIFF files and make sure they're workable
-loadData = function(el_file=elevation_file, fo_file=forest_file, script=TRUE)
+loadData = function(el_file=elevation_file, fo_file=forest_file, script=FALSE)
 {
     ## Read in the data
     print("Reading GeoTIFF files")
@@ -29,19 +30,20 @@ loadData = function(el_file=elevation_file, fo_file=forest_file, script=TRUE)
     forest_data = raster(fo_file)
     ## Do some sanity checks
     print("Checking for compatibility")
-    if (!all(as.vector(extent(elevation_data)) == as.vector(extent(forest_data)))) {
+    ##if (!all(as.vector(extent(elevation_data)) == as.vector(extent(forest_data)))) {
+    if (!all(dim(elevation_data) == dim(forest_data))) {
         print("Mismatching input data extent. Aborting.")
-        if (script) quit()
+        return()
     }
     if (!all(dim(elevation_data) == dim(forest_data))) {
         print("Mismatching input data resolution. Aborting.")
-        if (script) quit()
+        return()
     }
     ## Identify bad data caused by clouds
-    ##FIXME this doesn't fix the problem...
-    print("Fixing bad data")
-    elevation_data[which(as.vector(elevation_data) < 0)] = NA
-    forest_data[which(as.vector(forest_data) > 100)] = NA
+    ## (not needed with the current data set)
+    ## print("Fixing bad data")
+    ## elevation_data[which(as.vector(elevation_data) < 0)] = NA
+    ## forest_data[which(as.vector(forest_data) > 100)] = NA
     ## Return both raster objects
     return(c(elevation_data, forest_data))
 }
@@ -49,7 +51,7 @@ loadData = function(el_file=elevation_file, fo_file=forest_file, script=TRUE)
 ## Take in two rasters (elevation and forest cover) and create a 2D map image
 visualiseMap = function(elevation, forest, out=image_output_file)
 {
-    gg = ggplot(data=forest) +
+    ggplot(data=forest) +
         geom_raster(aes(fill=taita_forest_cover, x=x, y=y)) +
         geom_contour(data=elevation, binwidth=200, colour="gray30",
                      aes(x=x, y=y, z=taita_elevation)) +
@@ -62,18 +64,18 @@ visualiseMap = function(elevation, forest, out=image_output_file)
 }
 
 ## Take in two rasters (elevation and forest cover) and create a 3D map image
-visualise3DMap = function(elevation, forest, out=image_output_file)
+visualise3DMap = function(elevation, forest, out=image_3D_output_file)
 {
     el_matrix = raster_to_matrix(elevation)
     fo_matrix = raster_to_matrix(forest)
     amb_shade = ambient_shade(el_matrix)
-    ray_shade = ray_shade(el_matrix)
+    ray_shade = ray_shade(el_matrix, sunangle=90)
     hillshade = sphere_shade(el_matrix, texture="imhof1")
     hillshade = add_shadow(add_shadow(hillshade, ray_shade), amb_shade)
     plot_3d(hillshade, el_matrix, zscale=30)
     ##TODO add overlay with forest data
-    render_camera(-30,30,0.6)
-    render_scalebar(limits=c(0,1,2), label_unit="km") #XXX doesn't work?
+    render_camera(-30,45,0.65)
+    ##render_scalebar(limits=c(0,1), label_unit="km") #XXX doesn't work properly?
     render_compass()
     render_snapshot(out, title_color="white", title_bar_color="darkgreen",
                     title_text="TAITA HILLS, KENYA | Digital Elevation Model | USGS SRTM ")
@@ -103,6 +105,7 @@ run = function()
     elevation = data[1][[1]]
     forest = data[2][[1]]
     visualiseMap(elevation, forest)
+    visualise3DMap(elevation, forest) #XXX seems to be better done by hand?
     convertMap(elevation, forest)
 }
 

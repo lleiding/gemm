@@ -26,6 +26,16 @@ USGS Digital Elevation SRTM 1 Arc-Second Global
 
 Shuttle Radar Topography Mission (2000)
 
+--
+
+CGIAR-CSI (http://srtm.csi.cgiar.org/)
+
+SRTM 90m DEM Digital Elevation Database, interpolated to fill no-data regions
+
+Jarvis A., H.I. Reuter, A.  Nelson, E. Guevara, 2008, Hole-filled  seamless SRTM
+data V4, International  Centre for Tropical  Agriculture (CIAT), available  from
+http://srtm.csi.cgiar.org.
+
 
 # PROCESSING
 
