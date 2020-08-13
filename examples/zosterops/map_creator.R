@@ -96,8 +96,10 @@ convertMap = function(elevation, forest, habitat, run_length=1000, out=map_outpu
     i = 1:(nrows*ncols)
     x = rep(1:ncols, nrows)
     y = rep(1:nrows, each=ncols)
-    map_text = c(map_text, paste(i, x, y, elevation[i], round(forest[i], 3),
-                                 ifelse(is.na(habitat[i]), "false", "true"),
+    map_text = c(map_text, paste(i, x, y,
+                                 paste0("elevation=", elevation[i]),
+                                 paste0("forest=", round(forest[i], 2)),
+                                 ifelse(is.na(habitat[i]), "", "habitat"),
                                  sep="\t"))
     writeLines(map_text, out)
     end = Sys.time()

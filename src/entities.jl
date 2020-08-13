@@ -63,8 +63,11 @@ mutable struct Patch
     area::Float64
     temp::Float64 # temperature (physiologically important)
     isisland::Bool
-    prec::Float64 # precipitation (no physiological effect, just a niche)
-    nicheb::Float64 # additional niche
+    habitat::Bool
+    elevation::Float64
+    forest::Float64
+    prec::Float64 # precipitation (no physiological effect, just a niche) #XXX unnecessary
+    nicheb::Float64 # additional niche #XXX unnecessary
     community::Array{Individual, 1}
     seedbank::Array{Individual, 1}
     invasible::Bool
