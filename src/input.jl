@@ -47,7 +47,7 @@ Certain parameters can be set via the commandline.
 """
 function parsecommandline()
     s = ArgParseSettings()
-    @add_arg_table s begin
+    @add_arg_table! s begin
         "--seed", "-s"
             help = "inital random seed"
             arg_type = Int
@@ -176,4 +176,3 @@ function readmapfile(mapfilename::String, settings::Dict{String, Any})
     end
     return timesteps,maptable[2:end]
 end
-
