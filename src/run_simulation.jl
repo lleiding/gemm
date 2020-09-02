@@ -3,27 +3,12 @@
 
 Performs a simulation run using configuration file `config`, random seed `seed`
 and other settings provided via commandline, configuration file or the defaults.
-`prerun` toggles a pre-compilation run
 """
-function runsim(config::String = "", seed::Integer = 0, prerun::Bool = false)
+function runsim(config::String = "", seed::Integer = 0)
     settings = getsettings(config, seed)
     settings["seed"] = seed
-    if prerun
-        settings = defaultSettings()
-        settings["cellsize"] = 1.0e6
-        settings["indsize"] = "adult"
-        settings["popsize"] = "metabolic"
-        settings["maps"] = [""]
-        settings["phylo"] = false
-        settings["fasta"] = "off"
-        settings["raw"] = false
-        settings["stats"] = false
-        settings["quiet"] = true
-        settings["static"] = false
-        settings["seed"] = 1
-    end
     Random.seed!(settings["seed"])
-    !prerun && setupdatadir(settings)
+    setupdatadir(settings)
     world = Patch[]
     timesteps = 0
     timeoffset = 0
@@ -32,7 +17,7 @@ function runsim(config::String = "", seed::Integer = 0, prerun::Bool = false)
         timesteps, maptable = readmapfile(settings["maps"][i], settings)
         i == 1 && (world = createworld(maptable, settings))
         i > 1 && updateworld!(world, maptable, settings)
-        !prerun && i == 1 && writedata(world, settings, timeoffset)
+        i == 1 && writedata(world, settings, timeoffset)
         simulate!(world, settings, timesteps, timeoffset)
     end
     world
@@ -45,11 +30,7 @@ end
 Wrapper for `runsim()`
 Runs a simulation using configuration file `config`, random seed `seed`
 and other settings provided via commandline, configuration file or the defaults.
-I specified, performs a pre-compilation run first.
 """
-function rungemm(config::String = "", seed::Integer = 0, prerun::Bool = false)
-    # compilation run:
-    prerun && runsim("", 1, true)
-    # run intended simulation:
+function rungemm(config::String = "", seed::Integer = 0)
     @time world = runsim(config, seed)
 end
