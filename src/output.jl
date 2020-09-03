@@ -250,7 +250,7 @@ function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, time
     end
     for p in world
         for l in unique(map(x -> x.lineage, p.community))
-            simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(findall(x -> x.lineage == l, p.community)),$(p.temp),$(p.prec)", settings,
+            simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(findall(x -> x.lineage == l, p.community))),$(p.temp),$(p.prec)", settings,
                    'i', "lineages.log", true)
         end
     end
