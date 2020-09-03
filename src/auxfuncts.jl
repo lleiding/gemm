@@ -167,9 +167,8 @@ function diversity(world::Array{Patch,1})
     globalindex = Dict{String, Int}()
     for p in world
         localindex = Dict{String, Int}()
-        #TODO Should not use `whoiswho`
-        for s in keys(p.whoiswho)
-            localindex[s] = length(p.whoiswho[s])
+        for s in unique(map(x -> x.lineage, p.community))
+            localindex[s] = length(findall(x -> x.lineage == s, p.community))
         end
         merge!(+, globalindex, localindex)
         append!(alphas, shannon(localindex))
