@@ -413,7 +413,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactor!
         end
         numpartners = Integer(round(ind.traits["numpollen"]))
         for ptn in 1:numpartners
-            partner = partners[ptn]
+            partner = rand(partners, 1)
             parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
             if parentmass <= 0
                 continue
@@ -448,7 +448,7 @@ function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
                 end
                 numpartners = Integer(round(ind.traits["numpollen"]))
                 for ptn in 1:numpartners
-                    partner = partners[ptn]
+                    partner = rand(partners, 1)
                     parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
                     if parentmass <= 0
                         continue
