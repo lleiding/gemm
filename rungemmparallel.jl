@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 
-using
+using # TODO: automatic package installation - ask user?
     Distributed,
     ArgParse,
     Random

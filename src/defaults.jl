@@ -21,7 +21,8 @@ function defaultSettings()
         "fertility" => exp(28.0), # global base reproduction rate 23.8 from Brown et al. 2004, alternatively 25.0, default 30.0
         "fixtol" => true,
         "global-species-pool" => 0, # size of the global species pool (invasion source)
-        "growthrate" => exp(25.2), # global base growth/biomass production from Brown et al. 2004
+        "globalmating" => false, # global pollen "dispersal"
+        "growthrate" => exp(25.2), # global base growth/biomass production so that growth from 1g to 10-20g in one year
         "indsize" => "seed", # initialize organisms as seed, adult or mixed
         "isolationweight" => 3.0, # additional distance to be crossed when dispersing from or to isolated patches
         "lineages" => false, # record lineage and diversity data?
@@ -58,6 +59,7 @@ function defaultSettings()
         "traitnames" => ["compat",
                          "dispmean",
                          "dispshape",
+                         "numpollen",
                          "precopt",
                          "prectol",
                          "repsize",

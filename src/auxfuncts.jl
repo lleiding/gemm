@@ -167,9 +167,8 @@ function diversity(world::Array{Patch,1})
     globalindex = Dict{String, Int}()
     for p in world
         localindex = Dict{String, Int}()
-        #TODO Should not use `whoiswho`
-        for s in keys(p.whoiswho)
-            localindex[s] = length(p.whoiswho[s])
+        for s in unique(map(x -> x.lineage, p.community))
+            localindex[s] = length(findall(x -> x.lineage == s, p.community))
         end
         merge!(+, globalindex, localindex)
         append!(alphas, shannon(localindex))
@@ -279,6 +278,7 @@ end
     identifyAdults!(patch)
 
 Build up the `whoiswho` index of individuals and species in a patch.
+Now deprecated to increase flexibility.
 """
 function identifyAdults!(patch::Patch)
     adultspeciesidx = Dict{String, Array{Int, 1}}()
@@ -327,37 +327,12 @@ end
 Check to see whether two individual organisms are reproductively compatible.
 """
 function iscompatible(mate::Individual, ind::Individual, traitnames::Array{String, 1})
+    mate.lineage != ind.lineage && return false
     compatidx = findfirst(x -> x == "compat", traitnames)
     indgene = getseq(ind.genome, compatidx)
     mategene = getseq(mate.genome, compatidx)
     seqidentity = getseqsimilarity(indgene, mategene)
     seqidentity >= ind.traits["seqsimilarity"]
-end
-
-"""
-    findmate(patch, individual, traitnames)
-
-Find a reproduction partner for the given individual in the given patch.
-"""
-function findmate(patch::Patch, ind::Individual, traitnames::Array{String, 1})
-    indstate = ind.marked
-    ind.marked = true
-    mates = Individual[]
-    communityidxs = patch.whoiswho[ind.lineage]
-    startidx = rand(1:length(communityidxs))
-    mateidx = startidx
-    while true
-        mate = patch.community[communityidxs[mateidx]]
-        if !mate.marked && iscompatible(mate, ind, traitnames)
-            push!(mates, mate)
-            break
-        end
-        mateidx += 1
-        mateidx > length(communityidxs) && (mateidx = 1)
-        mateidx == startidx && break
-    end
-    ind.marked = indstate
-    mates
 end
 
 """
@@ -373,7 +348,7 @@ function findmate(population::AbstractArray{Individual, 1}, ind::Individual, tra
     mateidx = startidx
     while true
         mate = population[mateidx]
-        if !mate.marked  && iscompatible(mate, ind, traitnames)
+        if !mate.marked && iscompatible(mate, ind, traitnames)
             push!(mates, mate)
             break
         end

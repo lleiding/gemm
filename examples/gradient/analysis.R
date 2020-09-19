@@ -28,7 +28,8 @@ library(MuMIn)
  allfiles = Sys.glob("2019-0*/stats*tsv")
  mytworesults = allfiles[grep(paste(tworuns$seed, collapse="|"), allfiles)]
  rm(allfiles, tworuns)
- 
+ ## TODO: glob all relevant files (pops*tsv)
+ ## TODO: update current experiment file names in results directories (*constant_localconf* instead of *sg*)
  rawresults = tibble()
      for (filepath in mytworesults) {
          if(length(grep("_sg_", filepath)) == 1 | length(grep("_sgv_", filepath)) == 1) rawresults = bind_rows(rawresults, read_tsv(filepath))
@@ -36,7 +37,8 @@ library(MuMIn)
  repstable = rawresults %>% filter(x==1, y==1, time==1000) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
  doublereps = which(rowSums(repstable) == 2) %>% names %>% as.numeric
  rawresults = rawresults %>% filter(replicate %in% doublereps)
- 
+
+ ## TODO: update current experiment file names in results directories (*constant_localconf* instead of *sg*) and add missing scenario names
  tworesults = rawresults %>%
      select(-ngenesmin, -ngenesmax, -ngenesstd, -area, -contains("compat"),
             -contains("reptol"), -contains("adaption")) %>%
@@ -49,14 +51,14 @@ library(MuMIn)
  names(tworesults) = names(tworesults) %>% gsub("std", "_pop._var.", .) %>% gsub("sdmed", "_gen._var.", .)  %>% gsub("med", "", .)
 
 tworesults = tworesults %>% mutate(species = paste0(scenario, ".", lineage)) %>% #select(-contains("seedsize")) %>%  # seedsize is similar between scenarios + correlated/somewhat redundant with repsize
-    rename(mean_dispersal_distance = dispmean, 
-           long_distance_dispersal = dispshape, 
-           precipitation_optimum = precopt, 
-           precipitation_tolerance = prectol, 
+    rename(mean_dispersal_distance = dispmean,
+           long_distance_dispersal = dispshape,
+           precipitation_optimum = precopt,
+           precipitation_tolerance = prectol,
            seed_size = seedsize,
-           adult_body_size = repsize, 
-           temperature_optimum = tempopt, 
-           temperature_tolerance = temptol, 
+           adult_body_size = repsize,
+           temperature_optimum = tempopt,
+           temperature_tolerance = temptol,
            number_of_genes = ngenes, genetic_linkage = linkage_degree) %>%
     mutate(mean_dispersal_distance_intra_CV_median = dispmean_pop._var. / mean_dispersal_distance,
            mean_dispersal_distance_genetic_CV_median = dispmean_gen._var. / mean_dispersal_distance,
@@ -189,7 +191,7 @@ ecogrid = plot_grid(lclrich + theme(legend.position=c(.6, .75)),
           juvs + theme(legend.position="none"),
           adlts + theme(legend.position="none"),
           range + theme(legend.position="none"), labels="auto", ncol=3, align="vh")
-pattsleg = plot_grid(ecogrid, ncol=1, rel_heights=c(1,.1)) # get_legend(juvs), 
+pattsleg = plot_grid(ecogrid, ncol=1, rel_heights=c(1,.1)) # get_legend(juvs),
 ggsave(paste0("ecopatts", ".pdf"), pattsleg, width=7, height=5)
 
 tworesults %>% filter(time>=50) %>% select(-x, -y) %>% group_by(time, scenario, replicate) %>%
@@ -247,9 +249,9 @@ ggsave("pca_t500_maintraits_scree.pdf", pca_grid, width=7, height=4)
       na.omit()
 
   ## Trait means:
-  traitnames = myendresults %>% dplyr::select(mean_dispersal_distance, long_distance_dispersal, number_of_genes, precipitation_tolerance, seed_size, 
+  traitnames = myendresults %>% dplyr::select(mean_dispersal_distance, long_distance_dispersal, number_of_genes, precipitation_tolerance, seed_size,
                                        log_adult_body_size, temperature_tolerance, genetic_linkage, mean_genetic_variation) %>%
-      names() 
+      names()
 
   endtraits_lme = foreach(trait=traitnames) %do% {
       lmer(get(trait) ~ Environment + (1|replicate), data = myendresults)
@@ -263,7 +265,7 @@ ggsave("pca_t500_maintraits_scree.pdf", pca_grid, width=7, height=4)
      "Precipitation tolerance", "Seed biomass / g", "Adult biomass / g",
      "Temperature tolerance", "Genetic linkage", "Mean genetic variation"),
      levels = rev(c("Mean dispersal distance", "Long distance dispersal",
-     "Precipitation tolerance", "Seed biomass / g", "Adult biomass / g", "Temperature tolerance", 
+     "Precipitation tolerance", "Seed biomass / g", "Adult biomass / g", "Temperature tolerance",
      "Number of genes", "Genetic linkage", "Mean genetic variation")))
   print(xtable(lme_table, digits = c(0, 0, 3, 3, 0, 3, 3)), floating = FALSE, booktabs = TRUE, include.rownames=FALSE)
 
@@ -280,7 +282,7 @@ ggsave("pca_t500_maintraits_scree.pdf", pca_grid, width=7, height=4)
   ggsave("diffs_means.pdf", width = 5, height = 5)
 
   ## Trait variances (/CV):
-  subtraitnames = myendresults %>% dplyr::select(contains("CV_median")) %>% names() 
+  subtraitnames = myendresults %>% dplyr::select(contains("CV_median")) %>% names()
 
   endsubtraits_lme = foreach(trait=subtraitnames) %do% {
       lmer(get(trait) ~ Environment + (1|replicate), data = myendresults)
@@ -298,7 +300,7 @@ ggsave("pca_t500_maintraits_scree.pdf", pca_grid, width=7, height=4)
      "Precipitation tolerance", "Seed biomass / g", "Adult biomass / g",
      "Temperature tolerance"), each = 2),
              levels = rev(c("Mean dispersal distance", "Long distance dispersal",
-     "Precipitation tolerance", "Seed biomass / g", "Adult biomass / g", "Temperature tolerance", 
+     "Precipitation tolerance", "Seed biomass / g", "Adult biomass / g", "Temperature tolerance",
      "Number of genes", "Genetic linkage", "Mean genetic variation")))
 
 endsubtraits_lme_table %>%

@@ -176,4 +176,3 @@ function readmapfile(mapfilename::String, settings::Dict{String, Any})
     end
     return timesteps,maptable[2:end]
 end
-

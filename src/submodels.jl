@@ -398,32 +398,29 @@ end
 
 Reproduction of individuals in a patch.
 """
-function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactorize!
-    identifyAdults!(patch)
+function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactor!
     for ind in patch.community
-        if !ind.marked
-            if ind.size >= ind.traits["repsize"]
-                metaboffs = settings["fertility"] * ind.size^(-1/4) * exp(-act/(boltz*patch.temp))
-                noffs = rand(Poisson(metaboffs))
-                if noffs < 1
-                    continue
-                end
-                population = view(patch.community, patch.whoiswho[ind.lineage])
-                partners = findmate(population, ind, settings["traitnames"])
-                if length(partners) < 1 && rand() < ind.traits["selfing"]
-                    partners = [ind]
-                else
-                    continue
-                end
-                partner = partners[1]
-                parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
-                if parentmass <= 0
-                    continue
-                else
-                    ind.size = parentmass
-                end
-                append!(patch.seedbank, createoffspring(noffs, ind, partner, settings["traitnames"]))
+        ind.marked && continue # individual might not have established yet
+        ind.size < ind.traits["repsize"] && continue
+        metaboffs = settings["fertility"] * ind.size^(-1/4) * exp(-act/(boltz*patch.temp))
+        noffs = rand(Poisson(metaboffs))
+        noffs < 1 && continue
+        partners = findmate(patch.community, ind, settings["traitnames"])
+        if length(partners) < 1 && rand() < ind.traits["selfing"]
+            partners = [ind]
+        else
+            continue
+        end
+        numpartners = Integer(round(ind.traits["numpollen"]))
+        for ptn in 1:numpartners
+            partner = rand(partners, 1)[1]
+            parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
+            if parentmass <= 0
+                continue
+            else
+                ind.size = parentmass
             end
+            append!(patch.seedbank, createoffspring(noffs, ind, partner, settings["traitnames"]))
         end
     end
     simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
@@ -436,7 +433,35 @@ Carry out reproduction on all patches.
 """
 function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
-        (patch.isisland || !settings["static"]) && reproduce!(patch, settings) # pmap(!,patch) ???
+        if settings["globalmating"]
+            for ind in patch.community
+                ind.marked && continue # individual might not have established yet
+                ind.size < ind.traits["repsize"] && continue
+                metaboffs = settings["fertility"] * ind.size^(-1/4) * exp(-act/(boltz*patch.temp))
+                noffs = rand(Poisson(metaboffs))
+                noffs < 1 && continue
+                partners = findmate([(map(x -> x.community, world)...)...], ind, settings["traitnames"])
+                if length(partners) < 1 && rand() < ind.traits["selfing"]
+                    partners = [ind]
+                else
+                    continue
+                end
+                numpartners = Integer(round(ind.traits["numpollen"]))
+                for ptn in 1:numpartners
+                    partner = rand(partners, 1)[1]
+                    parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
+                    if parentmass <= 0
+                        continue
+                    else
+                        ind.size = parentmass
+                    end
+                    append!(patch.seedbank, createoffspring(noffs, ind, partner, settings["traitnames"]))
+                end
+            end
+            simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
+        else
+            (patch.isisland || !settings["static"]) && reproduce!(patch, settings) # pmap(!,patch) ???
+        end
     end
 end
 

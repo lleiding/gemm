@@ -51,7 +51,7 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
             community = patch.seedbank
         else
             community = patch.community
-        end            
+        end
         for ind in community
             print(io, timestep, sep)
             print(io, patch.id, sep)
@@ -98,7 +98,7 @@ function makefasta(world::Array{Patch, 1}, settings::Dict{String, Any}, io::IO =
             community = patch.seedbank
         else
             community = patch.community
-        end            
+        end
         lineage = ""
         for ind in community
             (!patch.isisland && settings["static"] && ind.lineage == lineage) && continue # only one individual per species on mainland
@@ -231,8 +231,7 @@ function recordstatistics(world::Array{Patch,1}, settings::Dict{String, Any})
                'i', "diversity.log", true)
     end
     popsize = sum(x -> length(x.community), world)
-    #CAVE Should not use `whoiswho`
-    lineages = unique(reduce(vcat, map(p -> collect(keys(p.whoiswho)), world)))
+    lineages = unique(reduce(vcat, map(p -> map(x -> x.lineage, p.community), world)))
     div = round.(diversity(world), digits = 3)
     space = freespace(world)
     simlog("Metacommunity size: $popsize, lineages: $(length(lineages))", settings)
@@ -250,12 +249,11 @@ function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, time
         simlog("t,X,Y,lineage,abundance,temp,prec", settings, 'i', "lineages.log", true)
     end
     for p in world
-        #CAVE Should not use `whoiswho`
-        for l in keys(p.whoiswho)
-            simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(p.whoiswho[l])),$(p.temp),$(p.prec)", settings,
+        for l in unique(map(x -> x.lineage, p.community))
+            simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(findall(x -> x.lineage == l, p.community))),$(p.temp),$(p.prec)", settings,
                    'i', "lineages.log", true)
         end
-    end    
+    end
 end
 
 """
@@ -267,7 +265,7 @@ for `printpopstats`.
 function printpopheader(io::IO)
     print(io, "time", "\tx", "\ty", "\ttemp", "\tprec", "\tarea", "\tisisland")
     print(io, "\tlineage", "\tjuveniles", "\tadults", "\ttempadaptationmean", "\tprecadaptationmean")
-    traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd", 
+    traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd",
                    "ngenes", "nlnkgunits", "precopt", "precoptsd", "prectol", "prectolsd",
                    "repsize", "repsizesd", "seqsimilarity", "seqsimilaritysd", "seedsize", "seedsizesd",
                    "tempopt", "tempoptsd", "temptol", "temptolsd"]
@@ -287,7 +285,7 @@ for a range of individual properties, as seen over the whole world population.
 """
 function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, Any}, timestep::Integer)
     timestep == 0 && printpopheader(io)
-    traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd", 
+    traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd",
                    "ngenes", "nlnkgunits", "precopt", "precoptsd", "prectol", "prectolsd",
                    "repsize", "repsizesd", "seqsimilarity", "seqsimilaritysd", "seedsize", "seedsizesd",
                    "tempopt", "tempoptsd", "temptol", "temptolsd"]
@@ -317,12 +315,12 @@ end
 """
     simlog(msg, settings, category, logfile, onlylog)
 
-Write a log message to STDOUT/STDERR and the specified logfile 
+Write a log message to STDOUT/STDERR and the specified logfile
 (if logging is turned on in the settings).
 
 Categories: `d` (debug), `i` (information, default), `w` (warn), `e` (error)
 
-If `logfile` is the empty string (default: "simulation.log"), the message will 
+If `logfile` is the empty string (default: "simulation.log"), the message will
 only be printed to the screen. If `onlylog` is true (default: false), the
 message is not printed to screen but only to the log.
 """
