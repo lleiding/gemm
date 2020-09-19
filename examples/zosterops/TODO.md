@@ -14,6 +14,8 @@
 
 - [ ] convert `precipitation` niche to `elevation` (and keep temperature constant)
 
+- [ ] change species initialisation process to read predefined species
+
 - [ ] initialise two species
 		- highland species *Z. silvanus* (Taita White-eye, a.k.a. subspecies of *Z. poliogaster*)
 		- lowland species *Z. jubaensis* (former subspecies of *Z. abyssinicus*)
