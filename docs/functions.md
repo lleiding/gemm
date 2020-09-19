@@ -36,8 +36,8 @@
 
 ## run_simulation.jl
 
-- runsim(config::String = "", seed::Integer = 0, prerun::Bool = false)
-- rungemm(config::String = "", seed::Integer = 0, prerun::Bool = false)
+- runsim(config::String = "", seed::Integer = 0)
+- rungemm(config::String = "", seed::Integer = 0)
 
 ## scheduling.jl
 
@@ -60,13 +60,13 @@
 - disturb!(world::Array{Patch,1}, settings::Dict{String, Any})
 - initspeciespool!(settings::Dict{String, Any})
 - invade!(patch::Patch, pressure::Int)
-- invade!(world::Array{Patch,1}, settings::Dict{String, Any})
+- global invade!(world::Array{Patch,1}, settings::Dict{String, Any})
 - grow!(patch::Patch, growthrate::Float64)
 - grow!(world::Array{Patch,1}, settings::Dict{String, Any})
-- disperse!(world::Array{Patch,1}, static::Bool = true)
+- disperse!(world::Array{Patch,1}, static::Bool = true) 
 - compete!(patch::Patch)
 - compete!(world::Array{Patch,1}, static::Bool = true)
-- reproduce!(patch::Patch, settings::Dict{String, Any})
+- reproduce!(patch::Patch, settings::Dict{String, Any}) 
 - reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
 - changetemp!(world::Array{Patch,1}, sdtemp::Float64)
 - changeprec!(world::Array{Patch,1}, sdprec::Float64)
@@ -74,7 +74,7 @@
 
 ## auxfuncts.jl
 
-- meiosis(genome::Array{Chromosome,1}, maternal::Bool)
+- meiosis(genome::Array{Chromosome,1}, maternal::Bool) 
 - getmeantraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
 - getstdtraitvalue(traits::Array{Trait, 1}, traitidx::Integer)
 - gettraitdict(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
@@ -92,13 +92,12 @@
 - getseqsimilarity(indgene::AbstractString, mategene::AbstractString)
 - getseq(genome::Array{Chromosome, 1}, traitidx::Integer)
 - iscompatible(mate::Individual, ind::Individual, traitnames::Array{String, 1})
-- findmate(patch::Patch, ind::Individual, traitnames::Array{String, 1})
 - findmate(population::AbstractArray{Individual, 1}, ind::Individual, traitnames::Array{String, 1})
 - createoffspring(noffs::Integer, ind::Individual, partner::Individual, traitnames::Array{String, 1})
 - seq2num(sequence::String)
 - seq2bignum(sequence::String)
 - num2seq(n::Integer)
-- createtraits(settings::Dict{String, Any})
+- createtraits(settings::Dict{String, Any}) 
 - creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String, Any})
 - createchrms(nchrms::Int,genes::Array{AbstractGene,1})
 - createind(settings::Dict{String, Any}, marked::Bool = false)
