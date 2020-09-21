@@ -43,6 +43,15 @@
 
 - simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps::Int=1000, timeoffset::Int = 0)
 
+## entities.jl
+
+- struct Trait
+- struct Gene <: AbstractGene
+- struct BigGene <: AbstractGene
+- struct Chromosome
+- struct Individual
+- struct Patch
+
 ## submodels.jl
 
 - mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any}, locivar::Float64 = 1.0)
@@ -60,7 +69,7 @@
 - disturb!(world::Array{Patch,1}, settings::Dict{String, Any})
 - initspeciespool!(settings::Dict{String, Any})
 - invade!(patch::Patch, pressure::Int)
-- global invade!(world::Array{Patch,1}, settings::Dict{String, Any})
+- invade!(world::Array{Patch,1}, settings::Dict{String, Any})
 - grow!(patch::Patch, growthrate::Float64)
 - grow!(world::Array{Patch,1}, settings::Dict{String, Any})
 - disperse!(world::Array{Patch,1}, static::Bool = true) 

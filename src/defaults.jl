@@ -55,7 +55,7 @@ function defaultSettings()
         "smallgenelength" => 20,
         "static" => false, # whether mainland sites undergo eco-evolutionary processes
         "stats" => true, # record population statistics
-        "tolerance" => 0.8, # sequence similarity threshold for reproduction
+        "tolerance" => 0.8, # sequence similarity threshold for reproduction #XXX why do we have this, when we have the `seqsimilarity` trait?
         "traitnames" => ["compat",
                          "dispmean",
                          "dispshape",
