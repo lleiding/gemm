@@ -1,9 +1,11 @@
 # Genome explicit Metacommunity Model - GeMM
 #
-# Ludwig Leidinger <l.leidinger@gmx.net>, Daniel Vedder <daniel.vedder@stud-mail.uni-wuerzburg.de> 2019
+# Ludwig Leidinger <l.leidinger@gmx.net>,
+# Daniel Vedder <daniel.vedder@stud-mail.uni-wuerzburg.de>
+# (c) 2017-2020
 #
-# Contains all custom types and functions necessary for an individual based, genome and niche explicit,
-# eco-evo-env Metacommunity model. 
+# Contains all custom types and functions necessary for an individual based,
+# genome and niche explicit, eco-evo-env metacommunity model. 
 
 module GeMM
 
@@ -30,11 +32,19 @@ include("output.jl")
 
 include("constants.jl")
 
-include("auxfuncts.jl")
-
 include("initialisation.jl")
 
-include("submodels.jl")
+include("genetics.jl")
+
+include("reproduction.jl")
+
+include("dispersal.jl")
+
+include("survival.jl")
+
+include("habitatchange.jl")
+
+include("invasion.jl")
 
 include("scheduling.jl")
 
