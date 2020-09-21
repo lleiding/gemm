@@ -223,3 +223,28 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, 
     filter!(x -> x.id in allids, world)
     world
 end
+
+"""
+    varyalleles!(genes, settings, locivar)
+
+Mutate gene traits in the passed array of genes.
+"""
+function varyalleles!(genes::Array{AbstractGene, 1}, settings::Dict{String, Any}, locivar::Float64)
+    locivar == 0 && return
+    for gene in genes
+        mutate!(gene.codes, settings, locivar)
+    end
+end
+
+"""
+    varyalleles!(chromosomes, settings, locivar)
+
+Mutate gene traits in the passed array of chromosomes.
+"""
+function varyalleles!(chrms::Array{Chromosome, 1}, settings::Dict{String, Any}, locivar::Float64)
+    locivar == 0 && return
+    for chrm in chrms
+        varyalleles!(chrm.genes, settings, locivar)
+    end
+end
+

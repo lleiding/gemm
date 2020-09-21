@@ -350,3 +350,50 @@ function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile=
         simlog("Invalid log category $category.", settings, 'w')
     end
 end
+
+"""
+    diversity(w)
+
+Calculate (average) alpha, beta and gamma diversity of the world.
+Returns a tuple with the three values (a,b,g).
+cf. Veech et al. 2002
+"""
+function diversity(world::Array{Patch,1})
+    # calculate diversity with the Shannon-Wiener index
+    function shannon(index::Dict{String,Int})
+        isempty(index) && return 0
+        total = sum(x -> index[x], keys(index))
+        -1 * sum(s -> (index[s]/total)*log(index[s]/total), keys(index))
+    end
+    alphas = Float64[]
+    globalindex = Dict{String, Int}()
+    for p in world
+        localindex = Dict{String, Int}()
+        for s in unique(map(x -> x.lineage, p.community))
+            localindex[s] = length(findall(x -> x.lineage == s, p.community))
+        end
+        merge!(+, globalindex, localindex)
+        append!(alphas, shannon(localindex))
+    end
+    alpha = mean(alphas)
+    gamma = shannon(globalindex)
+    beta = gamma - alpha
+    (alpha, beta, gamma)
+end
+
+"""
+    freespace(world)
+
+Calculate the average amount of free space on each patch.
+"""
+function freespace(world::Array{Patch,1})
+    space = 0
+    for p in world
+        if length(p.community) != 0
+            space += p.area - sum(x -> x.size, p.community)
+        else
+            space += p.area
+        end
+    end
+    round((space/length(world))/1e6, digits = 3)
+end
