@@ -1,52 +1,60 @@
-## install.packages("picante", dependencies = TRUE)
-library(picante) ##provides both library(vegan) and library(ape) ade4?
-## install.packages("lme4")
-library(lme4) ##for (generalized) linear mixed effects models
-## install.packages("lmerTest")
-library(lmerTest) ##p-values in summary for (generalized) linear mixed effects models
-## install.packages("foreach")
+##install.packages("picante", dependencies = TRUE)
+library(picante) ## provides both library(vegan) and library(ape) ## ade4?
+##install.packages("lme4")
+library(lme4) ## for (generalized) linear mixed effects models
+##install.packages("lmerTest")
+library(lmerTest) ## p-values in summary for (generalized) linear mixed effects models
+##install.packages("foreach")
 library(foreach)
-## install.packages("tidyverse")
+##install.packages("tidyverse")
 library(tidyverse)
-## install.packages("corrplot")
+##install.packages("corrplot")
 library(corrplot)
-## install.packages("cowplot")
-library(cowplot) ##arrange ggplots in a grid
-## install.packages("FactoMineR", dependencies = TRUE)
-library(FactoMineR) ##additional ordination methods
-## install.packages("factoextra", dependencies = TRUE)
-library(factoextra) ##additional ordination visualisation
-## install.packages("xtable")
-library(xtable) ##exports tables in latex code
-## install.packages("ggsci")
-library(ggsci) ##scientific color scales
-## install.packages("MuMIn") # not available for R 3.4.4
+##install.packages("cowplot")
+library(cowplot) ## arrange ggplots in a grid
+##install.packages("FactoMineR", dependencies = TRUE)
+library(FactoMineR) ## additional ordination methods
+##install.packages("factoextra", dependencies = TRUE)
+library(factoextra) ## additional ordination visualisation
+##install.packages("xtable")
+library(xtable) ## exports tables in latex code
+##install.packages("ggsci")
+library(ggsci) ## scientific color scales
+##install.packages("MuMIn") # not available for R 3.4.4
 library(MuMIn)
 
 ## make sure you have run the shell code to produce the file `twothree` with all completed replicates
- tworuns = read_table("twothree", col_names=c("nruns", "seed"))
- allfiles = Sys.glob("2019-0*/stats*tsv")
- mytworesults = allfiles[grep(paste(tworuns$seed, collapse="|"), allfiles)]
- rm(allfiles, tworuns)
- 
+## tworuns = read_table("twothree", col_names=c("nruns", "seed"))
+## allfiles = Sys.glob("2019-0*/stats*tsv")
+## mytworesults = allfiles[grep(paste(tworuns$seed, collapse="|"), allfiles)]
+## rm(allfiles, tworuns)
+
+## We know all runs are done, so we don't need to filter
+dispmode = "global" ## 'local' or 'global'
+mytworesults = Sys.glob(paste0("data/2020*", dispmode, "*/*tsv"))
+
  rawresults = tibble()
      for (filepath in mytworesults) {
-         if(length(grep("_sg_", filepath)) == 1 | length(grep("_sgv_", filepath)) == 1) rawresults = bind_rows(rawresults, read_tsv(filepath))
+         ##if(length(grep("_sg_", filepath)) == 1 | length(grep("_sgv_", filepath)) == 1) rawresults = bind_rows(rawresults, read_tsv(filepath))
+         rawresults = bind_rows(rawresults, read_tsv(filepath))
      }
- repstable = rawresults %>% filter(x==1, y==1, time==1000) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
+
+## XXX this was originally `filter(x==1, y==1, time==1000)`, but that didn't work for global
+ repstable = rawresults %>% filter(time==1000) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
  doublereps = which(rowSums(repstable) == 2) %>% names %>% as.numeric
- rawresults = rawresults %>% filter(replicate %in% doublereps)
+ filteredresults = rawresults %>% filter(replicate %in% doublereps)
  
- tworesults = rawresults %>%
-     select(-ngenesmin, -ngenesmax, -ngenesstd, -area, -contains("compat"),
-            -contains("reptol"), -contains("adaption")) %>%
-     mutate(linkage_degree=ngenesmed/nlnkgunitsmed,
-            scenario=ifelse(conf=="sg", "static", "variable")) %>%
+ tworesults = filteredresults %>%
+     select(-ngenesstd, -area, -contains("compat"), -contains("reptol"), -contains("adaption")) %>%
+     mutate(linkage_degree=ngenesmean/nlnkgunitsmean,
+            scenario=ifelse(grepl("constant", conf), "static", "variable")) %>%
      select(-contains("lnkgunits"), -conf) %>%
-     mutate(mintemprange=tempoptmin-temptolmax, maxtemprange=tempoptmax+temptolmax,
-            minprecrange=precoptmin-prectolmax, maxprecrange=precoptmax+prectolmax) %>%
+     ## mutate(mintemprange=tempoptmin-temptolmax, maxtemprange=tempoptmax+temptolmax,
+     ##        minprecrange=precoptmin-prectolmax, maxprecrange=precoptmax+prectolmax) %>%
      select(-ends_with("min"), -ends_with("max"), -ends_with("sdstd")) %>% na.omit()
- names(tworesults) = names(tworesults) %>% gsub("std", "_pop._var.", .) %>% gsub("sdmed", "_gen._var.", .)  %>% gsub("med", "", .)
+names(tworesults) = names(tworesults) %>% gsub("std", "_pop._var.", .) %>% gsub("sdmean", "_gen._var.", .)  %>%
+    ## This next line is a nasty hack arising from a switch in the data from `med` values to `mean`
+    gsub("dispmean", "dispme-an", .) %>% gsub("mean", "", .) %>% gsub("dispme-an", "dispmean", .)
 
 tworesults = tworesults %>% mutate(species = paste0(scenario, ".", lineage)) %>% #select(-contains("seedsize")) %>%  # seedsize is similar between scenarios + correlated/somewhat redundant with repsize
     rename(mean_dispersal_distance = dispmean, 
@@ -57,7 +65,7 @@ tworesults = tworesults %>% mutate(species = paste0(scenario, ".", lineage)) %>%
            adult_body_size = repsize, 
            temperature_optimum = tempopt, 
            temperature_tolerance = temptol, 
-           number_of_genes = ngenes, genetic_linkage = linkage_degree) %>%
+           number_of_genes = ngenes) %>%
     mutate(mean_dispersal_distance_intra_CV_median = dispmean_pop._var. / mean_dispersal_distance,
            mean_dispersal_distance_genetic_CV_median = dispmean_gen._var. / mean_dispersal_distance,
            long_distance_dispersal_intra_CV_median = dispshape_pop._var. / long_distance_dispersal,
@@ -87,10 +95,13 @@ allgenes = all %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Number of genes`)) 
     facet_grid(. ~ Environment) + scale_fill_viridis_c(option="magma") + theme_classic() +
     xlab("x-coordinate (temperature)") + ylab("y-coordinate (precipitation)")
 spatgridall = plot_grid(allrich, allmass, allgenes, labels="auto", ncol=1, align="vh")
-ggsave(paste0("mapplots_all", ".pdf"), spatgridall, width=5, height=6)
+ggsave(paste0("mapplots_all_", dispmode, ".pdf"), spatgridall, width=5, height=6)
 
-## static plot:
-d = tworesults %>% rename(Environment = scenario) %>% filter(replicate == 18, time == 500) %>% group_by(x, y, Environment) %>%
+## static plot for replicate 18:
+## XXX Why replicate 18?
+## XXX replaced with 22 for global
+n = 22 #18
+d = tworesults %>% rename(Environment = scenario) %>% filter(replicate == n, time == 500) %>% group_by(x, y, Environment) %>%
     summarize(`Richness (n.spp.)` = length(unique(lineage)), `Adult biomass (g)` = mean(adult_body_size), `Number of genes` = mean(number_of_genes)) %>%
     mutate(Environment = ifelse(Environment == "static", "Static environment", "Variable environment"))
 rich = d %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Richness (n.spp.)`)) + coord_fixed() +
@@ -103,25 +114,26 @@ genes = d %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Number of genes`)) + coo
     facet_grid(. ~ Environment) + scale_fill_viridis_c(option="magma") + theme_classic() +
     xlab("x-coordinate (temperature)") + ylab("y-coordinate (precipitation)")
 spatgrid = plot_grid(rich, mass, genes, labels="auto", ncol=1, align="vh")
-ggsave(paste0("mapplots_s", 18, ".pdf"), spatgrid, width=5, height=6)
+ggsave(paste0("mapplots_s", n, "_", dispmode, ".pdf"), spatgrid, width=5, height=6)
 
+## DV works
 spatgridboth = plot_grid(rich, allrich, mass, allmass, genes, allgenes, labels="auto", ncol=2, align="vh")
-ggsave(paste0("mapplots_both", ".pdf"), spatgridboth, width=10, height=6)
+ggsave(paste0("mapplots_both_", dispmode, ".pdf"), spatgridboth, width=10, height=6)
 
-## animated:
+## animated: ##FIXME DV doesn't work yet
 da = tworesults %>% rename(Environment = scenario) %>% filter(replicate == 18, time > 0) %>%
     mutate(Environment = ifelse(Environment == "static", "Static environment", "Variable environment")) %>%
     group_by(x, y, Environment, time) %>%
     summarize(`Richness / n.spp.` = length(unique(lineage)), `Adult biomass / g` = mean(repsize), `Number of genes` = mean(ngenes))
 richs = da %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Richness / n.spp.`)) + coord_fixed() +
     facet_grid(. ~ Environment) + scale_fill_viridis_c(option="magma") + theme_classic() + transition_time(time) + labs(title = "Year: {frame_time}")
-anim_save(paste0("mapplots_rich_s", 18, ".gif"), richs, nframes = length(unique(da$time)), fps = 2)
+anim_save(paste0("mapplots_rich_s", 18, "_", dispmode, ".gif"), richs, nframes = length(unique(da$time)), fps = 2)
 masss = da %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Adult biomass / g`)) + coord_fixed() +
     facet_grid(. ~ Environment) + scale_fill_viridis_c(option="magma") + theme_classic() + transition_time(time) + labs(title = "Year: {frame_time}")
-anim_save(paste0("mapplots_mass_s", 18, ".gif"), masss, nframes = length(unique(da$time)), fps = 2)
+anim_save(paste0("mapplots_mass_s", 18, "_", dispmode, ".gif"), masss, nframes = length(unique(da$time)), fps = 2)
 geness = da %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Number of genes`)) + coord_fixed() +
     facet_grid(. ~ Environment) + scale_fill_viridis_c(option="magma") + theme_classic() + transition_time(time) + labs(title = "Year: {frame_time}")
-anim_save(paste0("mapplots_genes_s", 18, ".gif"), geness, nframes = length(unique(da$time)), fps = 2)
+anim_save(paste0("mapplots_genes_s", 18, "_", dispmode, ".gif"), geness, nframes = length(unique(da$time)), fps = 2)
 richa = da %>% ggplot(aes(x, y)) + geom_tile(aes(fill = Richness)) + coord_fixed() +
     facet_grid(. ~ Environment) + scale_fill_viridis_c(option="magma") + theme_classic()
 massa = da %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Adult biomass`)) + coord_fixed() +
@@ -129,13 +141,14 @@ massa = da %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Adult biomass`)) + coor
 genesa = da %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Number of genes`)) + coord_fixed() +
     facet_grid(. ~ Environment) + scale_fill_viridis_c(option="magma") + theme_classic()
 spatgrida = plot_grid(richa, massa, genesa, labels="auto", ncol=1, align="vh") + transition_time(time)
-anim_save(paste0("mapplots_s", 18, ".gif"), spatgrida, width=9, height=7)
+anim_save(paste0("mapplots_s", 18, "_", dispmode, ".gif"), spatgrida, width=9, height=7)
 
+## DV works
 lclrich = tworesults %>% filter(time>=50) %>% group_by(time, x, y, scenario, replicate) %>% summarize(alpha_diversity = length(unique(lineage))) %>%
       ungroup %>% group_by(time, scenario, replicate) %>% summarize_at(vars(alpha_diversity), mean) %>%
     ggplot(aes(time, alpha_diversity, group=scenario)) + stat_summary(aes(color=scenario), fun.y = mean, geom="line", size=1) +
     stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d(name = "Environment") + theme_bw() + ylab(expression(paste(alpha, "-diversity", sep = ""))) + xlab("Year")
-ggsave(paste0("localrichness_over_time", ".pdf"), lclrich, width=6, height=4)
+ggsave(paste0("localrichness_over_time_", dispmode, ".pdf"), lclrich, width=6, height=4)
 
 mybeta = tibble(time=numeric(), scenario=character(), replicate=numeric(), betadiv=numeric(), zetadiv=numeric(), zetasd=numeric())
 for (ts in unique(tworesults$time)) {
@@ -155,22 +168,24 @@ for (ts in unique(tworesults$time)) {
 
 beta =  mybeta %>% filter(time>=50) %>% ggplot(aes(time, beta_diversity, group=scenario)) + stat_summary(aes(color=scenario), fun.y = mean, geom="line", size=1) +
     stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_bw() + ylab(expression(paste(beta, "-diversity", sep = ""))) + xlab("Year")
-ggsave(paste0("betadiv_over_time", ".pdf"), beta, width=6, height=4)
+ggsave(paste0("betadiv_over_time_", dispmode, ".pdf"), beta, width=6, height=4)
 
 ttlrich = tworesults %>% filter(time>=50) %>% select(-x, -y) %>% group_by(time, scenario, replicate) %>% summarize(gamma_diversity = length(unique(lineage))) %>%
     ggplot(aes(time, gamma_diversity, group=scenario)) + stat_summary(aes(color=scenario), fun.y = mean, geom="line", size=1) +
     stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_bw() + ylab(expression(paste(gamma, "-diversity", sep = ""))) + xlab("Year")
-ggsave(paste0("totalrichness_over_time", ".pdf"), ttlrich, width=6, height=4)
+ggsave(paste0("totalrichness_over_time_", dispmode, ".pdf"), ttlrich, width=6, height=4)
 
 juvs = tworesults %>% filter(time>=50) %>% select(-x, -y) %>% group_by(time, scenario, replicate) %>%
     ggplot(aes(time, juveniles, group=scenario)) + stat_summary(aes(color=scenario), fun.y = mean, geom="line", size=1) +
     stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d(name="Environment") + theme_bw() + ylab("Number of juveniles") + xlab("Year")
-ggsave(paste0("juveniles_over_time", ".pdf"), juvs, width=6, height=4)
+ggsave(paste0("juveniles_over_time_", dispmode, ".pdf"), juvs, width=6, height=4)
 
 adlts = tworesults %>% filter(time>=50) %>% select(-x, -y) %>% group_by(time, scenario, replicate) %>%
     ggplot(aes(time, adults, group=scenario)) + stat_summary(aes(color=scenario), fun.y = mean, geom="line", size=1) +
     stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_bw() + ylab("Number of adults") + xlab("Year")
-ggsave(paste0("adults_over_time", ".pdf"), adlts, width=6, height=4)
+ggsave(paste0("adults_over_time_", dispmode, ".pdf"), adlts, width=6, height=4)
+
+##FIXME DV works up to here
 
 myenv = tworesults %>% group_by(time, scenario, replicate) %>% select(temp, prec) %>% unique() %>% ungroup()
 myspecs = tworesults %>% group_by(time, scenario, replicate, lineage) %>% select(ends_with("range")) %>%
@@ -181,7 +196,7 @@ myspecs = myspecs %>% inner_join(myenv) %>% mutate(habitable = temp>=mintemprang
 range =  myspecs %>% filter(time>=50) %>% mutate(replicate=as.factor(replicate), scenario=as.factor(scenario)) %>% group_by(time, scenario, replicate) %>%
     ggplot(aes(time, rangefilling, group=scenario)) + stat_summary(aes(color=scenario), fun.y = mean, geom="line", size=1) +
     stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_bw() + ylab("Range-filling") + xlab("Year")
-ggsave(paste0("rangefilling_over_time", ".pdf"), range, width=6, height=4)
+ggsave(paste0("rangefilling_over_time_", dispmode, ".pdf"), range, width=6, height=4)
 
 ecogrid = plot_grid(lclrich + theme(legend.position=c(.6, .75)),
           beta + theme(legend.position="none"),
@@ -190,7 +205,7 @@ ecogrid = plot_grid(lclrich + theme(legend.position=c(.6, .75)),
           adlts + theme(legend.position="none"),
           range + theme(legend.position="none"), labels="auto", ncol=3, align="vh")
 pattsleg = plot_grid(ecogrid, ncol=1, rel_heights=c(1,.1)) # get_legend(juvs), 
-ggsave(paste0("ecopatts", ".pdf"), pattsleg, width=7, height=5)
+ggsave(paste0("ecopatts_", dispmode, ".pdf"), pattsleg, width=7, height=5)
 
 tworesults %>% filter(time>=50) %>% select(-x, -y) %>% group_by(time, scenario, replicate) %>%
     ggplot(aes(time, mean_genetic_variation, group=scenario)) + stat_summary(aes(color=scenario), fun.y = mean, geom="smooth", size=1) +
@@ -205,7 +220,7 @@ lineagevec = tworesults %>% filter(time==500) %>% select(scenario, lineage)
  summary(is.element(unique(lineagevec[lineagevec$scenario=="static",]$lineage), unique(lineagevec[lineagevec$scenario=="variable",]$lineage)))
  summary(is.element(unique(lineagevec[lineagevec$scenario=="variable",]$lineage), unique(lineagevec[lineagevec$scenario=="static",]$lineage)))
 
- pdf("venn_sp_500.pdf", width=4, height=3)
+ pdf(paste0("venn_sp_500_", dispmode, ".pdf"), width=4, height=3)
  draw.pairwise.venn(length(unique(lineagevec[lineagevec$scenario=="static",]$lineage)),
                     length(unique(lineagevec[lineagevec$scenario=="variable",]$lineage)),
                     sum(is.element(unique(lineagevec[lineagevec$scenario=="static",]$lineage), unique(lineagevec[lineagevec$scenario=="variable",]$lineage))),
@@ -232,10 +247,10 @@ endpca = prcomp(mainendtraits[,-1], scale=T)
 endpcaviz = fviz_pca_biplot(endpca, col.var=factor(c("ecological", "genetic", "ecological", "ecological", "ecological", "genetic", "genetic", "ecological", "ecological")),
                 geom.ind="point", fill.ind=mainendtraits$Environment, pointsize=1, pointshape=21, addEllipses = TRUE) + #, ellipse.alpha=0.1, ellipse.type = "convex") +
     theme_bw() + scale_fill_viridis_d("Environment") + scale_color_brewer(palette="Set2", name="Trait")
-ggsave("pca_t500_maintraits.pdf", endpcaviz, width=4.5, height=4)
+ggsave(paste0("pca_t500_maintraits_", dispmode, ".pdf"), endpcaviz, width=4.5, height=4)
 endpcascree = fviz_eig(endpca) + theme_bw() # => all traits similarly important for characterisation of trait space
 pca_grid = plot_grid(endpcaviz, endpcascree, ncol=2, rel_widths=c(1, 0.5), labels="auto")
-ggsave("pca_t500_maintraits_scree.pdf", pca_grid, width=7, height=4)
+ggsave(paste0("pca_t500_maintraits_scree_", dispmode, ".pdf"), pca_grid, width=7, height=4)
 
 ## prepare data:
   myendresults = tworesults %>% filter((time == 0 & scenario == "static") | time == 500) %>% #mutate(shared=as.factor(ifelse(lineage %in% sharedspecies, "shared", "unique"))) %>%
@@ -276,8 +291,9 @@ ggsave("pca_t500_maintraits_scree.pdf", pca_grid, width=7, height=4)
                                     max(lme_table[,"Estimate"] + lme_table[,"Std. Error"]) + 0.01)) +
       xlab("") + ylab("Difference in means between environments") + coord_flip() +
       scale_fill_npg(guide = FALSE)
-  ggsave("differences_traits_environments_replicate_means.pdf", width = 5, height = 5)
-  ggsave("diffs_means.pdf", width = 5, height = 5)
+ggsave(paste0("differences_traits_environments_replicate_means_", dispmode, ".pdf"),
+       width = 5, height = 5)
+  ggsave(paste0("diffs_means_", dispmode, ".pdf"), width = 5, height = 5)
 
   ## Trait variances (/CV):
   subtraitnames = myendresults %>% dplyr::select(contains("CV_median")) %>% names() 
@@ -310,8 +326,9 @@ endsubtraits_lme_table %>%
       scale_y_continuous(limits = c(min(endsubtraits_lme_table[,"Estimate"] - endsubtraits_lme_table[,"Std. Error"]),
                                     max(endsubtraits_lme_table[,"Estimate"] + endsubtraits_lme_table[,"Std. Error"]) + 0.005)) +
       coord_flip() + scale_fill_npg(guide = FALSE) + facet_grid(.~level)
-  ggsave("differences_traits_environments_replicate_variances.pdf", width = 10, height = 5)
-  ggsave("diffs_variances.pdf", width = 10, height = 5)
+ggsave(paste0("differences_traits_environments_replicate_variances_", dispmode, ".pdf"),
+       width = 10, height = 5)
+  ggsave(paste0("diffs_variances_", dispmode, ".pdf"), width = 10, height = 5)
 
   lme_table$level = factor("Community means", levels = c("Community means", "Intraspecific variation", "Genetic variation"))
 
@@ -322,7 +339,7 @@ endsubtraits_lme_table %>%
       geom_errorbar(aes(ymin = Estimate - `Std. Error`, ymax = Estimate + `Std. Error`), position = position_dodge(.5), width = 0) +
       xlab("") + ylab("Differences of variable compared to static environments") +
       coord_flip() + scale_fill_npg(guide = FALSE) + facet_grid(.~level, scales = "free")
-  ggsave("all_diffs_variances.pdf", combdiffs, width = 7, height = 3)
+  ggsave(paste0("all_diffs_variances_", dispmode, ".pdf"), combdiffs, width = 7, height = 3)
 
 reps = tworesults$replicate %>% unique() %>% sample()
 tsteps = seq(800,1000,50)
@@ -342,4 +359,4 @@ pcasds = anavar %>% gather(contains("PC"), key=component, value=Standard_deviati
     mutate(Number_of_replicates=as.factor(Number_of_replicates)) %>%
     ggplot(aes(Number_of_timesteps, Standard_deviation)) + geom_line(aes(color=Number_of_replicates)) +
     facet_wrap(.~component, scales="free_y") + scale_color_viridis_d() + theme_classic()
-ggsave("pcasd_t800_timesteps_replicates.pdf", pcasds, width=12, height=8)
+ggsave(paste0("pcasd_t800_timesteps_replicates_", dispmode, ".pdf"), pcasds, width=12, height=8)
