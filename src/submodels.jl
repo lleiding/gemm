@@ -408,7 +408,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactor!
         partners = findmate(patch.community, ind, settings["traitnames"])
         if length(partners) < 1 && rand() < ind.traits["selfing"]
             partners = [ind]
-        else
+        elseif length(partners) < 1
             continue
         end
         numpartners = Integer(round(ind.traits["numpollen"]))
@@ -443,7 +443,7 @@ function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
                 partners = findmate([(map(x -> x.community, world)...)...], ind, settings["traitnames"])
                 if length(partners) < 1 && rand() < ind.traits["selfing"]
                     partners = [ind]
-                else
+                elseif length(partners) < 1
                     continue
                 end
                 numpartners = Integer(round(ind.traits["numpollen"]))
