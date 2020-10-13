@@ -99,7 +99,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactor!
         partners = findmate(patch.community, ind, settings["traitnames"])
         if length(partners) < 1 && rand() < ind.traits["selfing"]
             partners = [ind]
-        else
+        elseif length(partners) < 1
             continue
         end
         numpartners = Integer(round(ind.traits["numpollen"]))
@@ -108,7 +108,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactor!
             parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
             if parentmass <= 0
                 continue
-            else
+            elseif length(partners) < 1
                 ind.size = parentmass
             end
             append!(patch.seedbank, createoffspring(noffs, ind, partner, settings["traitnames"]))
