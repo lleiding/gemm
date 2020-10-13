@@ -10,9 +10,13 @@
 
 ## GeMM adaptation
 
-- [ ] add `elevation`, `forest`, and `habitat` fields to `Patch`
+- [X] introduce `modes` to differentiate between experiment types
 
-- [ ] convert `precipitation` niche to `elevation` (and keep temperature constant)
+- [ ] make sure `map_creator.R` works with Petri's data
+
+- [ ] convert `precipitation` niche to `AGC` (above-ground carbon)
+
+- [ ] find a suitable temperature value
 
 - [ ] change species initialisation process to read predefined species
 
@@ -21,6 +25,10 @@
 		- lowland species *Z. jubaensis* (former subspecies of *Z. abyssinicus*)
 
 - [ ] vary hybridization affinity for core experiment
+
+- [ ] introduce sex (birds are not hermaphrodites)
+
+- [ ] write an alternate findmate() function
 
 - [ ] prepare map series for SLOSS experiment (constant habitat size, random configuration)
 		- single very large habitat (VL)
@@ -34,9 +42,9 @@
 
 - [ ] small test runs to test parameterisation
 
-## Notes
+- [ ] figure out how carrying capacity & competition are supposed to work
 
-- do we need the `forest` variable?
+## Notes
 
 - how should burn-in work?
 
@@ -56,5 +64,3 @@
   can interact?
   -> mate search should not be restricted to the individual's cell,
   but a radius of 3 cells (allows interaction between different species)
-
-- What about sexuality? (Birds are either male or female...)
