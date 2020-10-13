@@ -138,17 +138,14 @@ function parseconfig(configfilename::String)
         elseif c[1] in keys(defaults)
             value = c[2]
             if !(typeof(defaults[c[1]]) <: AbstractString)
-                try
-                    ## FIXME The new `parse` is only intended for numbers!
-                    value = parse(typeof(defaults[c[1]]), c[2]) # or Meta.parse with the old functionality
-                catch
+                value = eval(Meta.parse(c[2]))
+                if typeof(defaults[c[1]] != typeof(value))
                     simlog("$(c[1]) not of type $(typeof(defaults[c[1]])).",
                            settings, 'w', "")
                 end
             end
             settings[c[1]] = value
         else
-            # XXX maybe parse anyway
             simlog(c[1]*" is not a recognized parameter!", settings, 'w', "")
         end
     end

@@ -19,7 +19,7 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
         else if settings["mode"] == "zosterops"
             zosteropsexperiment(world, settings)
         else
-            simlog("Mode setting not recognised: "*settings["mode"], settings, 'e')
+            simlog("Mode setting not recognised: $(settings["mode"])", settings, 'e')
         end
         # map(p -> simlog("Patch $(p.id): $(length(p.community)) individuals.", settings, 'd'), world) # disabled - performance concerns
         if settings["lineages"]
