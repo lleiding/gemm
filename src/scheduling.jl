@@ -14,9 +14,9 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
         # ecological processes are outsourced to specialised methods below
         if settings["mode"] == "default"]
             defaultexperiment(world, settings)
-        else if settings["mode"] == "invasion"
+        elseif settings["mode"] == "invasion"
             invasionexperiment(world, settings)
-        else if settings["mode"] == "zosterops"
+        elseif settings["mode"] == "zosterops"
             zosteropsexperiment(world, settings)
         else
             simlog("Mode setting not recognised: $(settings["mode"])", settings, 'e')

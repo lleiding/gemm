@@ -12,6 +12,8 @@
 
 - [X] introduce `modes` to differentiate between experiment types
 
+- [ ] create a small test setup
+
 - [ ] make sure `map_creator.R` works with Petri's data
 
 - [ ] convert `precipitation` niche to `AGC` (above-ground carbon)
