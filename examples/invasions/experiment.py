@@ -41,6 +41,7 @@ constant_settings = {"cellsize":2e6, # 2 tonnes/hectar -> default 20?
                      "popsize":"metabolic",
                      "minseedsize":0, # 1g
                      "minrepsize":5,  # 148g
+                     "mode":"invasion",
                      "burn-in": 500,
                      "global-species-pool":100}
 

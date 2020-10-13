@@ -110,6 +110,7 @@ function basicparser(filename::String)
     open(filename) do file
         lines = readlines(file)
     end
+    # TODO concatenate lines ending in \
     # Remove comments and tokenize
     lines = map(x -> strip(x), lines)
     filter!(x -> !isempty(x), lines)
@@ -138,6 +139,7 @@ function parseconfig(configfilename::String)
             value = c[2]
             if !(typeof(defaults[c[1]]) <: AbstractString)
                 try
+                    ## FIXME The new `parse` is only intended for numbers!
                     value = parse(typeof(defaults[c[1]]), c[2]) # or Meta.parse with the old functionality
                 catch
                     simlog("$(c[1]) not of type $(typeof(defaults[c[1]])).",

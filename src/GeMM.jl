@@ -2,7 +2,7 @@
 #
 # Ludwig Leidinger <l.leidinger@gmx.net>,
 # Daniel Vedder <daniel.vedder@stud-mail.uni-wuerzburg.de>
-# (c) 2017-2020
+# (c) 2017-2020, licensed under the terms of the MIT license
 #
 # Contains all custom types and functions necessary for an individual based,
 # genome and niche explicit, eco-evo-env metacommunity model. 
