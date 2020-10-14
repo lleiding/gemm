@@ -139,7 +139,7 @@ function parseconfig(configfilename::String)
             value = c[2]
             if !(typeof(defaults[c[1]]) <: AbstractString)
                 value = eval(Meta.parse(c[2]))
-                if typeof(defaults[c[1]] != typeof(value))
+                if typeof(defaults[c[1]]) != typeof(value)
                     simlog("$(c[1]) not of type $(typeof(defaults[c[1]])).",
                            settings, 'w', "")
                 end

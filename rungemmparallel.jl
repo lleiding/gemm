@@ -54,4 +54,12 @@ for i in args["seed"]:(args["seed"] + args["replicates"] - 1)
     end
 end
 
-pmap(x -> rungemm(x[1], x[2]), simulations)
+# Only use `pmap` when we actually have multiple simulations.
+# Otherwise, we can save on the overhead (plus, `pmap` obscures
+# error messages).
+if length(simulations) == 1
+    sim = simulations[1]
+    rungemm(sim[1], sim[2])
+else
+    pmap(x -> rungemm(x[1], x[2]), simulations)
+end

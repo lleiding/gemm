@@ -12,7 +12,7 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
     for t in (timeoffset + 1):(timeoffset + timesteps)
         simlog("UPDATE $t", settings)
         # ecological processes are outsourced to specialised methods below
-        if settings["mode"] == "default"]
+        if settings["mode"] == "default"
             defaultexperiment(world, settings)
         elseif settings["mode"] == "invasion"
             invasionexperiment(world, settings)
