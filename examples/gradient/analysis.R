@@ -29,7 +29,7 @@ library(MuMIn)
 ## mytworesults = allfiles[grep(paste(tworuns$seed, collapse="|"), allfiles)]
 ## rm(allfiles, tworuns)
 
-## We know all runs are done, so we don't need to filter
+## Incomplete runs are filtered out later
 dispmode = "global" ## 'local' or 'global'
 mytworesults = Sys.glob(paste0("data/2020*", dispmode, "*/*tsv"))
 
@@ -187,10 +187,12 @@ ggsave(paste0("adults_over_time_", dispmode, ".pdf"), adlts, width=6, height=4)
 
 ##FIXME DV works up to here
 
+##TODO need range filling (fig. 2f)
 myenv = tworesults %>% group_by(time, scenario, replicate) %>% select(temp, prec) %>% unique() %>% ungroup()
 myspecs = tworesults %>% group_by(time, scenario, replicate, lineage) %>% select(ends_with("range")) %>%
     summarize(minprecrange=min(minprecrange), maxprecrange=max(maxprecrange),
-	      mintemprange=min(mintemprange), maxtemprange=max(maxtemprange)) %>% mutate(rangefilling=0) %>% ungroup()
+              mintemprange=min(mintemprange), maxtemprange=max(maxtemprange)) %>% mutate(rangefilling=0) %>% ungroup()
+##FIXME `maxtemprange` and similar variables could not be defined at the start of the script...
 myspecs = myspecs %>% inner_join(myenv) %>% mutate(habitable = temp>=mintemprange & temp<=maxtemprange & prec>=minprecrange & prec<=maxprecrange) %>%
     group_by(time, scenario, replicate, lineage) %>% select(habitable) %>% summarise(rangefilling=sum(habitable)/length(habitable)) %>% ungroup()
 range =  myspecs %>% filter(time>=50) %>% mutate(replicate=as.factor(replicate), scenario=as.factor(scenario)) %>% group_by(time, scenario, replicate) %>%
@@ -198,6 +200,7 @@ range =  myspecs %>% filter(time>=50) %>% mutate(replicate=as.factor(replicate),
     stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_bw() + ylab("Range-filling") + xlab("Year")
 ggsave(paste0("rangefilling_over_time_", dispmode, ".pdf"), range, width=6, height=4)
 
+##TODO this should work when range filling does (fig. 2)
 ecogrid = plot_grid(lclrich + theme(legend.position=c(.6, .75)),
           beta + theme(legend.position="none"),
           ttlrich + theme(legend.position="none"),
@@ -231,15 +234,16 @@ lineagevec = tworesults %>% filter(time==500) %>% select(scenario, lineage)
 
  summary(lineagevec$lineage %in% uniquespecies)
 
+##DV works (PCA)
 mainendtraits = tworesults %>% filter(time == 500) %>%
     rename(Environment = scenario) %>%
     dplyr::select(Environment, mean_dispersal_distance, number_of_genes, precipitation_tolerance,
-           adult_body_size, temperature_tolerance, genetic_linkage, mean_genetic_variation,
+           adult_body_size, temperature_tolerance, linkage_degree, mean_genetic_variation,
            long_distance_dispersal, seed_size) %>%
     mutate_at(vars(-Environment), function(x) log(x + 1)) %>%
     rename(`Mean dispersal distance` = mean_dispersal_distance, `Number of genes` = number_of_genes,
            `Precipitation tolerance` = precipitation_tolerance, `Adult biomass / g` = adult_body_size,
-           `Temperature tolerance` = temperature_tolerance, `Genetic linkage` = genetic_linkage,
+           `Temperature tolerance` = temperature_tolerance, `Genetic linkage` = linkage_degree,
            `Mean genetic variation` = mean_genetic_variation, `Long distance dispersal` = long_distance_dispersal,
            `Seed biomass / g` = seed_size)
 
@@ -261,9 +265,10 @@ ggsave(paste0("pca_t500_maintraits_scree_", dispmode, ".pdf"), pca_grid, width=7
       rename(Environment=scenario, log_adult_body_size=adult_body_size) %>%
       na.omit()
 
+  ##DV works
   ## Trait means:
   traitnames = myendresults %>% dplyr::select(mean_dispersal_distance, long_distance_dispersal, number_of_genes, precipitation_tolerance, seed_size, 
-                                       log_adult_body_size, temperature_tolerance, genetic_linkage, mean_genetic_variation) %>%
+                                       log_adult_body_size, temperature_tolerance, linkage_degree, mean_genetic_variation) %>%
       names() 
 
   endtraits_lme = foreach(trait=traitnames) %do% {
@@ -295,6 +300,7 @@ ggsave(paste0("differences_traits_environments_replicate_means_", dispmode, ".pd
        width = 5, height = 5)
   ggsave(paste0("diffs_means_", dispmode, ".pdf"), width = 5, height = 5)
 
+  ##DV FIXME doesn't work yet
   ## Trait variances (/CV):
   subtraitnames = myendresults %>% dplyr::select(contains("CV_median")) %>% names() 
 
