@@ -40,6 +40,8 @@ mutable struct Chromosome
     maternal::Bool # parental origin of chromosome
 end
 
+@enum Sex hermaphrodite male female
+
 """
 One of the core structs of the model, representing an individual organism.
 """
@@ -51,6 +53,7 @@ mutable struct Individual
     precadaptation::Float64 # adaption to precipitation
     tempadaptation::Float64 # adaption to temperature
     size::Float64 # body mass
+    sex::Sex
     id::Int
 end
 

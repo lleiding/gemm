@@ -80,12 +80,12 @@ function zosteropsexperiment(world::Array{Patch,1}, settings::Dict{String, Any})
     establish!(world, settings["nniches"], settings["static"])
     survive!(world, settings)
     grow!(world, settings)
-    compete!(world, settings["static"])
-    reproduce!(world, settings)
+    #compete!(world, settings["static"]) #no competition needed
+    zreproduce!(world, settings)
     if settings["mutate"]
         mutate!(world, settings)
     end
-    disperse!(world, settings["static"])
+    zdisperse!(world, settings)
     checkviability!(world, settings)
     changehabitat!(world, settings) # model output
 end
