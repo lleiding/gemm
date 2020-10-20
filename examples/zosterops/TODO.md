@@ -6,17 +6,17 @@
 
 - [ ] read up on current literature about evolutionary rescue, introgressive hybridization
 
-- [ ] write F2 course report (about what exactly?)
+- [ ] prepare F2 presentation on "Adapting a plant community model to bird populations"
 
 ## GeMM adaptation
 
 - [X] introduce `modes` to differentiate between experiment types
 
-- [ ] create a small test setup
+- [X] create a small test setup
 
 - [ ] make sure `map_creator.R` works with Petri's data
 
-- [ ] convert `precipitation` niche to `AGC` (above-ground carbon)
+- [ ] convert `precipitation` niche to `AGC` (above-ground carbon) (isn't that simply a relabelling?)
 
 - [ ] find a suitable temperature value
 
@@ -31,6 +31,8 @@
 - [ ] introduce sex (birds are not hermaphrodites)
 
 - [ ] write an alternate findmate() function
+		-> breeding pairs stay faithful for life
+		-> occupy & stay in a territory
 
 - [ ] prepare map series for SLOSS experiment (constant habitat size, random configuration)
 		- single very large habitat (VL)
