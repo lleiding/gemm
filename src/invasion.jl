@@ -110,5 +110,5 @@ function createind(settings::Dict{String, Any}, marked::Bool = false)
     else
         indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
     end
-    Individual(lineage, chromosomes, traitdict, marked, 1.0, 1.0, indsize, hermaphrodite, id)
+    Individual(lineage, chromosomes, traitdict, marked, 1.0, 1.0, indsize, hermaphrodite, 0, id)
 end

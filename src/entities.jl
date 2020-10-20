@@ -49,11 +49,12 @@ mutable struct Individual
     lineage::String
     genome::Array{Chromosome, 1}
     traits::Dict{String, Float64}
-    marked::Bool # indicator whether individual is new to a patch (after dispersal or birth)
+    marked::Bool  # indicator whether individual is new to a patch (after dispersal or birth)
     precadaptation::Float64 # adaption to precipitation
     tempadaptation::Float64 # adaption to temperature
     size::Float64 # body mass
     sex::Sex
+    partner::Int  # ID of the partner individual (if applicable)
     id::Int
 end
 
@@ -63,16 +64,16 @@ One of the core structs of the model, representing a one-hectare patch of ground
 mutable struct Patch
     id::Int
     location::Tuple{Int, Int}
-    area::Float64
-    temp::Float64 # temperature (physiologically important)
-    isisland::Bool
-    prec::Float64 # precipitation (no physiological effect, just a niche)
-    nicheb::Float64 # additional niche
+    area::Float64   # XXX misnomer: actually represents biomass carrying capacity in g ("cellsize")
+    temp::Float64   # temperature (physiologically important)
+    prec::Float64   # precipitation (no physiological effect, just a generic niche)
+    nicheb::Float64 # additional generic niche - currently not used
     community::Array{Individual, 1}
     seedbank::Array{Individual, 1}
-    invasible::Bool
-    isolated::Bool
-    initpop::Bool # initialise with a population
+    isisland::Bool  # island? (if false -> mainland)  
+    invasible::Bool # can exotics land here?
+    isolated::Bool  # add a distance penalty when dispersing?
+    initpop::Bool   # initialise with a population?
 end
 
 # constructors:

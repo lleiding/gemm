@@ -16,14 +16,17 @@ Females disperse second, looking for available mates. (Cf. Aben et al. 2016)
 function zdisperse!(world::Array{Patch,1}, settings::Dict{String, Any}, sex::Sex=male)
     for patch in world
         for juvenile in patch.seedbank
-            (juvenile.sex == sex) && zdisperseindividual!(juvenile, patch.location)
+            (juvenile.sex == sex) && zdisperseindividual!(juvenile, world, patch.location)
         end
     end
     (sex == male) && zdisperse!(world, settings, female)
 end
 
-function zdisperseindividual!(bird::Individual, location::Tuple{Int, Int})
-    #TODO
+function zdisperseindividual!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int, Int})
+    #TODO calculate max dispersal distance
+    #TODO for each step, calculate the best habitat patch in the surrounding (excluding the current)
+    #TODO move there - if it's occupied, repeat, otherwise stay there
+    #TODO if you've reached the max dispersal distance, die
 end
 
 function zreproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
