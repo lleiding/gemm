@@ -81,7 +81,7 @@ end
 """
     createind(settings, marked=false)
 
-Create an individual organism with of a new species with a random genome.
+Create an individual organism of a new species with a random genome.
 """
 function createind(settings::Dict{String, Any}, marked::Bool = false)
     id = rand(Int32)

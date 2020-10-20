@@ -123,7 +123,14 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
                 simlog("Unrecognized patch parameter $var.", settings, 'w')
                 continue
             elseif length(varval) < 2
-                val = true # if no value is specified, assume 'true'
+                # if no value is specified, assume 'true'
+                # (unless the variable is prepended with an exclamation mark, then take 'false')
+                if var[1] == '!'
+                    var = var[2:end]
+                    val = false
+                else
+                    val = true
+                end
             else
                 val = Meta.parse(varval[2])
             end
@@ -139,6 +146,7 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
             end
             eval(Meta.parse("newpatch."*string(var)*" = $val"))
         end
+        # create patch communities
         if newpatch.initpop && settings["indsize"] != "seed"
             append!(newpatch.community, genesis(settings))
         # elseif newpatch.initpop && !newpatch.isisland && settings["static"]

@@ -139,7 +139,7 @@ function parseconfig(configfilename::String)
             value = c[2]
             if !(typeof(defaults[c[1]]) <: AbstractString)
                 value = eval(Meta.parse(c[2]))
-                if typeof(defaults[c[1]]) != typeof(value)
+                if !isa(value, typeof(defaults[c[1]]))
                     try
                         value = convert(typeof(defaults[c[1]]), value)
                     catch

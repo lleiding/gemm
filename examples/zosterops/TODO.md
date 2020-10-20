@@ -28,7 +28,7 @@
 
 - [ ] vary hybridization affinity for core experiment
 
-- [ ] introduce sex (birds are not hermaphrodites)
+- [X] introduce sex (birds are not hermaphrodites)
 
 - [ ] write an alternate findmate() function
 		-> breeding pairs stay faithful for life
@@ -46,7 +46,7 @@
 
 - [ ] small test runs to test parameterisation
 
-- [ ] figure out how carrying capacity & competition are supposed to work
+- [ ] update data output
 
 ## Notes
 
