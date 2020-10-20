@@ -83,11 +83,10 @@ function mutate!(world::Array{Patch, 1}, settings::Dict{String, Any})
     end
 end
 
-
 """
     reproduce!(patch, settings)
 
-Reproduction of individuals in a patch.
+Reproduction of individuals in a patch (default function).
 """
 function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactor!
     for ind in patch.community
@@ -118,6 +117,39 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactor!
 end
 
 """
+    greproduce!(patch, settings)
+
+Reproduction of individuals in a patch with global mating.
+"""
+function greproduce!(patch::Patch, settings::Dict{String, Any})
+    for ind in patch.community
+        ind.marked && continue # individual might not have established yet
+        ind.size < ind.traits["repsize"] && continue
+        metaboffs = settings["fertility"] * ind.size^(-1/4) * exp(-act/(boltz*patch.temp))
+        noffs = rand(Poisson(metaboffs))
+        noffs < 1 && continue
+        partners = findmate([(map(x -> x.community, world)...)...], ind, settings["traitnames"])
+        if length(partners) < 1 && rand() < ind.traits["selfing"]
+            partners = [ind]
+        elseif length(partners) < 1
+            continue
+        end
+        numpartners = Integer(round(ind.traits["numpollen"]))
+        for ptn in 1:numpartners
+            partner = rand(partners, 1)[1]
+            parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
+            if parentmass <= 0
+                continue
+            else
+                ind.size = parentmass
+            end
+            append!(patch.seedbank, createoffspring(noffs, ind, partner, settings["traitnames"]))
+        end
+    end
+    simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
+end
+
+"""
     reproduce!(world, settings)
 
 Carry out reproduction on all patches.
@@ -125,31 +157,9 @@ Carry out reproduction on all patches.
 function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
         if settings["globalmating"]
-            for ind in patch.community
-                ind.marked && continue # individual might not have established yet
-                ind.size < ind.traits["repsize"] && continue
-                metaboffs = settings["fertility"] * ind.size^(-1/4) * exp(-act/(boltz*patch.temp))
-                noffs = rand(Poisson(metaboffs))
-                noffs < 1 && continue
-                partners = findmate([(map(x -> x.community, world)...)...], ind, settings["traitnames"])
-                if length(partners) < 1 && rand() < ind.traits["selfing"]
-                    partners = [ind]
-                elseif length(partners) < 1
-                    continue
-                end
-                numpartners = Integer(round(ind.traits["numpollen"]))
-                for ptn in 1:numpartners
-                    partner = rand(partners, 1)[1]
-                    parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
-                    if parentmass <= 0
-                        continue
-                    else
-                        ind.size = parentmass
-                    end
-                    append!(patch.seedbank, createoffspring(noffs, ind, partner, settings["traitnames"]))
-                end
-            end
-            simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
+            greproduce!(patch, settings)
+        elseif settings["mode"] == "zosterops"
+            zreproduce!(patch, settings)
         else
             (patch.isisland || !settings["static"]) && reproduce!(patch, settings) # pmap(!,patch) ???
         end
@@ -182,12 +192,12 @@ function findmate(population::AbstractArray{Individual, 1}, ind::Individual, tra
 end
 
 """
-    createoffspring(noffs, individual, partner, traitnames)
+    createoffspring(noffs, individual, partner, traitnames, dimorphism)
 
 The main reproduction function. Take two organisms and create the given number
 of offspring individuals. Returns an array of individuals.
 """
-function createoffspring(noffs::Integer, ind::Individual, partner::Individual, traitnames::Array{String, 1})
+function createoffspring(noffs::Integer, ind::Individual, partner::Individual, traitnames::Array{String, 1}, dimorphism::Bool=false)
     offspring = Individual[]
     for i in 1:noffs # pmap? this loop could be factorized!
         partnergenome = meiosis(partner.genome, false) # offspring have different genome!
@@ -198,8 +208,12 @@ function createoffspring(noffs::Integer, ind::Individual, partner::Individual, t
         marked = true
         fitness = 0.0
         newsize = ind.traits["seedsize"]
+        sex = hermaphrodite
+        if dimorphism
+            rand(Bool) ? sex = male : sex = female
+        end
         ind = Individual(ind.lineage, genome, traits, marked, fitness,
-                         fitness, newsize, hermaphrodite, 0, rand(Int32))
+                         fitness, newsize, sex, 0, rand(Int32))
         push!(offspring, ind)
     end
     offspring

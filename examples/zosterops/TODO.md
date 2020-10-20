@@ -30,7 +30,7 @@
 
 - [X] introduce sex (birds are not hermaphrodites)
 
-- [ ] write an alternate findmate() function
+- [X] write an alternate findmate() function
 		-> breeding pairs stay faithful for life
 		-> occupy & stay in a territory
 
@@ -47,6 +47,8 @@
 - [ ] small test runs to test parameterisation
 
 - [ ] update data output
+
+- [ ] rebuild documentation
 
 ## Notes
 

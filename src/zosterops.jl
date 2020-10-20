@@ -29,7 +29,23 @@ function zdisperseindividual!(bird::Individual, world::Array{Patch,1}, location:
     #TODO if you've reached the max dispersal distance, die
 end
 
-function zreproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
-    #TODO
+"""
+    zreproduce!(patch, settings)
+
+Reproduction of Zosterops breeding pairs in a patch.
+"""
+function zreproduce!(patch::Patch}, settings::Dict{String, Any})
+    noffs = rand(Poisson(settings["fertility"])) #TODO change to metabolic/species-specific?
+    for bird in patch.community
+        if bird.sex == female && bird.partner != 0 && bird.size > bird.traits["repsize"]
+            partner = missing
+            for b in patch.community
+                (b.id == bird.partner) && partner = b
+            end
+            (ismissing(partner)) && continue
+            append!(patch.seedbank, createoffspring(noffs, bird, partner,
+                                                    settings["traitnames"], true))
+        end
+    end
 end
 
