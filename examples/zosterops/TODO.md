@@ -44,7 +44,9 @@
 		- genetic diversity
 		- population sizes
 
-- [ ] small test runs to test parameterisation
+- [ ] setup test framework
+
+- [ ] test parameterisation
 
 - [ ] update data output
 

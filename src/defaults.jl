@@ -15,7 +15,7 @@ function defaultSettings()
         "degpleiotropy" => 0.1, # how frequent is pleiotropy? 0 > degpleiotropy > 1
         "dest" => string(Dates.today()), # output folder name
         "dispmean" => 1.0, # maximum value of randomly drawn mean dispersal distance in cells
-        "dispshape" => 1.0, # maximum value of randomly drawn shape parameter fo dispersal kernel. determines tail fatness/long distance dispersal
+        "dispshape" => 1.0, # maximum value of randomly drawn shape parameter for dispersal kernel. determines tail fatness/long distance dispersal
         "disturbance" => 0, # percentage of individuals killed per update per cell
         "fasta" => "off", # record fasta data? "off", "compat", "all"
         "fertility" => exp(28.0), # global base reproduction rate 23.8 from Brown et al. 2004, alternatively 25.0, default 30.0

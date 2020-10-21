@@ -8,7 +8,8 @@
 
 Dispersal of individuals within the world.
 """
-function disperse!(world::Array{Patch,1}, static::Bool = true) # TODO: additional border conditions, refactorize
+function disperse!(world::Array{Patch,1}, static::Bool = true)
+    # TODO: additional border conditions, refactor
     for patch in world
         idx = 1
         while idx <= size(patch.seedbank,1)
@@ -43,7 +44,7 @@ end
 Establishment of individuals in patch `p`: Sets the adaptation parameters (~fitness)
 according to an individual's adaptation to the niches of the surrounding environment.
 
-A maximum of two niches is currently supported.
+A maximum of two niches (temperature and "precipitation") is currently supported.
 """
 function establish!(patch::Patch, nniches::Int=1)
     temp = patch.temp
@@ -111,22 +112,14 @@ function checkviability!(community::Array{Individual, 1}, settings::Dict{String,
 end
 
 """
-    checkviability!(patch, settings)
-
-Check the viability of the individuals in this patch.
-"""
-function checkviability!(patch::Patch, settings::Dict{String, Any})
-    checkviability!(patch.community, settings)
-end
-
-"""
     checkviability(world, settings)
 
 Check the viability of all individuals.
 """
 function checkviability!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
-        checkviability!(patch, settings) # pmap(checkviability!,patch) ???
+        #XXX pmap(checkviability!,patch) ???
+        checkviability!(patch.community, settings)
     end
 end
 
@@ -153,11 +146,10 @@ Make sure an individual organism has the full set of traits required by the mode
 (as defined in the settings).
 """
 function traitsexist(ind::Individual, settings::Dict{String, Any})
-    # FIXME If a trait doesn't exist, we need an error
     traitnames = settings["traitnames"]
     for trait in traitnames
         if !haskey(ind.traits, trait)
-            simlog("Individual is missing trait $trait. Might be killed.", settings, 'w')
+            simlog("Individual is missing trait $trait. Might be killed.", settings, 'e')
             return false
         end
     end
