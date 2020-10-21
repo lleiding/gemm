@@ -80,8 +80,8 @@ end
 # TODO These default values should be defined elsewhere (defaults.jl, to be precise)
 # XXX Are they even used?
 Patch(id, location, area) =
-    Patch(id, location, area, 298, false, 5, 0, Individual[], Individual[],
-          false, false, false)
+    Patch(id, location, area, 298, 5, 0, Individual[], Individual[],
+          false, false, false, false)
 Patch(id, location) =
-    Patch(id, location, 2e7, 298, false, 5, 0, Individual[], Individual[],
-          false, false, false)
+    Patch(id, location, 2e7, 298, 5, 0, Individual[], Individual[],
+          false, false, false, false)

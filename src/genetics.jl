@@ -138,7 +138,7 @@ end
 Check to see whether two individual organisms are reproductively compatible.
 """
 function iscompatible(mate::Individual, ind::Individual, traitnames::Array{String, 1})
-    mate.lineage != ind.lineage && return false
+    mate.lineage != ind.lineage && return false ##TODO must be possible under some conditions
     compatidx = findfirst(x -> x == "compat", traitnames)
     indgene = getseq(ind.genome, compatidx)
     mategene = getseq(mate.genome, compatidx)

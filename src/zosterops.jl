@@ -1,10 +1,16 @@
 # All functions specific to the Zosterops experiments.
 # Initialise predefined species and redefine dispersal and reproduction
 
-# Note: this experiment uses above-ground carbon (AGC) as the second environmental
-# niche instead of precipitation. However, we cannot rename all references to
-# `prec*` throughout the source code, so we'll just leave that as it is.
-
+# IMPORTANT NOTES (when using `zosterops` mode)
+#
+# 1. the second environment niche is now `above-ground carbon` instead of
+#    `precipitation` (unfortunately, we can't actually rename it everywhere)
+# 2. the `cellsize` setting now determines the patch carrying capacity in
+#    individuals, not grams
+# 3. the `fertility` setting is the absolute number of offspring per breeding pair
+#    (instead of a metabolic coefficient)
+# 4. the `tolerance` setting now determines the probability that a mate of
+#    another species is accepted
 
 """
     zdisperse!(world, settings)
@@ -19,7 +25,8 @@ function zdisperse!(world::Array{Patch,1}, settings::Dict{String, Any}, sex::Sex
         while length(patch.seedbank) > 0
             juvenile = pop!(patch.seedbank)
             if juvenile.sex == sex
-                zdisperse!(juvenile, world, patch.location)
+                zdisperse!(juvenile, world, patch.location,
+                           settings["cellsize"], settings["tolerance"])
             else
                 push!(newseedbank, juvenile)
             end
@@ -30,22 +37,23 @@ function zdisperse!(world::Array{Patch,1}, settings::Dict{String, Any}, sex::Sex
 end
 
 """
-    zdisperse!(bird, world, location)
+    zdisperse!(bird, world, location, cellsize)
 
 Dispersal of a single bird.
 """
-function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int, Int})
+function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int, Int},
+                    cellsize::Int, tolerance::Float)
     # calculate max dispersal distance
     dispmean = patch.seedbank[idx].traits["dispmean"]
     dispshape = patch.seedbank[idx].traits["dispshape"]
     #FIXME we're probably going to need another distribution
-    maxdist = rand(Logistic(dispmean,dispshape)) #XXX disperse!() add `/sqrt(2)`??
-    # for each step, calculate the best habitat patch in the surrounding (excluding the current)
+    maxdist = rand(Logistic(dispmean,dispshape)) #XXX disperse!() adds `/sqrt(2)`??
+    # for each step, calculate the best habitat patch in the surroundings
     x, y = location
     route = [location] # keep track of where we've been
     while maxdist > 0
-        target = [(x-1,y-1), (x, y-1), (x+1, y-1),
-                  (x-1, y), (x+1, y),
+        target = [(x-1, y-1), (x, y-1), (x+1, y-1),
+                  (x-1, y),             (x+1, y),
                   (x-1, y+1), (x, y+1), (x+1, y+1)]
         possdest = findall(p -> in(p.location, target) && !in(p.location, route),  world)
         bestdest = possdest[1]
@@ -55,26 +63,47 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
             end
         end
         # move there - if it's occupied, repeat, otherwise stay there
-        if true #TODO if the patch still has space, or an available mate
+        (bird.sex == female) && partner = findfirst(b -> ziscompatible(bird, b, tolerance),
+                                                    bestdest.community)
+        if (abs(bestdest.prec - bird.traits["precopt"]) <= bird.traits["precopt"] &&
+            length(bestdest.community) < cellsize &&
+            (bird.sex == male || !isnothing(partner)))
             push!(bestdest.community, bird)
-            #TODO find mate
+            if bird.sex == female
+                bird.partner = partner.id
+                partner.partner = bird.id
+            end
         end
         x, y = bestdest.location
         push!(route, bestdest.location)
         maxdist -= 1
-    end
-    #if the max dispersal distance is reached, the individual simply dies
+    end #if the max dispersal distance is reached, the individual simply dies
 end
 
+"""
+    iscompatible(female, male, tolerance)
+
+Check to see whether two birds are reproductively compatible.
+"""
+function ziscompatible(f::Individual, m::Individual, tolerance::Float)
+    !(m.sex == male && f.sex == female) && return false
+    (m.size < m.traits["repsize"] || f.size < f.traits["repsize"]) && return false
+    !(m.partner == 0 && f.partner == 0) && return false
+    (m.lineage != f.lineage && rand(Float64) > tolerance) && return false
+    #FIXME genetic compatibility?
+    return true
+end
+    
 """
     zreproduce!(patch, settings)
 
 Reproduction of Zosterops breeding pairs in a patch.
 """
 function zreproduce!(patch::Patch}, settings::Dict{String, Any})
-    noffs = rand(Poisson(settings["fertility"])) #TODO change to metabolic/species-specific?
+    #FIXME noffs should be between 2 and 3, cf. Jetz et al. 2008
+    noffs = settings["fertility"] #TODO change to metabolic/species-specific?
     for bird in patch.community
-        if bird.sex == female && bird.partner != 0 && bird.size > bird.traits["repsize"]
+        if bird.sex == female && bird.partner != 0 && bird.size >= bird.traits["repsize"]
             partner = missing
             for b in patch.community
                 (b.id == bird.partner) && partner = b
