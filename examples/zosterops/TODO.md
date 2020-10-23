@@ -12,8 +12,6 @@
 
 - [X] introduce `modes` to differentiate between experiment types
 
-- [X] create a small test setup
-
 - [ ] make sure `map_creator.R` works with Petri's data
 
 - [ ] convert `precipitation` niche to `AGC` (above-ground carbon) (isn't that simply a relabelling?)
@@ -34,6 +32,8 @@
 		-> breeding pairs stay faithful for life
 		-> occupy & stay in a territory
 
+- [ ] make sure growth function doesn't allow unlimited growth
+
 - [ ] prepare map series for SLOSS experiment (constant habitat size, random configuration)
 		- single very large habitat (VL)
 		- some large habitats (SL)
@@ -44,7 +44,7 @@
 		- genetic diversity
 		- population sizes
 
-- [ ] setup test framework
+- [ ] setup config file to enable testing
 
 - [ ] test parameterisation
 

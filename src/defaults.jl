@@ -17,7 +17,7 @@ function defaultSettings()
         "dispmean" => 1.0, # maximum value of randomly drawn mean dispersal distance in cells
         "dispshape" => 1.0, # maximum value of randomly drawn shape parameter for dispersal kernel. determines tail fatness/long distance dispersal
         "disturbance" => 0, # percentage of individuals killed per update per cell
-        "fasta" => "off", # record fasta data? "off", "compat", "all"
+        "fasta" => "off", # record fasta data? "off", "compat", "all" (high detail output)
         "fertility" => exp(28.0), # global base reproduction rate 23.8 from Brown et al. 2004, alternatively 25.0, default 30.0
         "fixtol" => true,
         "global-species-pool" => 0, # size of the global species pool (invasion source)
@@ -25,7 +25,7 @@ function defaultSettings()
         "growthrate" => exp(25.2), # global base growth/biomass production so that growth from 1g to 10-20g in one year
         "indsize" => "seed", # initialize organisms as seed, adult or mixed
         "isolationweight" => 3.0, # additional distance to be crossed when dispersing from or to isolated patches
-        "lineages" => false, # record lineage and diversity data?
+        "lineages" => false, # record lineage and diversity data (low detail output)
         "linkage" => "random", # gene linkage type (random/full/none)
         "logging" => false, # write output to logfile
         "maps" => "", # comma-separated list of map files
@@ -55,7 +55,7 @@ function defaultSettings()
         "seed" => 0, # for the RNG, seed = 0 -> random seed
         "smallgenelength" => 20,
         "static" => false, # whether mainland sites undergo eco-evolutionary processes
-        "stats" => true, # record population statistics
+        "stats" => true, # record population statistics (medium detail output)
         "tolerance" => 0.8, # sequence similarity threshold for reproduction if `fixtol` == true
         "traitnames" => ["compat",
                          "dispmean",

@@ -89,7 +89,7 @@ end
     makefasta(world, settings, io, onlyisland, sep)
 
 Record the genome of every individual currently alive to the given IO stream.
-WARNING: this produces *very* large files!
+(High-detail data recording function.) WARNING: this produces *very* large files!
 """
 function makefasta(world::Array{Patch, 1}, settings::Dict{String, Any}, io::IO = stdout, onlyisland::Bool = false, sep::String = "_")
     for patch in world
@@ -242,7 +242,7 @@ end
 """
     recordlineages(w)
 
-Save the abundance of each lineage per patch.
+Save the abundance of each lineage per patch. (Low-detail data recording function.)
 """
 function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
     if !isfile(joinpath(settings["dest"], "lineages.log"))
@@ -282,6 +282,7 @@ end
 
 Record statistical information (maximum, minimum, median, standard deviation)
 for a range of individual properties, as seen over the whole world population.
+(Medium-detail data recording function.)
 """
 function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, Any}, timestep::Integer)
     timestep == 0 && printpopheader(io)
