@@ -87,7 +87,7 @@ function zosteropsexperiment(world::Array{Patch,1}, settings::Dict{String, Any})
     end
     zdisperse!(world, settings)
     checkviability!(world, settings)
-    changehabitat!(world, settings) # model output
+    #changehabitat!(world, settings) # model output
 end
 
-# FIXME add more modes for gradient/habitat change experiments?
+# TODO add more modes for gradient/habitat change experiments?

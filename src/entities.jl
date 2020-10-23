@@ -78,7 +78,6 @@ end
 
 # constructors:
 # TODO These default values should be defined elsewhere (defaults.jl, to be precise)
-# XXX Are they even used?
 Patch(id, location, area) =
     Patch(id, location, area, 298, 5, 0, Individual[], Individual[],
           false, false, false, false)

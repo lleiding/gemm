@@ -6,8 +6,6 @@
 Create a new, random individual and replicates it a certain number of times
 (depending on metabolic variables) to create a new population of organisms.
 Returns an array of individuals.
-
-FIXME Why does this not interface with auxfuncts/createind()?
 """
 function createpop(settings::Dict{String, Any})
     traits = createtraits(settings)
