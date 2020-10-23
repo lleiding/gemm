@@ -1,6 +1,6 @@
-# Main Model
+# Model Framework
 
-These are the core functions of the model, implementing the high-level processes
+These are the core functions of the model, implementing the high-level structure
 of the simulation and the object classes that are involved.
 
 ## entities.jl
@@ -15,13 +15,6 @@ Pages = ["entities.jl"]
 ```@autodocs
 Modules = [GeMM]
 Pages = ["initialisation.jl"]
-```
-
-## submodels.jl
-
-```@autodocs
-Modules = [GeMM]
-Pages = ["submodels.jl"]
 ```
 
 ## scheduling.jl

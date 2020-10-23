@@ -15,15 +15,17 @@ julia make.jl
 
 echo "Postprocessing..."
 
-sed -i -e "s/aux\//aux\/index.html/g" build/index.html build/search_index.js
+sed -i -e "s/processes\//processes\/index.html/g" build/index.html build/search_index.js
 sed -i -e "s/io\//io\/index.html/g" build/index.html build/search_index.js
-sed -i -e "s/model\//model\/index.html/g" build/index.html build/search_index.js
+sed -i -e "s/extensions\//extensions\/index.html/g" build/index.html build/search_index.js
+sed -i -e "s/framework\//framework\/index.html/g" build/index.html build/search_index.js
 sed -i -e "s/search\//search\/index.html/g" build/index.html build/search_index.js
 
 sed -i -e "s/href=\"..\/\"/href=\"..\/index.html\"/g" build/*/index.html
-sed -i -e "s/..\/aux\//..\/aux\/index.html/g" build/*/index.html
+sed -i -e "s/..\/processes\//..\/processes\/index.html/g" build/*/index.html
 sed -i -e "s/..\/io\//..\/io\/index.html/g" build/*/index.html
-sed -i -e "s/..\/model\//..\/model\/index.html/g" build/*/index.html
+sed -i -e "s/..\/extensions\//..\/extensions\/index.html/g" build/*/index.html
+sed -i -e "s/..\/framework\//..\/framework\/index.html/g" build/*/index.html
 sed -i -e "s/..\/search\//..\/search\/index.html/g" build/*/index.html
 
 echo "Done."

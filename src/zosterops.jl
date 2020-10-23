@@ -21,7 +21,7 @@ Females disperse second, looking for available mates. (Cf. Aben et al. 2016)
 """
 function zdisperse!(world::Array{Patch,1}, settings::Dict{String, Any}, sex::Sex=male)
     for patch in world
-        newseedbank = Array{Individual,1}
+        newseedbank = Array{Individual,1}()
         while length(patch.seedbank) > 0
             juvenile = pop!(patch.seedbank)
             if juvenile.sex == sex
@@ -42,7 +42,7 @@ end
 Dispersal of a single bird.
 """
 function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int, Int},
-                    cellsize::Int, tolerance::Float)
+                    cellsize::Int, tolerance::Float64)
     # calculate max dispersal distance
     dispmean = patch.seedbank[idx].traits["dispmean"]
     dispshape = patch.seedbank[idx].traits["dispshape"]
@@ -63,8 +63,9 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
             end
         end
         # move there - if it's occupied, repeat, otherwise stay there
-        (bird.sex == female) && partner = findfirst(b -> ziscompatible(bird, b, tolerance),
-                                                    bestdest.community)
+        if bird.sex == female
+            partner = findfirst(b -> ziscompatible(bird, b, tolerance), bestdest.community)
+        end
         if (abs(bestdest.prec - bird.traits["precopt"]) <= bird.traits["precopt"] &&
             length(bestdest.community) < cellsize &&
             (bird.sex == male || !isnothing(partner)))
@@ -85,7 +86,7 @@ end
 
 Check to see whether two birds are reproductively compatible.
 """
-function ziscompatible(f::Individual, m::Individual, tolerance::Float)
+function ziscompatible(f::Individual, m::Individual, tolerance::Float64)
     !(m.sex == male && f.sex == female) && return false
     (m.size < m.traits["repsize"] || f.size < f.traits["repsize"]) && return false
     !(m.partner == 0 && f.partner == 0) && return false
@@ -99,13 +100,15 @@ end
 
 Reproduction of Zosterops breeding pairs in a patch.
 """
-function zreproduce!(patch::Patch}, settings::Dict{String, Any})
+function zreproduce!(patch::Patch, settings::Dict{String, Any})
     noffs = settings["fertility"]
     for bird in patch.community
         if bird.sex == female && bird.partner != 0 && bird.size >= bird.traits["repsize"]
             partner = missing
             for b in patch.community
-                (b.id == bird.partner) && partner = b
+                if b.id == bird.partner
+                    partner = b
+                end
             end
             (ismissing(partner)) && continue
             append!(patch.seedbank, createoffspring(noffs, bird, partner,

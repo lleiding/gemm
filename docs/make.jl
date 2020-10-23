@@ -5,6 +5,7 @@ using Documenter, GeMM
 makedocs(sitename="Island Speciation Model",
          modules = [GeMM],
          pages = ["index.md",
-                  "model.md",
+                  "framework.md",
                   "io.md",
-                  "aux.md"])
+                  "processes.md",
+                  "extensions.md"])

@@ -46,6 +46,8 @@ include("habitatchange.jl")
 
 include("invasion.jl")
 
+include("zosterops.jl")
+
 include("scheduling.jl")
 
 include("run_simulation.jl")

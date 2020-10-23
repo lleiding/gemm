@@ -77,7 +77,7 @@ Carry out growth for all patches.
 function grow!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
         # pmap(!,patch) ???
-        if patch.isisland || !settings["static"])
+        if patch.isisland || !settings["static"]
             grow!(patch, settings["growthrate"], settings["capgrowth"])
         end
     end
