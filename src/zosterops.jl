@@ -100,8 +100,7 @@ end
 Reproduction of Zosterops breeding pairs in a patch.
 """
 function zreproduce!(patch::Patch}, settings::Dict{String, Any})
-    #FIXME noffs should be between 2 and 3, cf. Jetz et al. 2008
-    noffs = settings["fertility"] #TODO change to metabolic/species-specific?
+    noffs = settings["fertility"]
     for bird in patch.community
         if bird.sex == female && bird.partner != 0 && bird.size >= bird.traits["repsize"]
             partner = missing

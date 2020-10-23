@@ -39,12 +39,12 @@ function survive!(world::Array{Patch,1}, settings::Dict{String, Any})
 end
 
 """
-    grow!(patch, growthrate)
+    grow!(patch, growthrate, capgrowth)
 
 Growth of individuals in the given patch. The actual growthrate is calculated
 with a metabolic formula, modified by the passed `growthrate` variable.
 """
-function grow!(patch::Patch, growthrate::Float64)
+function grow!(patch::Patch, growthrate::Float64, capgrowth::Bool)
     temp = patch.temp
     idx = 1
     while idx <= size(patch.community,1)
@@ -54,6 +54,9 @@ function grow!(patch::Patch, growthrate::Float64)
             if mass <= repsize # stop growth if reached repsize
                 growth = growthrate * mass^(3/4) * exp(-act/(boltz*temp))
                 newmass = mass + growth
+                if capgrowth && newmass > patch.communit[idx].traits["repsize"]
+                    newmass = patch.communit[idx].traits["repsize"]
+                end
                 if newmass > 0 && mass > 0
                     patch.community[idx].size = newmass
                 else
@@ -73,7 +76,10 @@ Carry out growth for all patches.
 """
 function grow!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
-        (patch.isisland || !settings["static"]) && grow!(patch, settings["growthrate"]) # pmap(!,patch) ???
+        # pmap(!,patch) ???
+        if patch.isisland || !settings["static"])
+            grow!(patch, settings["growthrate"], settings["capgrowth"])
+        end
     end
 end
 

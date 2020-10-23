@@ -14,9 +14,9 @@
 
 - [ ] make sure `map_creator.R` works with Petri's data
 
-- [ ] convert `precipitation` niche to `AGC` (above-ground carbon) (isn't that simply a relabelling?)
+- [X] convert `precipitation` niche to `AGC` (above-ground carbon) (isn't that simply a relabelling?)
 
-- [ ] find a suitable temperature value
+- [X] find a suitable temperature value
 
 - [ ] change species initialisation process to read predefined species
 
@@ -32,7 +32,9 @@
 		-> breeding pairs stay faithful for life
 		-> occupy & stay in a territory
 
-- [ ] make sure growth function doesn't allow unlimited growth
+- [X] makes sure growth is capped at `repsize`
+
+- [ ] `createoffspring()` or `zreproduce()` have to deal with lineage labels
 
 - [ ] prepare map series for SLOSS experiment (constant habitat size, random configuration)
 		- single very large habitat (VL)

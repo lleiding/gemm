@@ -9,6 +9,7 @@ function defaultSettings()
     Dict(
         "biggenelength" => 200,
         "burn-in" => 1000, # timesteps before invasion starts
+        "capgrowth" => false, # strictly limit individuals' size to `repsize`
         "cellsize" => 20e6, # maximum biomass per hectare in gramm (based on Clark et al. 2001)
         "config" => "", # configuration file name
         "debug" => false, # write out debug statements
@@ -22,7 +23,7 @@ function defaultSettings()
         "fixtol" => true,
         "global-species-pool" => 0, # size of the global species pool (invasion source)
         "globalmating" => false, # global pollen "dispersal"
-        "growthrate" => exp(25.2), # global base growth/biomass production so that growth from 1g to 10-20g in one year
+        "growthrate" => exp(25.2), # global base growth/biomass production from Brown et al. 2004
         "indsize" => "seed", # initialize organisms as seed, adult or mixed
         "isolationweight" => 3.0, # additional distance to be crossed when dispersing from or to isolated patches
         "lineages" => false, # record lineage and diversity data (low detail output)
