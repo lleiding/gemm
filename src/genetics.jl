@@ -12,7 +12,7 @@ function meiosis(genome::Array{Chromosome,1}, maternal::Bool) # TODO: include fu
     firstset = findall(x -> x.maternal, genome)
     secondset = findall(x -> !x.maternal, genome)
     length(firstset) != length(secondset) && return Chromosome[] # CAVEAT: more elegant solution...
-    gameteidxs = []
+    gameteidxs = Int[]
     for i in eachindex(firstset)
         push!(gameteidxs, rand([firstset[i], secondset[i]]))
     end

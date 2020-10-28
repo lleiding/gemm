@@ -15,7 +15,7 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
         if settings["mode"] == "default"
             defaultexperiment(world, settings)
         elseif settings["mode"] == "invasion"
-            invasionexperiment(world, settings)
+            invasionexperiment(world, settings, t)
         elseif settings["mode"] == "zosterops"
             zosteropsexperiment(world, settings)
         else
@@ -56,7 +56,7 @@ end
 
 The annual update procedure for the invasion experiments.
 """
-function invasionexperiment(world::Array{Patch,1}, settings::Dict{String, Any})
+function invasionexperiment(world::Array{Patch,1}, settings::Dict{String, Any}, t::Int)
     establish!(world, settings["nniches"], settings["static"])
     survive!(world, settings)
     grow!(world, settings)

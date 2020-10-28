@@ -31,6 +31,9 @@ mutable struct BigGene <: AbstractGene
     codes::Array{Trait, 1}
 end
 
+#TODO introduce StringGene to cut out seq2num? (seq2num was introduced to save memory,
+# but with low population sizes (as in Zosterops), saving computation cycles may be more important.
+
 """
 A struct that saves a collection of genes and a tag to denote whether they are
 maternal or not.
@@ -54,7 +57,7 @@ mutable struct Individual
     tempadaptation::Float64 # adaption to temperature
     size::Float64 # body mass
     sex::Sex
-    partner::Int  # ID of the partner individual (if applicable)
+    partner::Int  # ID of the partner individual (if applicable, default 0)
     id::Int
 end
 
@@ -77,10 +80,7 @@ mutable struct Patch
 end
 
 # constructors:
-# TODO These default values should be defined elsewhere (defaults.jl, to be precise)
+# XXX These default values should be defined elsewhere (defaults.jl, to be precise)
 Patch(id, location, area) =
     Patch(id, location, area, 298, 5, 0, Individual[], Individual[],
-          false, false, false, false)
-Patch(id, location) =
-    Patch(id, location, 2e7, 298, 5, 0, Individual[], Individual[],
           false, false, false, false)

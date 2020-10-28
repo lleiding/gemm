@@ -52,7 +52,7 @@
 
 - [ ] update data output
 
-- [ ] rebuild documentation
+- [X] rebuild documentation
 
 ## Notes
 

@@ -63,10 +63,10 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
             end
         end
         # move there - if it's occupied, repeat, otherwise stay there
-        if bird.sex == female
+        if bird.sex == female #XXX expensive to do here?
             partner = findfirst(b -> ziscompatible(bird, b, tolerance), bestdest.community)
         end
-        if (abs(bestdest.prec - bird.traits["precopt"]) <= bird.traits["precopt"] &&
+        if (abs(bestdest.prec - bird.traits["precopt"]) <= bird.traits["prectol"] &&
             length(bestdest.community) < cellsize &&
             (bird.sex == male || !isnothing(partner)))
             push!(bestdest.community, bird)
@@ -74,6 +74,7 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
                 bird.partner = partner.id
                 partner.partner = bird.id
             end
+            return #if we've found a spot, we're done
         end
         x, y = bestdest.location
         push!(route, bestdest.location)
@@ -88,7 +89,7 @@ Check to see whether two birds are reproductively compatible.
 """
 function ziscompatible(f::Individual, m::Individual, tolerance::Float64)
     !(m.sex == male && f.sex == female) && return false
-    (m.size < m.traits["repsize"] || f.size < f.traits["repsize"]) && return false
+    !(m.size >= m.traits["repsize"] && f.size >= f.traits["repsize"]) && return false
     !(m.partner == 0 && f.partner == 0) && return false
     (m.lineage != f.lineage && rand(Float64) > tolerance) && return false
     #FIXME genetic compatibility?
@@ -103,14 +104,9 @@ Reproduction of Zosterops breeding pairs in a patch.
 function zreproduce!(patch::Patch, settings::Dict{String, Any})
     noffs = settings["fertility"]
     for bird in patch.community
-        if bird.sex == female && bird.partner != 0 && bird.size >= bird.traits["repsize"]
-            partner = missing
-            for b in patch.community
-                if b.id == bird.partner
-                    partner = b
-                end
-            end
-            (ismissing(partner)) && continue
+        if bird.sex == female && bird.partner != 0
+            partner = findfirst(b -> b.id == bird.partner, patch.community)
+            (isnothing(partner)) && continue
             append!(patch.seedbank, createoffspring(noffs, bird, partner,
                                                     settings["traitnames"], true))
         end

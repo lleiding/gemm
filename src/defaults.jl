@@ -71,5 +71,6 @@ function defaultSettings()
                          "tempopt",
                          "temptol"], # minimal required traitnames
         "usebiggenes" => true,
+        #XXX "compressgenes" => true, # save gene sequences as numbers to reduce memory usage
     )
 end

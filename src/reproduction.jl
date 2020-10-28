@@ -102,11 +102,17 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactor!
             continue
         end
         numpartners = Integer(round(ind.traits["numpollen"]))
+        if numpartners == 0
+            #FIXME happens regularly!
+            simlog("Individual cannot reproduce, `numpollen` too low.", settings, 'd')
+            continue
+        end
         for ptn in 1:numpartners
-            partner = rand(partners, 1)[1]
-            parentmass = ind.size - noffs * ind.traits["seedsize"] # subtract offspring mass from parent
+            partner = rand(partners)
+            # subtract offspring mass from parent #XXX is that sensible, does it make a difference?
+            parentmass = ind.size - noffs * ind.traits["seedsize"]
             if parentmass <= 0
-                continue
+                break
             else
                 ind.size = parentmass
             end
@@ -202,18 +208,20 @@ function createoffspring(noffs::Integer, ind::Individual, partner::Individual, t
     for i in 1:noffs # pmap? this loop could be factorized!
         partnergenome = meiosis(partner.genome, false) # offspring have different genome!
         mothergenome = meiosis(ind.genome, true)
-        (length(partnergenome) < 1 || length(mothergenome) < 1) && continue
+        (isempty(partnergenome) || isempty(mothergenome)) && continue
         genome = vcat(partnergenome,mothergenome)
         traits = gettraitdict(genome, traitnames)
         marked = true
         fitness = 0.0
+        newpartner = 0
         newsize = ind.traits["seedsize"]
+        newid = rand(Int32) #XXX Is this collision-safe?
         sex = hermaphrodite
         if dimorphism
             rand(Bool) ? sex = male : sex = female
         end
         ind = Individual(ind.lineage, genome, traits, marked, fitness,
-                         fitness, newsize, sex, 0, rand(Int32))
+                         fitness, newsize, sex, newpartner, newid)
         push!(offspring, ind)
     end
     offspring

@@ -47,7 +47,8 @@ function correctmode!(settings::Dict{String, Any})
     if settings["mode"] == "default"
         # detect invasion mode
         if settings["global-species-pool"] > 0 || settings["propagule-pressure"] > 0
-            settings["mode"] == "invasion"
+            simlog("Detected implicit invasion mode, updated settings.", settings, 'w')
+            settings["mode"] = "invasion"
         end
         # XXX further modes?
     end

@@ -109,9 +109,8 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
         xcord = parse(Int, entry[2])
         ycord = parse(Int, entry[3])
         area = settings["cellsize"]
-        simlog("Creating patch $id at $xcord/$ycord, size $area", settings, 'd') #DEBUG
         # XXX the 'global' here is a hack so that I can use eval() later on
-        # (this always works on the global scope)
+        # (eval() always works on the global scope)
         global newpatch = Patch(id, (xcord, ycord), area)
         # parse other parameter options
         for p in entry[4:end]
@@ -159,6 +158,7 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
         elseif newpatch.initpop
             append!(newpatch.seedbank, genesis(settings))
         end
+        simlog("Created patch $id at $xcord/$ycord, size $area", settings, 'd') #DEBUG
         push!(world, newpatch)
         global newpatch = nothing #clear memory
     end
