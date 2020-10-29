@@ -104,6 +104,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactor!
         numpartners = Integer(round(ind.traits["numpollen"]))
         if numpartners == 0
             #FIXME happens regularly!
+            # `numpollen` not handled specifically in `createtraits()`?
             simlog("Individual cannot reproduce, `numpollen` too low.", settings, 'd')
             continue
         end

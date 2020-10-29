@@ -46,7 +46,7 @@
 		- genetic diversity
 		- population sizes
 
-- [ ] setup config file to enable testing
+- [X] setup config file to enable testing
 
 - [ ] test parameterisation
 

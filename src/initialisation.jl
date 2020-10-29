@@ -88,6 +88,61 @@ function genesis(settings::Dict{String, Any})
 end
 
 """
+    createpatch(patchentry, settings)
+
+Create a new patch and set its parameters by parsing one line of the map file.
+"""
+function createpatch(patchentry::Array{String,1}, settings::Dict{String, Any})
+    size(patchentry,1) < 3 && simlog("please check your map file for incomplete or faulty entries. \n
+Each line must contain patch information with at least \n
+\t - a unique integer ID, \n
+\t - an integer x coordinate, \n
+\t - an integer y coordinate, \n
+separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
+    # create the basic patch
+    id = parse(Int, patchentry[1])
+    xcord = parse(Int, patchentry[2])
+    ycord = parse(Int, patchentry[3])
+    area = settings["cellsize"]
+    # XXX the 'global' here is a hack so that I can use eval() later on
+    # (eval() always works on the global scope)
+    global newpatch = Patch(id, (xcord, ycord), area)
+    simlog("Creating patch $id at $xcord/$ycord, size $area", settings, 'd') #DEBUG
+    # parse other parameter options
+    for p in patchentry[4:end]
+        varval = split(p, '=')
+        var = varval[1]
+        if !(var in map(string, fieldnames(Patch)))
+            simlog("Unrecognized patch parameter $var.", settings, 'w')
+            continue
+        elseif length(varval) < 2
+            # if no value is specified, assume 'true'
+            # (unless the variable is prepended with an exclamation mark, then take 'false')
+            if var[1] == '!'
+                var = var[2:end]
+                val = false
+            else
+                val = true
+            end
+        else
+            val = Meta.parse(varval[2])
+        end
+        # check for correct type and modify the new patch
+        vartype = typeof(eval(Meta.parse("newpatch."*var)))
+        if !isa(val, vartype)
+            try
+                val = convert(vartype, val)
+            catch
+                simlog("Invalid patch parameter type $var: $val", settings, 'w')
+                continue
+            end
+        end
+        eval(Meta.parse("newpatch."*string(var)*" = $val"))
+    end
+    newpatch
+end
+
+"""
     createworld(maptable, settings)
 
 Use a parsed map file (as returned by `readmapfile`) to create the world. 
@@ -98,67 +153,13 @@ function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String, 
     simlog("Creating world...", settings)
     world = Patch[]
     for entry in maptable
-        size(entry,1) < 3 && simlog("please check your map file for incomplete or faulty entries. \n
-Each line must contain patch information with at least \n
-\t - a unique integer ID, \n
-\t - an integer x coordinate, \n
-\t - an integer y coordinate, \n
-separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
-        # create the basic patch
-        id = parse(Int, entry[1])
-        xcord = parse(Int, entry[2])
-        ycord = parse(Int, entry[3])
-        area = settings["cellsize"]
-        # XXX the 'global' here is a hack so that I can use eval() later on
-        # (eval() always works on the global scope)
-        global newpatch = Patch(id, (xcord, ycord), area)
-        # parse other parameter options
-        for p in entry[4:end]
-            varval = split(p, '=')
-            var = varval[1]
-            if !(var in map(string, fieldnames(Patch)))
-                simlog("Unrecognized patch parameter $var.", settings, 'w')
-                continue
-            elseif length(varval) < 2
-                # if no value is specified, assume 'true'
-                # (unless the variable is prepended with an exclamation mark, then take 'false')
-                if var[1] == '!'
-                    var = var[2:end]
-                    val = false
-                else
-                    val = true
-                end
-            else
-                val = Meta.parse(varval[2])
-            end
-            # check for correct type and modify the new patch
-            vartype = typeof(eval(Meta.parse("newpatch."*var)))
-            if !isa(val, vartype)
-                try
-                    val = convert(vartype, val)
-                catch
-                    simlog("Invalid patch parameter type $var: $val", settings, 'w')
-                    continue
-                end
-            end
-            eval(Meta.parse("newpatch."*string(var)*" = $val"))
-        end
-        # create patch communities
+        newpatch = createpatch(entry, settings)
+        #FIXME hangs up when using Zosterops configuration
         if newpatch.initpop && settings["indsize"] != "seed"
             append!(newpatch.community, genesis(settings))
-        # elseif newpatch.initpop && !newpatch.isisland && settings["static"]
-        #     append!(newpatch.seedbank, genesis(settings))
-        #     lineage = ""
-        #     for ind in newpatch.seedbank # store one sample individual for recording purposes
-        #         if ind.lineage != lineage
-        #             push!(newpatch.community, ind)
-        #             lineage = ind.lineage
-        #         end
-        #     end
         elseif newpatch.initpop
             append!(newpatch.seedbank, genesis(settings))
         end
-        simlog("Created patch $id at $xcord/$ycord, size $area", settings, 'd') #DEBUG
         push!(world, newpatch)
         global newpatch = nothing #clear memory
     end
@@ -172,6 +173,7 @@ Reinitialise the world from another parsed map file. Works analogously to
 `createworld`. Intended for use in scenarios where the model world changes
 during a run (e.g. through global warming or island ontogeny).
 """
+#FIXME this function needs to be folded into creatworld(), it duplicates way too much code
 function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, settings::Dict{String, Any})
     cellsize = settings["cellsize"]
     simlog("Updating world...", settings)

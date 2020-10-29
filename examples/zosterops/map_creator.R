@@ -108,7 +108,8 @@ convertMap = function(above_ground_carbon, run_length=simlength, out=map_output_
     y = rep(1:nrows, each=ncols)
     map_text = c(map_text, paste(i, x, y, "temp=293", #XXX link temp to elevation?
                                  paste0("prec=", round(above_ground_carbon[i], 2)),
-                                 "initpop", sep="\t"))
+                                 sep="\t"))
+                                 #"initpop", sep="\t"))
     writeLines(map_text, out)
     end = Sys.time()
 }
