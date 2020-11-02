@@ -41,7 +41,7 @@ function createpop(settings::Dict{String, Any})
     population = Individual[]
     for i in 1:popsize
         id = rand(Int32)
-        chromosomes = deepcopy(chromosomes) # FIXME?: this is potentially very slow!
+        chromosomes = deepcopy(chromosomes) # XXX this is potentially very slow!
         varyalleles!(chromosomes, settings, locivar)
         traitdict = gettraitdict(chromosomes, settings["traitnames"])
         if settings["indsize"] == "adult"
@@ -49,7 +49,8 @@ function createpop(settings::Dict{String, Any})
         elseif settings["indsize"] == "seed"
             indsize = traitdict["seedsize"]
         else
-            indsize = traitdict["seedsize"] + rand() * (traitdict["repsize"] - traitdict["seedsize"]) # CAVEAT: sizes uniformally distributed?
+            # CAVEAT: sizes uniformally distributed?
+            indsize = traitdict["seedsize"] + rand() * (traitdict["repsize"] - traitdict["seedsize"])
         end
         push!(population, Individual(lineage, chromosomes, traitdict, true, 1.0, 1.0,
                                      indsize, hermaphrodite, 0, id))
@@ -71,8 +72,10 @@ function genesis(settings::Dict{String, Any})
         popsize = length(population)
         # Check the cell capacity
         popmass = sum(map(x -> x.size, population))
-        if totalmass + popmass > settings["cellsize"] * settings["overfill"] # stop loop if cell is full
-            if totalmass >= settings["cellsize"] * 0.9 || occursin("single", settings["popsize"]) #make sure the cell is full enough
+        if totalmass + popmass > settings["cellsize"] * settings["overfill"]
+            # stop loop if cell is full
+            if totalmass >= settings["cellsize"] * 0.9 || occursin("single", settings["popsize"])
+                #make sure the cell is full enough
                 simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", settings, 'd') #DEBUG
                 break
             else
@@ -154,14 +157,17 @@ function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String, 
     world = Patch[]
     for entry in maptable
         newpatch = createpatch(entry, settings)
-        #FIXME hangs up when using Zosterops configuration
-        if newpatch.initpop && settings["indsize"] != "seed"
-            append!(newpatch.community, genesis(settings))
-        elseif newpatch.initpop
-            append!(newpatch.seedbank, genesis(settings))
+        if newpatch.initpop
+            if settings["mode"] == "zosterops"
+                append!(newpatch.community, zgenesis(newpatch, settings))
+            elseif settings["indsize"] != "seed"
+                append!(newpatch.community, genesis(settings))
+            else
+                append!(newpatch.seedbank, genesis(settings))
+            end
         end
         push!(world, newpatch)
-        global newpatch = nothing #clear memory
+        global newpatch = nothing #clear memory used in `createpatch()` #XXX does this make sense?
     end
     world
 end
@@ -173,7 +179,7 @@ Reinitialise the world from another parsed map file. Works analogously to
 `createworld`. Intended for use in scenarios where the model world changes
 during a run (e.g. through global warming or island ontogeny).
 """
-#FIXME this function needs to be folded into creatworld(), it duplicates way too much code
+#FIXME this function needs to be folded into createworld(), it duplicates way too much code
 function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, settings::Dict{String, Any})
     cellsize = settings["cellsize"]
     simlog("Updating world...", settings)
@@ -231,29 +237,5 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, 
     end
     filter!(x -> x.id in allids, world)
     world
-end
-
-"""
-    varyalleles!(genes, settings, locivar)
-
-Mutate gene traits in the passed array of genes.
-"""
-function varyalleles!(genes::Array{AbstractGene, 1}, settings::Dict{String, Any}, locivar::Float64)
-    locivar == 0 && return
-    for gene in genes
-        mutate!(gene.codes, settings, locivar)
-    end
-end
-
-"""
-    varyalleles!(chromosomes, settings, locivar)
-
-Mutate gene traits in the passed array of chromosomes.
-"""
-function varyalleles!(chrms::Array{Chromosome, 1}, settings::Dict{String, Any}, locivar::Float64)
-    locivar == 0 && return
-    for chrm in chrms
-        varyalleles!(chrm.genes, settings, locivar)
-    end
 end
 

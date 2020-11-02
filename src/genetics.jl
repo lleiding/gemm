@@ -24,6 +24,30 @@ function meiosis(genome::Array{Chromosome,1}, maternal::Bool) # TODO: include fu
 end
 
 """
+    varyalleles!(genes, settings, locivar)
+
+Mutate gene traits in the passed array of genes.
+"""
+function varyalleles!(genes::Array{AbstractGene, 1}, settings::Dict{String, Any}, locivar::Float64)
+    locivar == 0 && return
+    for gene in genes
+        mutate!(gene.codes, settings, locivar)
+    end
+end
+
+"""
+    varyalleles!(chromosomes, settings, locivar)
+
+Mutate gene traits in the passed array of chromosomes.
+"""
+function varyalleles!(chrms::Array{Chromosome, 1}, settings::Dict{String, Any}, locivar::Float64)
+    locivar == 0 && return
+    for chrm in chrms
+        varyalleles!(chrm.genes, settings, locivar)
+    end
+end
+
+"""
     getmeantraitvalue(traits, traitidx)
 
 Take an array of traits and return the mean value of the indexed trait.
@@ -71,22 +95,6 @@ function gettraitdict(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
 end
 
 """
-    gettraitdict(genes, traitnames)
-
-Calculate the trait dict for an array of genes.
-"""
-function gettraitdict(genes::Array{AbstractGene, 1}, traitnames::Array{String, 1})
-    for gene in genes
-        append!(traits, gene.codes)
-    end
-    traitdict = Dict{String, Float64}()
-    for traitidx in unique(map(x -> x.nameindex, traits))
-        traitdict[traitnames[traitidx]] = mean(skipmissing(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
-    end
-    traitdict
-end
-
-"""
     gettraitdict(traits, traitnames)
 
 Construct a trait dict from a list of Trait objects.
@@ -94,8 +102,7 @@ Construct a trait dict from a list of Trait objects.
 function gettraitdict(traits::Array{Trait, 1}, traitnames::Array{String, 1})
     traitdict = Dict{String, Float64}()
     for traitidx in unique(map(x -> x.nameindex, traits))
-        #XXX Why do we use traitnames here?
-        traitdict[traitnames[traitidx]] = mean(skipmissing(map(x -> x.value, filter(x -> x.nameindex == traitidx, traits))))
+        traitdict[traitnames[traitidx]] = getmeantraitvalue(traits, traitidx)
     end
     traitdict
 end
@@ -197,7 +204,8 @@ end
 Create an array of trait objects generated from the default trait values (with a
 random offset).
 """
-function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
+function createtraits(settings::Dict{String, Any})
+    #TODO: this is all very ugly. (case/switch w/ v. 2.0+?)
     traitnames = settings["traitnames"]
     traits = Trait[]
     # exponential distributions of body sizes:
@@ -249,8 +257,9 @@ function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String,
     genes = AbstractGene[]
     compatidx = findfirst(x -> x == "compat", settings["traitnames"])
     for i in 1:ngenes
-        sequence = String(rand(collect("acgt"), settings["smallgenelength"])) # arbitrary start sequence
-        seqint = seq2num(sequence)
+        # arbitrary start sequence
+        sequence = String(rand(collect("acgt"), settings["smallgenelength"]))
+        seqint = seq2num(sequence) #FIXME why doesn't this allow for `usebiggenes`?
         codesfor = Trait[]
         push!(genes,Gene(seqint, codesfor))
     end

@@ -13,6 +13,22 @@
 #    another species is accepted
 
 """
+    genesis(settings)
+
+Create a new community of Zosterops breeding pairs (possibly of multiple species).
+Returns an array of individuals.
+"""
+function zgenesis(patch::Patch, settings::Dict{String, Any})
+    community = Individual[]
+    npairs = rand(0:round(settings["cellsize"]/2))
+    (npairs == 0) && return
+    for i in 1:npairs
+        #TODO
+    end
+    community
+end
+
+"""
     zdisperse!(world, settings)
 
 Dispersal of bird individuals within the world. Males disperse first, looking
