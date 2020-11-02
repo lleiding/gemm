@@ -12,6 +12,8 @@
 # 4. the `tolerance` setting now determines the probability that a mate of
 #    another species is accepted
 
+#TODO initialise Z.silvanus and Z.jubaensis archetypes
+
 """
     genesis(settings)
 

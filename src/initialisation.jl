@@ -106,11 +106,11 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
     id = parse(Int, patchentry[1])
     xcord = parse(Int, patchentry[2])
     ycord = parse(Int, patchentry[3])
-    area = settings["cellsize"]
+    capacity = settings["cellsize"]
     # XXX the 'global' here is a hack so that I can use eval() later on
     # (eval() always works on the global scope)
-    global newpatch = Patch(id, (xcord, ycord), area)
-    simlog("Creating patch $id at $xcord/$ycord, size $area", settings, 'd') #DEBUG
+    global newpatch = Patch(id, (xcord, ycord), capacity)
+    simlog("Creating patch $id at $xcord/$ycord, size $capacity", settings, 'd') #DEBUG
     # parse other parameter options
     for p in patchentry[4:end]
         varval = split(p, '=')

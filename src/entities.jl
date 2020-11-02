@@ -67,7 +67,7 @@ One of the core structs of the model, representing a one-hectare patch of ground
 mutable struct Patch
     id::Int
     location::Tuple{Int, Int}
-    area::Float64   # XXX misnomer: actually represents biomass carrying capacity in g ("cellsize")
+    capacity::Float64   # biomass carrying capacity in g ("cellsize")
     temp::Float64   # temperature (physiologically important)
     prec::Float64   # precipitation (no physiological effect, just a generic niche)
     nicheb::Float64 # additional generic niche - currently not used
@@ -81,6 +81,6 @@ end
 
 # constructors:
 # XXX These default values should be defined elsewhere (defaults.jl, to be precise)
-Patch(id, location, area) =
-    Patch(id, location, area, 298, 5, 0, Individual[], Individual[],
+Patch(id, location, capacity) =
+    Patch(id, location, capacity, 298, 5, 0, Individual[], Individual[],
           false, false, false, false)

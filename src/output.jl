@@ -13,7 +13,7 @@ function printheader(settings::Dict{String, Any}, io::IO = stdout, sep::String =
     print(io, "xloc", sep)
     print(io, "yloc", sep)
     print(io, "temp", sep)
-    print(io, "area", sep)
+    print(io, "capacity", sep)
     settings["nniches"] > 1 && print(io, "prec", sep)
     settings["nniches"] > 2 && print(io, "nicheb", sep)
     print(io, "island", sep)
@@ -58,7 +58,7 @@ function dumpinds(world::Array{Patch, 1}, settings::Dict{String, Any}, timestep:
             print(io, patch.location[1], sep)
             print(io, patch.location[2], sep)
             print(io, patch.temp, sep)
-            print(io, patch.area, sep)
+            print(io, patch.capacity, sep)
             settings["nniches"] > 1 && print(io, patch.prec, sep)
             settings["nniches"] > 2 && print(io, patch.nicheb, sep)
             patch.isisland ? print(io, 1, sep) : print(io, 0, sep)
@@ -263,7 +263,7 @@ Print a list of property names to the given IO stream. This is a helper function
 for `printpopstats`.
 """
 function printpopheader(io::IO)
-    print(io, "time", "\tx", "\ty", "\ttemp", "\tprec", "\tarea", "\tisisland")
+    print(io, "time", "\tx", "\ty", "\ttemp", "\tprec", "\tcapacity", "\tisisland")
     print(io, "\tlineage", "\tjuveniles", "\tadults", "\ttempadaptationmean", "\tprecadaptationmean")
     traitnames =  ["compat", "compatsd", "dispmean", "dispmeansd", "dispshape", "dispshapesd",
                    "ngenes", "nlnkgunits", "precopt", "precoptsd", "prectol", "prectolsd",
@@ -294,7 +294,7 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
         lineages = unique(map(i -> i.lineage, patch.community))
         for lineage in lineages
             print(io, timestep, "\t", patch.location[1], "\t", patch.location[2],
-                  "\t", patch.temp, "\t", patch.prec, "\t", patch.area, "\t", patch.isisland)
+                  "\t", patch.temp, "\t", patch.prec, "\t", patch.capacity, "\t", patch.isisland)
             popidxs = findall(i -> i.lineage == lineage, patch.community)
             population = patch.community[popidxs]
             adultidxs = findall(i -> i.size > i.traits["repsize"], patch.community[popidxs])
@@ -391,9 +391,9 @@ function freespace(world::Array{Patch,1})
     space = 0
     for p in world
         if length(p.community) != 0
-            space += p.area - sum(x -> x.size, p.community)
+            space += p.capacity - sum(x -> x.size, p.community)
         else
-            space += p.area
+            space += p.capacity
         end
     end
     round((space/length(world))/1e6, digits = 3)
