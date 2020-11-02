@@ -1,6 +1,8 @@
 # Functions related to an individual's genome:
 # - meiosis
-# - trait
+# - mutation
+# - genome creation
+# - auxiliary functions
 
 """
     meiosis(genome, maternal)
@@ -21,30 +23,6 @@ function meiosis(genome::Array{Chromosome,1}, maternal::Bool) # TODO: include fu
         push!(gamete, Chromosome(genome[i].genes, maternal))
     end
     gamete
-end
-
-"""
-    varyalleles!(genes, settings, locivar)
-
-Mutate gene traits in the passed array of genes.
-"""
-function varyalleles!(genes::Array{AbstractGene, 1}, settings::Dict{String, Any}, locivar::Float64)
-    locivar == 0 && return
-    for gene in genes
-        mutate!(gene.codes, settings, locivar)
-    end
-end
-
-"""
-    varyalleles!(chromosomes, settings, locivar)
-
-Mutate gene traits in the passed array of chromosomes.
-"""
-function varyalleles!(chrms::Array{Chromosome, 1}, settings::Dict{String, Any}, locivar::Float64)
-    locivar == 0 && return
-    for chrm in chrms
-        varyalleles!(chrm.genes, settings, locivar)
-    end
 end
 
 """
@@ -310,4 +288,109 @@ function createchrms(nchrms::Int,genes::Array{AbstractGene,1})
     end
     append!(chromosomes,secondset)
     chromosomes
+end
+
+"""
+    varyalleles!(genes, settings, locivar)
+
+Mutate gene traits in the passed array of genes.
+"""
+function varyalleles!(genes::Array{AbstractGene, 1}, settings::Dict{String, Any}, locivar::Float64)
+    locivar == 0 && return
+    for gene in genes
+        mutate!(gene.codes, settings, locivar)
+    end
+end
+
+"""
+    varyalleles!(chromosomes, settings, locivar)
+
+Mutate gene traits in the passed array of chromosomes.
+"""
+function varyalleles!(chrms::Array{Chromosome, 1}, settings::Dict{String, Any}, locivar::Float64)
+    locivar == 0 && return
+    for chrm in chrms
+        varyalleles!(chrm.genes, settings, locivar)
+    end
+end
+
+"""
+    mutate!(traits, settings, locivar)
+
+Loop over an array of traits, mutating each value in place along a normal distribution.
+`locivar` can be used to scale the variance of the normal distribution used to draw new
+trait values (together with `settings[phylconstr]`).
+"""
+function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any}, locivar::Float64 = 1.0)
+    settings["phylconstr"] * locivar == 0 && return
+    for trait in traits
+        traitname = settings["traitnames"][trait.nameindex]
+        occursin("seqsimilarity", traitname) && settings["fixtol"] && continue
+        oldvalue = trait.value
+        occursin("tempopt", traitname) && (oldvalue -= 273)
+        while oldvalue <= 0 # make sure sd of Normal dist != 0
+            oldvalue = abs(rand(Normal(0,0.01)))
+        end
+        newvalue = rand(Normal(oldvalue, oldvalue * settings["phylconstr"] * locivar))
+        (newvalue > 1 && occursin("prob", traitname)) && (newvalue=1.0)
+        while newvalue <= 0
+            newvalue = rand(Normal(oldvalue, oldvalue * settings["phylconstr"] * locivar))
+        end
+        occursin("tempopt", traitname) && (newvalue += 273)
+        trait.value = newvalue
+    end
+end
+
+"""
+    mutate!(individual, temp, settings)
+
+Mutate an individual's genome (sequence and traits) in place.
+"""
+function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
+    muts = settings["mutationrate"] * exp(-act/(boltz*temp))
+    nmuts = rand(Poisson(muts))
+    nmuts == 0 && return
+    chrmidcs = rand(eachindex(ind.genome), nmuts)
+    for c in chrmidcs
+        ind.genome[c] = deepcopy(ind.genome[c])
+        length(ind.genome[c].genes) == 0 && continue
+        g = rand(eachindex(ind.genome[c].genes))
+        charseq = collect(num2seq(ind.genome[c].genes[g].sequence))
+        i = rand(eachindex(charseq))
+        newbase = rand(collect("acgt"),1)[1]
+        while newbase == charseq[i]
+            newbase = rand(collect("acgt"),1)[1]
+        end
+        charseq[i] = newbase
+        mutate!(ind.genome[c].genes[g].codes, settings)
+        ind.genome[c].genes[g].sequence = deepcopy(ind.genome[c].genes[g].sequence)
+        if length(charseq) > 21
+            ind.genome[c].genes[g].sequence = seq2bignum(String(charseq))
+        else
+            ind.genome[c].genes[g].sequence = seq2num(String(charseq))
+        end
+    end
+    ind.traits = gettraitdict(ind.genome, settings["traitnames"])
+end
+
+"""
+    mutate!(patch, setting)
+
+Mutate all seed individuals in a patch.
+"""
+function mutate!(patch::Patch, settings::Dict{String, Any})
+    for ind in patch.seedbank
+        mutate!(ind, patch.temp, settings)
+    end
+end
+
+"""
+    mutate!(world, settings)
+
+Mutate the world. (That sounds scary!)
+"""
+function mutate!(world::Array{Patch, 1}, settings::Dict{String, Any})
+    for patch in world
+        (patch.isisland || !settings["static"]) && mutate!(patch, settings)
+    end
 end

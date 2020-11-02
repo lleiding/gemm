@@ -84,8 +84,10 @@ end
 Create an individual organism of a new species with a random genome.
 """
 function createind(settings::Dict{String, Any}, marked::Bool = false)
+    #XXX This code was duplicated from `createpop()` at some time, but is
+    # no longer up to date with it. Unfortunately, this is now "legacy code"
+    # and we can't just get rid of it...
     id = rand(Int32)
-    parentid = rand(Int32)
     lineage = randstring(4)
     ngenes = settings["maxloci"] * length(settings["traitnames"])
     ngenes < 1 && (ngenes = 1)
@@ -100,7 +102,7 @@ function createind(settings::Dict{String, Any}, marked::Bool = false)
         nchrms = randchrms
     end
     chromosomes = createchrms(nchrms, genes)
-    locivar = rand() #XXX Is this legit? Don't quite understand `locivar` yet...
+    locivar = rand()
     varyalleles!(chromosomes, settings, locivar)
     traitdict = gettraitdict(chromosomes, settings["traitnames"])
     if settings["indsize"] == "adult"
