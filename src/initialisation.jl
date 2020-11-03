@@ -8,25 +8,51 @@ Create a new, random individual and replicates it a certain number of times
 Returns an array of individuals.
 """
 function createpop(settings::Dict{String, Any})
-    traits = createtraits(settings)
-    traitdict = gettraitdict(traits, settings["traitnames"])
+    # start with an archetypical individual
+    archetype = createind(settings, true)
+    population = [archetype]
+    # calculate the population size
     popsize = 0
     if occursin("metabolic", settings["popsize"]) || occursin("single", settings["popsize"])
         # population size determined by adult size
-        popsize = round(settings["fertility"] * traitdict["repsize"] ^ (-1 / 4) *
+        popsize = round(settings["fertility"] * archetype.traits["repsize"] ^ (-1 / 4) *
                         exp(-act / (boltz * 298.0)))
     elseif occursin("bodysize", settings["popsize"])
         # population size up to 25% of the maximum possible in this cell
-        quarterpopsize = Integer(ceil((settings["cellsize"] / traitdict["repsize"]) / 4))
+        quarterpopsize = Integer(ceil((settings["cellsize"] / archetype.traits["repsize"]) / 4))
         popsize = rand(1:quarterpopsize) + 1
     elseif occursin("minimal", settings["popsize"]) || popsize == 0
         popsize = 2 #Takes two to tangle ;-)
     else
         simlog("Invalid value for `popsize`: $(settings["popsize"])", settings, 'e')
     end
+    # clone & mutate the archetype N times
+    locivar = rand()
+    for i in 2:popsize
+        ind = deepcopy(archetype) # XXX this is potentially very slow!
+        ind.id = rand(Int32)
+        varyalleles!(ind.genome, settings, locivar)
+        ind.traits = gettraitdict(ind.genome, settings["traitnames"])
+        if !(settings["indsize"] == "adult" || settings["indsize"] == "seed")
+            #XXX sizes uniformally distributed?
+            ind.size = ind.traits["seedsize"] + rand() * (ind.traits["repsize"] - ind.traits["seedsize"])
+        end
+        push!(population, ind)
+    end
+    population
+end
+
+"""
+    createind(settings, marked=false)
+
+Create an individual organism of a new species with a random genome.
+"""
+function createind(settings::Dict{String, Any}, marked::Bool = false)
+    id = rand(Int32)
     lineage = randstring(6)
     ngenes = rand(1:settings["maxloci"]) * length(settings["traitnames"])
     ngenes < 1 && (ngenes = 1)
+    traits = createtraits(settings)
     genes = creategenes(ngenes, traits, settings)
     if settings["linkage"] == "none"
         nchrms = length(genes)
@@ -38,24 +64,17 @@ function createpop(settings::Dict{String, Any})
     end
     chromosomes = createchrms(nchrms, genes)
     locivar = rand()
-    population = Individual[]
-    for i in 1:popsize
-        id = rand(Int32)
-        chromosomes = deepcopy(chromosomes) # XXX this is potentially very slow!
-        varyalleles!(chromosomes, settings, locivar)
-        traitdict = gettraitdict(chromosomes, settings["traitnames"])
-        if settings["indsize"] == "adult"
-            indsize = traitdict["repsize"]
-        elseif settings["indsize"] == "seed"
-            indsize = traitdict["seedsize"]
-        else
-            # CAVEAT: sizes uniformally distributed?
-            indsize = traitdict["seedsize"] + rand() * (traitdict["repsize"] - traitdict["seedsize"])
-        end
-        push!(population, Individual(lineage, chromosomes, traitdict, true, 1.0, 1.0,
-                                     indsize, hermaphrodite, 0, id))
+    varyalleles!(chromosomes, settings, locivar)
+    traitdict = gettraitdict(chromosomes, settings["traitnames"])
+    if settings["indsize"] == "adult"
+        indsize = traitdict["repsize"]
+    elseif settings["indsize"] == "seed"
+        indsize = traitdict["seedsize"]
+    else
+        #XXX sizes uniformally distributed?
+        indsize = traitdict["seedsize"] + rand() * (traitdict["repsize"] - traitdict["seedsize"])
     end
-    population
+    Individual(lineage, chromosomes, traitdict, marked, 1.0, 1.0, indsize, hermaphrodite, 0, id)
 end
 
 """

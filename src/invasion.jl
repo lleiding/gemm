@@ -4,13 +4,12 @@
 let speciespool = Individual[]
     # TODO: `speciespool` should be part of the `world` object holding all grid cells
     """
-        initspeciespool!(settings)
+        initglobalspeciespool!(settings)
 
     Initialise the foreign species pool (i.e. an array of random individuals that
     are used as the propagule source for invasion events.
     """
-    function initspeciespool!(settings::Dict{String, Any})
-        #TODO rename initglobalspeciespool!
+    function initglobalspeciespool!(settings::Dict{String, Any})
         for i in 1:settings["global-species-pool"]
             push!(speciespool, createind(settings))
         end
@@ -36,7 +35,7 @@ let speciespool = Individual[]
     global function invade!(world::Array{Patch,1}, settings::Dict{String, Any})
         # This function has to be global to escape the let-block of the species pool
         (settings["propagule-pressure"] == 0 || settings["global-species-pool"] == 0) && return
-        (length(speciespool) == 0) && initspeciespool!(settings)
+        (length(speciespool) == 0) && initglobalspeciespool!(settings)
         for patch in world
             patch.invasible && invade!(patch, settings["propagule-pressure"])
         end
@@ -76,41 +75,4 @@ function disturb!(world::Array{Patch,1}, settings::Dict{String, Any})
     for patch in world
         (patch.isisland || !settings["static"]) && disturb!(patch, settings["disturbance"])
     end
-end
-
-"""
-    createind(settings, marked=false)
-
-Create an individual organism of a new species with a random genome.
-"""
-function createind(settings::Dict{String, Any}, marked::Bool = false)
-    #XXX This code was duplicated from `createpop()` at some time, but is
-    # no longer up to date with it. Unfortunately, this is now "legacy code"
-    # and we can't just get rid of it...
-    id = rand(Int32)
-    lineage = randstring(4)
-    ngenes = settings["maxloci"] * length(settings["traitnames"])
-    ngenes < 1 && (ngenes = 1)
-    traits = createtraits(settings)
-    genes = creategenes(ngenes, traits, settings)
-    randchrms = rand(1:length(genes))
-    if settings["linkage"] == "none"
-        nchrms = length(genes)
-    elseif settings["linkage"] == "full"
-        nchrms = 1
-    else
-        nchrms = randchrms
-    end
-    chromosomes = createchrms(nchrms, genes)
-    locivar = rand()
-    varyalleles!(chromosomes, settings, locivar)
-    traitdict = gettraitdict(chromosomes, settings["traitnames"])
-    if settings["indsize"] == "adult"
-        indsize = traitdict["repsize"]
-    elseif settings["indsize"] == "seed"
-        indsize = traitdict["seedsize"]
-    else
-        indsize = traitdict["seedsize"] + rand() * traitdict["repsize"] # XXX: sizes shouldn't be uniformally dist'd
-    end
-    Individual(lineage, chromosomes, traitdict, marked, 1.0, 1.0, indsize, hermaphrodite, 0, id)
 end
