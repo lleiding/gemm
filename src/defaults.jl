@@ -13,7 +13,7 @@ function defaultSettings()
         "cellsize" => 20e6, # maximum biomass per hectare in gramm (based on Clark et al. 2001)
         "config" => "", # configuration file name
         "debug" => false, # write out debug statements
-        "degpleiotropy" => 0.1, # how frequent is pleiotropy? 0 > degpleiotropy > 1
+        "degpleiotropy" => 0.1, # how frequent is pleiotropy? 0 < degpleiotropy < 1
         "dest" => string(Dates.today()), # output folder name
         "dispmean" => 1.0, # maximum value of randomly drawn mean dispersal distance in cells
         "dispshape" => 1.0, # maximum value of randomly drawn shape parameter for dispersal kernel. determines tail fatness/long distance dispersal

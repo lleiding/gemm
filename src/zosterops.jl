@@ -12,7 +12,43 @@
 # 4. the `tolerance` setting now determines the probability that a mate of
 #    another species is accepted
 
-#TODO initialise Z.silvanus and Z.jubaensis archetypes
+let zosterops = Individual[]
+    """
+        initzosteropsspecies()
+
+    Initialise the two relevant Zosterops species (silvanus/highland, jubaensis/lowland).
+    """
+    function initzosteropsspecies(settings::Dict{String, Any})
+        silvanus, jubaensis = nothing, nothing #XXX remove after implementation
+        #TODO initialise Z.silvanus and Z.jubaensis archetypes
+        push!(zosterops, silvanus)
+        push!(zosterops, jubaensis)
+    end
+    
+    """
+        getzosteropsspecies(name)
+
+    Return a new individual of the named species ("silvanus" or "jubaensis")
+    """
+    function getzosteropsspecies(name::String, sex::Sex, settings::Dict{String, Any})
+        isempty(zosterops) && initzosteropsspecies(settings)
+        bird = nothing
+        if name == "silvanus"
+            bird = deepcopy(zosterops[1])
+        elseif name == "jubaensis"
+            bird = deepcopy(zosterops[2])
+        else
+            simlog("Unknown species name: $name", settings, 'e')
+        end
+        bird.id = rand(Int32)
+        varyalleles!(bird.genome, settings, rand())
+        bird.traits = gettraitdict(bird.genome, settings["traitnames"])
+        #TODO set dispersal parameters
+        #TODO set precipitation/AGC parameters
+        bird.sex = sex
+        return bird
+    end
+end
 
 """
     genesis(settings)
