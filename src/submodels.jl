@@ -12,6 +12,7 @@ function mutate!(traits::Array{Trait, 1}, settings::Dict{String, Any}, locivar::
     for trait in traits
         traitname = settings["traitnames"][trait.nameindex]
         occursin("seqsimilarity", traitname) && settings["fixtol"] && continue
+        occursin("numpol", traitname) && continue # change if you want the number of pollen/reproduction events to mutate!
         oldvalue = trait.value
         occursin("tempopt", traitname) && (oldvalue -= 273)
         while oldvalue <= 0 # make sure sd of Normal dist != 0

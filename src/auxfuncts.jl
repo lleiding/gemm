@@ -455,6 +455,9 @@ function createtraits(settings::Dict{String, Any}) #TODO: this is all very ugly.
             push!(traits, Trait(idx, settings["mintemp"] + rand() * tempoffset))
         elseif occursin("temptol", traitnames[idx])
             push!(traits, Trait(idx, rand() * settings["maxbreadth"]))
+            ## the following would allow multiple reproduction events/pollen per individual and time step - check with the behavior in mutate!
+        elseif occursin("numpol", traitnames[idx])
+            push!(traits, Trait(idx, 1.0))
         else
             push!(traits, Trait(idx, rand()))
         end
