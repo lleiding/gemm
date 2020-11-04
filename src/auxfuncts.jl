@@ -275,21 +275,6 @@ function checkborderconditions(world::Array{Patch,1}, xdest::Int, ydest::Int)
 end
 
 """
-    identifyAdults!(patch)
-
-Build up the `whoiswho` index of individuals and species in a patch.
-Now deprecated to increase flexibility.
-"""
-function identifyAdults!(patch::Patch)
-    adultspeciesidx = Dict{String, Array{Int, 1}}()
-    for i in eachindex(patch.community)
-        patch.community[i].size < patch.community[i].traits["repsize"] && continue
-        adultspeciesidx = merge(append!, adultspeciesidx, Dict(patch.community[i].lineage => [i]))
-    end
-    patch.whoiswho = adultspeciesidx
-end
-
-"""
     getseqsimilarity(seqone, seqtwo)
 
 Compare two strings and return similarity.
