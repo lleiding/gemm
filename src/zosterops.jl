@@ -11,18 +11,49 @@
 #    (instead of a metabolic coefficient)
 # 4. the `tolerance` setting now determines the probability that a mate of
 #    another species is accepted
+# 5. `degpleiotropy` must be set to 0, otherwise the species initialisation will fail
 
 let zosterops = Individual[]
     """
-        initzosteropsspecies()
+        initzosteropsspecies(settings)
 
-    Initialise the two relevant Zosterops species (silvanus/highland, jubaensis/lowland).
+    Initialise the two relevant Zosterops species archetypes (silvanus/highland, jubaensis/lowland).
     """
     function initzosteropsspecies(settings::Dict{String, Any})
-        silvanus, jubaensis = nothing, nothing #XXX remove after implementation
-        #TODO initialise Z.silvanus and Z.jubaensis archetypes
+        if settings["degpleiotropy"] != 0 # ensure that "one gene, one trait" is true
+            simlog("degpleiotropy must be 0", settings, 'e')
+        end
+        #XXX magic numbers!
+        silvanus = initzosteropsspecies("silvanus", 90, 10, settings) #TODO adjust values
+        jubaensis = initzosteropsspecies("jubaensis", 50, 40, settings) #TODO adjust values
         push!(zosterops, silvanus)
         push!(zosterops, jubaensis)
+    end
+
+    """
+        initzosteropsspecies(name, precopt, prectol, settings)
+
+    Create a new individual then modify its traits to create a Zosterops archetype.
+    """
+    function initzosteropsspecies(name::String, precopt::Float64, prectol::Float64, settings::Dict{String, Any})
+        archetype = createind(settings)
+        archetype.lineage = name
+        # Find the gene that codes for the relevant trait and change that trait's value
+        for chromosome in archetype.genome
+            for gene in chromosome
+                isempty(gene.codes) && continue
+                genetrait = settings["traitnames"][gene.codes[1].nameindex]
+                #XXX do we also need to set tempopt/temptol?
+                if genetrait == "precopt"
+                    gene.codes[1].value = precopt
+                elseif genetrait == "prectol"
+                    gene.codes[1].value = prectol
+                end
+            end
+        end
+        # then recalculate the individual's trait dict and return the finished archetype
+        archetype.traits = gettraitdict(archetype.genome, settings["traitnames"])
+        return archetype
     end
     
     """
@@ -43,8 +74,6 @@ let zosterops = Individual[]
         bird.id = rand(Int32)
         varyalleles!(bird.genome, settings, rand())
         bird.traits = gettraitdict(bird.genome, settings["traitnames"])
-        #TODO set dispersal parameters
-        #TODO set precipitation/AGC parameters
         bird.sex = sex
         return bird
     end
@@ -146,7 +175,7 @@ function ziscompatible(f::Individual, m::Individual, tolerance::Float64)
     !(m.size >= m.traits["repsize"] && f.size >= f.traits["repsize"]) && return false
     !(m.partner == 0 && f.partner == 0) && return false
     (m.lineage != f.lineage && rand(Float64) > tolerance) && return false
-    #FIXME genetic compatibility?
+    #XXX genetic compatibility?
     return true
 end
     
