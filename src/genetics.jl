@@ -111,7 +111,8 @@ function getseq(genome::Array{Chromosome, 1}, traitidx::Integer)
     seq = ""
     for chrm in genome
         for gene in chrm.genes
-            any(x -> x.nameindex == traitidx, gene.codes) && (seq = num2seq(gene.sequence)) # use one compatibility gene randomly
+            # use one compatibility gene randomly
+            any(x -> x.nameindex == traitidx, gene.codes) && (seq = num2seq(gene.sequence))
         end
     end
     seq
@@ -143,13 +144,13 @@ function seq2num(sequence::String)
     for base in sequence
         binary *= string(findfirst(x -> x == base, bases) + 3, base = 2)
     end
-    parse(Int, binary, base = 2) # Int64 allows for max length of 21bp
+    parse(Int64, binary, base = 2) # Int64 allows for max length of 21bp
 end
 
 """
     seq2bignum(sequence)
 
-Convert a DNA base sequence (a string) into binary and then into an BigInt (for
+Convert a DNA base sequence (a string) into binary and then into a BigInt (for
 larger genes). This saves memory.
 """
 function seq2bignum(sequence::String)
@@ -234,27 +235,43 @@ associated traits. Returns the result as an array of AbstractGenes.
 function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String, Any})
     genes = AbstractGene[]
     compatidx = findfirst(x -> x == "compat", settings["traitnames"])
+    # initialise each gene with an arbitrary sequence
     for i in 1:ngenes
-        # arbitrary start sequence
         sequence = String(rand(collect("acgt"), settings["smallgenelength"]))
-        seqint = seq2num(sequence) #FIXME why doesn't this allow for `usebiggenes`?
-        codesfor = Trait[]
-        push!(genes,Gene(seqint, codesfor))
+        gene = Gene(seq2num(sequence), Trait[])
+        push!(genes,gene)
     end
+    # assign traits to the genes (allows for pleiotropy as well as polygenic inheritance)
     for trait in traits
-        if trait.nameindex == compatidx
-            continue
-        end
-        ncodinggenes = rand(Geometric(1 - settings["degpleiotropy"])) + 1
-        codinggenes = rand(genes,ncodinggenes)
-        for gene in codinggenes
-            push!(gene.codes,trait)
+        (trait.nameindex == compatidx) && continue # the compatibility gene is treated separately
+        if settings["degpleiotropy"] == 0
+            # Disable polygenic inheritance and pleiotropy: make sure one gene codes for one trait.
+            for gene in genes
+                if isempty(gene.codes)
+                    push!(gene.codes, trait)
+                    break
+                end
+            end
+        else
+            # We're actually setting polygenic inheritance here, rather than pleiotropy.
+            # Pleiotropy is introduced indirectly, because a higher number of coding genes
+            # increases the likelihood of picking a gene that already codes for other traits.
+            ncodinggenes = rand(Geometric(1 - settings["degpleiotropy"])) + 1
+            codinggenes = rand(genes,ncodinggenes)
+            for gene in codinggenes
+                push!(gene.codes,trait)
+            end
         end
     end
+    # append a gene that will be used to determine mating compatibility
     if settings["usebiggenes"]
-        push!(genes, BigGene(seq2bignum(String(rand(collect("acgt"), settings["biggenelength"]))), [Trait(compatidx, 0.5)]))
+        # we only need big genes for the compatibility gene, because we need a longer base
+        # sequence than offered by `smallgenelength` if we want to do phylogenetic analyses
+        push!(genes, BigGene(seq2bignum(String(rand(collect("acgt"), settings["biggenelength"]))),
+                             [Trait(compatidx, 0.5)]))
     else
-        push!(genes, Gene(seq2num(String(rand(collect("acgt"), settings["smallgenelength"]))), [Trait(compatidx, 0.5)]))
+        push!(genes, Gene(seq2num(String(rand(collect("acgt"), settings["smallgenelength"]))),
+                          [Trait(compatidx, 0.5)]))
     end
     genes
 end

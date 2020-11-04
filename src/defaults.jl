@@ -7,20 +7,20 @@ in a Dict.
 function defaultSettings()
     # Return the default settings. All parameters must be registered here.
     Dict(
-        "biggenelength" => 200,
+        "biggenelength" => 200, # length of the compatibility gene's sequence (if `usebiggenes`)
         "burn-in" => 1000, # timesteps before invasion starts
         "capgrowth" => false, # strictly limit individuals' size to `repsize`
         "cellsize" => 20e6, # maximum biomass per hectare in gramm (based on Clark et al. 2001)
         "config" => "", # configuration file name
         "debug" => false, # write out debug statements
-        "degpleiotropy" => 0.1, # how frequent is pleiotropy? 0 < degpleiotropy < 1
+        "degpleiotropy" => 0.1, # How frequent are pleitropy and polygenic inheritance? 0 <= degpleiotropy < 1
         "dest" => string(Dates.today()), # output folder name
         "dispmean" => 1.0, # maximum value of randomly drawn mean dispersal distance in cells
         "dispshape" => 1.0, # maximum value of randomly drawn shape parameter for dispersal kernel. determines tail fatness/long distance dispersal
         "disturbance" => 0, # percentage of individuals killed per update per cell
         "fasta" => "off", # record fasta data? "off", "compat", "all" (high detail output)
         "fertility" => exp(28.0), # global base reproduction rate 23.8 from Brown et al. 2004, alternatively 25.0, default 30.0
-        "fixtol" => true,
+        "fixtol" => true, # fix mating tolerance globally to `tolerance`
         "global-species-pool" => 0, # size of the global species pool (invasion source)
         "globalmating" => false, # global pollen "dispersal"
         "growthrate" => exp(25.2), # global base growth/biomass production from Brown et al. 2004
@@ -54,7 +54,7 @@ function defaultSettings()
         "sdprec" => 0.0, # SD of precipitation change per time step
         "sdtemp" => 0.0, # SD of temperature change per time step
         "seed" => 0, # for the RNG, seed = 0 -> random seed
-        "smallgenelength" => 20,
+        "smallgenelength" => 20, # standard gene sequence length (max. 21)
         "static" => false, # whether mainland sites undergo eco-evolutionary processes
         "stats" => true, # record population statistics (medium detail output)
         "tolerance" => 0.8, # sequence similarity threshold for reproduction if `fixtol` == true

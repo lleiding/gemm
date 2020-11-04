@@ -31,7 +31,7 @@ mutable struct BigGene <: AbstractGene
     codes::Array{Trait, 1}
 end
 
-#TODO introduce StringGene to cut out seq2num? (seq2num was introduced to save memory,
+#XXX introduce StringGene to cut out seq2num? (seq2num was introduced to save memory,
 # but with low population sizes (as in Zosterops), saving computation cycles may be more important.
 
 """
