@@ -30,7 +30,7 @@ library(MuMIn)
 ## rm(allfiles, tworuns)
 
 ## Incomplete runs are filtered out later
-dispmode = "global" ## 'local' or 'global'
+dispmode = "local" ## 'local' or 'global'
 mytworesults = Sys.glob(paste0("data/2020*", dispmode, "*/*tsv"))
 
  rawresults = tibble()
@@ -288,7 +288,7 @@ ggsave(paste0("pca_t500_maintraits_scree_", dispmode, ".pdf"), pca_grid, width=7
   print(xtable(lme_table, digits = c(0, 0, 3, 3, 0, 3, 3)), floating = FALSE, booktabs = TRUE, include.rownames=FALSE)
 
   lme_table %>%
-      ggplot(aes(names, Estimate, fill = ifelse(Estimate < 0, "1", "-1"))) +
+      ggplot(aes(names, Estimate, fill = ifelse(Estimate > 0, "1", "-1"))) +
       geom_hline(yintercept = 0, linetype = "dashed", color = "grey", size = 1) +
       geom_bar(stat = "identity", width = 0.5, position = "dodge") +
       geom_errorbar(aes(ymin = Estimate - `Std. Error`, ymax = Estimate + `Std. Error`), position = position_dodge(.5), width = 0) +
