@@ -13,7 +13,11 @@
 #    another species is accepted
 # 5. `degpleiotropy` must be set to 0, otherwise the species initialisation will fail
 
-let zosterops = Individual[]
+let zosterops = Individual[],
+    #TODO adjust values
+    #TODO move to settings?
+    s_agc_opt = 90, s_agc_tol = 10, #silvanus AGC optimum/tolerance
+    j_agc_opt = 60, j_agc_tol = 30 #jubaensis AGC optimum/tolerance
     """
         initzosteropsspecies(settings)
 
@@ -23,9 +27,8 @@ let zosterops = Individual[]
         if settings["degpleiotropy"] != 0 # ensure that "one gene, one trait" is true
             simlog("degpleiotropy must be 0", settings, 'e')
         end
-        #XXX magic numbers!
-        silvanus = initzosteropsspecies("silvanus", 90, 10, settings) #TODO adjust values
-        jubaensis = initzosteropsspecies("jubaensis", 50, 40, settings) #TODO adjust values
+        silvanus = initzosteropsspecies("silvanus", s_agc_opt, s_agc_tol, settings)
+        jubaensis = initzosteropsspecies("jubaensis", j_agc_opt, j_agc_tol, settings)
         push!(zosterops, silvanus)
         push!(zosterops, jubaensis)
     end
@@ -77,22 +80,40 @@ let zosterops = Individual[]
         bird.sex = sex
         return bird
     end
-end
 
-"""
+    """
     genesis(settings)
 
-Create a new community of Zosterops breeding pairs (possibly of multiple species).
-Returns an array of individuals.
-"""
-function zgenesis(patch::Patch, settings::Dict{String, Any})
-    community = Individual[]
-    npairs = rand(0:round(settings["cellsize"]/2))
-    (npairs == 0) && return
-    for i in 1:npairs
-        #TODO
+    Create a new community of Zosterops breeding pairs (possibly of multiple species).
+    Returns an array of individuals.
+    """
+    global function zgenesis(patch::Patch, settings::Dict{String, Any})
+        # This function has to be global to escape the let-block of the species list
+        community = Array{Individual, 1}()
+        # calculate the number of initial breeding pairs
+        npairs = rand(0:round(settings["cellsize"]/2))
+        (npairs == 0) && return
+        for i in 1:npairs
+            species = ""
+            # test whether the habitat is suitable
+            s_suited, j_suited = false, false 
+            (abs(s_agc_opt-patch.prec) < s_agc_tol) && (s_suited = true)
+            (abs(j_agc_opt-patch.prec) < j_agc_tol) && (j_suited = true)
+            if s_suited && j_suited
+                rand(Bool) ? species = "silvanus" : species = "jubaensis"
+            elseif s_suited
+                species = "silvanus"
+            elseif j_suited
+                species = "jubaensis"
+            else
+                break
+            end
+            # add a male and a female
+            push!(community, getzosteropsspecies(species, male, settings))
+            push!(community, getzosteropsspecies(species, female, settings))
+        end
+        community
     end
-    community
 end
 
 """
@@ -175,7 +196,7 @@ function ziscompatible(f::Individual, m::Individual, tolerance::Float64)
     !(m.size >= m.traits["repsize"] && f.size >= f.traits["repsize"]) && return false
     !(m.partner == 0 && f.partner == 0) && return false
     (m.lineage != f.lineage && rand(Float64) > tolerance) && return false
-    #XXX genetic compatibility?
+    #XXX how abot seqsimilarity and genetic compatibility?
     return true
 end
     

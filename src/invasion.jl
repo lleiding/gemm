@@ -2,7 +2,7 @@
 # Create the global species pool, carry out species introductions, and disturbance.
 
 let speciespool = Individual[]
-    # TODO: `speciespool` should be part of the `world` object holding all grid cells
+    #XXX should `speciespool` be part of the `world` object holding all grid cells?
     """
         initglobalspeciespool!(settings)
 
