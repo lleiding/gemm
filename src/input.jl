@@ -1,14 +1,14 @@
 # Input functions for GeMM
 
 """
-    getsettings()
+    getsettings(configfile, seed)
 
 Combines all configuration options to produce a single settings dict.
-Order of precedence: commandline parameters - config file - default values
+Precedence: function arguments - commandline parameters - config file - default values
 """
 function getsettings(configfile::String = "", seed::Integer = 0)
     defaults = defaultSettings()
-    commandline = parsecommandline() # deprecate?
+    commandline = parsecommandline()
     if !isempty(configfile) && isfile(configfile)
         configs = parseconfig(configfile)
         commandline["config"] = configfile
@@ -32,7 +32,7 @@ function getsettings(configfile::String = "", seed::Integer = 0)
     end
     # Flags are automatically set to false by ArgParse if they are not given -
     # this should not override a given config file value
-    for s in ["debug", "quiet", "static"]
+    for s in ["debug", "quiet"]
         if !commandline[s] && s in keys(configs) && configs[s]
             settings[s] = true
         end
@@ -43,7 +43,7 @@ end
 """
     parsecommandline()
 
-Certain parameters can be set via the commandline.
+Certain software parameters can be set via the commandline.
 """
 function parsecommandline()
     s = ArgParseSettings()
@@ -59,21 +59,6 @@ function parsecommandline()
             help = "name of the config file"
             arg_type = String
             required = false
-        "--linkage", "-l"
-            help = "gene linkage (\"none\", \"random\" or \"full\")"
-            arg_type = String
-            range_tester = x->in(x,["none", "random", "full"])
-            required = false
-        "--nniches", "-n"
-            help = "number of environmental niche traits (1 -- 3)"
-            arg_type = Int
-            range_tester = x -> x > 0 && x <= 3
-            required = false
-        "--tolerance", "-t"
-            help = "tolerance of sequence identity when reproducing"
-            arg_type = Float64
-            range_tester = x -> 0.0 <= x <= 1.0
-            required = false
         "--dest", "-d"
             help = "output directory. Defaults to current date"
             arg_type = String
@@ -83,9 +68,6 @@ function parsecommandline()
             action = :store_true
         "--quiet"
             help = "quiet mode. Don't print output to screen."
-            action = :store_true
-        "--static"
-            help = "static mainland. Turns off any dynamics on the continent"
             action = :store_true
     end
     args = parse_args(s)

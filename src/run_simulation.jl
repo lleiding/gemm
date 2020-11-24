@@ -6,7 +6,6 @@ and other settings provided via commandline, configuration file or the defaults.
 """
 function runsim(config::String = "", seed::Integer = 0)
     settings = getsettings(config, seed)
-    settings["seed"] = seed
     Random.seed!(settings["seed"])
     setupdatadir(settings)
     world = Patch[]

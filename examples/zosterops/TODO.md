@@ -60,6 +60,8 @@
 
 - [ ] profile RAM/CPU trade-off with `compressgenes`
 
+- [ ] fix seed initialisation bug
+
 ## Notes
 
 - how should burn-in work?

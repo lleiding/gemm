@@ -1,4 +1,7 @@
 #!/usr/bin/env julia
+# A wrapper script to launch one or several GeMM simulation runs, parallelising
+# them where possible. *Warning:* Because this script includes its own commandline
+# parsing, no commandline args are passed on to GeMM!
 
 using # TODO: automatic package installation - ask user?
     Distributed,
