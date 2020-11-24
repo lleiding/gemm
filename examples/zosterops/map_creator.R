@@ -20,7 +20,7 @@ library(rayshader)
 
 ##XXX should we specify area (carrying capacity) in the map file?
 
-simlength = 100
+simlength = 200
 elevation_file = "taita_elevation.tif"
 forest_file = "taita_forest_cover.tif"
 habitat_file = "taita_habitats.tif"
@@ -106,10 +106,10 @@ convertMap = function(above_ground_carbon, run_length=simlength, out=map_output_
     i = 1:(nrows*ncols)
     x = rep(1:ncols, nrows)
     y = rep(1:nrows, each=ncols)
+    #XXX Only `initpop` when prec<30? (reduce startup time)
     map_text = c(map_text, paste(i, x, y, "temp=293", #XXX link temp to elevation?
                                  paste0("prec=", round(above_ground_carbon[i], 2)),
-                                 sep="\t"))
-                                 #"initpop", sep="\t"))
+                                 "initpop", sep="\t"))
     writeLines(map_text, out)
     end = Sys.time()
 }
