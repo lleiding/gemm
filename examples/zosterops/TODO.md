@@ -34,6 +34,8 @@
 
 - [X] move species properties to settings
 
+- [X] add a StringGene class and `compressgenes` setting
+
 - [ ] make sure `map_creator.R` works with Petri's data
 
 - [ ] vary hybridization affinity for core experiment

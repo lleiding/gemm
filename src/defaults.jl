@@ -71,7 +71,7 @@ function defaultSettings()
                          "seedsize",
                          "tempopt",
                          "temptol"], # minimal required traitnames
-        "usebiggenes" => true,
-        #TODO "compressgenes" => true, # save gene sequences as numbers to reduce memory usage
+        "usebiggenes" => true, # use a longer sequence for the compatibility gene
+        "compressgenes" => true, # save gene sequences as integers to reduce memory usage
     )
 end

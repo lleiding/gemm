@@ -119,7 +119,11 @@ function makefasta(world::Array{Patch, 1}, settings::Dict{String, Any}, io::IO =
                     header = ">" * ind.lineage * sep * string(ind.id) * sep * string(chrmno) * sep * string(geneno) * sep * traits
                     if (settings["fasta"] == "compat" && occursin("compat", header)) || settings["fasta"] != "compat"
                         println(io, header)
-                        println(io, num2seq(gene.sequence))
+                        if settings["compressgenes"]
+                            println(io, num2seq(gene.sequence))
+                        else
+                            println(io, gene.sequence)
+                        end
                     end
                 end
             end

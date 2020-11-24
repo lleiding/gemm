@@ -111,8 +111,11 @@ function getseq(genome::Array{Chromosome, 1}, traitidx::Integer)
     seq = ""
     for chrm in genome
         for gene in chrm.genes
-            # use one compatibility gene randomly
-            any(x -> x.nameindex == traitidx, gene.codes) && (seq = num2seq(gene.sequence))
+            # use one compatibility gene randomly #XXX what's that comment supposed to mean?
+            #TOOD have another look at this
+            if any(x -> x.nameindex == traitidx, gene.codes)
+                settings["compressgenes"] ? seq = num2seq(gene.sequence) : seq = gene.sequence
+            end
         end
     end
     seq
@@ -238,8 +241,11 @@ function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String,
     # initialise each gene with an arbitrary sequence
     for i in 1:ngenes
         sequence = String(rand(collect("acgt"), settings["smallgenelength"]))
-        gene = Gene(seq2num(sequence), Trait[])
-        push!(genes,gene)
+        if settings["compressgenes"] #default
+            push!(genes, Gene(seq2num(sequence), Trait[]))
+        else
+            push!(genes, StringGene(sequence, Trait[]))
+        end
     end
     # assign traits to the genes (allows for pleiotropy as well as polygenic inheritance)
     for trait in traits
@@ -264,14 +270,19 @@ function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String,
         end
     end
     # append a gene that will be used to determine mating compatibility
-    if settings["usebiggenes"]
-        # we only need big genes for the compatibility gene, because we need a longer base
-        # sequence than offered by `smallgenelength` if we want to do phylogenetic analyses
-        push!(genes, BigGene(seq2bignum(String(rand(collect("acgt"), settings["biggenelength"]))),
-                             [Trait(compatidx, 0.5)]))
+    # Note: we only need big genes for the compatibility gene, because we need a longer base
+    # sequence than offered by `smallgenelength` if we want to do phylogenetic analyses.
+    settings["usebiggenes"] ? seql = settings["biggenelength"] : seql = settings["smallgenelength"]
+    cseq = String(rand(collect("acgt"), seql))
+    ctrait = [Trait(compatidx, 0.5)]
+    if settings["compressgenes"]
+        if settings["usebiggenes"]
+            push!(genes, BigGene(seq2bignum(cseq), ctrait))
+        else
+            push!(genes, Gene(seq2num(cseq), ctrait))
+        end
     else
-        push!(genes, Gene(seq2num(String(rand(collect("acgt"), settings["smallgenelength"]))),
-                          [Trait(compatidx, 0.5)]))
+        push!(genes, StringGene(cseq, ctrait))
     end
     genes
 end
@@ -372,7 +383,8 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
         ind.genome[c] = deepcopy(ind.genome[c])
         length(ind.genome[c].genes) == 0 && continue
         g = rand(eachindex(ind.genome[c].genes))
-        charseq = collect(num2seq(ind.genome[c].genes[g].sequence))
+        gseq = ind.genome[c].genes[g].sequence
+        settings["compressgenes"] ? charseq = collect(num2seq(gseq)) : charseq = collect(gseq)
         i = rand(eachindex(charseq))
         newbase = rand(collect("acgt"),1)[1]
         while newbase == charseq[i]
@@ -381,10 +393,14 @@ function mutate!(ind::Individual, temp::Float64, settings::Dict{String, Any})
         charseq[i] = newbase
         mutate!(ind.genome[c].genes[g].codes, settings)
         ind.genome[c].genes[g].sequence = deepcopy(ind.genome[c].genes[g].sequence)
-        if length(charseq) > 21
-            ind.genome[c].genes[g].sequence = seq2bignum(String(charseq))
+        if settings["compressgenes"]
+            if length(charseq) > 21
+                ind.genome[c].genes[g].sequence = seq2bignum(String(charseq))
+            else
+                ind.genome[c].genes[g].sequence = seq2num(String(charseq))
+            end
         else
-            ind.genome[c].genes[g].sequence = seq2num(String(charseq))
+            ind.genome[c].genes[g].sequence = String(charseq)
         end
     end
     ind.traits = gettraitdict(ind.genome, settings["traitnames"])
