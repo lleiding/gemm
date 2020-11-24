@@ -58,6 +58,8 @@
 
 - [ ] update documentation
 
+- [ ] profile RAM/CPU trade-off with `compressgenes`
+
 ## Notes
 
 - how should burn-in work?

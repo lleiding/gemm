@@ -187,7 +187,7 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
 end
 
 """
-    iscompatible(female, male, tolerance)
+    ziscompatible(female, male, tolerance)
 
 Check to see whether two birds are reproductively compatible.
 """

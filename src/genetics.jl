@@ -107,14 +107,14 @@ end
 
 Find and return the sequence of one gene that codes for the given trait `traitidx`.
 """
-function getseq(genome::Array{Chromosome, 1}, traitidx::Integer)
+function getseq(genome::Array{Chromosome, 1}, traitidx::Integer, compressgenes::Bool)
     seq = ""
     for chrm in genome
         for gene in chrm.genes
             # use one compatibility gene randomly #XXX what's that comment supposed to mean?
-            #TOOD have another look at this
+            #TODO have another look at this
             if any(x -> x.nameindex == traitidx, gene.codes)
-                settings["compressgenes"] ? seq = num2seq(gene.sequence) : seq = gene.sequence
+                compressgenes ? seq = num2seq(gene.sequence) : seq = gene.sequence
             end
         end
     end
@@ -122,15 +122,15 @@ function getseq(genome::Array{Chromosome, 1}, traitidx::Integer)
 end
 
 """
-    iscompatible(mate, individual, traitnames)
+    iscompatible(mate, individual, settings)
 
 Check to see whether two individual organisms are reproductively compatible.
 """
-function iscompatible(mate::Individual, ind::Individual, traitnames::Array{String, 1})
+function iscompatible(mate::Individual, ind::Individual, settings::Dict{String, Any})
     mate.lineage != ind.lineage && return false ##TODO must be possible under some conditions
-    compatidx = findfirst(x -> x == "compat", traitnames)
-    indgene = getseq(ind.genome, compatidx)
-    mategene = getseq(mate.genome, compatidx)
+    compatidx = findfirst(x -> x == "compat", settings["traitnames"])
+    indgene = getseq(ind.genome, compatidx, settings["compressgenes"])
+    mategene = getseq(mate.genome, compatidx, settings["compressgenes"])
     seqidentity = getseqsimilarity(indgene, mategene)
     seqidentity >= ind.traits["seqsimilarity"]
 end

@@ -12,7 +12,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactor!
         metaboffs = settings["fertility"] * ind.size^(-1/4) * exp(-act/(boltz*patch.temp))
         noffs = rand(Poisson(metaboffs))
         noffs < 1 && continue
-        partners = findmate(patch.community, ind, settings["traitnames"])
+        partners = findmate(patch.community, ind, settings)
         if length(partners) < 1 && rand() < ind.traits["selfing"]
             partners = [ind]
         elseif length(partners) < 1
@@ -52,7 +52,7 @@ function greproduce!(patch::Patch, settings::Dict{String, Any})
         metaboffs = settings["fertility"] * ind.size^(-1/4) * exp(-act/(boltz*patch.temp))
         noffs = rand(Poisson(metaboffs))
         noffs < 1 && continue
-        partners = findmate([(map(x -> x.community, world)...)...], ind, settings["traitnames"])
+        partners = findmate([(map(x -> x.community, world)...)...], ind, settings)
         if length(partners) < 1 && rand() < ind.traits["selfing"]
             partners = [ind]
         elseif length(partners) < 1
@@ -91,11 +91,11 @@ function reproduce!(world::Array{Patch,1}, settings::Dict{String, Any})
 end
 
 """
-    findmate(population, individual, traitnames)
+    findmate(population, individual, settings)
 
 Find a reproduction partner for the given individual in the given population.
 """
-function findmate(population::AbstractArray{Individual, 1}, ind::Individual, traitnames::Array{String, 1})
+function findmate(population::AbstractArray{Individual, 1}, ind::Individual, settings::Dict{String, Any})
     indstate = ind.marked
     ind.marked = true
     mates = Individual[]
@@ -103,7 +103,7 @@ function findmate(population::AbstractArray{Individual, 1}, ind::Individual, tra
     mateidx = startidx
     while true
         mate = population[mateidx]
-        if !mate.marked && iscompatible(mate, ind, traitnames)
+        if !mate.marked && iscompatible(mate, ind, settings)
             push!(mates, mate)
             break
         end
