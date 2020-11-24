@@ -6,25 +6,23 @@
 
 - [ ] read up on current literature about evolutionary rescue, introgressive hybridization
 
-- [ ] prepare F2 presentation on "Adapting a plant community model to bird populations"
+- [X] prepare F2 presentation on "Adapting a plant community model to bird populations"
 
 ## GeMM adaptation
 
 - [X] introduce `modes` to differentiate between experiment types
 
-- [ ] make sure `map_creator.R` works with Petri's data
-
 - [X] convert `precipitation` niche to `AGC` (above-ground carbon) (isn't that simply a relabelling?)
+
+- [X] setup config file to enable testing
 
 - [X] find a suitable temperature value
 
-- [ ] change species initialisation process to read predefined species
+- [X] change species initialisation process to read predefined species
 
-- [ ] initialise two species
+- [X] initialise two species
 		- highland species *Z. silvanus* (Taita White-eye, a.k.a. subspecies of *Z. poliogaster*)
 		- lowland species *Z. jubaensis* (former subspecies of *Z. abyssinicus*)
-
-- [ ] vary hybridization affinity for core experiment
 
 - [X] introduce sex (birds are not hermaphrodites)
 
@@ -32,7 +30,13 @@
 		-> breeding pairs stay faithful for life
 		-> occupy & stay in a territory
 
-- [X] makes sure growth is capped at `repsize`
+- [X] make sure growth is capped at `repsize`
+
+- [X] move species properties to settings
+
+- [ ] make sure `map_creator.R` works with Petri's data
+
+- [ ] vary hybridization affinity for core experiment
 
 - [ ] `createoffspring()` or `zreproduce()` have to deal with lineage labels
 
@@ -46,13 +50,11 @@
 		- genetic diversity
 		- population sizes
 
-- [X] setup config file to enable testing
-
 - [ ] test parameterisation
 
 - [ ] update data output
 
-- [X] rebuild documentation
+- [ ] update documentation
 
 ## Notes
 
@@ -63,14 +65,4 @@
 - restrict mutations of max & min sizes?
   -> either in `mutate!` or in `checkviability!`
 
-- can we assume that habitat = "highland species habitat" and
-  no habitat = "lowland species habitat"? Or is that only dependant
-  on elevation? (But if so, how do we know where exactly the lowland
-  species occurs?)
-
 - what determines brood density in lowland species? forest cover?
-
-- Where are the intermediate zones, where lowland and highland species
-  can interact?
-  -> mate search should not be restricted to the individual's cell,
-  but a radius of 3 cells (allows interaction between different species)

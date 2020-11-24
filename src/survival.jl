@@ -54,8 +54,8 @@ function grow!(patch::Patch, growthrate::Float64, capgrowth::Bool)
             if mass <= repsize # stop growth if reached repsize
                 growth = growthrate * mass^(3/4) * exp(-act/(boltz*temp))
                 newmass = mass + growth
-                if capgrowth && newmass > patch.communit[idx].traits["repsize"]
-                    newmass = patch.communit[idx].traits["repsize"]
+                if capgrowth && newmass > patch.community[idx].traits["repsize"]
+                    newmass = patch.community[idx].traits["repsize"]
                 end
                 if newmass > 0 && mass > 0
                     patch.community[idx].size = newmass

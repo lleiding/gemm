@@ -125,8 +125,10 @@ end
 
 Parse a configuration file and return a settings dict.
 
-The config syntax is very simple: each line consists of a parameter
-name and a value (unquoted), e.g. `nniches 2`. `#` is the comment character.
+The config syntax is very simple: each line consists of a parameter name
+and a value (unquoted), e.g. `nniches 2`. `#` is the comment character.
+
+NOTE: parameter values must not contain any spaces! (e.g. when passing dicts)
 """
 function parseconfig(configfilename::String)
     config = basicparser(configfilename)
