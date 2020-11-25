@@ -38,7 +38,8 @@
 
 - [ ] performance issue (https://docs.julialang.org/en/v1/manual/performance-tips/):
   - [X] profile RAM/CPU trade-off with `compressgenes`
-  - [ ] circumvent `push!()` calls, preallocate memory instead
+  - [X] circumvent `push!()` calls, preallocate memory instead - doesn't work?
+  - [ ] avoid intermediate allocations when compressing gene sequences
   - [ ] avoid string interpolation in output
 
 

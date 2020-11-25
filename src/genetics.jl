@@ -141,6 +141,9 @@ end
 Convert a DNA base sequence (a string) into binary and then into an integer.
 This saves memory.
 """
+#XXX Actually, this hardly seems to make a difference :-( So using `compressgenes = false`
+# seems to be a pretty good choice right now.
+#TODO get rid of intermediate allocations - these probably undo any gains we make from compressing
 function seq2num(sequence::String)
     bases = "acgt"
     binary = ""
