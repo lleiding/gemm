@@ -41,32 +41,15 @@ git clone https://github.com/lleiding/gemm.git
 Enter the directory and run
 
 ```
-julia rungemmparallell.jl -c ""
+julia rungemm.jl
 ```
 
 to test if it works.
 
-## Demo
-
-To run an example experiment in a landscape with two environmental gradients to test the effect of temporal environmental variation, run
-
-```
-julia -p 40 rungemmparallel.jl -s 1 -n 20 -c examples/gradient/sg,examples/gradient/sgv
-```
-
-This executes 40 parallel simulations, 20 for each of the scenarios defined in the configuration files (`examples/gradient/sg` and `examples/gradient/sgv`).
-
-Each of the simulations creates its own output directory of the format date-configfilename-replicate.
-These folders configuration files with the exact configuration the respective simulation was run on (`*.conf`),
-the definition of the simulation arena (`grad.map`),
-and a tab-separated table containing statistical summaries on the characteristics of all populations through time (`stats_s*.tsv`).
-Optionally, the model outputs several log files (`diversity.log`, `lineages.log`, `simulation.log`).
-
-Depending on the machine (number of parellel processes, i.e., computing cores), the simulations can take up to several days to complete.
-
 ## Instructions for use
 
-To design your own experiments, you need to provide two files.
+To design your own experiments, you need to provide a map and a configuration file. 
+(See the folders in `examples/` for our previous work.)
 
 ### Map file(s)
 
@@ -89,6 +72,26 @@ These set the temperature and precipition values in the grid cell, and define wh
 can be invaded by alien species and whether the grid cell should receive a
 community at simulation initialisation.
 
+**Example map file:**
+
+```
+## SAMPLE EXPERIMENT MAP
+
+3 # Timesteps
+
+# Simulation arena:
+# <id> <x> <y> <temperature> <agc> [parameters]
+1	1	1	temp=293	prec=12 initpop
+2	2	1	temp=293	prec=59 initpop
+3	3	1	temp=293	prec=89 initpop
+4	4	1	temp=293	prec=91 initpop
+5	5	1	temp=293	prec=58 initpop
+6	6	1	temp=293	prec=57 initpop
+7	7	1	temp=293	prec=63 initpop
+8	8	1	temp=293	prec=44 initpop
+9	9	1	temp=293	prec=28 initpop
+```
+
 An experiment can pass through a series of map files to e.g. simulate environmental change or geomorphological dynamics.
 
 ### Configuration file
@@ -105,14 +108,88 @@ maps <mapfile[,mapfile2,...]>
 
 For passing more than one map file, separate file names with commas and no white space, e.g. `map1.map,map2.map`.
 
+**Example config file:**
+
+```
+# Sample configuration file for GeMM
+# Note: this does not include all settings!
+# For a complete parameter list, see `src/defaults.jl`
+
+# input/output settings
+seed     0 #random seed
+maps     sample.map
+dest     results/sample
+outfreq  1
+logging  true
+debug    true
+stats    true
+lineages true
+fasta    off
+raw      false
+
+# general model parameters
+linkage       none
+nniches       2
+static        false
+mutate        true
+usebiggenes   false
+compressgenes true
+indsize       adult
+popsize       metabolic
+maxbreadth    5.0
+capgrowth     true
+```
+
 ### Run an experiment
 
-To parallely run several replicates of a given experiment definition, run
+To run a single experiment, execute:
+
+```
+./rungemm.jl -c <CONFIG>
+```
+
+Other commandline arguments are:
+
+```
+usage: rungemm.jl [-s SEED] [-m MAPS] [-c CONFIG] [-d DEST] [--debug]
+                  [--quiet] [-h]
+
+optional arguments:
+  -s, --seed SEED      inital random seed (type: Int64)
+  -m, --maps MAPS      list of map files, comma separated
+  -c, --config CONFIG  name of the config file
+  -d, --dest DEST      output directory. Defaults to current date
+  --debug              debug mode. Turns on output of debug
+                       statements.
+  --quiet              quiet mode. Don't print output to screen.
+  -h, --help           show this help message and exit
+```
+
+There's a separate script to run several replicates of a given experiment
+in parallel. This is used as follows:
 
 ```
 julia -p <NPROCS> rungemmparallel.jl -s <SEED> -n <NREPS> -c <CONFIG>
 ```
 
-while `<NPROCS>` = number of cores, `<SEED>` = integer value to set a random seed, `<NREPS>` = number of replicates and
+where `<NPROCS>` = number of cores, `<SEED>` = integer value to set a random seed, `<NREPS>` = number of replicates and
 `<CONFIG>` the configuration file.
 
+
+## Demo
+
+To run an example experiment in a landscape with two environmental gradients to test the effect of temporal environmental variation, run
+
+```
+julia -p 40 rungemmparallel.jl -s 1 -n 20 -c examples/gradient/sg,examples/gradient/sgv
+```
+
+This executes 40 parallel simulations, 20 for each of the scenarios defined in the configuration files (`examples/gradient/sg` and `examples/gradient/sgv`).
+
+Each of the simulations creates its own output directory of the format date-configfilename-replicate.
+These folders configuration files with the exact configuration the respective simulation was run on (`*.conf`),
+the definition of the simulation arena (`grad.map`),
+and a tab-separated table containing statistical summaries on the characteristics of all populations through time (`stats_s*.tsv`).
+Optionally, the model outputs several log files (`diversity.log`, `lineages.log`, `simulation.log`).
+
+Depending on the machine (number of parellel processes, i.e., computing cores), the simulations can take up to several days to complete.
