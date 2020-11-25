@@ -238,6 +238,7 @@ function recordstatistics(world::Array{Patch,1}, settings::Dict{String, Any})
     lineages = unique(reduce(vcat, map(p -> map(x -> x.lineage, p.community), world)))
     div = round.(diversity(world), digits = 3)
     space = freespace(world)
+    #XXX Doing a lot of string interpolation is expensive
     simlog("Metacommunity size: $popsize, lineages: $(length(lineages))", settings)
     simlog("$popsize,$space,$(length(lineages)),$(div[1]),$(div[2]),$(div[3])", settings,
            'i', "diversity.log", true)
@@ -254,6 +255,7 @@ function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, time
     end
     for p in world
         for l in unique(map(x -> x.lineage, p.community))
+            #XXX Doing a lot of string interpolation is expensive
             simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(findall(x -> x.lineage == l, p.community))),$(p.temp),$(p.prec)", settings,
                    'i', "lineages.log", true)
         end

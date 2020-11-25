@@ -80,7 +80,7 @@ community at simulation initialisation.
 3 # Timesteps
 
 # Simulation arena:
-# <id> <x> <y> <temperature> <agc> [parameters]
+# <id> <x> <y> <temperature> <precipitation> [parameters]
 1	1	1	temp=293	prec=12 initpop
 2	2	1	temp=293	prec=59 initpop
 3	3	1	temp=293	prec=89 initpop
