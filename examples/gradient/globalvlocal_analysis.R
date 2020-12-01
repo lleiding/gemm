@@ -25,19 +25,23 @@ for (filepath in mytworesults) {
 
 ## only use replicates where all scenarios are finished
 ##XXX is this wise? (what if some scenarios abort?)
-## repstable = rawresults %>% filter(time==1000) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
-## doublereps = which(rowSums(repstable) == 4) %>% names %>% as.numeric
-## filteredresults = rawresults %>% filter(replicate %in% doublereps)
+repstable = rawresults %>% filter(time==500) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
+doublereps = which(rowSums(repstable) == 4) %>% names %>% as.numeric
+filteredresults = rawresults %>% filter(replicate %in% doublereps)
 
-tworesults = rawresults %>% #filteredresults %>%
+tworesults = filteredresults %>%
     select(-ngenesstd, -area, -contains("compat"), -contains("reptol"), -contains("adaption")) %>%
     mutate(linkage_degree=ngenesmean/nlnkgunitsmean,
            scenario=ifelse(grepl("constant", conf), "static", "variable"),
            disptype=ifelse(grepl("global", conf), "global", "local"),
            config=sub(".conf", "", sub("examples/gradient/", "", conf))) %>%
     select(-contains("lnkgunits"), -conf) %>%
-    ## mutate(mintemprange=tempoptmin-temptolmax, maxtemprange=tempoptmax+temptolmax,
-    ##        minprecrange=precoptmin-prectolmax, maxprecrange=precoptmax+prectolmax) %>%
+    ##XXX This doesn't calculate the full range, but as the model doesn't output min/max values
+    ## anymore, it's the best we can do.
+    mutate(mintemprange=(tempoptmean-(2*tempoptstd))-(temptolmean+(2*temptolstd)),
+           maxtemprange=(tempoptmean+(2*tempoptstd))+(temptolmean+(2*temptolstd)),
+           minprecrange=(precoptmean-(2*precoptstd))-(prectolmean+(2*prectolstd)),
+           maxprecrange=(precoptmean+(2*precoptstd))+(prectolmean+(2*prectolstd))) %>%
     select(-ends_with("min"), -ends_with("max"), -ends_with("sdstd")) %>% na.omit()
 names(tworesults) = names(tworesults) %>% gsub("std", "_pop._var.", .) %>% gsub("sdmean", "_gen._var.", .)  %>%
     ## This next line is a nasty hack arising from a switch in the data from `med` values to `mean`
@@ -118,6 +122,26 @@ adlts = tworesults %>% filter(time>=50) %>% select(-x, -y) %>% group_by(time, co
     stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_bw() + ylab("Number of adults") + xlab("Year")
 ggsave(paste0("adults_over_time_", dispmode, ".pdf"), adlts, width=6, height=4)
 
+myenv = tworesults %>% group_by(time, config, replicate) %>% select(temp, prec) %>% unique() %>% ungroup()
+myspecs = tworesults %>% group_by(time, config, replicate, lineage) %>% select(ends_with("range")) %>%
+    summarize(minprecrange=min(minprecrange), maxprecrange=max(maxprecrange),
+              mintemprange=min(mintemprange), maxtemprange=max(maxtemprange)) %>% mutate(rangefilling=0) %>% ungroup()
+myspecs = myspecs %>% inner_join(myenv) %>% mutate(habitable = temp>=mintemprange & temp<=maxtemprange & prec>=minprecrange & prec<=maxprecrange) %>%
+    group_by(time, config, replicate, lineage) %>% select(habitable) %>% summarise(rangefilling=sum(habitable)/length(habitable)) %>% ungroup()
+range =  myspecs %>% filter(time>=50) %>% mutate(replicate=as.factor(replicate), config=as.factor(config)) %>% group_by(time, config, replicate) %>%
+    ggplot(aes(time, rangefilling, group=config)) + stat_summary(aes(color=config), fun.y = mean, geom="line", size=1) +
+    stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_bw() + ylab("Range-filling") + xlab("Year")
+ggsave(paste0("rangefilling_over_time_", dispmode, ".pdf"), range, width=6, height=4)
+
+ecogrid = plot_grid(lclrich + theme(legend.position="none"),
+          beta + theme(legend.position="none"),
+          ttlrich + theme(legend.position=c(.6, .75)),
+          juvs + theme(legend.position="none"),
+          adlts + theme(legend.position="none"),
+          range + theme(legend.position="none"), labels="auto", ncol=3, align="vh")
+pattsleg = plot_grid(ecogrid, ncol=1, rel_heights=c(1,.1)) # get_legend(juvs), 
+ggsave(paste0("ecopatts_", dispmode, ".pdf"), pattsleg, width=7, height=5)
+
 
 ### TRAIT ANALYSIS (PCA AND TRAIT MEANS)
 
@@ -128,10 +152,10 @@ mainendtraits = tworesults %>% filter(time == 500) %>%
            long_distance_dispersal, seed_size) %>%
     mutate_at(vars(-Environment), function(x) log(x + 1)) %>%
     rename(`Mean dispersal distance` = mean_dispersal_distance, `Number of genes` = number_of_genes,
-           `Precipitation tolerance` = precipitation_tolerance, `Adult biomass / g` = adult_body_size,
+           `Precipitation tolerance` = precipitation_tolerance, `Adult biomass (g)` = adult_body_size,
            `Temperature tolerance` = temperature_tolerance, `Genetic linkage` = linkage_degree,
            `Mean genetic variation` = mean_genetic_variation, `Long distance dispersal` = long_distance_dispersal,
-           `Seed biomass / g` = seed_size)
+           `Seed biomass (g)` = seed_size)
 
 endpca = prcomp(mainendtraits[,-1], scale=T)
 endpcaviz = fviz_pca_biplot(endpca, col.var=factor(c("ecological", "genetic", "ecological", "ecological", "ecological", "genetic", "genetic", "ecological", "ecological")),
@@ -162,10 +186,10 @@ endtraits_lme_summary = lapply(endtraits_lme, summary)
 
 lme_table = bind_cols(names = names(endtraits_lme_summary), as_tibble(t(sapply(endtraits_lme_summary, function(x) unlist(as.tibble(x$coefficients)[2,])))))
 lme_table$names = factor(c("Mean dispersal distance", "Long distance dispersal", "Number of genes",
-                           "Precipitation tolerance", "Seed biomass / g", "Adult biomass / g",
+                           "Precipitation tolerance", "Seed biomass (g)", "Adult biomass (g)",
                            "Temperature tolerance", "Genetic linkage", "Mean genetic variation"),
                          levels = rev(c("Mean dispersal distance", "Long distance dispersal",
-                                        "Precipitation tolerance", "Seed biomass / g", "Adult biomass / g", "Temperature tolerance", 
+                                        "Precipitation tolerance", "Seed biomass (g)", "Adult biomass (g)", "Temperature tolerance", 
                                         "Number of genes", "Genetic linkage", "Mean genetic variation")))
 print(xtable(lme_table, digits = c(0, 0, 3, 3, 0, 3, 3)), floating = FALSE, booktabs = TRUE, include.rownames=FALSE)
 
@@ -203,10 +227,10 @@ endtraits_lme_summary = lapply(endtraits_lme, summary)
 
 lme_table = bind_cols(names = names(endtraits_lme_summary), as_tibble(t(sapply(endtraits_lme_summary, function(x) unlist(as.tibble(x$coefficients)[2,])))))
 lme_table$names = factor(c("Mean dispersal distance", "Long distance dispersal", "Number of genes",
-                           "Precipitation tolerance", "Seed biomass / g", "Adult biomass / g",
+                           "Precipitation tolerance", "Seed biomass (g)", "Adult biomass (g)",
                            "Temperature tolerance", "Genetic linkage", "Mean genetic variation"),
                          levels = rev(c("Mean dispersal distance", "Long distance dispersal",
-                                        "Precipitation tolerance", "Seed biomass / g", "Adult biomass / g", "Temperature tolerance", 
+                                        "Precipitation tolerance", "Seed biomass (g)", "Adult biomass (g)", "Temperature tolerance", 
                                         "Number of genes", "Genetic linkage", "Mean genetic variation")))
 print(xtable(lme_table, digits = c(0, 0, 3, 3, 0, 3, 3)), floating = FALSE, booktabs = TRUE, include.rownames=FALSE)
 
