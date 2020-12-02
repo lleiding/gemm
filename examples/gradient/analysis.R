@@ -23,39 +23,30 @@ library(ggsci) ## scientific color scales
 ##install.packages("MuMIn") # not available for R 3.4.4
 library(MuMIn)
 
-## make sure you have run the shell code to produce the file `twothree` with all completed replicates
-## tworuns = read_table("twothree", col_names=c("nruns", "seed"))
-## allfiles = Sys.glob("2019-0*/stats*tsv")
-## mytworesults = allfiles[grep(paste(tworuns$seed, collapse="|"), allfiles)]
-## rm(allfiles, tworuns)
-
-## Incomplete runs are filtered out later
 dispmode = "local" ## 'local' or 'global'
 mytworesults = Sys.glob(paste0("data/2020*", dispmode, "*/*tsv"))
 
- rawresults = tibble()
-     for (filepath in mytworesults) {
-         ##if(length(grep("_sg_", filepath)) == 1 | length(grep("_sgv_", filepath)) == 1) rawresults = bind_rows(rawresults, read_tsv(filepath))
-         rawresults = bind_rows(rawresults, read_tsv(filepath))
-     }
+rawresults = tibble()
+for (filepath in mytworesults) {
+    rawresults = bind_rows(rawresults, read_tsv(filepath))
+}
 
-## XXX this was originally `filter(x==1, y==1, time==1000)`, but that didn't work for global
- repstable = rawresults %>% filter(time==1000) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
- doublereps = which(rowSums(repstable) == 2) %>% names %>% as.numeric
- filteredresults = rawresults %>% filter(replicate %in% doublereps)
- 
- tworesults = filteredresults %>% #rawresults %>%
-     select(-ngenesstd, -area, -contains("compat"), -contains("reptol"), -contains("adaption")) %>%
-     mutate(linkage_degree=ngenesmean/nlnkgunitsmean,
-            scenario=ifelse(grepl("constant", conf), "static", "variable")) %>%
-     select(-contains("lnkgunits"), -conf) %>%
-     ##XXX This doesn't calculate the full range, but as the model doesn't output min/max values
-     ## anymore, it's the best we can do.
-     mutate(mintemprange=(tempoptmean-(2*tempoptstd))-(temptolmean+(2*temptolstd)),
-            maxtemprange=(tempoptmean+(2*tempoptstd))+(temptolmean+(2*temptolstd)),
-            minprecrange=(precoptmean-(2*precoptstd))-(prectolmean+(2*prectolstd)),
-            maxprecrange=(precoptmean+(2*precoptstd))+(prectolmean+(2*prectolstd))) %>%
-     select(-ends_with("min"), -ends_with("max"), -ends_with("sdstd")) %>% na.omit()
+repstable = rawresults %>% filter(time==1000) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
+doublereps = which(rowSums(repstable) == 2) %>% names %>% as.numeric
+filteredresults = rawresults %>% filter(replicate %in% doublereps)
+
+tworesults = filteredresults %>% #rawresults %>%
+    select(-ngenesstd, -area, -contains("compat"), -contains("reptol"), -contains("adaption")) %>%
+    mutate(linkage_degree=ngenesmean/nlnkgunitsmean,
+           scenario=ifelse(grepl("constant", conf), "static", "variable")) %>%
+    select(-contains("lnkgunits"), -conf) %>%
+    ##XXX This doesn't calculate the full range, but as the model doesn't output min/max values
+    ## anymore, it's the best we can do.
+    mutate(mintemprange=(tempoptmean-(2*tempoptstd))-(temptolmean+(2*temptolstd)),
+           maxtemprange=(tempoptmean+(2*tempoptstd))+(temptolmean+(2*temptolstd)),
+           minprecrange=(precoptmean-(2*precoptstd))-(prectolmean+(2*prectolstd)),
+           maxprecrange=(precoptmean+(2*precoptstd))+(prectolmean+(2*prectolstd))) %>%
+    select(-ends_with("min"), -ends_with("max"), -ends_with("sdstd")) %>% na.omit()
 names(tworesults) = names(tworesults) %>% gsub("std", "_pop._var.", .) %>% gsub("sdmean", "_gen._var.", .)  %>%
     ## This next line is a nasty hack arising from a switch in the data from `med` values to `mean`
     gsub("dispmean", "dispme-an", .) %>% gsub("mean", "", .) %>% gsub("dispme-an", "dispmean", .)
@@ -116,8 +107,7 @@ spatgridall = plot_grid(allrich, allmass, allgenes, labels="auto", ncol=1, align
 ggsave(paste0("mapplots_all_", dispmode, ".pdf"), spatgridall, width=5, height=6)
 
 ## static plot for replicate 18:
-## XXX Why replicate 18?
-## XXX replaced with 22 for global
+## XXX Why replicate 18? -> arbitrary, just pick a number that works...
 n = 18
 d = tworesults %>% rename(Environment = scenario) %>% filter(replicate == n, time == 500) %>% group_by(x, y, Environment) %>%
     summarize(`Richness (n.spp.)` = length(unique(lineage)), `Adult biomass (g)` = mean(adult_body_size), `Number of genes` = mean(number_of_genes)) %>%
@@ -134,32 +124,8 @@ genes = d %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Number of genes`)) + coo
 spatgrid = plot_grid(rich, mass, genes, labels="auto", ncol=1, align="vh")
 ggsave(paste0("mapplots_s", n, "_", dispmode, ".pdf"), spatgrid, width=5, height=6)
 
-## DV works
 spatgridboth = plot_grid(rich, allrich, mass, allmass, genes, allgenes, labels="auto", ncol=2, align="vh")
 ggsave(paste0("mapplots_both_", dispmode, ".pdf"), spatgridboth, width=10, height=6)
-
-## animated: ##FIXME DV doesn't work yet
-da = tworesults %>% rename(Environment = scenario) %>% filter(replicate == 18, time > 0) %>%
-    mutate(Environment = ifelse(Environment == "static", "Static environment", "Variable environment")) %>%
-    group_by(x, y, Environment, time) %>%
-    summarize(`Richness / n.spp.` = length(unique(lineage)), `Adult biomass (g)` = mean(repsize), `Number of genes` = mean(ngenes))
-richs = da %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Richness / n.spp.`)) + coord_fixed() +
-    facet_grid(. ~ Environment) + scale_fill_viridis_c(option="magma") + theme_classic() + transition_time(time) + labs(title = "Year: {frame_time}")
-anim_save(paste0("mapplots_rich_s", 18, "_", dispmode, ".gif"), richs, nframes = length(unique(da$time)), fps = 2)
-masss = da %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Adult biomass (g)`)) + coord_fixed() +
-    facet_grid(. ~ Environment) + scale_fill_viridis_c(option="magma") + theme_classic() + transition_time(time) + labs(title = "Year: {frame_time}")
-anim_save(paste0("mapplots_mass_s", 18, "_", dispmode, ".gif"), masss, nframes = length(unique(da$time)), fps = 2)
-geness = da %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Number of genes`)) + coord_fixed() +
-    facet_grid(. ~ Environment) + scale_fill_viridis_c(option="magma") + theme_classic() + transition_time(time) + labs(title = "Year: {frame_time}")
-anim_save(paste0("mapplots_genes_s", 18, "_", dispmode, ".gif"), geness, nframes = length(unique(da$time)), fps = 2)
-richa = da %>% ggplot(aes(x, y)) + geom_tile(aes(fill = Richness)) + coord_fixed() +
-    facet_grid(. ~ Environment) + scale_fill_viridis_c(option="magma") + theme_classic()
-massa = da %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Adult biomass`)) + coord_fixed() +
-    facet_grid(. ~ Environment) + scale_fill_viridis_c(option="magma") + theme_classic()
-genesa = da %>% ggplot(aes(x, y)) + geom_tile(aes(fill = `Number of genes`)) + coord_fixed() +
-    facet_grid(. ~ Environment) + scale_fill_viridis_c(option="magma") + theme_classic()
-spatgrida = plot_grid(richa, massa, genesa, labels="auto", ncol=1, align="vh") + transition_time(time)
-anim_save(paste0("mapplots_s", 18, "_", dispmode, ".gif"), spatgrida, width=9, height=7)
 
 ## diversity over time
 
