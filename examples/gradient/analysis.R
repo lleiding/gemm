@@ -40,7 +40,7 @@ mytworesults = Sys.glob(paste0("data/2020*", dispmode, "*/*tsv"))
      }
 
 ## XXX this was originally `filter(x==1, y==1, time==1000)`, but that didn't work for global
- repstable = rawresults %>% filter(time==500) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
+ repstable = rawresults %>% filter(time==1000) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
  doublereps = which(rowSums(repstable) == 2) %>% names %>% as.numeric
  filteredresults = rawresults %>% filter(replicate %in% doublereps)
  
@@ -84,6 +84,20 @@ tworesults = tworesults %>% mutate(species = paste0(scenario, ".", lineage)) %>%
            temperature_tolerance_genetic_CV_median = temptol_gen._var. / temperature_tolerance)
 genetic_variation = tworesults %>% select(ends_with("genetic_CV_median")) %>% as_tibble() %>% rowMeans
 tworesults = bind_cols(tworesults, mean_genetic_variation=genetic_variation)
+
+## species stats
+
+worldend = tworesults[which(tworesults$time==1000),]
+speccon = unique(worldend[which(worldend$scenario=="static"),]$lineage)
+specvar = unique(worldend[which(worldend$scenario=="variable"),]$lineage)
+specconex = setdiff(speccon, specvar)
+specvarex = setdiff(specvar, speccon)
+specboth = intersect(specvar, speccon)
+
+print(paste("Species surviving only in", dispmode, "static runs:", length(specconex)))
+print(paste("Species surviving only in", dispmode, "variable runs:", length(specvarex)))
+print(paste("Species surviving in both", dispmode, "runs:", length(specboth)))
+print(paste("(Considering n =", length(unique(worldend$replicate)), "replicates.)"))
 
 ## static plot over all replicates:
 all = tworesults %>% rename(Environment = scenario) %>% filter(time == 500) %>% group_by(x, y, Environment) %>%
