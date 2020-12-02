@@ -1,3 +1,4 @@
+#!/usr/bin/Rscript
 library(picante) ## provides both library(vegan) and library(ape) ## ade4?
 library(lme4) ## for (generalized) linear mixed effects models
 library(lmerTest) ## p-values in summary for (generalized) linear mixed effects models
@@ -11,11 +12,11 @@ library(xtable) ## exports tables in latex code
 library(ggsci) ## scientific color scales
 library(MuMIn)
 
-dday = 1000 ## time step to analyse
-dispmode = "local" ## 'local' or 'global'
+dday = 500 ## time step to analyse
+dispmode = "global" ## 'local' or 'global'
 mytworesults = Sys.glob(paste0("data/2020*", dispmode, "*/*tsv"))
 
-## read and format data
+## read and pre-process data
 
 rawresults = tibble()
 for (filepath in mytworesults) {
@@ -97,6 +98,29 @@ print(paste("Species surviving only in variable runs:", length(specvarex)))
 print(paste("Species surviving in both runs:", length(specboth)))
 print(paste("(Considering n =", length(unique(worldend$replicate)), dispmode, "replicates after", dday, "time steps.)"))
 
+## This was the old code for that:
+
+## lineagevec = tworesults %>% filter(time==500) %>% select(scenario, lineage)
+## sharedspecies = intersect(lineagevec[lineagevec$scenario=="static",]$lineage, lineagevec[lineagevec$scenario=="variable",]$lineage)
+## staticspecies = setdiff(lineagevec[lineagevec$scenario=="static",]$lineage, lineagevec[lineagevec$scenario=="variable",]$lineage)
+## variablespecies = setdiff(lineagevec[lineagevec$scenario=="variable",]$lineage, lineagevec[lineagevec$scenario=="static",]$lineage)
+## uniquespecies = c(staticspecies, variablespecies)
+## c(length(lineagevec[lineagevec$scenario=="static",]$lineage), length(lineagevec[lineagevec$scenario=="variable",]$lineage))
+## summary(is.element(unique(lineagevec[lineagevec$scenario=="static",]$lineage), unique(lineagevec[lineagevec$scenario=="variable",]$lineage)))
+## summary(is.element(unique(lineagevec[lineagevec$scenario=="variable",]$lineage), unique(lineagevec[lineagevec$scenario=="static",]$lineage)))
+
+## pdf(paste0("venn_sp_500_", dispmode, ".pdf"), width=4, height=3)
+## draw.pairwise.venn(length(unique(lineagevec[lineagevec$scenario=="static",]$lineage)),
+##                    length(unique(lineagevec[lineagevec$scenario=="variable",]$lineage)),
+##                    sum(is.element(unique(lineagevec[lineagevec$scenario=="static",]$lineage), unique(lineagevec[lineagevec$scenario=="variable",]$lineage))),
+##                    c("static", "variable"), fill=viridisLite::viridis(2),
+##                    cat.dist=0.05, cat.pos=c(-45,45), margin=0.04, fontfamily="sans",
+##                    cat.fontfamily="sans")
+## dev.off()
+
+## summary(lineagevec$lineage %in% uniquespecies)
+
+
 ## map plots (appendix fig. A3)
 
 all = tworesults %>% rename(Environment = scenario) %>% filter(time == 500) %>% group_by(x, y, Environment) %>%
@@ -173,6 +197,12 @@ range =  myspecs %>% filter(time>=50) %>% mutate(replicate=as.factor(replicate),
     stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_bw() + ylab("Range-filling") + xlab("Year")
 ggsave(paste0("rangefilling_over_time_", dispmode, ".pdf"), range, width=6, height=4)
 
+## genetic variation (XXX do we still need this?)
+genvar = tworesults %>% filter(time>=50) %>% select(-x, -y) %>% group_by(time, scenario, replicate) %>%
+    ggplot(aes(time, mean_genetic_variation, group=scenario)) + stat_summary(aes(color=scenario), fun.y = mean, geom="smooth", size=1) +
+    stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_bw() + ylab("Mean genetic variation") + xlab("Year")
+ggsave(paste0("genetic_variation_over_time_", dispmode, ".pdf"), genvar, width=6, height=4)
+
 ecogrid = plot_grid(lclrich + theme(legend.position=c(.6, .75)),
           beta + theme(legend.position="none"),
           ttlrich + theme(legend.position="none"),
@@ -181,31 +211,6 @@ ecogrid = plot_grid(lclrich + theme(legend.position=c(.6, .75)),
           range + theme(legend.position="none"), labels="auto", ncol=3, align="vh")
 pattsleg = plot_grid(ecogrid, ncol=1, rel_heights=c(1,.1)) # get_legend(juvs), 
 ggsave(paste0("ecopatts_", dispmode, ".pdf"), pattsleg, width=7, height=5)
-
-##XXX Not sure what this next section does, or whether we still need it
-tworesults %>% filter(time>=50) %>% select(-x, -y) %>% group_by(time, scenario, replicate) %>%
-    ggplot(aes(time, mean_genetic_variation, group=scenario)) + stat_summary(aes(color=scenario), fun.y = mean, geom="smooth", size=1) +
-    stat_summary(fun.data=mean_cl_boot, geom="ribbon", alpha=0.1) + scale_color_viridis_d() + theme_bw() + ylab("Mean genetic variation") + xlab("Year")
-
-lineagevec = tworesults %>% filter(time==500) %>% select(scenario, lineage)
-sharedspecies = intersect(lineagevec[lineagevec$scenario=="static",]$lineage, lineagevec[lineagevec$scenario=="variable",]$lineage)
-staticspecies = setdiff(lineagevec[lineagevec$scenario=="static",]$lineage, lineagevec[lineagevec$scenario=="variable",]$lineage)
-variablespecies = setdiff(lineagevec[lineagevec$scenario=="variable",]$lineage, lineagevec[lineagevec$scenario=="static",]$lineage)
-uniquespecies = c(staticspecies, variablespecies)
-c(length(lineagevec[lineagevec$scenario=="static",]$lineage), length(lineagevec[lineagevec$scenario=="variable",]$lineage))
-summary(is.element(unique(lineagevec[lineagevec$scenario=="static",]$lineage), unique(lineagevec[lineagevec$scenario=="variable",]$lineage)))
-summary(is.element(unique(lineagevec[lineagevec$scenario=="variable",]$lineage), unique(lineagevec[lineagevec$scenario=="static",]$lineage)))
-
-pdf(paste0("venn_sp_500_", dispmode, ".pdf"), width=4, height=3)
-draw.pairwise.venn(length(unique(lineagevec[lineagevec$scenario=="static",]$lineage)),
-                   length(unique(lineagevec[lineagevec$scenario=="variable",]$lineage)),
-                   sum(is.element(unique(lineagevec[lineagevec$scenario=="static",]$lineage), unique(lineagevec[lineagevec$scenario=="variable",]$lineage))),
-                   c("static", "variable"), fill=viridisLite::viridis(2),
-                   cat.dist=0.05, cat.pos=c(-45,45), margin=0.04, fontfamily="sans",
-                   cat.fontfamily="sans")
-dev.off()
-
-summary(lineagevec$lineage %in% uniquespecies)
 
 ## trait PCA (fig. 3, appendix fig. A2, tab. A2)
 
@@ -233,6 +238,42 @@ ggsave(paste0("pca_t500_maintraits_", dispmode, ".pdf"), endpcaviz, width=4.5, h
 endpcascree = fviz_eig(endpca) + theme_bw()
 ggsave(paste0("pca_t500_maintraits_scree_", dispmode, ".pdf"), endpcascree, width=3, height=4)
 
+## PCA standard deviation plot (appendix fig. A1)
+
+reps = tworesults$replicate %>% unique() %>% sample()
+tsteps = seq(800,1000,50)
+anavar = tibble()
+for (nreps in seq(10, length(table(tworesults$replicate)), 10)) {
+    ntsteps = dday
+    ##for (ntsteps in 1:length(tsteps)) {
+    temp.res = tworesults %>% filter(time %in% tsteps[1:ntsteps], replicate %in% reps[1:nreps]) %>%
+        filter(scenario=="variable")
+    mypca = temp.res %>% select(-ends_with("sdmin")) %>%
+        ##XXX deleted -maxage and -maxsize below:
+        select(-(x:prec), -adults, -juveniles, -time, -replicate) %>%
+        select_if(is.numeric) %>% select_if(function(x){!any(is.na(x))}) %>%
+        select_if(function(x){var(x)!=0}) %>% prcomp(scale=T)
+    anavar = bind_rows(anavar, c(Number_of_replicates=nreps, Number_of_timesteps = ntsteps, PC=mypca$sdev))
+    ##}
+}
+
+pcasds = anavar %>% gather(contains("PC"), key=component, value=Standard_deviation, factor_key=T) %>%
+    mutate(Number_of_replicates=as.factor(Number_of_replicates)) %>%
+    ggplot(aes(Number_of_replicates, Standard_deviation, group=1)) +
+    geom_line(aes(x=Number_of_replicates, y=Standard_deviation)) +
+    facet_wrap(.~component, scales="free_y") + scale_color_viridis_d() + theme_bw()
+ggsave(paste0("pcasd_t", dday, "_timesteps_replicates_", dispmode, ".pdf"), pcasds, width=15, height=8)
+
+## This code allows the comparison of the PCA SD per number of replicates over time
+## (requires the inner loop above to be uncommented)
+## pcasds = anavar %>% gather(contains("PC"), key=component, value=Standard_deviation, factor_key=T) %>%
+##     mutate(Number_of_replicates=as.factor(Number_of_replicates)) %>%
+##     ggplot(aes(Number_of_timesteps, Standard_deviation)) + geom_line(aes(color=Number_of_replicates)) +
+##     facet_wrap(.~component, scales="free_y") + scale_color_viridis_d() + theme_bw()
+## ggsave(paste0("pcasd_t800_timesteps_replicates_", dispmode, ".pdf"), pcasds, width=12, height=8)
+
+## trait means analysis (fig. 4, appendix table A3)
+
 myendresults = tworesults %>% filter((time == 0 & scenario == "static") | time == 500) %>% #mutate(shared=as.factor(ifelse(lineage %in% sharedspecies, "shared", "unique"))) %>%
     mutate_at(vars(contains("tolerance"), contains("size"), contains("gene"), contains("dispersal")), function(x) log(x + 1)) %>%
     mutate(scenario = ifelse(time == 0, "initial", scenario)) %>%
@@ -240,8 +281,6 @@ myendresults = tworesults %>% filter((time == 0 & scenario == "static") | time =
     filter(scenario == "static" | scenario == "variable") %>%
     rename(Environment=scenario, log_adult_body_size=adult_body_size) %>%
     na.omit()
-
-## trait means analysis (fig. 4, appendix table A3)
 
 traitnames = myendresults %>% dplyr::select(mean_dispersal_distance, long_distance_dispersal, number_of_genes, precipitation_tolerance, seed_size, 
                                             log_adult_body_size, temperature_tolerance, linkage_degree, mean_genetic_variation) %>%
@@ -323,28 +362,3 @@ combdiffs = bind_rows(lme_table, endsubtraits_lme_table) %>%
     xlab("") + ylab("Differences of variable compared to static environments") +
     coord_flip() + scale_fill_npg(guide = FALSE) + facet_grid(.~level, scales = "free")
 ggsave(paste0("all_diffs_variances_", dispmode, ".pdf"), combdiffs, width = 7, height = 3)
-
-## PCA standard deviation plot (appendix fig. A1)
-##FIXME not quite right yet :-/
-
-reps = tworesults$replicate %>% unique() %>% sample()
-tsteps = seq(800,1000,50)
-anavar = tibble()
-for (nreps in seq(10, length(table(tworesults$replicate)), 10)) {
-    for (ntsteps in 1:length(tsteps)) {
-        temp.res = tworesults %>% filter(time %in% tsteps[1:ntsteps], replicate %in% reps[1:nreps]) %>%
-            filter(scenario=="variable")
-        mypca = temp.res %>% select(-ends_with("sdmin")) %>%
-            ##XXX deleted -maxage and -maxsize below:
-            select(-(x:prec), -adults, -juveniles, -time, -replicate) %>%
-            select_if(is.numeric) %>% select_if(function(x){!any(is.na(x))}) %>%
-            select_if(function(x){var(x)!=0}) %>% prcomp(scale=T)
-        anavar = bind_rows(anavar, c(Number_of_replicates=nreps, Number_of_timesteps = ntsteps, PC=mypca$sdev))
-    }
-}
-
-pcasds = anavar %>% gather(contains("PC"), key=component, value=Standard_deviation, factor_key=T) %>%
-    mutate(Number_of_replicates=as.factor(Number_of_replicates)) %>%
-    ggplot(aes(Number_of_timesteps, Standard_deviation)) + geom_line(aes(color=Number_of_replicates)) +
-    facet_wrap(.~component, scales="free_y") + scale_color_viridis_d() + theme_bw()
-ggsave(paste0("pcasd_t800_timesteps_replicates_", dispmode, ".pdf"), pcasds, width=12, height=8)
