@@ -255,7 +255,7 @@ lineagevec = tworesults %>% filter(time==500) %>% select(scenario, lineage)
 
  summary(lineagevec$lineage %in% uniquespecies)
 
-##DV works (PCA)
+## PCA
 mainendtraits = tworesults %>% filter(time == 500) %>%
     rename(Environment = scenario) %>%
     dplyr::select(Environment, mean_dispersal_distance, number_of_genes, precipitation_tolerance,
@@ -335,16 +335,16 @@ ggsave(paste0("differences_traits_environments_replicate_means_", dispmode, ".pd
   endsubtraits_lme_summary = lapply(endsubtraits_lme, summary)
 
   endsubtraits_lme_table = bind_cols(names = names(endsubtraits_lme_summary), as.tibble(t(sapply(endsubtraits_lme_summary, function(x) unlist(as.tibble(x$coefficients)[2,])))))
-  #print(xtable(endsubtraits_lme_table[,c(1,7,2:6)], digits = c(0, 0, 0, 3, 3, 0, 3, 3)), floating = FALSE, booktabs = TRUE, include.rownames=FALSE)
   endsubtraits_lme_table[,6] <= 0.05
-  endsubtraits_lme_table$level =  factor(ifelse(grepl("genetic", endsubtraits_lme_table$names), "Genetic variation", "Intraspecific variation"),
-                                         levels = c("Community means", "Intraspecific variation", "Genetic variation"))
+  endsubtraits_lme_table$level =  factor(ifelse(grepl("genetic", endsubtraits_lme_table$names), "genetic", "phenotypic"),
+                                         levels = c("Community means", "phenotypic", "genetic"))
   endsubtraits_lme_table$names = factor(rep(c("Mean dispersal distance", "Long distance dispersal",
      "Precipitation tolerance", "Seed biomass (g)", "Adult biomass (g)",
      "Temperature tolerance"), each = 2),
              levels = rev(c("Mean dispersal distance", "Long distance dispersal",
      "Precipitation tolerance", "Seed biomass (g)", "Adult biomass (g)", "Temperature tolerance", 
      "Number of genes", "Genetic linkage", "Mean genetic variation")))
+  print(xtable(endsubtraits_lme_table[,c(1,7,2:6)], digits = c(0, 0, 0, 3, 3, 0, 3, 3)), floating = FALSE, booktabs = TRUE, include.rownames=FALSE)
 
 ##DV I have no idea what this is supposed to show...
 endsubtraits_lme_table %>%
