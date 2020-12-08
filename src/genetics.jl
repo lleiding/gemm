@@ -53,6 +53,7 @@ end
 Convert a genome (an array of chromosomes) into a dict of traits and their values.
 """
 function gettraitdict(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
+    #XXX can this be made more efficient? It's called really often...
     genes = AbstractGene[]
     nchrms = 0
     ngenes = 0
@@ -142,15 +143,24 @@ Convert a DNA base sequence (a string) into binary and then into an integer.
 This saves memory.
 """
 #XXX Actually, this hardly seems to make a difference :-( So using `compressgenes = false`
-# seems to be a pretty good choice right now.
-#TODO get rid of intermediate allocations - these probably undo any gains we make from compressing
+# seems to be a pretty good choice right now. What we should really do is create gene
+# sequences as int right away and save ourselves the intermediate string allocation.
 function seq2num(sequence::String)
-    bases = "acgt"
-    binary = ""
-    for base in sequence
-        binary *= string(findfirst(x -> x == base, bases) + 3, base = 2)
+    # This function effectively uses the same technique as seq2bignum, but it skips the
+    # intermediate allocations and is therefore more efficient.
+    num::Int64 = 0  # Int64 allows for max length of 21bp
+    for b in eachindex(sequence)
+        if sequence[end+1-b] == 'a'
+            num += 2^(3*(b-1)) * 4 # b'100'
+        elseif sequence[end+1-b] == 'c'
+            num += 2^(3*(b-1)) * 5 # b'101'
+        elseif sequence[end+1-b] == 'g'
+            num += 2^(3*(b-1)) * 6 # b'110'
+        elseif sequence[end+1-b] == 't'
+            num += 2^(3*(b-1)) * 7 # b'111'
+        end
     end
-    parse(Int64, binary, base = 2) # Int64 allows for max length of 21bp
+    num
 end
 
 """
@@ -165,7 +175,7 @@ function seq2bignum(sequence::String)
     for base in sequence
         binary *= string(findfirst(x -> x == base, bases) + 3, base = 2)
     end
-    parse(BigInt, binary, base = 2)
+    parse(BigInt, binary, base = 2) # BigInt allows arbitrary-length sequences
 end
 
 """
@@ -240,10 +250,11 @@ associated traits. Returns the result as an array of AbstractGenes.
 """
 function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String, Any})
     genes = AbstractGene[]
+    bases = ['a','c','g','t']
     compatidx = findfirst(x -> x == "compat", settings["traitnames"])
     # initialise each gene with an arbitrary sequence
     for i in 1:ngenes
-        sequence = String(rand(collect("acgt"), settings["smallgenelength"]))
+        sequence = String(rand(bases, settings["smallgenelength"]))
         if settings["compressgenes"] #default
             push!(genes, Gene(seq2num(sequence), Trait[]))
         else
@@ -276,7 +287,7 @@ function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String,
     # Note: we only need big genes for the compatibility gene, because we need a longer base
     # sequence than offered by `smallgenelength` if we want to do phylogenetic analyses.
     settings["usebiggenes"] ? seql = settings["biggenelength"] : seql = settings["smallgenelength"]
-    cseq = String(rand(collect("acgt"), seql))
+    cseq = String(rand(bases, seql))
     ctrait = [Trait(compatidx, 0.5)]
     if settings["compressgenes"]
         if settings["usebiggenes"]

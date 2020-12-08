@@ -6,6 +6,7 @@
 Reproduction of individuals in a patch (default function).
 """
 function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactor!
+    #TODO This is one of the most compute-intensive functions in the model - optimise?
     for ind in patch.community
         ind.marked && continue # individual might not have established yet
         ind.size < ind.traits["repsize"] && continue
@@ -96,6 +97,7 @@ end
 Find a reproduction partner for the given individual in the given population.
 """
 function findmate(population::AbstractArray{Individual, 1}, ind::Individual, settings::Dict{String, Any})
+    #XXX This function is pretty expensive
     indstate = ind.marked
     ind.marked = true
     mates = Individual[]
@@ -122,6 +124,7 @@ The main reproduction function. Take two organisms and create the given number
 of offspring individuals. Returns an array of individuals.
 """
 function createoffspring(noffs::Integer, ind::Individual, partner::Individual, traitnames::Array{String, 1}, dimorphism::Bool=false)
+    #XXX another expensive function
     offspring = Individual[]
     for i in 1:noffs # pmap? this loop could be factorized!
         partnergenome = meiosis(partner.genome, false) # offspring have different genome!

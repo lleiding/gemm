@@ -250,6 +250,7 @@ end
 Save the abundance of each lineage per patch. (Low-detail data recording function.)
 """
 function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
+    #XXX despite being low-detail, calling this frequently still means a lot of I/O
     if !isfile(joinpath(settings["dest"], "lineages.log"))
         simlog("t,X,Y,lineage,abundance,temp,prec", settings, 'i', "lineages.log", true)
     end

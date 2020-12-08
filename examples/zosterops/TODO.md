@@ -41,6 +41,7 @@
   - [X] circumvent `push!()` calls, preallocate memory instead - doesn't work?
   - [ ] avoid intermediate allocations when compressing gene sequences
   - [ ] avoid string interpolation in output
+  - [ ] avoid `deepcopy()`?
 
 
 - [ ] make sure `map_creator.R` works with Petri's data

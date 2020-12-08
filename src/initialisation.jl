@@ -29,6 +29,7 @@ function createpop(settings::Dict{String, Any})
     # clone & mutate the archetype N times
     locivar = rand()
     for i in 2:popsize
+        #TODO avoid `deepcopy` here
         ind = deepcopy(archetype) # XXX this is potentially very slow!
         ind.id = rand(Int32)
         varyalleles!(ind.genome, settings, locivar)
