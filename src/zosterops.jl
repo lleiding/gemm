@@ -132,6 +132,7 @@ function zdisperse!(world::Array{Patch,1}, settings::Dict{String, Any}, sex::Sex
     for patch in world
         newseedbank = Array{Individual,1}()
         while length(patch.seedbank) > 0
+            #XXX This is probably rather inefficient (creating a new list each time)
             juvenile = pop!(patch.seedbank)
             if juvenile.sex == sex
                 zdisperse!(juvenile, world, patch.location,
@@ -152,32 +153,35 @@ Dispersal of a single bird.
 """
 function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int, Int},
                     cellsize::Int, tolerance::Float64)
-    # calculate max dispersal distance
-    dispmean = patch.seedbank[idx].traits["dispmean"]
-    dispshape = patch.seedbank[idx].traits["dispshape"]
-    #FIXME we're probably going to need another distribution
-    maxdist = rand(Logistic(dispmean,dispshape)) #XXX disperse!() adds `/sqrt(2)`??
-    # for each step, calculate the best habitat patch in the surroundings
+    # keep track of where we've been and calculate the max dispersal distance
     x, y = location
-    route = [location] # keep track of where we've been
+    route = [location]
+    #XXX disperse!() adds `/sqrt(2)`??
+    #FIXME we're probably going to need another distribution
+    maxdist = rand(Logistic(bird.traits["dispmean"], bird.traits["dispshape"]))
     while maxdist > 0
+        # calculate the best habitat patch in the surroundings (i.e. the closest to AGC optimum)
         target = [(x-1, y-1), (x, y-1), (x+1, y-1),
                   (x-1, y),             (x+1, y),
                   (x-1, y+1), (x, y+1), (x+1, y+1)]
         possdest = findall(p -> in(p.location, target) && !in(p.location, route),  world)
         bestdest = possdest[1]
+        bestfit = abs(bestdest.prec - bird.traits["precopt"])
         for patch in possdest[2:end]
-            if abs(patch.prec - bird.traits["precopt"]) < abs(bestdest.prec - bird.traits["precopt"])
+            patchfit = abs(patch.prec - bird.traits["precopt"])
+            if patchfit < bestfit
                 bestdest = patch
+                bestfit = patchfit
             end
         end
-        # move there - if it's occupied, repeat, otherwise stay there
+        # check if the patch is full, within the bird's AGC range, and (for females) has a mate
         if bird.sex == female #XXX expensive to do here?
             partner = findfirst(b -> ziscompatible(bird, b, tolerance), bestdest.community)
         end
-        if (abs(bestdest.prec - bird.traits["precopt"]) <= bird.traits["prectol"] &&
+        if (bestfit <= bird.traits["prectol"] &&
             length(bestdest.community) < cellsize &&
             (bird.sex == male || !isnothing(partner)))
+            bird.marked = true
             push!(bestdest.community, bird)
             if bird.sex == female
                 bird.partner = partner.id
@@ -201,7 +205,7 @@ function ziscompatible(f::Individual, m::Individual, tolerance::Float64)
     !(m.size >= m.traits["repsize"] && f.size >= f.traits["repsize"]) && return false
     !(m.partner == 0 && f.partner == 0) && return false
     (m.lineage != f.lineage && rand(Float64) > tolerance) && return false
-    #XXX how abot seqsimilarity and genetic compatibility?
+    #TODO how about seqsimilarity and genetic compatibility?
     return true
 end
     
@@ -216,7 +220,7 @@ function zreproduce!(patch::Patch, settings::Dict{String, Any})
         if bird.sex == female && bird.partner != 0
             partner = findfirst(b -> b.id == bird.partner, patch.community)
             (isnothing(partner)) && continue
-            #XXX Offspring are assigned the lineage of their mother. Is that what we want?
+            #TODO Offspring are assigned the lineage of their mother. Is that what we want?
             append!(patch.seedbank, createoffspring(noffs, bird, partner,
                                                     settings["traitnames"], true))
         end
