@@ -163,6 +163,16 @@ function seq2num(sequence::String)
     num
 end
 
+function intseq(n::Int)
+    #XXX doesn't seem to work either? I'm starting to think I'm optimising in the wrong place :-(
+    num::Int64 = 0  # Int64 allows for max length of 21bp
+    for b in 0:(n-1)
+        # basically like seq2bignum(), but skips all intermediate allocations
+        num += 2^(3*b) * rand(4:7)
+    end
+    num
+end
+
 """
     seq2bignum(sequence)
 
@@ -254,10 +264,10 @@ function creategenes(ngenes::Int, traits::Array{Trait,1}, settings::Dict{String,
     compatidx = findfirst(x -> x == "compat", settings["traitnames"])
     # initialise each gene with an arbitrary sequence
     for i in 1:ngenes
-        sequence = String(rand(bases, settings["smallgenelength"]))
         if settings["compressgenes"] #default
-            push!(genes, Gene(seq2num(sequence), Trait[]))
+            push!(genes, Gene(intseq(settings["smallgenelength"]), Trait[]))
         else
+            sequence = String(rand(bases, settings["smallgenelength"]))
             push!(genes, StringGene(sequence, Trait[]))
         end
     end

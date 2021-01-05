@@ -8,6 +8,8 @@
 
 - [X] prepare F2 presentation on "Adapting a plant community model to bird populations"
 
+- [X] prepare Ecomods presentation on the design of GeMM
+
 ## GeMM adaptation
 
 - [X] introduce `modes` to differentiate between experiment types
