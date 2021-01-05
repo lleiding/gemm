@@ -24,7 +24,7 @@ simlength = 200
 elevation_file = "taita_elevation.tif"
 forest_file = "taita_forest_cover.tif"
 habitat_file = "taita_habitats.tif"
-above_ground_carbon_file = forest_file ##FIXME change as soon as the real data is available
+above_ground_carbon_file = "taita_agc_resampled.tif"
 
 image_output_file = "taita_map.jpg"
 image_3D_output_file = "taita_hills_3D"
@@ -106,12 +106,10 @@ convertMap = function(above_ground_carbon, run_length=simlength, out=map_output_
     i = 1:(nrows*ncols)
     x = rep(1:ncols, nrows)
     y = rep(1:nrows, each=ncols)
-    #XXX Only `initpop` when prec<30? (reduce startup time)
     map_text = c(map_text, paste(i, x, y, "temp=293", #XXX link temp to elevation?
                                  paste0("prec=", round(above_ground_carbon[i], 2)),
                                  "initpop", sep="\t"))
     writeLines(map_text, out)
-    end = Sys.time()
 }
 
 runAll = function()
@@ -126,3 +124,8 @@ runAll = function()
     convertMap(agc)
 }
 
+runMap = function(agc_file=above_ground_carbon_file)
+{
+    data = raster(agc_file)
+    convertMap(data)
+}
