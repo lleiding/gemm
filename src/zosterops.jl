@@ -3,7 +3,7 @@
 
 # IMPORTANT NOTES (when using `zosterops` mode)
 #
-# 1. the second environment niche is now `above-ground carbon` instead of
+# 1. the second environmental niche is now `above-ground carbon` instead of
 #    `precipitation` (unfortunately, we can't actually rename it everywhere)
 # 2. the `cellsize` setting now determines the patch carrying capacity in
 #    individuals, not grams
@@ -56,7 +56,7 @@ let zosterops = Individual[]
     end
     
     """
-        getzosteropsspecies(name)
+        getzosteropsspecies(name, sex, settings)
 
     Return a new individual of the named species
     """
@@ -72,15 +72,26 @@ let zosterops = Individual[]
         end
         (isnothing(bird)) && simlog("Unknown species name: $name", settings, 'e')
         bird.id = rand(Int32)
-        varyalleles!(bird.genome, settings, rand())
+        varyalleles!(bird.genome, settings, rand()) #XXX do we want mutations?
         bird.traits = gettraitdict(bird.genome, settings["traitnames"])
         bird.sex = sex
         return bird
     end
+
+    """
+        getzosteropsnames(settings)
+
+    Return the names of all defined Zosterops species.
+    """
+    #XXX utility function - but do I need it?
+    global function getzosteropsnames(settings::Dict{String, Any})
+        isempty(zosterops) && initzosteropsspecies(settings)
+        return map(s->s.lineage, zosterops)
+    end
 end
 
 """
-    zgenesis(settings)
+    zgenesis(patch, settings)
 
 Create a new community of Zosterops breeding pairs (possibly of multiple species).
 Returns an array of individuals.
@@ -88,30 +99,24 @@ Returns an array of individuals.
 function zgenesis(patch::Patch, settings::Dict{String, Any})
     community = Array{Individual, 1}()
     (isnothing(settings["species"])) && simlog("no species defined", settings, 'e')
+    # check which species can inhabit this patch
+    species = Array{String, 1}()
+    for s in settings["species"]
+        # s[1] = species name, s[2][1] = AGC opt, s[2][2] = AGC tol
+        if abs(s[2][1]-patch.prec) <= s[2][2]
+            push!(species, s[1])
+        end
+    end
+    (isempty(species)) && return community
     # calculate the number of initial breeding pairs
     npairs = Integer(rand(0:round(settings["cellsize"]/2)))
     simlog("Creating $npairs pairs in the patch", settings, 'd')
+    # add a male and a female
     for i in 1:npairs
-        species = ""
-        # test whether the habitat is suitable for silvanus/jubaensis
-        s_agc = settings["species"]["silvanus"] # AGC opt/tol
-        j_agc = settings["species"]["jubaensis"] 
-        s_suited, j_suited = false, false 
-        (abs(s_agc[1]-patch.prec) <= s_agc[2]) && (s_suited = true)
-        (abs(j_agc[1]-patch.prec) <= j_agc[2]) && (j_suited = true)
-        if s_suited && j_suited
-            rand(Bool) ? species = "silvanus" : species = "jubaensis"
-        elseif s_suited
-            species = "silvanus"
-        elseif j_suited
-            species = "jubaensis"
-        else
-            break
-        end
-        # add a male and a female
-        push!(community, getzosteropsspecies(species, male, settings))
-        push!(community, getzosteropsspecies(species, female, settings))
-        simlog("Adding a pair of Z. $species", settings, 'd')
+        sp = rand(species)
+        push!(community, getzosteropsspecies(sp, male, settings))
+        push!(community, getzosteropsspecies(sp, female, settings))
+        simlog("Adding a pair of Z. $sp", settings, 'd')
     end
     community
 end

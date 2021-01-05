@@ -11,6 +11,7 @@ function defaultSettings()
         "burn-in" => 1000, # timesteps before invasion starts
         "capgrowth" => false, # strictly limit individuals' size to `repsize`
         "cellsize" => 20e6, # maximum biomass per hectare in gramm (based on Clark et al. 2001)
+        "compressgenes" => true, # save gene sequences as integers to reduce memory usage
         "config" => "", # configuration file name
         "debug" => false, # write out debug statements
         "degpleiotropy" => 0.1, # How frequent are pleitropy and polygenic inheritance? 0 <= degpleiotropy < 1
@@ -72,6 +73,5 @@ function defaultSettings()
                          "tempopt",
                          "temptol"], # minimal required traitnames
         "usebiggenes" => true, # use a longer sequence for the compatibility gene
-        "compressgenes" => true, # save gene sequences as integers to reduce memory usage
     )
 end
