@@ -10,17 +10,21 @@
 Carry out meiosis on a genome (marked as maternal or not). Returns a haploid
 gamete genome. (genome => array of chromosomes)
 """
-function meiosis(genome::Array{Chromosome,1}, maternal::Bool) # TODO: include further dynamics, errors...
-    firstset = findall(x -> x.maternal, genome)
-    secondset = findall(x -> !x.maternal, genome)
-    length(firstset) != length(secondset) && return Chromosome[] # CAVEAT: more elegant solution...
-    gameteidxs = Int[]
-    for i in eachindex(firstset)
-        push!(gameteidxs, rand([firstset[i], secondset[i]]))
-    end
+function meiosis(genome::Array{Chromosome,1}, maternal::Bool)
+    gametelength = Int(length(genome)/2)
     gamete = Chromosome[]
-    for i in gameteidxs
-        push!(gamete, Chromosome(genome[i].genes, maternal))
+    m, p = 1, 1
+    while length(gamete) < gametelength
+        # find the next maternal/paternal chromosome
+        while !genome[m].maternal
+            m += 1
+        end
+        while genome[p].maternal
+            p += 1
+        end
+        # then choose one at random and use it to create a new chromosome for the gamete
+        push!(gamete, Chromosome(genome[rand([m,p])].genes, maternal))
+        m += 1; p += 1
     end
     gamete
 end

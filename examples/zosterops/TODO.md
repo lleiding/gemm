@@ -38,6 +38,8 @@
 
 - [X] add a StringGene class and `compressgenes` setting
 
+- [X] make sure `map_creator.R` works with Petri's data
+
 - [ ] performance issue (https://docs.julialang.org/en/v1/manual/performance-tips/):
   - [X] profile RAM/CPU trade-off with `compressgenes`
   - [X] circumvent `push!()` calls, preallocate memory instead - doesn't work?
@@ -45,8 +47,6 @@
   - [ ] avoid string interpolation in output
   - [ ] avoid `deepcopy()`?
 
-
-- [ ] make sure `map_creator.R` works with Petri's data
 
 - [ ] vary hybridization affinity for core experiment
 
