@@ -7,6 +7,7 @@ and other settings provided via commandline, configuration file or the defaults.
 function runsim(config::String = "", seed::Integer = 0)
     settings = getsettings(config, seed)
     Random.seed!(settings["seed"])
+    initlogsettings(settings)
     setupdatadir(settings)
     world = Patch[]
     timesteps = 0
@@ -46,7 +47,7 @@ function correctmode!(settings::Dict{String, Any})
     if settings["mode"] == "default"
         # detect invasion mode
         if settings["global-species-pool"] > 0 || settings["propagule-pressure"] > 0
-            simlog("Detected implicit invasion mode, updated settings.", settings, 'w')
+            simlog("Detected implicit invasion mode, updated settings.", 'w')
             settings["mode"] = "invasion"
         end
         # XXX further modes?

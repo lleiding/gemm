@@ -63,6 +63,7 @@
 		- population sizes
 
 - [ ] test parameterisation
+		- very large *Z. jubaensis* populations?
 
 - [ ] update data output
 
@@ -75,6 +76,7 @@
 - how should burn-in work?
 
 - how do we design the SLOSS map series?
+  - idea: use USGS forest cover map as "recovery scenario" (all exotic forest transformed to montane)
 
 - restrict mutations of max & min sizes?
   -> either in `mutate!` or in `checkviability!`

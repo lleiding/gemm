@@ -24,7 +24,7 @@ function createpop(settings::Dict{String, Any})
     elseif occursin("minimal", settings["popsize"]) || popsize == 0
         popsize = 2 #Takes two to tangle ;-)
     else
-        simlog("Invalid value for `popsize`: $(settings["popsize"])", settings, 'e')
+        simlog("Invalid value for `popsize`: $(settings["popsize"])", 'e')
     end
     # clone & mutate the archetype N times
     locivar = rand()
@@ -97,7 +97,7 @@ function genesis(settings::Dict{String, Any})
             # stop loop if cell is full
             if totalmass >= settings["cellsize"] * 0.9 || occursin("single", settings["popsize"])
                 #make sure the cell is full enough
-                simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", settings, 'd') #DEBUG
+                simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", 'd') #DEBUG
                 break
             else
                 continue
@@ -107,7 +107,7 @@ function genesis(settings::Dict{String, Any})
         append!(community, population)
         occursin("single", settings["popsize"]) && break
     end
-    simlog("Patch initialized with $(length(community)) individuals.", settings, 'd') #DEBUG
+    simlog("Patch initialized with $(length(community)) individuals.", 'd') #DEBUG
     community
 end
 
@@ -131,13 +131,13 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
     # XXX the 'global' here is a hack so that I can use eval() later on
     # (eval() always works on the global scope)
     global newpatch = Patch(id, (xcord, ycord), capacity)
-    simlog("Creating patch $id at $xcord/$ycord, size $capacity", settings, 'd') #DEBUG
+    simlog("Creating patch $id at $xcord/$ycord, size $capacity", 'd') #DEBUG
     # parse other parameter options
     for p in patchentry[4:end]
         varval = split(p, '=')
         var = varval[1]
         if !(var in map(string, fieldnames(Patch)))
-            simlog("Unrecognized patch parameter $var.", settings, 'w')
+            simlog("Unrecognized patch parameter $var.", 'w')
             continue
         elseif length(varval) < 2
             # if no value is specified, assume 'true'
@@ -157,7 +157,7 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
             try
                 val = convert(vartype, val)
             catch
-                simlog("Invalid patch parameter type $var: $val", settings, 'w')
+                simlog("Invalid patch parameter type $var: $val", 'w')
                 continue
             end
         end
@@ -174,7 +174,7 @@ Initialises each patch with its parameters and a new community, then returns
 an array of patches.
 """
 function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String, Any})
-    simlog("Creating world...", settings)
+    simlog("Creating world...")
     world = Patch[]
     for entry in maptable
         newpatch = createpatch(entry, settings)
@@ -203,7 +203,7 @@ during a run (e.g. through global warming or island ontogeny).
 #FIXME this function needs to be folded into createworld(), it duplicates way too much code
 function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, settings::Dict{String, Any})
     cellsize = settings["cellsize"]
-    simlog("Updating world...", settings)
+    simlog("Updating world...")
     allids = Int[]
     for entry in maptable
         size(entry,1) < 3 && error("please check your map file for incomplete or faulty entries. \n
@@ -232,7 +232,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, 
             varval = split(p, '=')
             var = varval[1]
             if !(var in map(string, fieldnames(Patch)))
-                simlog("Unrecognized patch parameter $var.", settings, 'w')
+                simlog("Unrecognized patch parameter $var.", 'w')
                 continue
             elseif length(varval) < 2
                 val = true # if no value is specified, assume 'true'
@@ -245,7 +245,7 @@ function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, 
                 try
                     val = convert(vartype, val)
                 catch
-                    simlog("Invalid patch parameter type $var: $val", settings, 'w')
+                    simlog("Invalid patch parameter type $var: $val", 'w')
                     continue
                 end
             end

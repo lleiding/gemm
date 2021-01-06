@@ -143,7 +143,7 @@ function setupdatadir(settings::Dict{String, Any})
     else
         mkpath(settings["dest"])
     end
-    simlog("Setting up output directory $(settings["dest"])", settings)
+    simlog("Setting up output directory $(settings["dest"])")
     writesettings(settings)
     if haskey(settings, "maps")
         for m in settings["maps"]
@@ -199,7 +199,7 @@ function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep:
         filename = "inds_s" * string(settings["seed"])
         filename = joinpath(settings["dest"], filename)
         filename = filename * ".tsv"
-        simlog("Writing data \"$filename\"", settings)
+        simlog("Writing data \"$filename\"")
         open(filename, "a") do file
             dumpinds(world, settings, timestep, file)
         end
@@ -208,7 +208,7 @@ function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep:
         filename = "pops_s" * string(settings["seed"])
         filename = joinpath(settings["dest"], filename)
         filename = filename * ".tsv"
-        simlog("Writing stats to \"$filename\"", settings)
+        simlog("Writing stats to \"$filename\"")
         open(filename, "a") do file
             printpopstats(file, world, settings, timestep)
         end
@@ -217,7 +217,7 @@ function writedata(world::Array{Patch,1}, settings::Dict{String, Any}, timestep:
         filename = "seqs_s" * string(settings["seed"])
         filename = joinpath(settings["dest"], filename)
         filename = filename * ".fa"
-        simlog("Writing fasta \"$filename\"", settings)
+        simlog("Writing fasta \"$filename\"")
         open(filename, "a") do file
             makefasta(world, settings, file, settings["static"] && timestep > 1)
         end
@@ -231,16 +231,15 @@ Write out world properties to the log file for later analysis.
 """
 function recordstatistics(world::Array{Patch,1}, settings::Dict{String, Any})
     if !isfile(joinpath(settings["dest"], "diversity.log"))
-        simlog("population,freespace,lineages,alpha,beta,gamma", settings,
-               'i', "diversity.log", true)
+        simlog("population,freespace,lineages,alpha,beta,gamma", 'i', "diversity.log", true)
     end
     popsize = sum(x -> length(x.community), world)
     lineages = unique(reduce(vcat, map(p -> map(x -> x.lineage, p.community), world)))
     div = round.(diversity(world), digits = 3)
     space = freespace(world)
     #XXX Doing a lot of string interpolation is expensive
-    simlog("Metacommunity size: $popsize, lineages: $(length(lineages))", settings)
-    simlog("$popsize,$space,$(length(lineages)),$(div[1]),$(div[2]),$(div[3])", settings,
+    simlog("Metacommunity size: $popsize, lineages: $(length(lineages))")
+    simlog("$popsize,$space,$(length(lineages)),$(div[1]),$(div[2]),$(div[3])",
            'i', "diversity.log", true)
 end
 
@@ -252,12 +251,12 @@ Save the abundance of each lineage per patch. (Low-detail data recording functio
 function recordlineages(world::Array{Patch,1}, settings::Dict{String, Any}, timestep::Int)
     #XXX despite being low-detail, calling this frequently still means a lot of I/O
     if !isfile(joinpath(settings["dest"], "lineages.log"))
-        simlog("t,X,Y,lineage,abundance,temp,prec", settings, 'i', "lineages.log", true)
+        simlog("t,X,Y,lineage,abundance,temp,prec", 'i', "lineages.log", true)
     end
     for p in world
         for l in unique(map(x -> x.lineage, p.community))
             #XXX Doing a lot of string interpolation is expensive
-            simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(findall(x -> x.lineage == l, p.community))),$(p.temp),$(p.prec)", settings,
+            simlog("$timestep,$(p.location[1]),$(p.location[2]),$l,$(length(findall(x -> x.lineage == l, p.community))),$(p.temp),$(p.prec)",
                    'i', "lineages.log", true)
         end
     end
@@ -320,8 +319,33 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
     end
 end
 
+let logsettings = Dict{String, Any}()
+    """
+        initlogsettings(settings)
+
+    Make a copy of the settings relevant to logging, so that `simlog()`
+    doesn't have to be called with `settings` every time. (This function
+    must be called as early as possible, see `runsim()`.)
+    """
+    global function initlogsettings(settings::Dict{String, Any})
+        keys = ["quiet", "logging", "dest", "debug"]
+        for k in keys
+            logsettings[k] = settings[k]
+        end
+    end
+
+    """
+        logparam(key)
+
+    Access one of the settings relevant to logging. Helper function for `simlog()`.
+    """
+    global function logparam(key)
+        logsettings[key]
+    end
+end
+
 """
-    simlog(msg, settings, category, logfile, onlylog)
+    simlog(msg, category, logfile, onlylog)
 
 Write a log message to STDOUT/STDERR and the specified logfile
 (if logging is turned on in the settings).
@@ -332,30 +356,30 @@ If `logfile` is the empty string (default: "simulation.log"), the message will
 only be printed to the screen. If `onlylog` is true (default: false), the
 message is not printed to screen but only to the log.
 """
-function simlog(msg::String, settings::Dict{String, Any}, category='i', logfile="simulation.log", onlylog=false)
+function simlog(msg::String, category='i', logfile="simulation.log", onlylog=false)
     (isa(category, String) && length(category) == 1) && (category = category[1])
-    function logprint(msg::String, settings::Dict{String, Any}, tostderr=false)
-        if tostderr || !(settings["quiet"] || onlylog)
+    function logprint(msg::String, tostderr=false)
+        if tostderr || !(logparam("quiet") || onlylog)
             tostderr ? iostr = stderr : iostr = stdout
             println(iostr, msg)
         end
-        if settings["logging"] && length(logfile) > 0
-            open(joinpath(settings["dest"], logfile), "a") do f
+        if logparam("logging") && length(logfile) > 0
+            open(joinpath(logparam("dest"), logfile), "a") do f
                 println(f, msg)
             end
         end
     end
     if category == 'i'
-        logprint(msg, settings)
+        logprint(msg)
     elseif category == 'd'
-        settings["debug"] && logprint("DEBUG: "*string(msg), settings)
+        logparam("debug") && logprint("DEBUG: "*string(msg))
     elseif category == 'w'
-        logprint("WARNING: "*string(msg), settings, true)
+        logprint("WARNING: "*string(msg), true)
     elseif category == 'e'
-        logprint("ERROR: "*string(msg), settings, true)
+        logprint("ERROR: "*string(msg), true)
         exit(1)
     else
-        simlog("Invalid log category $category.", settings, 'w')
+        simlog("Invalid log category $category.", 'w')
     end
 end
 

@@ -21,8 +21,8 @@ let zosterops = Individual[]
     """
     function initzosteropsspecies(settings::Dict{String, Any})
         # ensure that "one gene, one trait" is true and that we have species definitions
-        (settings["degpleiotropy"] != 0) && simlog("degpleiotropy must be 0", settings, 'e')
-        (isnothing(settings["species"])) && simlog("no species defined", settings, 'e')
+        (settings["degpleiotropy"] != 0) && simlog("degpleiotropy must be 0", 'e')
+        (isnothing(settings["species"])) && simlog("no species defined", 'e')
         # load per-species AGC optimum and tolerance values from settings
         for (s, v) in pairs(settings["species"])
             push!(zosterops, initzosteropsspecies(s, Float64(v[1]), Float64(v[2]), settings))
@@ -70,7 +70,7 @@ let zosterops = Individual[]
                 break
             end
         end
-        (isnothing(bird)) && simlog("Unknown species name: $name", settings, 'e')
+        (isnothing(bird)) && simlog("Unknown species name: $name", 'e')
         bird.id = rand(Int32)
         varyalleles!(bird.genome, settings, rand()) #XXX do we want mutations?
         bird.traits = gettraitdict(bird.genome, settings["traitnames"])
@@ -98,7 +98,7 @@ Returns an array of individuals.
 """
 function zgenesis(patch::Patch, settings::Dict{String, Any})
     community = Array{Individual, 1}()
-    (isnothing(settings["species"])) && simlog("no species defined", settings, 'e')
+    (isnothing(settings["species"])) && simlog("no species defined", 'e')
     # check which species can inhabit this patch
     species = Array{String, 1}()
     for s in settings["species"]
@@ -110,13 +110,13 @@ function zgenesis(patch::Patch, settings::Dict{String, Any})
     (isempty(species)) && return community
     # calculate the number of initial breeding pairs
     npairs = Integer(rand(0:round(settings["cellsize"]/2)))
-    simlog("Creating $npairs pairs in the patch", settings, 'd')
+    simlog("Creating $npairs pairs in the patch", 'd')
     # add a male and a female
     for i in 1:npairs
         sp = rand(species)
         push!(community, getzosteropsspecies(sp, male, settings))
         push!(community, getzosteropsspecies(sp, female, settings))
-        simlog("Adding a pair of Z. $sp", settings, 'd')
+        simlog("Adding a pair of Z. $sp", 'd')
     end
     community
 end

@@ -23,7 +23,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactor!
         if numpartners == 0
             #FIXME happens regularly!
             # `numpollen` not handled specifically in `createtraits()`?
-            simlog("Individual cannot reproduce, `numpollen` too low.", settings, 'd')
+            simlog("Individual cannot reproduce, `numpollen` too low.", 'd')
             continue
         end
         for ptn in 1:numpartners
@@ -38,7 +38,7 @@ function reproduce!(patch::Patch, settings::Dict{String, Any}) #TODO: refactor!
             append!(patch.seedbank, createoffspring(noffs, ind, partner, settings["traitnames"]))
         end
     end
-    simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
+    simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", 'd')
 end
 
 """
@@ -71,7 +71,7 @@ function greproduce!(patch::Patch, settings::Dict{String, Any})
             append!(patch.seedbank, createoffspring(noffs, ind, partner, settings["traitnames"]))
         end
     end
-    simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", settings, 'd')
+    simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", 'd')
 end
 
 """
@@ -124,7 +124,6 @@ The main reproduction function. Take two organisms and create the given number
 of offspring individuals. Returns an array of individuals.
 """
 function createoffspring(noffs::Integer, ind::Individual, partner::Individual, traitnames::Array{String, 1}, dimorphism::Bool=false)
-    #XXX another expensive function
     offspring = Individual[]
     for i in 1:noffs # pmap? this loop could be factorized!
         partnergenome = meiosis(partner.genome, false) # offspring have different genome!
@@ -141,9 +140,8 @@ function createoffspring(noffs::Integer, ind::Individual, partner::Individual, t
         if dimorphism
             rand(Bool) ? sex = male : sex = female
         end
-        ind = Individual(ind.lineage, genome, traits, marked, fitness,
-                         fitness, newsize, sex, newpartner, newid)
-        push!(offspring, ind)
+        push!(offspring, Individual(ind.lineage, genome, traits, marked, fitness,
+                                    fitness, newsize, sex, newpartner, newid))
     end
     offspring
 end

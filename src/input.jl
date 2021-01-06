@@ -118,7 +118,7 @@ function parseconfig(configfilename::String)
     defaults = defaultSettings()
     for c in config
         if length(c) != 2
-            simlog("Bad config file syntax: $c", settings, 'w', "")
+            simlog("Bad config file syntax: $c", 'w', "")
         elseif c[1] in keys(defaults)
             value = c[2]
             if !(typeof(defaults[c[1]]) <: AbstractString)
@@ -134,7 +134,7 @@ function parseconfig(configfilename::String)
             end
             settings[c[1]] = value
         else
-            simlog(c[1]*" is not a recognized parameter!", settings, 'w', "")
+            simlog(c[1]*" is not a recognized parameter!", 'w', "")
         end
     end
     settings
@@ -148,16 +148,16 @@ Parse a map file and return the number of timesteps this map is to be used for
 `createworld` and `updateworld!`.
 """
 function readmapfile(mapfilename::String, settings::Dict{String, Any})
-    simlog("Reading map file $mapfilename.", settings)
+    simlog("Reading map file $mapfilename.")
     if isfile(mapfilename)
         maptable = basicparser(mapfilename)
         timesteps = parse(Int, maptable[1][1])
         if length(maptable[1]) != 1 || !isa(timesteps, Integer)
             timesteps = 10
-            simlog("Invalid timestep information in the mapfile. Setting timesteps to 10.", settings, 'w')
+            simlog("Invalid timestep information in the mapfile. Setting timesteps to 10.", 'w')
         end
     else
-        simlog("No map definition file provided. Assuming a two-cell world for 10 time steps.", settings, 'w')
+        simlog("No map definition file provided. Assuming a two-cell world for 10 time steps.", 'w')
         timesteps = 10
         maptable = [["",""], ["1", "1", "1", "initpop"], ["2", "2", "1"]]
     end

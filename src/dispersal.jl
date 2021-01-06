@@ -103,7 +103,7 @@ function checkviability!(community::Array{Individual, 1}, settings::Dict{String,
         community[idx].traits["seqsimilarity"] > 1 && (dead = true) && (reason *= "seqsimilarity ")
         !traitsexist(community[idx].traits, settings) && (dead = true) && (reason *= "missingtrait ")
         if dead
-            simlog("Individual not viable: $reason. Being killed.", settings, 'w')
+            simlog("Individual not viable: $reason. Being killed.", 'w')
             splice!(community,idx)
             continue
         end
@@ -133,7 +133,7 @@ by the model (as defined in the settings).
 function traitsexist(traits::Dict{String, Float64}, settings::Dict{String, Any})
     missingtraits = setdiff(settings["traitnames"], keys(traits))
     if length(missingtraits) > 0
-        simlog("Missing trait $missingtraits. Individual might be killed.", settings, 'w')
+        simlog("Missing trait $missingtraits. Individual might be killed.", 'w')
         return false
     end
     true
@@ -149,7 +149,7 @@ function traitsexist(ind::Individual, settings::Dict{String, Any})
     traitnames = settings["traitnames"]
     for trait in traitnames
         if !haskey(ind.traits, trait)
-            simlog("Individual is missing trait $trait. Might be killed.", settings, 'e')
+            simlog("Individual is missing trait $trait. Might be killed.", 'e')
             return false
         end
     end

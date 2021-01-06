@@ -7,10 +7,10 @@ This is the central function of the model with the main event loop. It defines
 the scheduling for all submodels and output functions.
 """
 function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps::Int=1000, timeoffset::Int = 0)
-    simlog("Starting simulation.", settings)
+    simlog("Starting simulation.")
     checkviability!(world, settings)
     for t in (timeoffset + 1):(timeoffset + timesteps)
-        simlog("UPDATE $t", settings)
+        simlog("UPDATE $t")
         # ecological processes are outsourced to specialised methods below
         if settings["mode"] == "default"
             defaultexperiment(world, settings)
@@ -19,7 +19,7 @@ function simulate!(world::Array{Patch,1}, settings::Dict{String, Any}, timesteps
         elseif settings["mode"] == "zosterops"
             zosteropsexperiment(world, settings)
         else
-            simlog("Mode setting not recognised: $(settings["mode"])", settings, 'e')
+            simlog("Mode setting not recognised: $(settings["mode"])", 'e')
         end
         if settings["lineages"]
             recordstatistics(world, settings)
