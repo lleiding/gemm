@@ -5,6 +5,7 @@ Performs a simulation run using configuration file `config`, random seed `seed`
 and other settings provided via commandline, configuration file or the defaults.
 """
 function runsim(config::String = "", seed::Integer = 0)
+    initlogsettings(defaultSettings()) #needed for log calls during `getsettings()`
     settings = getsettings(config, seed)
     Random.seed!(settings["seed"])
     initlogsettings(settings)

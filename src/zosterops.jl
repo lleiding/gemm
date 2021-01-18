@@ -74,6 +74,7 @@ let zosterops = Individual[]
         bird.id = rand(Int32)
         varyalleles!(bird.genome, settings, rand()) #XXX do we want mutations?
         bird.traits = gettraitdict(bird.genome, settings["traitnames"])
+        bird.size = bird.traits["repsize"] #if we want mutations, we need to fix the size afterwards
         bird.sex = sex
         return bird
     end
@@ -108,14 +109,16 @@ function zgenesis(patch::Patch, settings::Dict{String, Any})
         end
     end
     (isempty(species)) && return community
-    # calculate the number of initial breeding pairs
+    # calculate the number of initial breeding pairs and add a male and a female for each
     npairs = Integer(rand(0:round(settings["cellsize"]/2)))
-    simlog("Creating $npairs pairs in the patch", 'd')
-    # add a male and a female
     for i in 1:npairs
         sp = rand(species)
-        push!(community, getzosteropsspecies(sp, male, settings))
-        push!(community, getzosteropsspecies(sp, female, settings))
+        m = getzosteropsspecies(sp, male, settings)
+        f = getzosteropsspecies(sp, female, settings)
+        f.partner = m.id
+        m.partner = f.id
+        push!(community, m)
+        push!(community, f)
         simlog("Adding a pair of Z. $sp", 'd')
     end
     community
@@ -136,7 +139,7 @@ function zdisperse!(world::Array{Patch,1}, settings::Dict{String, Any}, sex::Sex
             juvenile = pop!(patch.seedbank)
             if juvenile.sex == sex
                 zdisperse!(juvenile, world, patch.location,
-                           settings["cellsize"], settings["tolerance"])
+                           Integer(settings["cellsize"]), settings["tolerance"])
             else
                 push!(newseedbank, juvenile)
             end
@@ -164,7 +167,12 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
         target = [(x-1, y-1), (x, y-1), (x+1, y-1),
                   (x-1, y),             (x+1, y),
                   (x-1, y+1), (x, y+1), (x+1, y+1)]
-        possdest = findall(p -> in(p.location, target) && !in(p.location, route),  world)
+        filter!(c -> !in(c, route), target)
+        possdest = world[findall(p -> in(p.location, target),  world)] #XXX this is expensive...
+        if iszero(length(possdest))
+            simlog("A Z.$(bird.lineage) died after failed dispersal.", 'd')
+            return
+        end
         bestdest = possdest[1]
         bestfit = abs(bestdest.prec - bird.traits["precopt"])
         for patch in possdest[2:end]
@@ -175,7 +183,7 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
             end
         end
         # check if the patch is full, within the bird's AGC range, and (for females) has a mate
-        if bird.sex == female #XXX expensive to do here?
+        if bird.sex == female
             partner = findfirst(b -> ziscompatible(bird, b, tolerance), bestdest.community)
         end
         if (bestfit <= bird.traits["prectol"] &&
@@ -187,12 +195,14 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
                 bird.partner = partner.id
                 partner.partner = bird.id
             end
+            simlog("A Z.$(bird.lineage) moved to $(bestdest.location[1])/$(bestdest.location[2]).", 'd')
             return #if we've found a spot, we're done
         end
         x, y = bestdest.location
         push!(route, bestdest.location)
         maxdist -= 1
     end #if the max dispersal distance is reached, the individual simply dies
+    simlog("A Z.$(bird.lineage) died after failed dispersal.", 'd')
 end
 
 """
@@ -215,11 +225,16 @@ end
 Reproduction of Zosterops breeding pairs in a patch.
 """
 function zreproduce!(patch::Patch, settings::Dict{String, Any})
-    noffs = settings["fertility"]
+    noffs = Integer(settings["fertility"])
     for bird in patch.community
         if bird.sex == female && bird.partner != 0
-            partner = findfirst(b -> b.id == bird.partner, patch.community)
-            (isnothing(partner)) && continue
+            pt = findfirst(b -> b.id == bird.partner, patch.community)
+            if isnothing(pt)
+                simlog("A Z.$(bird.lineage) has no partner.", 'd')
+                continue
+            end
+            partner = patch.community[pt]
+            simlog("A Z.$(bird.lineage) mated with a Z.$(partner.lineage).")
             #TODO Offspring are assigned the lineage of their mother. Is that what we want?
             append!(patch.seedbank, createoffspring(noffs, bird, partner,
                                                     settings["traitnames"], true))

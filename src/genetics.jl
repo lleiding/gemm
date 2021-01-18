@@ -72,8 +72,8 @@ function gettraitdict(chrms::Array{Chromosome, 1}, traitnames::Array{String, 1})
         traitdict[traitnames[traitidx]] = getmeantraitvalue(traits, traitidx)
         traitdict[string(traitnames[traitidx]) * "sd"] = getstdtraitvalue(traits, traitidx)
     end
-    traitdict["nlnkgunits"] = nchrms
     traitdict["ngenes"] = ngenes
+    traitdict["nlnkgunits"] = nchrms
     traitdict
 end
 

@@ -303,7 +303,7 @@ function printpopstats(io::IO, world::Array{Patch, 1}, settings::Dict{String, An
                   "\t", patch.temp, "\t", patch.prec, "\t", patch.capacity, "\t", patch.isisland)
             popidxs = findall(i -> i.lineage == lineage, patch.community)
             population = patch.community[popidxs]
-            adultidxs = findall(i -> i.size > i.traits["repsize"], patch.community[popidxs])
+            adultidxs = findall(i -> i.size >= i.traits["repsize"], patch.community[popidxs])
             print(io, "\t", population[1].lineage, "\t", length(popidxs) - length(adultidxs), "\t", length(adultidxs),
                   "\t", mean(skipmissing(map(i -> i.tempadaptation, population))),
                   "\t", mean(skipmissing(map(i -> i.precadaptation, population))))
@@ -357,6 +357,8 @@ only be printed to the screen. If `onlylog` is true (default: false), the
 message is not printed to screen but only to the log.
 """
 function simlog(msg::String, category='i', logfile="simulation.log", onlylog=false)
+    #TODO Julia now has inbuilt logging facilities: https://docs.julialang.org/en/v1/stdlib/Logging/
+    # This function ought to be rewritten to make use of these (especially warning and error macros)
     (isa(category, String) && length(category) == 1) && (category = category[1])
     function logprint(msg::String, tostderr=false)
         if tostderr || !(logparam("quiet") || onlylog)

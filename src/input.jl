@@ -127,8 +127,7 @@ function parseconfig(configfilename::String)
                     try
                         value = convert(typeof(defaults[c[1]]), value)
                     catch
-                        simlog("$(c[1]) not of type $(typeof(defaults[c[1]])).",
-                               settings, 'w', "")
+                        simlog("$(c[1]) not of type $(typeof(defaults[c[1]])).", 'w', "")
                     end
                 end
             end

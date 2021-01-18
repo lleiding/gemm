@@ -1,17 +1,24 @@
 ## ZOSTEROPS EXPERIMENT MAP
 
 # Timesteps
-3
+100
 
 # Simulation arena - fake values, only for testing
 
 # <id> <x> <y> <temperature> <agc> [parameters]
 1	1	1	temp=293	prec=12 initpop
-2	2	1	temp=293	prec=59 initpop
-3	3	1	temp=293	prec=89 initpop
-4	4	1	temp=293	prec=91 initpop
-5	5	1	temp=293	prec=58 initpop
-6	6	1	temp=293	prec=57 initpop
-7	7	1	temp=293	prec=63 initpop
-8	8	1	temp=293	prec=44 initpop
-9	9	1	temp=293	prec=28 initpop
+2	2	1	temp=293	prec=90 initpop
+3	3	1	temp=293	prec=99 initpop
+4	4	1	temp=293	prec=99 initpop
+5	1	2	temp=293	prec=91 initpop
+6	2	2	temp=293	prec=98 initpop
+7	3	2	temp=293	prec=92 initpop
+8	4	2	temp=293	prec=99 initpop
+9	1	3	temp=293	prec=63 initpop
+10	2	3	temp=293	prec=44 initpop
+11	3	3	temp=293	prec=28 initpop
+12	4	3	temp=293	prec=32 initpop
+13	1	4	temp=293	prec=53 initpop
+14	2	4	temp=293	prec=63 initpop
+15	3	4	temp=293	prec=15 initpop
+16	4	4	temp=293	prec=64 initpop

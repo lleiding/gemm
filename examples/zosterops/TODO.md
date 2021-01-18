@@ -36,6 +36,8 @@
 
 - [X] move species properties to settings
 
+- [X] fix seed initialisation bug
+
 - [X] add a StringGene class and `compressgenes` setting
 
 - [X] make sure `map_creator.R` works with Petri's data
@@ -46,7 +48,9 @@
   - [ ] avoid intermediate allocations when compressing gene sequences
   - [ ] avoid string interpolation in output
   - [ ] avoid `deepcopy()`?
+  - [ ] write a coordinate lookup function to speed up `zdisperse!()`
 
+- [ ] test dispersal and reproduction functions
 
 - [ ] vary hybridization affinity for core experiment
 
@@ -69,14 +73,13 @@
 
 - [ ] update documentation
 
-- [ ] fix seed initialisation bug
-
 ## Notes
 
 - how should burn-in work?
 
 - how do we design the SLOSS map series?
-  - idea: use USGS forest cover map as "recovery scenario" (all exotic forest transformed to montane)
+  - idea: use USGS forest cover map as "recovery scenario" (all exotic forest transformed to montane)?
+  - or just shift species' AGC opt/tol to increase/decrease habitat suitability
 
 - restrict mutations of max & min sizes?
   -> either in `mutate!` or in `checkviability!`
