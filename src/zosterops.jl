@@ -168,7 +168,8 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
                   (x-1, y),             (x+1, y),
                   (x-1, y+1), (x, y+1), (x+1, y+1)]
         filter!(c -> !in(c, route), target)
-        possdest = world[findall(p -> in(p.location, target),  world)] #XXX this is expensive...
+        possdest = map(p -> coordinate(p[1], p[2], world), target)
+        filter!(p->!isnothing(p), possdest)
         if iszero(length(possdest))
             simlog("A Z.$(bird.lineage) died after failed dispersal.", 'd')
             return
@@ -242,3 +243,21 @@ function zreproduce!(patch::Patch, settings::Dict{String, Any})
     end
 end
 
+
+let width = 0, height = 0
+    """
+        coordinate(x, y, world)
+
+    A utility function to perform a fast look-up for the patch at coordinate x/y.
+    Important: this assumes a rectangular world with coordinates in row-major order!
+    """
+    global function coordinate(x::Int, y::Int, world::Array{Patch,1})
+        if iszero(width)
+            width = maximum(p -> p.location[1], world)
+            height = maximum(p -> p.location[2], world)
+        end
+        (x <= 0 || y <= 0 || x > width || y > height) && return
+        i = ((y-1) * width) + x
+        return world[i]
+    end
+end
