@@ -1,0 +1,30 @@
+06/01/2021
+
+Hello everyone,
+
+and welcome back from the holidays :-) I just wanted to give you all a brief update of where the Zosterops project is now, and what the next steps are going to be.
+
+What has been done so far:
+
+- We've discussed the model design and experimental setup for the Taita Hills "evolutionary rescue" study
+- We've acquired the remote sensing data we need to construct the model map from Petri Pellikka
+- I've written a script to translate this data into the model's plain-text map format
+- I've done a thorough reorganisation of the model's code base, with a lot of refactoring and some performance optimisation
+- I've implemented most of the new functionality we need to switch the model from a plant-community model to a bird-population one
+- I've prepared an introductory presentation to the code base that we will talk about at next week's Ecomod meeting (14.1.)
+
+What needs to be done next:
+
+- The introduction mentioned above - get Charlotte and Robin up to speed on the source code
+- Soon after, we ought to have a joint meeting with everyone to discuss how to proceed from here
+- There are still a few open questions regarding Zosterops biology / experimental design that we need to settle to finish implementing the model logic
+- Model output still needs to be adjusted to the new study questions
+- Write analysis script for the new output data
+- Figure out how to adjust the input maps for the SLOSS scenario
+- Start simulation runs to find remaining bugs
+- Run the actual experiment...
+
+I would suggest the 18th or 19th of January as the date for our meeting. Let me know if that works for you.
+
+All the best,
+Daniel
