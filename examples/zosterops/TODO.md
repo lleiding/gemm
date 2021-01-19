@@ -48,7 +48,7 @@
   - [ ] avoid intermediate allocations when compressing gene sequences
   - [ ] avoid string interpolation in output
   - [ ] avoid `deepcopy()`?
-  - [ ] write a coordinate lookup function to speed up `zdisperse!()`
+  - [X] write a coordinate lookup function to speed up `zdisperse!()`
 
 - [ ] test dispersal and reproduction functions
 
@@ -80,6 +80,10 @@
 - how do we design the SLOSS map series?
   - idea: use USGS forest cover map as "recovery scenario" (all exotic forest transformed to montane)?
   - or just shift species' AGC opt/tol to increase/decrease habitat suitability
+
+- measuring heterozygosity:
+  - number of hybrids in the population?
+  - tag each chromosome with its original lineage and keep track of each?
 
 - restrict mutations of max & min sizes?
   -> either in `mutate!` or in `checkviability!`

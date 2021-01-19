@@ -52,6 +52,7 @@ maternal or not.
 mutable struct Chromosome
     genes::Array{AbstractGene, 1}
     maternal::Bool # parental origin of chromosome
+    #TODO keep track of the lineage origin to measure heterozygosity?
 end
 
 @enum Sex hermaphrodite male female

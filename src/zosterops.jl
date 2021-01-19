@@ -71,7 +71,7 @@ let zosterops = Individual[]
             end
         end
         (isnothing(bird)) && simlog("Unknown species name: $name", 'e')
-        bird.id = rand(Int32)
+        bird.id = rand(UInt32)
         varyalleles!(bird.genome, settings, rand()) #XXX do we want mutations?
         bird.traits = gettraitdict(bird.genome, settings["traitnames"])
         bird.size = bird.traits["repsize"] #if we want mutations, we need to fix the size afterwards
@@ -184,18 +184,19 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
             end
         end
         # check if the patch is full, within the bird's AGC range, and (for females) has a mate
-        if bird.sex == female
+        if bird.sex == female #XXX not ideal to do this here
             partner = findfirst(b -> ziscompatible(bird, b, tolerance), bestdest.community)
         end
         if (bestfit <= bird.traits["prectol"] &&
             length(bestdest.community) < cellsize &&
             (bird.sex == male || !isnothing(partner)))
-            bird.marked = true
-            push!(bestdest.community, bird)
             if bird.sex == female
+                partner = bestdest.community[partner]
                 bird.partner = partner.id
                 partner.partner = bird.id
             end
+            bird.marked = true
+            push!(bestdest.community, bird)
             simlog("A Z.$(bird.lineage) moved to $(bestdest.location[1])/$(bestdest.location[2]).", 'd')
             return #if we've found a spot, we're done
         end
@@ -213,10 +214,12 @@ Check to see whether two birds are reproductively compatible.
 """
 function ziscompatible(f::Individual, m::Individual, tolerance::Float64)
     !(m.sex == male && f.sex == female) && return false
-    !(m.size >= m.traits["repsize"] && f.size >= f.traits["repsize"]) && return false
     !(m.partner == 0 && f.partner == 0) && return false
+    #FIXME When birds are looking for a mate, they're still juvenile, but they only mate as adults
+    #!(m.size >= m.traits["repsize"] && f.size >= f.traits["repsize"]) && return false
     (m.lineage != f.lineage && rand(Float64) > tolerance) && return false
     #TODO how about seqsimilarity and genetic compatibility?
+    simlog("Found a partner: $(f.id) and $(m.id).", 'd')
     return true
 end
     
@@ -226,16 +229,17 @@ end
 Reproduction of Zosterops breeding pairs in a patch.
 """
 function zreproduce!(patch::Patch, settings::Dict{String, Any})
+    #FIXME reproduction happens too seldom?
     noffs = Integer(settings["fertility"])
     for bird in patch.community
         if bird.sex == female && bird.partner != 0
             pt = findfirst(b -> b.id == bird.partner, patch.community)
             if isnothing(pt)
-                simlog("A Z.$(bird.lineage) has no partner.", 'd')
+                simlog("Z.$(bird.lineage) no. $(bird.id) has no partner.", 'd')
                 continue
             end
             partner = patch.community[pt]
-            simlog("A Z.$(bird.lineage) mated with a Z.$(partner.lineage).")
+            simlog("A Z.$(bird.lineage) mated with a Z.$(partner.lineage), $noffs offspring.", 'd')
             #TODO Offspring are assigned the lineage of their mother. Is that what we want?
             append!(patch.seedbank, createoffspring(noffs, bird, partner,
                                                     settings["traitnames"], true))

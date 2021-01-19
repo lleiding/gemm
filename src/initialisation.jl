@@ -31,7 +31,7 @@ function createpop(settings::Dict{String, Any})
     for i in 2:popsize
         #TODO avoid `deepcopy` here
         ind = deepcopy(archetype) # XXX this is potentially very slow!
-        ind.id = rand(Int32)
+        ind.id = rand(UInt32)
         varyalleles!(ind.genome, settings, locivar)
         ind.traits = gettraitdict(ind.genome, settings["traitnames"])
         if !(settings["indsize"] == "adult" || settings["indsize"] == "seed")
