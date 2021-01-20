@@ -72,9 +72,9 @@ let zosterops = Individual[]
         end
         (isnothing(bird)) && simlog("Unknown species name: $name", 'e')
         bird.id = rand(UInt32)
-        varyalleles!(bird.genome, settings, rand()) #XXX do we want mutations?
+        varyalleles!(bird.genome, settings, rand())
         bird.traits = gettraitdict(bird.genome, settings["traitnames"])
-        bird.size = bird.traits["repsize"] #if we want mutations, we need to fix the size afterwards
+        bird.size = bird.traits["repsize"] # we need to fix the size after again after mutation
         bird.sex = sex
         return bird
     end

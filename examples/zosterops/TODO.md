@@ -50,6 +50,22 @@
   - [ ] avoid `deepcopy()`?
   - [X] write a coordinate lookup function to speed up `zdisperse!()`
 
+- [X] turn off mutation except at initialisation
+
+- [ ] rewrite dispersal function as discussed on 19/01/21
+
+- [ ] implement lineage tagging for chromosomes
+
+- [ ] adjust body sizes
+
+- [ ] juveniles are "born with" adult size
+
+- [ ] hybridisation: only if no conspecific partner available
+
+- [ ] hybridisation: assign offspring to lineage based on phenotypically similarity
+
+- [ ] allow for ecological/neutral speciation in `ziscompatible()`
+
 - [ ] test dispersal and reproduction functions
 
 - [ ] vary hybridization affinity for core experiment
