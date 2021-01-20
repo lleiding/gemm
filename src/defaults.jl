@@ -56,6 +56,7 @@ function defaultSettings()
         "sdtemp" => 0.0, # SD of temperature change per time step
         "seed" => 0, # for the RNG, seed = 0 -> random seed
         "smallgenelength" => 20, # standard gene sequence length (max. 21)
+        "speciation" => "neutral", # allow lineage differentiation? off/neutral/ecological
         "species" => Dict{String,Array{Number,1}}(), # define AGC opt/tol for each Zosterops species
         "static" => false, # whether mainland sites undergo eco-evolutionary processes
         "stats" => true, # record population statistics (medium detail output)

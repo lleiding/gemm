@@ -217,10 +217,8 @@ Check to see whether two birds are reproductively compatible.
 function ziscompatible(f::Individual, m::Individual, tolerance::Float64)
     !(m.sex == male && f.sex == female) && return false
     !(m.partner == 0 && f.partner == 0) && return false
-    #FIXME When birds are looking for a mate, they're still juvenile, but they only mate as adults
-    #!(m.size >= m.traits["repsize"] && f.size >= f.traits["repsize"]) && return false
     (m.lineage != f.lineage && rand(Float64) > tolerance) && return false
-    #TODO how about seqsimilarity and genetic compatibility?
+    #TODO allow for speciation
     simlog("Found a partner: $(f.id) and $(m.id).", 'd')
     return true
 end

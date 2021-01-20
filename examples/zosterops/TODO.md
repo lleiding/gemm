@@ -52,6 +52,8 @@
 
 - [X] turn off mutation except at initialisation
 
+- [ ] make `settings` global?
+
 - [ ] rewrite dispersal function as discussed on 19/01/21
 
 - [ ] implement lineage tagging for chromosomes
