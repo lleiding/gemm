@@ -31,14 +31,14 @@ function changeprec!(world::Array{Patch,1}, sdprec::Float64)
 end
 
 """
-    changehabitat!(world, settings)
+    changehabitat!(world)
 
 Carry out 'global change' on all patches.
 """
-function changehabitat!(world::Array{Patch,1}, settings::Dict{String, Any})
+function changehabitat!(world::Array{Patch,1})
     # TODO: record trajectory? input trajectory?
-    changetemp!(world, settings["sdtemp"])
-    changeprec!(world, settings["sdprec"])
+    changetemp!(world, setting("sdtemp"))
+    changeprec!(world, setting("sdprec"))
 end
 
 """

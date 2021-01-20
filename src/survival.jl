@@ -28,13 +28,13 @@ function survive!(patch::Patch, mortality::Float64)
 end
 
 """
-    survive!(world, settings)
+    survive!(world)
 
 World-wide mortality. Sounds apocalyptic, but is just a fact of life.
 """
-function survive!(world::Array{Patch,1}, settings::Dict{String, Any})
+function survive!(world::Array{Patch,1})
     for patch in world
-        (patch.isisland || !settings["static"]) && survive!(patch, settings["mortality"]) # pmap(!,patch) ???
+        (patch.isisland || !setting("static")) && survive!(patch, setting("mortality")) # pmap(!,patch) ???
     end
 end
 
@@ -70,15 +70,15 @@ function grow!(patch::Patch, growthrate::Float64, capgrowth::Bool)
 end
 
 """
-    grow!(world, settings)
+    grow!(world)
 
 Carry out growth for all patches.
 """
-function grow!(world::Array{Patch,1}, settings::Dict{String, Any})
+function grow!(world::Array{Patch,1})
     for patch in world
         # pmap(!,patch) ???
-        if patch.isisland || !settings["static"]
-            grow!(patch, settings["growthrate"], settings["capgrowth"])
+        if patch.isisland || !setting("static")
+            grow!(patch, setting("growthrate"), setting("capgrowth"))
         end
     end
 end

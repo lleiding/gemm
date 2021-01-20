@@ -83,13 +83,13 @@ function establish!(world::Array{Patch,1}, nniches::Int=1, static::Bool = true)
 end
 
 """
-    checkviability!(community, settings)
+    checkviability!(community)
 
 Check whether all individuals in the passed community conform to a basic set of
 constraints (i.e. all traits are present and certain properties are >= 0).
 Individuals that fail the test are removed from the community.
 """
-function checkviability!(community::Array{Individual, 1}, settings::Dict{String, Any})
+function checkviability!(community::Array{Individual, 1})
     idx=1
     while idx <= size(community,1)
         reason = ""
@@ -101,7 +101,7 @@ function checkviability!(community::Array{Individual, 1}, settings::Dict{String,
         community[idx].precadaptation < 0 && (dead = true) && (reason *= "fitness ")
         community[idx].traits["selfing"] > 1 && (dead = true) && (reason *= "selfing ")
         community[idx].traits["seqsimilarity"] > 1 && (dead = true) && (reason *= "seqsimilarity ")
-        !traitsexist(community[idx].traits, settings) && (dead = true) && (reason *= "missingtrait ")
+        !traitsexist(community[idx].traits) && (dead = true) && (reason *= "missingtrait ")
         if dead
             simlog("Individual not viable: $reason. Being killed.", 'w')
             splice!(community,idx)
@@ -112,26 +112,26 @@ function checkviability!(community::Array{Individual, 1}, settings::Dict{String,
 end
 
 """
-    checkviability(world, settings)
+    checkviability(world)
 
 Check the viability of all individuals.
 """
-function checkviability!(world::Array{Patch,1}, settings::Dict{String, Any})
+function checkviability!(world::Array{Patch,1})
     for patch in world
         #XXX pmap(checkviability!,patch) ???
-        checkviability!(patch.community, settings)
+        checkviability!(patch.community)
     end
 end
 
 
 """
-    traitsexist(traits, settings)
+    traitsexist(traits)
 
 Check a trait dict to make sure it contains the full set of traitnames required
 by the model (as defined in the settings).
 """
-function traitsexist(traits::Dict{String, Float64}, settings::Dict{String, Any})
-    missingtraits = setdiff(settings["traitnames"], keys(traits))
+function traitsexist(traits::Dict{String, Float64})
+    missingtraits = setdiff(setting("traitnames"), keys(traits))
     if length(missingtraits) > 0
         simlog("Missing trait $missingtraits. Individual might be killed.", 'w')
         return false
@@ -140,13 +140,13 @@ function traitsexist(traits::Dict{String, Float64}, settings::Dict{String, Any})
 end
 
 """
-    traitsexist(individual, settings)
+    traitsexist(individual)
 
 Make sure an individual organism has the full set of traits required by the model
 (as defined in the settings).
 """
-function traitsexist(ind::Individual, settings::Dict{String, Any})
-    traitnames = settings["traitnames"]
+function traitsexist(ind::Individual)
+    traitnames = setting("traitnames")
     for trait in traitnames
         if !haskey(ind.traits, trait)
             simlog("Individual is missing trait $trait. Might be killed.", 'e')

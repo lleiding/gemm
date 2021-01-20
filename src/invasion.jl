@@ -4,14 +4,14 @@
 let speciespool = Individual[]
     #XXX should `speciespool` be part of the `world` object holding all grid cells?
     """
-        initglobalspeciespool!(settings)
+        initglobalspeciespool!()
 
     Initialise the foreign species pool (i.e. an array of random individuals that
     are used as the propagule source for invasion events.
     """
-    function initglobalspeciespool!(settings::Dict{String, Any})
-        for i in 1:settings["global-species-pool"]
-            push!(speciespool, createind(settings))
+    function initglobalspeciespool!()
+        for i in 1:setting("global-species-pool")
+            push!(speciespool, createind())
         end
     end
 
@@ -27,17 +27,17 @@ let speciespool = Individual[]
     end
 
     """
-        invade!(world, settings)
+        invade!(world)
 
     Introduce non-native species from the species pool to all patches marked
     as invasible.
     """
-    global function invade!(world::Array{Patch,1}, settings::Dict{String, Any})
+    global function invade!(world::Array{Patch,1})
         # This function has to be global to escape the let-block of the species pool
-        (settings["propagule-pressure"] == 0 || settings["global-species-pool"] == 0) && return
-        (length(speciespool) == 0) && initglobalspeciespool!(settings)
+        (setting("propagule-pressure") == 0 || setting("global-species-pool") == 0) && return
+        (length(speciespool) == 0) && initglobalspeciespool!()
         for patch in world
-            patch.invasible && invade!(patch, settings["propagule-pressure"])
+            patch.invasible && invade!(patch, setting("propagule-pressure"))
         end
     end
 end
@@ -62,17 +62,17 @@ function disturb!(patch::Patch, intensity::Int)
 end
 
 """
-    disturb!(world, settings)
+    disturb!(world)
 
 Disturb all patches in the world.
 """
-function disturb!(world::Array{Patch,1}, settings::Dict{String, Any})
-    (settings["disturbance"] == 0) && return
-    if settings["disturbance"] > 100
+function disturb!(world::Array{Patch,1})
+    (setting("disturbance") == 0) && return
+    if setting("disturbance") > 100
         simlog("disturbance must be no more than 100%", 'w')
-        settings["disturbance"] = 100
+        updatesetting("disturbance", 100)
     end
     for patch in world
-        (patch.isisland || !settings["static"]) && disturb!(patch, settings["disturbance"])
+        (patch.isisland || !setting("static")) && disturb!(patch, setting("disturbance"))
     end
 end

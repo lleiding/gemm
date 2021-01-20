@@ -15,33 +15,33 @@
 
 let zosterops = Individual[] #holds the species archetypes
     """
-        initzosteropsspecies(settings)
+        initzosteropsspecies()
 
     Initialise the predefined Zosterops species archetypes (silvanus/highland, jubaensis/lowland).
     """
-    function initzosteropsspecies(settings::Dict{String, Any})
+    function initzosteropsspecies()
         # ensure that "one gene, one trait" is true and that we have species definitions
-        (settings["degpleiotropy"] != 0) && simlog("degpleiotropy must be 0", 'e')
-        (isnothing(settings["species"])) && simlog("no species defined", 'e')
+        (setting("degpleiotropy") != 0) && simlog("degpleiotropy must be 0", 'e')
+        (isnothing(setting("species"))) && simlog("no species defined", 'e')
         # load per-species AGC optimum and tolerance values from settings
-        for (s, v) in pairs(settings["species"])
-            push!(zosterops, initzosteropsspecies(s, Float64(v[1]), Float64(v[2]), settings))
+        for (s, v) in pairs(setting("species"))
+            push!(zosterops, initzosteropsspecies(s, Float64(v[1]), Float64(v[2])))
         end
     end
 
     """
-        initzosteropsspecies(name, precopt, prectol, settings)
+        initzosteropsspecies(name, precopt, prectol)
 
     Create a new individual then modify its traits to create a Zosterops archetype.
     """
-    function initzosteropsspecies(name::String, precopt::Float64, prectol::Float64, settings::Dict{String, Any})
-        archetype = createind(settings)
+    function initzosteropsspecies(name::String, precopt::Float64, prectol::Float64)
+        archetype = createind()
         archetype.lineage = name
         # Find the gene that codes for relevant traits and change their values
         for chromosome in archetype.genome
             for gene in chromosome.genes
                 isempty(gene.codes) && continue
-                genetrait = settings["traitnames"][gene.codes[1].nameindex]
+                genetrait = setting("traitnames")[gene.codes[1].nameindex]
                 #XXX do we also need to set tempopt/temptol?
                 if genetrait == "precopt"
                     gene.codes[1].value = precopt
@@ -51,18 +51,18 @@ let zosterops = Individual[] #holds the species archetypes
             end
         end
         # then recalculate the individual's trait dict and return the finished archetype
-        archetype.traits = gettraitdict(archetype.genome, settings["traitnames"])
+        archetype.traits = gettraitdict(archetype.genome, setting("traitnames"))
         return archetype
     end
     
     """
-        getzosteropsspecies(name, sex, settings)
+        getzosteropsspecies(name, sex)
 
     Return a new individual of the named species
     """
-    global function getzosteropsspecies(name::String, sex::Sex, settings::Dict{String, Any})
+    global function getzosteropsspecies(name::String, sex::Sex)
         # This function has to be global to escape the let-block of the species list
-        isempty(zosterops) && initzosteropsspecies(settings)
+        isempty(zosterops) && initzosteropsspecies()
         bird = nothing
         for z in zosterops
             if z.lineage == name
@@ -72,37 +72,37 @@ let zosterops = Individual[] #holds the species archetypes
         end
         (isnothing(bird)) && simlog("Unknown species name: $name", 'e')
         bird.id = rand(UInt32)
-        varyalleles!(bird.genome, settings, rand())
-        bird.traits = gettraitdict(bird.genome, settings["traitnames"])
+        varyalleles!(bird.genome, rand())
+        bird.traits = gettraitdict(bird.genome, setting("traitnames"))
         bird.size = bird.traits["repsize"] # we need to fix the size after again after mutation
         bird.sex = sex
         return bird
     end
 
     """
-        getzosteropsnames(settings)
+        getzosteropsnames()
 
     Return the names of all defined Zosterops species.
     """
     #XXX utility function - but do I need it?
-    global function getzosteropsnames(settings::Dict{String, Any})
-        isempty(zosterops) && initzosteropsspecies(settings)
+    global function getzosteropsnames()
+        isempty(zosterops) && initzosteropsspecies()
         return map(s->s.lineage, zosterops)
     end
 end
 
 """
-    zgenesis(patch, settings)
+    zgenesis(patch)
 
 Create a new community of Zosterops breeding pairs (possibly of multiple species).
 Returns an array of individuals.
 """
-function zgenesis(patch::Patch, settings::Dict{String, Any})
+function zgenesis(patch::Patch)
     community = Array{Individual, 1}()
-    (isnothing(settings["species"])) && simlog("no species defined", 'e')
+    (isnothing(setting("species"))) && simlog("no species defined", 'e')
     # check which species can inhabit this patch
     species = Array{String, 1}()
-    for s in settings["species"]
+    for s in setting("species")
         # s[1] = species name, s[2][1] = AGC opt, s[2][2] = AGC tol
         if abs(s[2][1]-patch.prec) <= s[2][2]
             push!(species, s[1])
@@ -110,11 +110,11 @@ function zgenesis(patch::Patch, settings::Dict{String, Any})
     end
     (isempty(species)) && return community
     # calculate the number of initial breeding pairs and add a male and a female for each
-    npairs = Integer(rand(0:round(settings["cellsize"]/2)))
+    npairs = Integer(rand(0:round(setting("cellsize")/2)))
     for i in 1:npairs
         sp = rand(species)
-        m = getzosteropsspecies(sp, male, settings)
-        f = getzosteropsspecies(sp, female, settings)
+        m = getzosteropsspecies(sp, male)
+        f = getzosteropsspecies(sp, female)
         f.partner = m.id
         m.partner = f.id
         push!(community, m)
@@ -125,13 +125,13 @@ function zgenesis(patch::Patch, settings::Dict{String, Any})
 end
     
 """
-    zdisperse!(world, settings)
+    zdisperse!(world)
 
 Dispersal of bird individuals within the world. Males disperse first, looking
 for suitable habitats within their dispersal range to establish territories.
 Females disperse second, looking for available mates. (Cf. Aben et al. 2016)
 """
-function zdisperse!(world::Array{Patch,1}, settings::Dict{String, Any}, sex::Sex=male)
+function zdisperse!(world::Array{Patch,1}, sex::Sex=male)
     #TODO rewrite
     for patch in world
         newseedbank = Array{Individual,1}()
@@ -140,14 +140,14 @@ function zdisperse!(world::Array{Patch,1}, settings::Dict{String, Any}, sex::Sex
             juvenile.size = juvenile.traits["repsize"] # birds grow to full size in less than a year
             if juvenile.sex == sex
                 zdisperse!(juvenile, world, patch.location,
-                           Integer(settings["cellsize"]), settings["tolerance"])
+                           Integer(setting("cellsize")), setting("tolerance"))
             else
                 push!(newseedbank, juvenile)
             end
         end
         patch.seedbank = newseedbank
     end
-    (sex == male) && zdisperse!(world, settings, female)
+    (sex == male) && zdisperse!(world, female)
 end
 
 """
@@ -224,13 +224,13 @@ function ziscompatible(f::Individual, m::Individual, tolerance::Float64)
 end
     
 """
-    zreproduce!(patch, settings)
+    zreproduce!(patch)
 
 Reproduction of Zosterops breeding pairs in a patch.
 """
-function zreproduce!(patch::Patch, settings::Dict{String, Any})
+function zreproduce!(patch::Patch)
     #FIXME reproduction happens too seldom?
-    noffs = Integer(settings["fertility"])
+    noffs = Integer(setting("fertility"))
     for bird in patch.community
         if bird.sex == female && bird.partner != 0
             pt = findfirst(b -> b.id == bird.partner, patch.community)
@@ -242,7 +242,7 @@ function zreproduce!(patch::Patch, settings::Dict{String, Any})
             simlog("A Z.$(bird.lineage) mated with a Z.$(partner.lineage), $noffs offspring.", 'd')
             #TODO Offspring are assigned the lineage of their mother. Is that what we want?
             append!(patch.seedbank, createoffspring(noffs, bird, partner,
-                                                    settings["traitnames"], true))
+                                                    setting("traitnames"), true))
         end
     end
 end

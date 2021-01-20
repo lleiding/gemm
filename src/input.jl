@@ -140,13 +140,13 @@ function parseconfig(configfilename::String)
 end
 
 """
-    readmapfile(mapfilename, settings)
+    readmapfile(mapfilename)
 
 Parse a map file and return the number of timesteps this map is to be used for
 (first line of the file) and the patch definitions. The latter is used by
 `createworld` and `updateworld!`.
 """
-function readmapfile(mapfilename::String, settings::Dict{String, Any})
+function readmapfile(mapfilename::String)
     simlog("Reading map file $mapfilename.")
     if isfile(mapfilename)
         maptable = basicparser(mapfilename)

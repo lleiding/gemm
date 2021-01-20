@@ -1,30 +1,30 @@
 # initialisation functions for GeMM
 
 """
-    createpop(settings)
+    createpop()
 
 Create a new, random individual and replicates it a certain number of times
 (depending on metabolic variables) to create a new population of organisms.
 Returns an array of individuals.
 """
-function createpop(settings::Dict{String, Any})
+function createpop()
     # start with an archetypical individual
-    archetype = createind(settings, true)
+    archetype = createind(true)
     population = [archetype]
     # calculate the population size
     popsize = 0
-    if occursin("metabolic", settings["popsize"]) || occursin("single", settings["popsize"])
+    if occursin("metabolic", setting("popsize")) || occursin("single", setting("popsize"))
         # population size determined by adult size
-        popsize = round(settings["fertility"] * archetype.traits["repsize"] ^ (-1 / 4) *
+        popsize = round(setting("fertility") * archetype.traits["repsize"] ^ (-1 / 4) *
                         exp(-act / (boltz * 298.0)))
-    elseif occursin("bodysize", settings["popsize"])
+    elseif occursin("bodysize", setting("popsize"))
         # population size up to 25% of the maximum possible in this cell
-        quarterpopsize = Integer(ceil((settings["cellsize"] / archetype.traits["repsize"]) / 4))
+        quarterpopsize = Integer(ceil((setting("cellsize") / archetype.traits["repsize"]) / 4))
         popsize = rand(1:quarterpopsize) + 1
-    elseif occursin("minimal", settings["popsize"]) || popsize == 0
+    elseif occursin("minimal", setting("popsize")) || popsize == 0
         popsize = 2 #Takes two to tangle ;-)
     else
-        simlog("Invalid value for `popsize`: $(settings["popsize"])", 'e')
+        simlog("Invalid value for `popsize`: $(setting("popsize"))", 'e')
     end
     # clone & mutate the archetype N times
     locivar = rand()
@@ -32,9 +32,9 @@ function createpop(settings::Dict{String, Any})
         #TODO avoid `deepcopy` here
         ind = deepcopy(archetype) # XXX this is potentially very slow!
         ind.id = rand(UInt32)
-        varyalleles!(ind.genome, settings, locivar)
-        ind.traits = gettraitdict(ind.genome, settings["traitnames"])
-        if !(settings["indsize"] == "adult" || settings["indsize"] == "seed")
+        varyalleles!(ind.genome, locivar)
+        ind.traits = gettraitdict(ind.genome, setting("traitnames"))
+        if !(setting("indsize") == "adult" || setting("indsize") == "seed")
             #XXX sizes uniformally distributed?
             ind.size = ind.traits["seedsize"] + rand() * (ind.traits["repsize"] - ind.traits["seedsize"])
         end
@@ -44,21 +44,21 @@ function createpop(settings::Dict{String, Any})
 end
 
 """
-    createind(settings, marked=false)
+    createind(marked=false)
 
 Create an individual organism of a new species with a random genome.
 """
-function createind(settings::Dict{String, Any}, marked::Bool = false)
+function createind(marked::Bool = false)
     id = rand(Int32)
     lineage = randstring(6)
-    ngenes = rand(1:settings["maxloci"]) * length(settings["traitnames"])
-    settings["degpleiotropy"] == 0 && (ngenes = length(settings["traitnames"]))
+    ngenes = rand(1:setting("maxloci")) * length(setting("traitnames"))
+    setting("degpleiotropy") == 0 && (ngenes = length(setting("traitnames")))
     ngenes < 1 && (ngenes = 1)
-    traits = createtraits(settings)
-    genes = creategenes(ngenes, traits, settings)
-    if settings["linkage"] == "none"
+    traits = createtraits()
+    genes = creategenes(ngenes, traits)
+    if setting("linkage") == "none"
         nchrms = length(genes)
-    elseif settings["linkage"] == "full"
+    elseif setting("linkage") == "full"
         nchrms = 1
     else
         linkage = rand(1:length(genes))
@@ -66,11 +66,11 @@ function createind(settings::Dict{String, Any}, marked::Bool = false)
     end
     chromosomes = createchrms(nchrms, genes)
     locivar = rand()
-    varyalleles!(chromosomes, settings, locivar)
-    traitdict = gettraitdict(chromosomes, settings["traitnames"])
-    if settings["indsize"] == "adult"
+    varyalleles!(chromosomes, locivar)
+    traitdict = gettraitdict(chromosomes, setting("traitnames"))
+    if setting("indsize") == "adult"
         indsize = traitdict["repsize"]
-    elseif settings["indsize"] == "seed"
+    elseif setting("indsize") == "seed"
         indsize = traitdict["seedsize"]
     else
         #XXX sizes uniformally distributed?
@@ -80,24 +80,24 @@ function createind(settings::Dict{String, Any}, marked::Bool = false)
 end
 
 """
-    genesis(settings)
+    genesis()
 
 Create a new community, composed of random new species populations, for a patch.
 Returns an array of individuals.
 """
-function genesis(settings::Dict{String, Any})
+function genesis()
     community = Individual[]
     totalmass = 0.0
     while true
-        population = createpop(settings)
+        population = createpop()
         popsize = length(population)
         # Check the cell capacity
         popmass = sum(map(x -> x.size, population))
-        if totalmass + popmass > settings["cellsize"] * settings["overfill"]
+        if totalmass + popmass > setting("cellsize") * setting("overfill")
             # stop loop if cell is full
-            if totalmass >= settings["cellsize"] * 0.9 || occursin("single", settings["popsize"])
+            if totalmass >= setting("cellsize") * 0.9 || occursin("single", setting("popsize"))
                 #make sure the cell is full enough
-                simlog("Cell is now $(round((totalmass/settings["cellsize"])*100))% full.", 'd') #DEBUG
+                simlog("Cell is now $(round((totalmass/setting("cellsize"))*100))% full.", 'd') #DEBUG
                 break
             else
                 continue
@@ -105,29 +105,29 @@ function genesis(settings::Dict{String, Any})
         end
         totalmass += popmass
         append!(community, population)
-        occursin("single", settings["popsize"]) && break
+        occursin("single", setting("popsize")) && break
     end
     simlog("Patch initialized with $(length(community)) individuals.", 'd') #DEBUG
     community
 end
 
 """
-    createpatch(patchentry, settings)
+    createpatch(patchentry)
 
 Create a new patch and set its parameters by parsing one line of the map file.
 """
-function createpatch(patchentry::Array{String,1}, settings::Dict{String, Any})
+function createpatch(patchentry::Array{String,1})
     size(patchentry,1) < 3 && simlog("please check your map file for incomplete or faulty entries. \n
 Each line must contain patch information with at least \n
 \t - a unique integer ID, \n
 \t - an integer x coordinate, \n
 \t - an integer y coordinate, \n
-separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
+separated by a whitespace character (<ID> <x> <y>).", 'e')
     # create the basic patch
     id = parse(Int, patchentry[1])
     xcord = parse(Int, patchentry[2])
     ycord = parse(Int, patchentry[3])
-    capacity = settings["cellsize"]
+    capacity = setting("cellsize")
     # XXX the 'global' here is a hack so that I can use eval() later on
     # (eval() always works on the global scope)
     global newpatch = Patch(id, (xcord, ycord), capacity)
@@ -167,24 +167,24 @@ separated by a whitespace character (<ID> <x> <y>).", settings, 'e')
 end
 
 """
-    createworld(maptable, settings)
+    createworld(maptable)
 
 Use a parsed map file (as returned by `readmapfile`) to create the world. 
 Initialises each patch with its parameters and a new community, then returns
 an array of patches.
 """
-function createworld(maptable::Array{Array{String,1},1}, settings::Dict{String, Any})
+function createworld(maptable::Array{Array{String,1},1})
     simlog("Creating world...")
     world = Patch[]
     for entry in maptable
-        newpatch = createpatch(entry, settings)
+        newpatch = createpatch(entry)
         if newpatch.initpop
-            if settings["mode"] == "zosterops"
-                append!(newpatch.community, zgenesis(newpatch, settings))
-            elseif settings["indsize"] != "seed"
-                append!(newpatch.community, genesis(settings))
+            if setting("mode") == "zosterops"
+                append!(newpatch.community, zgenesis(newpatch))
+            elseif setting("indsize") != "seed"
+                append!(newpatch.community, genesis())
             else
-                append!(newpatch.seedbank, genesis(settings))
+                append!(newpatch.seedbank, genesis())
             end
         end
         push!(world, newpatch)
@@ -201,8 +201,8 @@ Reinitialise the world from another parsed map file. Works analogously to
 during a run (e.g. through global warming or island ontogeny).
 """
 #FIXME this function needs to be folded into createworld(), it duplicates way too much code
-function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1}, settings::Dict{String, Any})
-    cellsize = settings["cellsize"]
+function updateworld!(world::Array{Patch,1},maptable::Array{Array{String,1},1})
+    cellsize = setting("cellsize")
     simlog("Updating world...")
     allids = Int[]
     for entry in maptable
