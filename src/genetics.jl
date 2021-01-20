@@ -10,7 +10,7 @@
 Carry out meiosis on a genome (marked as maternal or not). Returns a haploid
 gamete genome. (genome => array of chromosomes)
 """
-function meiosis(genome::Array{Chromosome,1}, maternal::Bool)
+function meiosis(genome::Array{Chromosome,1}, maternal::Bool, lineage::String)
     gametelength = Int(length(genome)/2)
     gamete = Chromosome[]
     m, p = 1, 1
@@ -23,7 +23,12 @@ function meiosis(genome::Array{Chromosome,1}, maternal::Bool)
             p += 1
         end
         # then choose one at random and use it to create a new chromosome for the gamete
-        push!(gamete, Chromosome(genome[rand([m,p])].genes, maternal))
+        cgenes = genome[rand([m,p])].genes
+        if setting("heterozygosity")
+            push!(gamete, LineageChromosome(cgenes, maternal, lineage))
+        else
+            push!(gamete, DefaultChromosome(cgenes, maternal))
+        end
         m += 1; p += 1
     end
     gamete
@@ -332,22 +337,31 @@ end
 Randomly distribute the passed genes into the given number of chromosomes.
 Returns an array of chromosome objects.
 """
-function createchrms(nchrms::Int,genes::Array{AbstractGene,1})
+function createchrms(nchrms::Int,genes::Array{AbstractGene,1},lineage::String)
     ngenes=size(genes,1)
     if nchrms>1
         chrmsplits = sort(rand(1:ngenes,nchrms-1))
         chromosomes = Chromosome[]
         for chr in 1:nchrms
             if chr==1 # first chromosome
-                push!(chromosomes, Chromosome(genes[1:chrmsplits[chr]], true))
+                cgenes = genes[1:chrmsplits[chr]]
             elseif chr==nchrms # last chromosome
-                push!(chromosomes, Chromosome(genes[(chrmsplits[chr-1]+1):end], true))
+                cgenes = genes[(chrmsplits[chr-1]+1):end]
             else
-                push!(chromosomes, Chromosome(genes[(chrmsplits[chr-1]+1):chrmsplits[chr]], true))
+                cgenes = genes[(chrmsplits[chr-1]+1):chrmsplits[chr]]
+            end
+            if setting("heterozygosity")
+                push!(chromosomes, LineageChromosome(cgenes, true, lineage))
+            else
+                push!(chromosomes, DefaultChromosome(cgenes, true))
             end
         end
     else # only one chromosome
-        chromosomes = [Chromosome(genes, true)]
+        if setting("heterozygosity")
+            chromosomes = [Chromosome(genes, true, lineage)]
+        else
+            chromosomes = [Chromosome(genes, true)]
+        end
     end
     secondset = deepcopy(chromosomes)
     for chrm in secondset

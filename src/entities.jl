@@ -46,13 +46,28 @@ mutable struct StringGene <: AbstractGene
 end
 
 """
+An abstraction layer to hide the implementation details of chromosomes.
+"""
+abstract type Chromosome end
+
+"""
 A struct that saves a collection of genes and a tag to denote whether they are
 maternal or not.
 """
-mutable struct Chromosome
+mutable struct DefaultChromosome <: Chromosome
     genes::Array{AbstractGene, 1}
     maternal::Bool # parental origin of chromosome
-    #TODO keep track of the lineage origin to measure heterozygosity?
+end
+
+"""
+A struct that saves a collection of genes and tags to denote whether they are
+maternal or not, as well as which lineage they originated from (to keep track
+of heterozygosity in hybridisation studies).
+"""
+mutable struct LineageChromosome <: Chromosome
+    genes::Array{AbstractGene, 1}
+    maternal::Bool # parental origin of chromosome
+    lineage::String
 end
 
 @enum Sex hermaphrodite male female

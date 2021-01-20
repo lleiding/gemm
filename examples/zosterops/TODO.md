@@ -56,7 +56,7 @@
 
 - [ ] rewrite dispersal function as discussed on 19/01/21
 
-- [ ] implement lineage tagging for chromosomes
+- [X] implement lineage tagging for chromosomes
 
 - [ ] adjust body sizes
 

@@ -126,8 +126,9 @@ of offspring individuals. Returns an array of individuals.
 function createoffspring(noffs::Integer, ind::Individual, partner::Individual, traitnames::Array{String, 1}, dimorphism::Bool=false)
     offspring = Individual[]
     for i in 1:noffs # pmap? this loop could be factorized!
-        partnergenome = meiosis(partner.genome, false) # offspring have different genome!
-        mothergenome = meiosis(ind.genome, true)
+        # offspring have different genomes due to recombination
+        partnergenome = meiosis(partner.genome, false, partner.lineage)
+        mothergenome = meiosis(ind.genome, true, ind.lineage)
         (isempty(partnergenome) || isempty(mothergenome)) && continue
         genome = vcat(partnergenome,mothergenome)
         traits = gettraitdict(genome, traitnames)

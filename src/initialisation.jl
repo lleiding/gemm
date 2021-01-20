@@ -64,7 +64,7 @@ function createind(marked::Bool = false)
         linkage = rand(1:length(genes))
         nchrms = Integer(round(ngenes/linkage))
     end
-    chromosomes = createchrms(nchrms, genes)
+    chromosomes = createchrms(nchrms, genes, lineage)
     locivar = rand()
     varyalleles!(chromosomes, locivar)
     traitdict = gettraitdict(chromosomes, setting("traitnames"))

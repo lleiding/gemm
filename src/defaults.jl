@@ -25,6 +25,7 @@ function defaultSettings()
         "global-species-pool" => 0, # size of the global species pool (invasion source)
         "globalmating" => false, # global pollen "dispersal"
         "growthrate" => exp(25.2), # global base growth/biomass production from Brown et al. 2004
+        "heterozygosity" => false, # keep track of heterozygosity when studying hybridisation
         "indsize" => "seed", # initialize organisms as seed, adult or mixed
         "isolationweight" => 3.0, # additional distance to be crossed when dispersing from or to isolated patches
         "lineages" => false, # record lineage and diversity data (low detail output)

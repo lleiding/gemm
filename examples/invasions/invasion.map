@@ -1,7 +1,7 @@
 # Invasion experiments map
 	
 # timesteps:
-50 #default 1500
+30 #default 1500
 
 # experiment island - a 5x5 square with radially increasing temperature (as on a
 # mountain), a linear precipitation gradient, and a coastal invasion point ('port')
