@@ -13,7 +13,7 @@
 #    another species is accepted
 # 5. `degpleiotropy` must be set to 0, otherwise the species initialisation will fail
 
-let zosterops = Individual[]
+let zosterops = Individual[] #holds the species archetypes
     """
         initzosteropsspecies(settings)
 
@@ -37,7 +37,7 @@ let zosterops = Individual[]
     function initzosteropsspecies(name::String, precopt::Float64, prectol::Float64, settings::Dict{String, Any})
         archetype = createind(settings)
         archetype.lineage = name
-        # Find the gene that codes for the relevant trait and change that trait's value
+        # Find the gene that codes for relevant traits and change their values
         for chromosome in archetype.genome
             for gene in chromosome.genes
                 isempty(gene.codes) && continue
@@ -132,11 +132,12 @@ for suitable habitats within their dispersal range to establish territories.
 Females disperse second, looking for available mates. (Cf. Aben et al. 2016)
 """
 function zdisperse!(world::Array{Patch,1}, settings::Dict{String, Any}, sex::Sex=male)
+    #TODO rewrite
     for patch in world
         newseedbank = Array{Individual,1}()
         while length(patch.seedbank) > 0
-            #XXX This is probably rather inefficient (creating a new list each time)
-            juvenile = pop!(patch.seedbank)
+            juvenile = pop!(patch.seedbank) #XXX Is this inefficient?
+            juvenile.size = juvenile.traits["repsize"] # birds grow to full size in less than a year
             if juvenile.sex == sex
                 zdisperse!(juvenile, world, patch.location,
                            Integer(settings["cellsize"]), settings["tolerance"])
@@ -156,6 +157,7 @@ Dispersal of a single bird.
 """
 function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int, Int},
                     cellsize::Int, tolerance::Float64)
+    #TODO rewrite
     # keep track of where we've been and calculate the max dispersal distance
     x, y = location
     route = [location]

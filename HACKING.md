@@ -34,3 +34,5 @@
    back into `zosterops`.
    
 8. Repeat :-)
+
+9. Don't break anything important!

@@ -58,19 +58,21 @@
 
 - [ ] adjust body sizes
 
-- [ ] juveniles are "born with" adult size
+- [X] juveniles are "born with" adult size
 
 - [ ] hybridisation: only if no conspecific partner available
 
 - [ ] hybridisation: assign offspring to lineage based on phenotypically similarity
 
+- [ ] `createoffspring()` or `zreproduce()` have to deal with lineage labels
+
 - [ ] allow for ecological/neutral speciation in `ziscompatible()`
+
+- [ ] rethink species trait definition in config
 
 - [ ] test dispersal and reproduction functions
 
 - [ ] vary hybridization affinity for core experiment
-
-- [ ] `createoffspring()` or `zreproduce()` have to deal with lineage labels
 
 - [ ] prepare map series for SLOSS experiment (constant habitat size, random configuration)
 		- single very large habitat (VL)

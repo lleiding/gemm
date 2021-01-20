@@ -78,7 +78,6 @@ function zosteropsexperiment(world::Array{Patch,1}, settings::Dict{String, Any})
     #TODO
     establish!(world, settings["nniches"], settings["static"])
     survive!(world, settings)
-    grow!(world, settings)
     reproduce!(world, settings)
     if settings["mutate"]
         mutate!(world, settings)
