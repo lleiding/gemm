@@ -187,7 +187,7 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
         end
         # check if the patch is full, within the bird's AGC range, and (for females) has a mate
         if bird.sex == female #XXX not ideal to do this here
-            partner = findfirst(b -> ziscompatible(bird, b, tolerance), bestdest.community)
+            partner = findfirst(b -> ziscompatible(bird, b), bestdest.community)
         end
         if (bestfit <= bird.traits["prectol"] &&
             length(bestdest.community) < cellsize &&
@@ -214,11 +214,14 @@ end
 
 Check to see whether two birds are reproductively compatible.
 """
-function ziscompatible(f::Individual, m::Individual, tolerance::Float64)
+function ziscompatible(f::Individual, m::Individual)
     !(m.sex == male && f.sex == female) && return false
     !(m.partner == 0 && f.partner == 0) && return false
-    (m.lineage != f.lineage && rand(Float64) > tolerance) && return false
-    #TODO allow for speciation
+    if setting("speciation") == "off"
+        (m.lineage != f.lineage && rand(Float64) > setting("tolerance")) && return false
+    else
+        (!iscompatible(m, f)) && return false
+    end
     simlog("Found a partner: $(f.id) and $(m.id).", 'd')
     return true
 end

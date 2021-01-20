@@ -52,7 +52,7 @@
 
 - [X] turn off mutation except at initialisation
 
-- [ ] make `settings` global?
+- [X] make `settings` global
 
 - [ ] rewrite dispersal function as discussed on 19/01/21
 
@@ -68,7 +68,7 @@
 
 - [ ] `createoffspring()` or `zreproduce()` have to deal with lineage labels
 
-- [ ] allow for ecological/neutral speciation in `ziscompatible()`
+- [X] allow for ecological/neutral speciation in `ziscompatible()`
 
 - [ ] rethink species trait definition in config
 

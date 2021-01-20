@@ -129,11 +129,22 @@ end
 """
     iscompatible(mate, individual)
 
-Check to see whether two individual organisms are reproductively compatible.
+Check to see whether two individual organisms are reproductively compatible by
+comparing gene sequences (which sequence depends on setting("speciation")).
 """
 function iscompatible(mate::Individual, ind::Individual)
-    mate.lineage != ind.lineage && return false ##TODO must be possible under some conditions
-    compatidx = findfirst(x -> x == "compat", setting("traitnames"))
+    mate.lineage != ind.lineage && return false
+    if setting("speciation") == "off"
+        return true # no speciation can happen
+    elseif setting("speciation") == "neutral"
+        # default, use a non-coding sequence for mutation-order speciation
+        comparegene = "compat"
+    elseif setting("speciation") == "ecological"
+        # use a coding sequence for ecological speciation
+        #XXX is `prectol` a sensible choice?
+        comparegene = "prectol"
+    end
+    compatidx = findfirst(x -> x == comparegene, setting("traitnames"))
     indgene = getseq(ind.genome, compatidx, setting("compressgenes"))
     mategene = getseq(mate.genome, compatidx, setting("compressgenes"))
     seqidentity = getseqsimilarity(indgene, mategene)
