@@ -164,7 +164,7 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
             conspecifics = findall(b -> b.lineage == bird.lineage, bestdest.community)
             partner = findfirst(b -> ziscompatible(bird, b), bestdest.community[conspecifics])
             if isnothing(partner) && setting("speciation") == "off"
-                congenerics = setdiff(eachindex(bestdest.community, conspecifics))
+                congenerics = setdiff(eachindex(bestdest.community), conspecifics)
                 partner = findfirst(b -> ziscompatible(bird, b), bestdest.community[congenerics])
             end
             if !isnothing(partner)
@@ -178,7 +178,7 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
                 @label success
                 bird.marked = true
                 push!(bestdest.community, bird)
-                simlog("A Z.$(bird.lineage) moved to $x/$y.", 'd')
+                simlog("$(idstring(bird)) moved to $x/$y.", 'd')
                 return #if we've found a spot, we're done
             end
         end
@@ -202,7 +202,7 @@ function ziscompatible(i1::Individual, i2::Individual)
     else #check for speciation
         (!iscompatible(i1, i2)) && return false
     end
-    simlog("Found a partner: Z.$(i1.lineage) $(i1.id) and Z.$(i2.lineage) $(i2.id).", 'd')
+    simlog("Found a partner: $(idstring(i1)) and $(idstring(i2)).", 'd')
     return true
 end
     
@@ -213,16 +213,18 @@ Reproduction of Zosterops breeding pairs in a patch.
 """
 function zreproduce!(patch::Patch)
     #FIXME reproduction happens too seldom?
+    #hypothesis: new partners don't reproduce
+    #FIXME partner matching is not constant
     noffs = Integer(setting("fertility"))
     for bird in patch.community
         if bird.sex == female && bird.partner != 0
             pt = findfirst(b -> b.id == bird.partner, patch.community)
             if isnothing(pt)
-                simlog("Z.$(bird.lineage) no. $(bird.id) has no partner.", 'd')
+                simlog("$(idstring(bird)) has no partner.", 'd')
                 continue
             end
             partner = patch.community[pt]
-            simlog("A Z.$(bird.lineage) mated with a Z.$(partner.lineage), $noffs offspring.", 'd')
+            simlog("$(idstring(bird)) mated with $(idstring(partner)), $noffs offspring.", 'd')
             #TODO Offspring are assigned the lineage of their mother. Is that what we want?
             append!(patch.seedbank, createoffspring(noffs, bird, partner,
                                                     setting("traitnames"), true))
@@ -247,4 +249,13 @@ let width = 0, height = 0
         i = ((y-1) * width) + x
         return world[i]
     end
+end
+
+"""
+    idstring(individual)
+
+A small utility function to print a string identifier for a given individual.
+"""
+function idstring(bird::Individual)
+    return "Z."*bird.lineage*" "*string(bird.id)
 end

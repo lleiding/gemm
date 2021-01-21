@@ -58,8 +58,6 @@
 
 - [X] implement lineage tagging for chromosomes
 
-- [ ] adjust body sizes and dispersal distances
-
 - [X] juveniles are "born with" adult size
 
 - [X] hybridisation: only if no conspecific partner available
@@ -71,6 +69,8 @@
 - [ ] rethink species trait definition in config
 
 - [ ] test dispersal and reproduction functions
+
+- [ ] adjust body sizes and dispersal distances
 
 - [ ] vary hybridization affinity for core experiment
 
