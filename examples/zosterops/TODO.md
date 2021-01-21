@@ -54,19 +54,17 @@
 
 - [X] make `settings` global
 
-- [ ] rewrite dispersal function as discussed on 19/01/21
+- [X] rewrite dispersal function as discussed on 19/01/21
 
 - [X] implement lineage tagging for chromosomes
 
-- [ ] adjust body sizes
+- [ ] adjust body sizes and dispersal distances
 
 - [X] juveniles are "born with" adult size
 
-- [ ] hybridisation: only if no conspecific partner available
+- [X] hybridisation: only if no conspecific partner available
 
-- [ ] hybridisation: assign offspring to lineage based on phenotypically similarity
-
-- [ ] `createoffspring()` or `zreproduce()` have to deal with lineage labels
+- [ ] hybridisation: assign offspring to lineage based on phenotypical similarity
 
 - [X] allow for ecological/neutral speciation in `ziscompatible()`
 

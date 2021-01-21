@@ -78,17 +78,6 @@ let zosterops = Individual[] #holds the species archetypes
         bird.sex = sex
         return bird
     end
-
-    """
-        getzosteropsnames()
-
-    Return the names of all defined Zosterops species.
-    """
-    #XXX utility function - but do I need it?
-    global function getzosteropsnames()
-        isempty(zosterops) && initzosteropsspecies()
-        return map(s->s.lineage, zosterops)
-    end
 end
 
 """
@@ -127,42 +116,29 @@ end
 """
     zdisperse!(world)
 
-Dispersal of bird individuals within the world. Males disperse first, looking
-for suitable habitats within their dispersal range to establish territories.
-Females disperse second, looking for available mates. (Cf. Aben et al. 2016)
+Disperse all juvenile individuals within the world. 
 """
-function zdisperse!(world::Array{Patch,1}, sex::Sex=male)
-    #TODO rewrite
+function zdisperse!(world::Array{Patch,1})
     for patch in world
-        newseedbank = Array{Individual,1}()
-        while length(patch.seedbank) > 0
-            juvenile = pop!(patch.seedbank) #XXX Is this inefficient?
-            juvenile.size = juvenile.traits["repsize"] # birds grow to full size in less than a year
-            if juvenile.sex == sex
-                zdisperse!(juvenile, world, patch.location,
-                           Integer(setting("cellsize")), setting("tolerance"))
-            else
-                push!(newseedbank, juvenile)
-            end
+        for ind in patch.seedbank
+            zdisperse!(ind, world, patch.location)
         end
-        patch.seedbank = newseedbank
+        patch.seedbank = Array{Individual,1}()
     end
-    (sex == male) && zdisperse!(world, female)
 end
 
 """
-    zdisperse!(bird, world, location, cellsize)
+    zdisperse!(bird, world, location)
 
-Dispersal of a single bird.
+Dispersal of a single bird. Birds look patches with a suitable
+habitat and a free territory or available mate. (Cf. Aben et al. 2016)
 """
-function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int, Int},
-                    cellsize::Int, tolerance::Float64)
-    #TODO rewrite
+function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int, Int})
     # keep track of where we've been and calculate the max dispersal distance
     x, y = location
     route = [location]
     #XXX disperse!() adds `/sqrt(2)`??
-    #FIXME we're probably going to need another distribution
+    #XXX sex-biased maximum dispersal?
     maxdist = rand(Logistic(bird.traits["dispmean"], bird.traits["dispshape"]))
     while maxdist > 0
         # calculate the best habitat patch in the surroundings (i.e. the closest to AGC optimum)
@@ -172,57 +148,61 @@ function zdisperse!(bird::Individual, world::Array{Patch,1}, location::Tuple{Int
         filter!(c -> !in(c, route), target)
         possdest = map(p -> coordinate(p[1], p[2], world), target)
         filter!(p->!isnothing(p), possdest)
-        if iszero(length(possdest))
-            simlog("A Z.$(bird.lineage) died after failed dispersal.", 'd')
-            return
-        end
+        iszero(length(possdest)) && @goto failure
         bestdest = possdest[1]
         bestfit = abs(bestdest.prec - bird.traits["precopt"])
         for patch in possdest[2:end]
             patchfit = abs(patch.prec - bird.traits["precopt"])
             if patchfit < bestfit
-                bestdest = patch
-                bestfit = patchfit
+                bestdest, bestfit = patch, patchfit
             end
         end
-        # check if the patch is full, within the bird's AGC range, and (for females) has a mate
-        if bird.sex == female #XXX not ideal to do this here
-            partner = findfirst(b -> ziscompatible(bird, b), bestdest.community)
-        end
-        if (bestfit <= bird.traits["prectol"] &&
-            length(bestdest.community) < cellsize &&
-            (bird.sex == male || !isnothing(partner)))
-            if bird.sex == female
+        x, y = bestdest.location
+        # check if the patch is within the bird's AGC range and has free space
+        if (bestfit <= bird.traits["prectol"] && length(bestdest.community) < setting("cellsize"))
+            # look for an available mate, starting with conspecifics
+            conspecifics = findall(b -> b.lineage == bird.lineage, bestdest.community)
+            partner = findfirst(b -> ziscompatible(bird, b), bestdest.community[conspecifics])
+            if isnothing(partner) && setting("speciation") == "off"
+                congenerics = setdiff(eachindex(bestdest.community, conspecifics))
+                partner = findfirst(b -> ziscompatible(bird, b), bestdest.community[congenerics])
+            end
+            if !isnothing(partner)
+                # if we've found a partner
                 partner = bestdest.community[partner]
                 bird.partner = partner.id
                 partner.partner = bird.id
+                @goto success
+            elseif length(bestdest.community) <= (setting("cellsize")-2)
+                # if there's space for another breeding pair
+                @label success
+                bird.marked = true
+                push!(bestdest.community, bird)
+                simlog("A Z.$(bird.lineage) moved to $x/$y.", 'd')
+                return #if we've found a spot, we're done
             end
-            bird.marked = true
-            push!(bestdest.community, bird)
-            simlog("A Z.$(bird.lineage) moved to $(bestdest.location[1])/$(bestdest.location[2]).", 'd')
-            return #if we've found a spot, we're done
         end
-        x, y = bestdest.location
         push!(route, bestdest.location)
         maxdist -= 1
     end #if the max dispersal distance is reached, the individual simply dies
+    @label failure
     simlog("A Z.$(bird.lineage) died after failed dispersal.", 'd')
 end
 
 """
-    ziscompatible(female, male, tolerance)
+    ziscompatible(individual1, individual2)
 
 Check to see whether two birds are reproductively compatible.
 """
-function ziscompatible(f::Individual, m::Individual)
-    !(m.sex == male && f.sex == female) && return false
-    !(m.partner == 0 && f.partner == 0) && return false
-    if setting("speciation") == "off"
-        (m.lineage != f.lineage && rand(Float64) > setting("tolerance")) && return false
-    else
-        (!iscompatible(m, f)) && return false
+function ziscompatible(i1::Individual, i2::Individual)
+    (i1.sex == i2.sex) && return false
+    !(i1.partner == 0 && i2.partner == 0) && return false
+    if setting("speciation") == "off" #check for hybridisation
+        (i1.lineage != i2.lineage && rand(Float64) > setting("tolerance")) && return false
+    else #check for speciation
+        (!iscompatible(i1, i2)) && return false
     end
-    simlog("Found a partner: $(f.id) and $(m.id).", 'd')
+    simlog("Found a partner: Z.$(i1.lineage) $(i1.id) and Z.$(i2.lineage) $(i2.id).", 'd')
     return true
 end
     
