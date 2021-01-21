@@ -224,7 +224,7 @@ function zreproduce!(patch::Patch)
                 continue
             end
             partner = patch.community[pt]
-            simlog("$(idstring(bird)) mated with $(idstring(partner)), $noffs offspring.", 'd')
+            simlog("$(idstring(bird)) mated with $(idstring(partner)).", 'd')
             #TODO Offspring are assigned the lineage of their mother. Is that what we want?
             append!(patch.seedbank, createoffspring(noffs, bird, partner,
                                                     setting("traitnames"), true))
@@ -241,6 +241,7 @@ let width = 0, height = 0
     Important: this assumes a rectangular world with coordinates in row-major order!
     """
     global function coordinate(x::Int, y::Int, world::Array{Patch,1})
+        #FIXME `createworld()` uses `push!()`, so world order is reversed?
         if iszero(width)
             width = maximum(p -> p.location[1], world)
             height = maximum(p -> p.location[2], world)
@@ -254,7 +255,7 @@ end
 """
     idstring(individual)
 
-A small utility function to print a string identifier for a given individual.
+A small utility function that returns a string identifier for a given individual.
 """
 function idstring(bird::Individual)
     return "Z."*bird.lineage*" "*string(bird.id)

@@ -66,6 +66,8 @@
 
 - [X] allow for ecological/neutral speciation in `ziscompatible()`
 
+- [ ] throw an error if input files don't exist
+
 - [ ] rethink species trait definition in config
 
 - [ ] test dispersal and reproduction functions

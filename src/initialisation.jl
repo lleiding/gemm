@@ -131,7 +131,7 @@ separated by a whitespace character (<ID> <x> <y>).", 'e')
     # XXX the 'global' here is a hack so that I can use eval() later on
     # (eval() always works on the global scope)
     global newpatch = Patch(id, (xcord, ycord), capacity)
-    simlog("Creating patch $id at $xcord/$ycord, size $capacity", 'd') #DEBUG
+    simlog("Creating patch $id at $xcord/$ycord", 'd') #DEBUG
     # parse other parameter options
     for p in patchentry[4:end]
         varval = split(p, '=')
@@ -175,9 +175,9 @@ an array of patches.
 """
 function createworld(maptable::Array{Array{String,1},1})
     simlog("Creating world...")
-    world = Patch[]
-    for entry in maptable
-        newpatch = createpatch(entry)
+    world = Array{Patch}(undef, length(maptable))
+    for entry in eachindex(maptable)
+        newpatch = createpatch(maptable[entry])
         if newpatch.initpop
             if setting("mode") == "zosterops"
                 append!(newpatch.community, zgenesis(newpatch))
@@ -187,9 +187,9 @@ function createworld(maptable::Array{Array{String,1},1})
                 append!(newpatch.seedbank, genesis())
             end
         end
-        push!(world, newpatch)
-        global newpatch = nothing #clear memory used in `createpatch()` #XXX does this make sense?
+        world[entry] = newpatch
     end
+    global newpatch = nothing # remove variable used in `createpatch()`
     world
 end
 
