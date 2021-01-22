@@ -221,9 +221,7 @@ function zreproduce!(patch::Patch)
             end
             partner = patch.community[pt]
             simlog("$(idstring(bird)) mated with $(idstring(partner)).", 'd')
-            #TODO Offspring are assigned the lineage of their mother. Is that what we want?
-            append!(patch.seedbank, createoffspring(noffs, bird, partner,
-                                                    setting("traitnames"), true))
+            append!(patch.seedbank, createoffspring(noffs, bird, partner, true))
         end
     end
 end

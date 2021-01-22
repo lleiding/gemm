@@ -35,7 +35,7 @@ function reproduce!(patch::Patch) #TODO: refactor!
             else
                 ind.size = parentmass
             end
-            append!(patch.seedbank, createoffspring(noffs, ind, partner, setting("traitnames")))
+            append!(patch.seedbank, createoffspring(noffs, ind, partner))
         end
     end
     simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", 'd')
@@ -68,7 +68,7 @@ function greproduce!(patch::Patch)
             else
                 ind.size = parentmass
             end
-            append!(patch.seedbank, createoffspring(noffs, ind, partner, setting("traitnames")))
+            append!(patch.seedbank, createoffspring(noffs, ind, partner))
         end
     end
     simlog("Patch $(patch.id): $(length(patch.seedbank)) offspring", 'd')
@@ -118,12 +118,12 @@ function findmate(population::AbstractArray{Individual, 1}, ind::Individual)
 end
 
 """
-    createoffspring(noffs, individual, partner, traitnames, dimorphism)
+    createoffspring(noffs, individual, partner, dimorphism)
 
 The main reproduction function. Take two organisms and create the given number
 of offspring individuals. Returns an array of individuals.
 """
-function createoffspring(noffs::Integer, ind::Individual, partner::Individual, traitnames::Array{String, 1}, dimorphism::Bool=false)
+function createoffspring(noffs::Integer, ind::Individual, partner::Individual, dimorphism::Bool=false)
     offspring = Individual[]
     for i in 1:noffs # pmap? this loop could be factorized!
         # offspring have different genomes due to recombination
@@ -131,7 +131,7 @@ function createoffspring(noffs::Integer, ind::Individual, partner::Individual, t
         mothergenome = meiosis(ind.genome, true, ind.lineage)
         (isempty(partnergenome) || isempty(mothergenome)) && continue
         genome = vcat(partnergenome,mothergenome)
-        traits = gettraitdict(genome, traitnames)
+        traits = gettraitdict(genome, setting("traitnames"))
         marked = true
         fitness = 0.0
         newpartner = 0
@@ -141,7 +141,14 @@ function createoffspring(noffs::Integer, ind::Individual, partner::Individual, t
         if dimorphism
             rand(Bool) ? sex = male : sex = female
         end
-        push!(offspring, Individual(ind.lineage, genome, traits, marked, fitness,
+        lineage = ind.lineage
+        if lineage != partner.lineage
+            # hybrids are assigned the lineage of the parent they are phenotypically most similar to
+            idiff = sum(t -> abs(traits[t]-ind.traits[t]), keys(traits))
+            pdiff = sum(t -> abs(traits[t]-partner.traits[t]), keys(traits))
+            (pdiff < idiff) && (lineage = partner.lineage)
+        end
+        push!(offspring, Individual(lineage, genome, traits, marked, fitness,
                                     fitness, newsize, sex, newpartner, newid))
     end
     offspring

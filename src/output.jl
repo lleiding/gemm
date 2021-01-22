@@ -169,7 +169,7 @@ function writesettings()
         settingspath = basename(setting("config"))
     end
     open(joinpath(setting("dest"), settingspath), "w") do f
-        println(f, "#\n# --- Island speciation model settings ---")
+        println(f, "#\n# --- GeMM configuration parameters ---")
         println(f, "# This file was generated automatically.")
         println(f, "# Simulation run on $(Dates.format(Dates.now(), "d u Y HH:MM:SS"))")
         println(f, "# $(split(read(pipeline(`git log`, `head -1`), String), "\n")[1])\n")

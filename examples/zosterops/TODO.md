@@ -62,7 +62,7 @@
 
 - [X] hybridisation: only if no conspecific partner available
 
-- [ ] hybridisation: assign offspring to lineage based on phenotypical similarity
+- [X] hybridisation: assign offspring to lineage based on phenotypical similarity
 
 - [X] allow for ecological/neutral speciation in `ziscompatible()`
 
@@ -70,11 +70,13 @@
 
 - [X] basicparser() should concatenate lines ending with a \
 
-- [ ] rethink species trait definition in config
+- [X] rethink species trait definition in config
 
 - [ ] test dispersal and reproduction functions
 
 - [ ] adjust body sizes and dispersal distances
+
+- [ ] decrease world size for experiments? (currently ~10^5 patches)
 
 - [ ] vary hybridization affinity for core experiment
 
