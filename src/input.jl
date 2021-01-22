@@ -82,24 +82,35 @@ end
 
 Do elementary parsing on a config or map file.
 
-Reads in the file, strips whole-line and inline comments
-and separates lines by whitespace.
+Reads in the file, strips out comments, concatenates lines ending
+in '\', and then separates lines by whitespace.
 Returns a 2d array representing the tokens in each line.
 """
 function basicparser(filename::String)
     # Read in the file
-    lines = String[]
-    open(filename) do file
-        lines = readlines(file)
+    rawlines = String[]
+    try
+        open(filename) do file
+            rawlines = readlines(file)
+        end
+    catch
+        simlog("Could not open $filename!", 'e')
     end
-    # TODO concatenate lines ending in \
-    # Remove comments and tokenize
-    lines = map(x -> strip(x), lines)
-    filter!(x -> !isempty(x), lines)
-    filter!(x -> (x[1] != '#'), lines)
-    lines = map(s -> strip(split(s, '#')[1]), lines)
-    lines = map(split, lines)
-    map(l -> map(s -> convert(String, s), l), lines)
+    # Process each line
+    l = 0
+    lines = Array{String,1}[]
+    while l < length(rawlines)
+        l += 1
+        ln = strip(split(rawlines[l], '#')[1]) # remove comments
+        (isempty(ln)) && continue # remove empty lines
+        if ln[end] == '\\' # concatenate lines ending with \
+            rawlines[l+1] = ln[1:(end-1)]*strip(rawlines[l+1])
+            continue
+        end
+        tokens = map(s -> convert(String, s), split(ln)) # tokenise
+        push!(lines, tokens)
+    end
+    lines
 end
 
 """

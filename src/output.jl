@@ -139,7 +139,8 @@ Creates the output directory and copies relevant files into it.
 """
 function setupdatadir()
     if isdir(setting("dest"))
-        @warn "$(setting("dest")) exists. Continuing anyway. Overwriting of files possible."
+        #XXX a more useful solution might be to rename "dest" to avoid conflict
+        simlog("$(setting("dest")) exists. Aborting to avoid overwriting files.", 'e')
     else
         mkpath(setting("dest"))
     end
@@ -148,7 +149,8 @@ function setupdatadir()
     if in("maps", settingkeys())
         for m in setting("maps")
             isempty(m) && continue
-            cp(m, joinpath(setting("dest"), basename(m)), force = true) # most likely replicates with same parameters
+            !(isfile(m)) && simlog("Map file $m doesn't exist!", 'e')
+            cp(m, joinpath(setting("dest"), basename(m)), force = true)
         end
     end
 end

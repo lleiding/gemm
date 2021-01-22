@@ -241,7 +241,6 @@ let width = 0, height = 0
     Important: this assumes a rectangular world with coordinates in row-major order!
     """
     global function coordinate(x::Int, y::Int, world::Array{Patch,1})
-        #FIXME `createworld()` uses `push!()`, so world order is reversed?
         if iszero(width)
             width = maximum(p -> p.location[1], world)
             height = maximum(p -> p.location[2], world)
@@ -260,3 +259,4 @@ A small utility function that returns a string identifier for a given individual
 function idstring(bird::Individual)
     return "Z."*bird.lineage*" "*string(bird.id)
 end
+

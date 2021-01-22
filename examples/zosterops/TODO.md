@@ -66,7 +66,9 @@
 
 - [X] allow for ecological/neutral speciation in `ziscompatible()`
 
-- [ ] throw an error if input files don't exist
+- [X] throw an error if input files don't exist
+
+- [X] basicparser() should concatenate lines ending with a \
 
 - [ ] rethink species trait definition in config
 
