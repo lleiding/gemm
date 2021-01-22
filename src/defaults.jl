@@ -58,7 +58,7 @@ function defaultSettings()
         "seed" => 0, # for the RNG, seed = 0 -> random seed
         "smallgenelength" => 20, # standard gene sequence length (max. 21)
         "speciation" => "neutral", # allow lineage differentiation? off/neutral/ecological
-        "species" => Dict{String,Array{Number,1}}(), # define AGC opt/tol for each Zosterops species
+        "species" => Dict{String,Any}[], # define trait values for each Zosterops species
         "static" => false, # whether mainland sites undergo eco-evolutionary processes
         "stats" => true, # record population statistics (medium detail output)
         "tolerance" => 0.8, # sequence similarity threshold for reproduction if `fixtol` == true

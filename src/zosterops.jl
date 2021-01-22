@@ -23,9 +23,9 @@ let zosterops = Individual[] #holds the species archetypes
         # ensure that "one gene, one trait" is true and that we have species definitions
         (setting("degpleiotropy") != 0) && simlog("degpleiotropy must be 0", 'e')
         (isnothing(setting("species"))) && simlog("no species defined", 'e')
-        # load per-species AGC optimum and tolerance values from settings
-        for (s, v) in pairs(setting("species"))
-            push!(zosterops, initzosteropsspecies(s, Float64(v[1]), Float64(v[2])))
+        # load per-species trait values from settings (especially AGC optimum and tolerance)
+        for sp in setting("species")
+            push!(zosterops, initzosteropsspecies(sp))
         end
     end
 
@@ -34,19 +34,16 @@ let zosterops = Individual[] #holds the species archetypes
 
     Create a new individual then modify its traits to create a Zosterops archetype.
     """
-    function initzosteropsspecies(name::String, precopt::Float64, prectol::Float64)
+    function initzosteropsspecies(spectraits::Dict{String,Any})
         archetype = createind()
-        archetype.lineage = name
-        # Find the gene that codes for relevant traits and change their values
+        archetype.lineage = spectraits["lineage"]
+        # Find the genes that code for relevant traits and change their values
         for chromosome in archetype.genome
             for gene in chromosome.genes
                 isempty(gene.codes) && continue
                 genetrait = setting("traitnames")[gene.codes[1].nameindex]
-                #XXX do we also need to set tempopt/temptol?
-                if genetrait == "precopt"
-                    gene.codes[1].value = precopt
-                elseif genetrait == "prectol"
-                    gene.codes[1].value = prectol
+                if in(keys(spectraits), genetrait)
+                    gene.codes[1].value = spectraits[genetrait]
                 end
             end
         end
@@ -92,9 +89,8 @@ function zgenesis(patch::Patch)
     # check which species can inhabit this patch
     species = Array{String, 1}()
     for s in setting("species")
-        # s[1] = species name, s[2][1] = AGC opt, s[2][2] = AGC tol
-        if abs(s[2][1]-patch.prec) <= s[2][2]
-            push!(species, s[1])
+        if abs(s["precopt"]-patch.prec) <= s["prectol"]
+            push!(species, s["lineage"])
         end
     end
     (isempty(species)) && return community
@@ -108,7 +104,7 @@ function zgenesis(patch::Patch)
         m.partner = f.id
         push!(community, m)
         push!(community, f)
-        simlog("Adding a pair of Z. $sp", 'd')
+        simlog("Adding a pair of Z.$sp", 'd')
     end
     community
 end
