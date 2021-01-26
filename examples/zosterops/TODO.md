@@ -49,6 +49,7 @@
   - [ ] avoid string interpolation in output
   - [ ] avoid `deepcopy()`?
   - [X] write a coordinate lookup function to speed up `zdisperse!()`
+  - [ ] do another profile after finishing Zosterops features
 
 - [X] turn off mutation except at initialisation
 
@@ -76,7 +77,7 @@
 
 - [ ] adjust body sizes and dispersal distances
 
-- [ ] decrease world size for experiments? (currently ~10^5 patches)
+- [X] decrease world size for experiments? (currently ~10^5 patches)
 
 - [ ] vary hybridization affinity for core experiment
 
