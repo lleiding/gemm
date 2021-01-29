@@ -14,7 +14,7 @@ library(MuMIn)
 
 ### LOAD AND PREPARE DATA
 
-## Incomplete runs are filtered out later
+dday = 750 ## time step to analyse
 dispmode = "both" ## 'local' or 'global'
 mytworesults = Sys.glob(paste0("data/*/*tsv"))
 
@@ -24,17 +24,16 @@ for (filepath in mytworesults) {
 }
 
 ## only use replicates where all scenarios are finished
-##XXX is this wise? (what if some scenarios abort?)
-repstable = rawresults %>% filter(time==500) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
+repstable = rawresults %>% filter(time==dday) %>% select(replicate, conf) %>% group_by(conf) %>% unique %>% table
 doublereps = which(rowSums(repstable) == 4) %>% names %>% as.numeric
-filteredresults = rawresults %>% filter(replicate %in% doublereps)
+filteredresults = rawresults %>% filter(replicate %in% doublereps) %>% filter(time<=dday)
 
 tworesults = filteredresults %>%
     select(-ngenesstd, -area, -contains("compat"), -contains("reptol"), -contains("adaption")) %>%
     mutate(linkage_degree=ngenesmean/nlnkgunitsmean,
            scenario=ifelse(grepl("constant", conf), "static", "variable"),
-           disptype=ifelse(grepl("global", conf), "global", "local"),
-           config=sub(".conf", "", sub("examples/gradient/", "", conf))) %>%
+           disptype=ifelse(grepl("global", conf), "b-global", "a-local"),
+           config=sub("constant", "static", sub("_", " ", sub(".conf", "", sub("examples/gradient/", "", conf))))) %>%
     select(-contains("lnkgunits"), -conf) %>%
     ##XXX This doesn't calculate the full range, but as the model doesn't output min/max values
     ## anymore, it's the best we can do.
@@ -145,12 +144,12 @@ ggsave(paste0("ecopatts_", dispmode, ".pdf"), pattsleg, width=7, height=5)
 
 ### TRAIT ANALYSIS (PCA AND TRAIT MEANS)
 
-mainendtraits = tworesults %>% filter(time == 500) %>%
-    rename(Environment = config) %>%
-    dplyr::select(Environment, mean_dispersal_distance, number_of_genes, precipitation_tolerance,
+mainendtraits = tworesults %>% filter(time == dday) %>%
+    rename(Scenario = config) %>%
+    dplyr::select(Scenario, mean_dispersal_distance, number_of_genes, precipitation_tolerance,
            adult_body_size, temperature_tolerance, linkage_degree, mean_genetic_variation,
            long_distance_dispersal, seed_size) %>%
-    mutate_at(vars(-Environment), function(x) log(x + 1)) %>%
+    mutate_at(vars(-Scenario), function(x) log(x + 1)) %>%
     rename(`Mean dispersal distance` = mean_dispersal_distance, `Number of genes` = number_of_genes,
            `Precipitation tolerance` = precipitation_tolerance, `Adult biomass (g)` = adult_body_size,
            `Temperature tolerance` = temperature_tolerance, `Genetic linkage` = linkage_degree,
@@ -158,18 +157,19 @@ mainendtraits = tworesults %>% filter(time == 500) %>%
            `Seed biomass (g)` = seed_size)
 
 endpca = prcomp(mainendtraits[,-1], scale=T)
+print(xtable(endpca, digits = 3, floating = FALSE, booktabs = TRUE, include.rownames=FALSE))
+
 endpcaviz = fviz_pca_biplot(endpca, col.var=factor(c("ecological", "genetic", "ecological", "ecological", "ecological", "genetic", "genetic", "ecological", "ecological")),
-                geom.ind="point", fill.ind=mainendtraits$Environment, pointsize=1, pointshape=21, addEllipses = TRUE) + #, ellipse.alpha=0.1, ellipse.type = "convex") +
-    theme_bw() + scale_fill_viridis_d("Environment") + scale_color_brewer(palette="Set2", name="Trait")
-ggsave(paste0("pca_t500_maintraits_", dispmode, ".pdf"), endpcaviz, width=4.5, height=4)
+                geom.ind="point", fill.ind=mainendtraits$Scenario, pointsize=1, pointshape=21, addEllipses = TRUE) + #, ellipse.alpha=0.1, ellipse.type = "convex") +
+    theme_bw() + scale_fill_viridis_d("Scenario") + scale_color_brewer(palette="Set2", name="Trait")
+ggsave(paste0("pca_t",dday,"_maintraits_", dispmode, ".pdf"), endpcaviz, width=4.5, height=4)
 
 ## prepare data for separate analysis (global vs local dispersal)
-myendresults = tworesults %>% filter((time == 0 & disptype == "local") | time == 500) %>% 
+scen = "variable"
+myendresults = tworesults %>% filter(time == dday) %>% filter(scenario==scen) %>%
     mutate_at(vars(contains("tolerance"), contains("size"), contains("gene"), contains("dispersal")), function(x) log(x + 1)) %>%
-    mutate(disptype = ifelse(time == 0, "initial", disptype)) %>%
     mutate(disptype=as.factor(disptype)) %>%
-    filter(disptype != "initial") %>%
-    rename(Environment=disptype, log_adult_body_size=adult_body_size) %>%
+    rename(Dispersal=disptype, log_adult_body_size=adult_body_size) %>%
     na.omit()
 
 ## Trait means:
@@ -178,7 +178,7 @@ traitnames = myendresults %>% dplyr::select(mean_dispersal_distance, long_distan
     names() 
 
 endtraits_lme = foreach(trait=traitnames) %do% {
-    lmer(get(trait) ~ Environment + (1|replicate), data = myendresults)
+    lmer(get(trait) ~ Dispersal + (1|replicate), data = myendresults)
 }
 names(endtraits_lme) = traitnames
 
@@ -200,12 +200,44 @@ lme_table %>%
     geom_errorbar(aes(ymin = Estimate - `Std. Error`, ymax = Estimate + `Std. Error`), position = position_dodge(.5), width = 0) +
     scale_y_continuous(limits = c(min(lme_table[,"Estimate"] - lme_table[,"Std. Error"]),
                                   max(lme_table[,"Estimate"] + lme_table[,"Std. Error"]) + 0.01)) +
-    xlab("") + ylab("Difference in means between dispersal types") + coord_flip() +
+    xlab("") + ylab("Mean trait values with global relative to local pollen movement") + coord_flip() +
     scale_fill_npg(guide = FALSE)
-ggsave(paste0("diffs_means_", dispmode, "_separate.pdf"), width = 5, height = 5)
+ggsave(paste0("diffs_means_", dispmode, "_", scen, "_separate.pdf"), width = 5, height = 5)
+
+
+subtraitnames = myendresults %>% dplyr::select(contains("CV_median")) %>% names() 
+endsubtraits_lme = foreach(trait=subtraitnames) %do% {
+    lmer(get(trait) ~ Dispersal + (1|replicate), data = myendresults)
+}
+names(endsubtraits_lme) = subtraitnames
+endsubtraits_lme_summary = lapply(endsubtraits_lme, summary)
+endsubtraits_lme_table = bind_cols(names = names(endsubtraits_lme_summary),
+                                   as.tibble(t(sapply(endsubtraits_lme_summary, function(x) unlist(as.tibble(x$coefficients)[2,])))))
+endsubtraits_lme_table[,6] <= 0.05
+endsubtraits_lme_table$level = factor(ifelse(grepl("genetic", endsubtraits_lme_table$names), "Genetic standing variation", "Phenotypic standing variation"),
+                                       levels = c("Community means", "Phenotypic standing variation", "Genetic standing variation"))
+endsubtraits_lme_table$names = factor(rep(c("Mean dispersal distance", "Long distance dispersal",
+                                            "Precipitation tolerance", "Seed biomass (g)", "Adult biomass (g)",
+                                            "Temperature tolerance"), each = 2),
+                                      levels = rev(c("Mean dispersal distance", "Long distance dispersal",
+                                                     "Precipitation tolerance", "Seed biomass (g)", "Adult biomass (g)", "Temperature tolerance", 
+                                                     "Number of genes", "Mean genetic variation")))
+print(xtable(endsubtraits_lme_table[,c(1,7,2:6)], digits = c(0, 0, 0, 3, 3, 0, 3, 3)), floating = FALSE, booktabs = TRUE, include.rownames=FALSE)
+lme_table$level = factor("Community means", levels = c("Community means", "Phenotypic standing variation", "Genetic standing variation"))
+
+combdiffs = bind_rows(lme_table, endsubtraits_lme_table) %>%
+    ggplot(aes(names, Estimate, fill = ifelse(Estimate < 0, "-1", "1"))) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "grey", size = 1) +
+    geom_bar(stat = "identity", width = 0.5, position = "dodge") +
+    geom_errorbar(aes(ymin = Estimate - `Std. Error`, ymax = Estimate + `Std. Error`), position = position_dodge(.5), width = 0) +
+    xlab("") + ylab("Mean trait values with global relative to local pollen movement") +
+    coord_flip() + scale_fill_npg(guide = FALSE) + facet_grid(.~level, scales = "free")
+ggsave(paste0("diffs_means_", dispmode, "_", scen, "_all.pdf"), combdiffs, width = 7, height = 3)
+
+
 
 ## prepare data for combined analysis (global and local dispersal)
-myendresults = tworesults %>% filter((time == 0 & scenario == "static") | time == 500) %>% 
+myendresults = tworesults %>% filter((time == 0 & scenario == "static") | time == dday) %>% 
     mutate_at(vars(contains("tolerance"), contains("size"), contains("gene"), contains("dispersal")), function(x) log(x + 1)) %>%
     mutate(scenario = ifelse(time == 0, "initial", scenario)) %>%
     mutate(scenario=as.factor(scenario)) %>%
