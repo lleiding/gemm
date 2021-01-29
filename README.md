@@ -1,3 +1,7 @@
+**This repository has moved! The new location is now https://github.com/CCTB-Ecomods/gemm**
+
+-----
+
 # GeMM
 
 This is the Genome explicit Metacommunity Model, an individual-based model for
