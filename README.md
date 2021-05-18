@@ -1,5 +1,8 @@
 # GeMM
 
+*Note: this branch (`invasion-old`) represents the state of the code base in
+April 2020, when we finished the experiments for the invasion paper.*
+
 This is the Genome explicit Metacommunity Model, an individual-based model for
 eco-evolutionary experiments.
 
